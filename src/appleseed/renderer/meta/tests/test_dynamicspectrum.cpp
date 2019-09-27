@@ -206,6 +206,6 @@ TEST_SUITE(Renderer_Utility_DynamicSpectrum31f)
         const auto result = sqrt(x);
 
         for (size_t i = 0, e = x.size(); i < e; ++i)
-            EXPECT_FEQ(sqrt(Values[i]), result[i]);
+            EXPECT_FEQ(std::sqrt(Values[i]), result[i]);
     }
 }

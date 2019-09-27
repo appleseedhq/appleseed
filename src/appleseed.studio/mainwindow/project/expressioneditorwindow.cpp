@@ -327,7 +327,7 @@ void ExpressionEditorWindow::slot_show_examples()
     else
     {
         if (width() > 400)
-            resize(max(400, width() - 400), height());
+            resize(std::max(400, width() - 400), height());
         m_ui->buttonbox_layout->setStretch(1, 0);
         m_browser->hide();
     }

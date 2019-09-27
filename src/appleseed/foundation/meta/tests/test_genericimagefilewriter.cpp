@@ -127,7 +127,7 @@ TEST_SUITE(Foundation_Image_GenericImageFileWriter)
         const size_t image_size = props.m_canvas_width;
 
         const float half_image_size = static_cast<float>(image_size) / 2.0f;
-        const float half_diagonal_length = half_image_size * sqrt(2.0f);
+        const float half_diagonal_length = half_image_size * std::sqrt(2.0f);
 
         MersenneTwister rng;
 
@@ -135,9 +135,9 @@ TEST_SUITE(Foundation_Image_GenericImageFileWriter)
         {
             for (size_t x = 0; x < image_size; ++x)
             {
-                const float dx = abs(half_image_size - static_cast<float>(x));
-                const float dy = abs(half_image_size - static_cast<float>(y));
-                const float d = sqrt(dx * dx + dy * dy);
+                const float dx = std::abs(half_image_size - static_cast<float>(x));
+                const float dy = std::abs(half_image_size - static_cast<float>(y));
+                const float d = std::sqrt(dx * dx + dy * dy);
                 const float nd = saturate(d / half_diagonal_length);
                 const float c = fit(nd, 0.0f, 1.0f, 0.6f, 0.5f);
                 image.set_pixel(x, y, Color3f(c));

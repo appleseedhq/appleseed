@@ -239,7 +239,7 @@ void CameraController::configure_controller()
     const Vector3d to_target = controller_target - camera_position;
 
     const double target_to_viewing_vector_distance =
-        sqrt(
+        std::sqrt(
             square_distance_point_line(
                 controller_target,
                 camera_position,

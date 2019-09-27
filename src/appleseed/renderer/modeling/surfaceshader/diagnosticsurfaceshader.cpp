@@ -227,7 +227,7 @@ namespace
     {
         if (x < T(0.0) || x > T(1.0))
         {
-            const T y = fmod(x, T(1.0));
+            const T y = std::fmod(x, T(1.0));
             return y < T(0.0) ? y + T(1.0) : y;
         }
         else return x;
@@ -295,7 +295,7 @@ void DiagnosticSurfaceShader::evaluate(
         {
             const Vector3d& normal = shading_point.get_shading_normal();
             const Vector3d& view = shading_point.get_ray().m_dir;
-            const double facing = abs(dot(normal, view));
+            const double facing = std::abs(dot(normal, view));
             set_shading_result(
                 shading_result,
                 Color3f(static_cast<float>(facing)));
@@ -662,7 +662,7 @@ void DiagnosticSurfaceShader::evaluate(
 
                     // The 3.0 factor is chosen so that ray spread from Lambertian BRDFs is approximately 1.
                     const double spread =
-                        max(
+                        std::max(
                             norm(sample.m_incoming.get_dx()),
                             norm(sample.m_incoming.get_dy())) * 3.0;
                     set_shading_result(

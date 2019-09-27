@@ -83,7 +83,7 @@ TEST_SUITE(Foundation_Math_Fresnel)
                 sin_theta_t2 = (1.0 - square(cos_theta_i)) / square(eta);
             }
             while (sin_theta_t2 > 1.0);
-            const double cos_theta_t = sqrt(1.0 - sin_theta_t2);
+            const double cos_theta_t = std::sqrt(1.0 - sin_theta_t2);
 
             double fr_eta, fr_rcp_eta;
             fresnel_reflectance_dielectric(fr_eta, eta, cos_theta_i, cos_theta_t);
@@ -110,7 +110,7 @@ TEST_SUITE(Foundation_Math_Fresnel)
             }
             while (sin_theta_t2 > 1.0);
 
-            const double cos_theta_t = sqrt(1.0 - sin_theta_t2);
+            const double cos_theta_t = std::sqrt(1.0 - sin_theta_t2);
 
             double tr_eta, tr_rcp_eta;
             fresnel_transmittance_dielectric(tr_eta, eta, cos_theta_i);
@@ -134,13 +134,13 @@ TEST_SUITE(Foundation_Math_Fresnel)
         for (size_t i = 0; i < PointCount; ++i)
         {
             const double theta_i = fit<size_t, double>(i, 0, PointCount - 1, 0.0, 90.0);
-            const double cos_theta_i = cos(deg_to_rad(theta_i));
+            const double cos_theta_i = std::cos(deg_to_rad(theta_i));
 
             const double sin_theta_i2 = 1.0 - square(cos_theta_i);
             const double sin_theta_t2 = sin_theta_i2 * square(Eta);
             const double cos_theta_t2 = 1.0 - sin_theta_t2;
             assert(cos_theta_t2 >= 0.0);
-            const double cos_theta_t = sqrt(cos_theta_t2);
+            const double cos_theta_t = std::sqrt(cos_theta_t2);
 
             double reflectance;
             fresnel_reflectance_dielectric(reflectance, Eta, cos_theta_i, cos_theta_t);
@@ -179,13 +179,13 @@ TEST_SUITE(Foundation_Math_Fresnel)
         for (size_t i = 0; i < PointCount; ++i)
         {
             const double theta_i = fit<size_t, double>(i, 0, PointCount - 1, 0.0, 90.0);
-            const double cos_theta_i = cos(deg_to_rad(theta_i));
+            const double cos_theta_i = std::cos(deg_to_rad(theta_i));
 
             const double sin_theta_i2 = 1.0 - square(cos_theta_i);
             const double sin_theta_t2 = sin_theta_i2 * square(Eta);
             const double cos_theta_t2 = 1.0 - sin_theta_t2;
             assert(cos_theta_t2 >= 0.0);
-            const double cos_theta_t = sqrt(cos_theta_t2);
+            const double cos_theta_t = std::sqrt(cos_theta_t2);
 
             double ref_refl;
             fresnel_reflectance_dielectric(ref_refl, Eta, cos_theta_i, cos_theta_t);
@@ -232,7 +232,7 @@ TEST_SUITE(Foundation_Math_Fresnel)
             double reflectance;
             if (cos_theta_t2 >= 0.0)
             {
-                const double cos_theta_t = sqrt(cos_theta_t2);
+                const double cos_theta_t = std::sqrt(cos_theta_t2);
                 fresnel_reflectance_dielectric(reflectance, eta, cos_theta_i, cos_theta_t);
             }
             else
@@ -367,7 +367,7 @@ TEST_SUITE(Foundation_Math_Fresnel)
         for (size_t i = 0; i < PointCount; ++i)
         {
             const double theta_i = fit<size_t, double>(i, 0, PointCount - 1, 0.0, 90.0);
-            const double cos_theta_i = cos(deg_to_rad(theta_i));
+            const double cos_theta_i = std::cos(deg_to_rad(theta_i));
 
             double result;
             fresnel_reflectance_conductor(
@@ -480,7 +480,7 @@ TEST_SUITE(Foundation_Math_Fresnel)
         for (size_t i = 0; i < PointCount; ++i)
         {
             const double theta_i = fit<size_t, double>(i, 0, PointCount - 1, 0.0, 90.0);
-            const double cos_theta_i = cos(deg_to_rad(theta_i));
+            const double cos_theta_i = std::cos(deg_to_rad(theta_i));
 
             double result;
             artist_friendly_fresnel_reflectance_conductor(

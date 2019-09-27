@@ -264,8 +264,8 @@ void TextRenderer::draw_string(
         }
 
         // Compute subpixel shifts.
-        const float shift_x = x - floor(x);
-        const float shift_y = y - floor(y);
+        const float shift_x = x - std::floor(x);
+        const float shift_y = y - std::floor(y);
 
         // Compute glyph box.
         int glyph_x0, glyph_y0, glyph_x1, glyph_y1;

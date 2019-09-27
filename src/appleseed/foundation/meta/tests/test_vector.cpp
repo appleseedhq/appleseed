@@ -228,7 +228,7 @@ TEST_SUITE(Foundation_Math_Vector)
     TEST_CASE(TestNorm)
     {
         EXPECT_EQ(0.0, norm(Vector3d(0.0)));
-        EXPECT_FEQ(sqrt(56.0), norm(Vector3d(2.0, 4.0, 6.0)));
+        EXPECT_FEQ(std::sqrt(56.0), norm(Vector3d(2.0, 4.0, 6.0)));
     }
 
     TEST_CASE(TestNormalize)

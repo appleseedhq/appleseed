@@ -248,7 +248,7 @@ namespace
                     assert(tile_offset_y <= props.m_canvas_height);
 
                     // Compute the tile's ystride offset in bytes.
-                    const size_t ystride = xstride * min(static_cast<size_t>(m_spec.width + m_spec.x - tile_offset_x),
+                    const size_t ystride = xstride * std::min(static_cast<size_t>(m_spec.width + m_spec.x - tile_offset_x),
                         static_cast<size_t>(m_spec.tile_width));
 
                     // Retrieve the (tile_x, tile_y) tile.
@@ -517,7 +517,7 @@ namespace
                             ranked_vector_start = 1;
 
                         // Ranked channels.
-                        for (size_t i = ranked_vector_start, e = min(ranked_vector.size(), m_num_layers); i < e; ++i)
+                        for (size_t i = ranked_vector_start, e = std::min(ranked_vector.size(), m_num_layers); i < e; ++i)
                         {
                             const uint32 m3hash = ranked_vector[i].second;
                             float rank(0.0f), coverage(0.0f);
@@ -692,7 +692,7 @@ struct CryptomatteAOV::Impl
         channel_names.push_back("G");
         channel_names.push_back("B");
 
-        const size_t exr_layer_count = truncate<size_t>(ceil(m_num_layers / 2.0));
+        const size_t exr_layer_count = truncate<size_t>(std::ceil(m_num_layers / 2.0));
         for (size_t i = 0; i < exr_layer_count; ++i)
         {
             const std::string layer_number = get_numbered_string("##", i);

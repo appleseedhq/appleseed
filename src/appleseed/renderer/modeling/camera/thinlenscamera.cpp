@@ -136,7 +136,7 @@ namespace
           , m_source(source)
           , m_width(width)
           , m_height(height)
-          , m_range(sqrt(1.0 + static_cast<double>(m_height * m_height) / (m_width * m_width)))
+          , m_range(std::sqrt(1.0 + static_cast<double>(m_height * m_height) / (m_width * m_width)))
         {
         }
 
@@ -391,7 +391,7 @@ namespace
 
             // Compute the emitted importance.
             const double square_dist_film_lens = square_norm(film_point);
-            const double dist_film_lens = sqrt(square_dist_film_lens);
+            const double dist_film_lens = std::sqrt(square_dist_film_lens);
             const double cos_theta = m_focal_length / dist_film_lens;
             const double solid_angle = m_pixel_area * cos_theta / square_dist_film_lens;
             importance = 1.0f / static_cast<float>(square_norm(outgoing) * solid_angle);

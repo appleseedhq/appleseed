@@ -554,7 +554,7 @@ void MainWindow::update_recent_files_menu(const QString& filepath)
 
 void MainWindow::update_recent_files_menu(const QStringList& files)
 {
-    const int recent_file_count = min(files.size(), MaxRecentlyOpenedFiles);
+    const int recent_file_count = std::min(files.size(), MaxRecentlyOpenedFiles);
 
     for (int i = 0; i < recent_file_count; ++i)
     {

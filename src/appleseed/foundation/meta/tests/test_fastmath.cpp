@@ -54,8 +54,8 @@ TEST_SUITE(Foundation_Math_FastMath)
     {
         return
             ref == T(0.0)
-                ? abs(value)
-                : abs((ref - value) / ref);
+                ? std::abs(value)
+                : std::abs((ref - value) / ref);
     }
 
     template <typename T, typename Function>
@@ -160,13 +160,13 @@ TEST_SUITE(Foundation_Math_FastMath)
 
     float scalar_std_pow2(const float x)
     {
-        return pow(2.0f, x);
+        return std::pow(2.0f, x);
     }
 
     void vector_std_pow2(float x[4])
     {
         for (size_t i = 0; i < 4; ++i)
-            x[i] = pow(2.0f, x[i]);
+            x[i] = std::pow(2.0f, x[i]);
     }
 
     TEST_CASE(ScalarFastPow2)
@@ -245,13 +245,13 @@ TEST_SUITE(Foundation_Math_FastMath)
 
     float scalar_std_log2(const float x)
     {
-        return log(x) / log(2.0f);
+        return std::log(x) / std::log(2.0f);
     }
 
     void vector_std_log2(float x[4])
     {
         for (size_t i = 0; i < 4; ++i)
-            x[i] = log(x[i]) / log(2.0f);
+            x[i] = std::log(x[i]) / std::log(2.0f);
     }
 
     TEST_CASE(ScalarFastLog2)
@@ -332,7 +332,7 @@ TEST_SUITE(Foundation_Math_FastMath)
 
     float scalar_std_pow(const float x)
     {
-        return pow(x, Exponent);
+        return std::pow(x, Exponent);
     }
 
     float scalar_fast_pow(const float x)
@@ -348,7 +348,7 @@ TEST_SUITE(Foundation_Math_FastMath)
     void vector_std_pow(float x[4])
     {
         for (size_t i = 0; i < 4; ++i)
-            x[i] = pow(x[i], Exponent);
+            x[i] = std::pow(x[i], Exponent);
     }
 
     void vector_fast_pow(float x[4])
@@ -438,7 +438,7 @@ TEST_SUITE(Foundation_Math_FastMath)
     void vector_std_log(float x[4])
     {
         for (size_t i = 0; i < 4; ++i)
-            x[i] = log(x[i]);
+            x[i] = std::log(x[i]);
     }
 
     TEST_CASE(ScalarFastLog)
@@ -518,7 +518,7 @@ TEST_SUITE(Foundation_Math_FastMath)
     void vector_std_exp(float x[4])
     {
         for (size_t i = 0; i < 4; ++i)
-            x[i] = exp(x[i]);
+            x[i] = std::exp(x[i]);
     }
 
     TEST_CASE(ScalarFastExp)
@@ -665,7 +665,7 @@ TEST_SUITE(Foundation_Math_FastMath)
 
     float rcp_sqrt(const float x)
     {
-        return 1.0f / sqrt(x);
+        return 1.0f / std::sqrt(x);
     }
 
     TEST_CASE(ScalarFastRcpSqrt)

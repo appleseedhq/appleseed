@@ -131,8 +131,8 @@ namespace
         const Vector3d d = incoming_point - outgoing_point;
         const float du = static_cast<float>(norm(project(d, basis.get_tangent_u())));
         const float dv = static_cast<float>(norm(project(d, basis.get_tangent_v())));
-        const float dot_un = static_cast<float>(abs(dot(basis.get_tangent_u(), incoming_normal)));
-        const float dot_vn = static_cast<float>(abs(dot(basis.get_tangent_v(), incoming_normal)));
+        const float dot_un = static_cast<float>(std::abs(dot(basis.get_tangent_u(), incoming_normal)));
+        const float dot_vn = static_cast<float>(std::abs(dot(basis.get_tangent_v(), incoming_normal)));
         const float pdf_u = bssrdf.evaluate_profile_pdf(bssrdf_data, du) * dot_un;
         const float pdf_v = bssrdf.evaluate_profile_pdf(bssrdf_data, dv) * dot_vn;
 
@@ -189,7 +189,7 @@ namespace
 
         // Compute the position of the point on the disk.
         const float phi = TwoPi<float>() * u[1];
-        const Vector2f disk_point(disk_radius * cos(phi), disk_radius * sin(phi));
+        const Vector2f disk_point(disk_radius * std::cos(phi), disk_radius * std::sin(phi));
         const float disk_point_prob = bssrdf.evaluate_profile_pdf(bssrdf_data, disk_radius);
         assert(disk_point_prob > 0.0f);
 
@@ -206,7 +206,7 @@ namespace
 
         // Compute the height of the point on the hemisphere above the sampling disk.
         assert(disk_radius <= max_disk_radius);
-        const float h = sqrt(square(max_disk_radius) - square(disk_radius));
+        const float h = std::sqrt(square(max_disk_radius) - square(disk_radius));
         const Vector3d hn = static_cast<double>(h) * projection_basis.get_normal();
 
         // Compute sphere entry and exit points.
@@ -272,7 +272,7 @@ namespace
 
             const float dot_nn =
                 static_cast<float>(
-                    abs(dot(projection_basis.get_normal(), incoming_point.get_shading_normal())));
+                    std::abs(dot(projection_basis.get_normal(), incoming_point.get_shading_normal())));
 
             if (same_material && same_sss_set && dot_nn > 1.0e-6f)
             {
@@ -312,7 +312,7 @@ namespace
         // Compute the PDF of this incoming point.
         const float dot_nn =
             static_cast<float>(
-                abs(dot(projection_basis.get_normal(), incoming_point.get_shading_normal())));
+                std::abs(dot(projection_basis.get_normal(), incoming_point.get_shading_normal())));
         incoming_point_prob = projection_axis_prob * disk_point_prob * dot_nn;
 
         // Weight the sample contribution with multiple importance sampling.
@@ -507,13 +507,13 @@ void SeparableBSSRDF::do_evaluate(
     {
         // Fresnel factor at outgoing direction.
         const Vector3f outgoing_normal(outgoing_point.get_shading_normal());
-        const float cos_on = min(abs(dot(outgoing_dir, outgoing_normal)), 1.0f);
+        const float cos_on = std::min(std::abs(dot(outgoing_dir, outgoing_normal)), 1.0f);
         fresnel_transmittance_dielectric(fo, values.m_eta, cos_on);
         fo = lerp(1.0f, fo, values.m_fresnel_weight);
 
         // Fresnel factor at incoming direction.
         const Vector3f incoming_normal(incoming_point.get_shading_normal());
-        const float cos_in = min(abs(dot(incoming_dir, incoming_normal)), 1.0f);
+        const float cos_in = std::min(std::abs(dot(incoming_dir, incoming_normal)), 1.0f);
         fresnel_transmittance_dielectric(fi, values.m_eta, cos_in);
         fi = lerp(1.0f, fi, values.m_fresnel_weight);
     }

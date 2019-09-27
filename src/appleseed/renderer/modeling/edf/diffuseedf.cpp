@@ -119,7 +119,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_radiance;
-            value *= values->m_radiance_multiplier * pow(2.0f, values->m_exposure);
+            value *= values->m_radiance_multiplier * std::pow(2.0f, values->m_exposure);
 
             probability = wo.y * RcpPi<float>();
             assert(probability > 0.0f);
@@ -146,7 +146,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_radiance;
-            value *= values->m_radiance_multiplier * pow(2.0f, values->m_exposure);
+            value *= values->m_radiance_multiplier * std::pow(2.0f, values->m_exposure);
         }
 
         void evaluate(
@@ -172,7 +172,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_radiance;
-            value *= values->m_radiance_multiplier * pow(2.0f, values->m_exposure);
+            value *= values->m_radiance_multiplier * std::pow(2.0f, values->m_exposure);
 
             probability = cos_on * RcpPi<float>();
             assert(probability > 0.0f);

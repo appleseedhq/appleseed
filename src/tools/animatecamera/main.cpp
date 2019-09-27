@@ -219,7 +219,7 @@ namespace
         {
             const size_t part_count = g_cl.m_part_count.value();
             const size_t frames_per_part =
-                static_cast<size_t>(ceil(static_cast<double>(frames.size()) / part_count));
+                static_cast<size_t>(std::ceil(static_cast<double>(frames.size()) / part_count));
 
             for (size_t part = 1, frame_begin = 0; frame_begin < frames.size(); ++part)
             {
@@ -477,7 +477,7 @@ namespace
             // Retrieve the scene's bounding box.
             const AABB3d scene_bbox(project->get_scene()->compute_bbox());
             const Vector3d extent = scene_bbox.extent();
-            const double max_radius = 0.5 * max(extent.x, extent.z);
+            const double max_radius = 0.5 * std::max(extent.x, extent.z);
             const double max_height = 0.5 * extent.y;
 
             // Precompute some stuff.
@@ -488,7 +488,7 @@ namespace
 
             // Compute the transform of the camera at the last frame.
             const double angle = -1.0 / frame_count * TwoPi<double>();
-            const Vector3d position(distance * cos(angle), elevation, distance * sin(angle));
+            const Vector3d position(distance * std::cos(angle), elevation, distance * std::sin(angle));
             Transformd previous_transform(
                 Transformd::from_local_to_parent(
                     Matrix4d::make_lookat(position, center, Up)));
@@ -497,7 +497,7 @@ namespace
             {
                 // Compute the transform of the camera at this frame.
                 const double angle = (i * TwoPi<double>()) / frame_count;
-                const Vector3d position(distance * cos(angle), elevation, distance * sin(angle));
+                const Vector3d position(distance * std::cos(angle), elevation, distance * std::sin(angle));
                 const Transformd new_transform(
                     Transformd::from_local_to_parent(
                         Matrix4d::make_lookat(position, center, Up)));

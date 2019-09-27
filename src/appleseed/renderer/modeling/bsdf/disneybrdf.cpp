@@ -128,7 +128,7 @@ namespace
                 value);
             value *= m_values.m_specular * 0.08f;
             mix_spectra(value, m_values.m_base_color, m_values.m_metallic, value);
-            const float cos_oh = abs(dot(o, h));
+            const float cos_oh = std::abs(dot(o, h));
             mix_spectra_with_one(value, schlick_fresnel(cos_oh), value);
         }
 
@@ -150,7 +150,7 @@ namespace
             const Vector3f& n,
             Spectrum&       value) const
         {
-            const float cos_oh = abs(dot(o, h));
+            const float cos_oh = std::abs(dot(o, h));
             value.set(mix(0.04f, 1.0f, schlick_fresnel(cos_oh)) * 0.25f * m_values.m_clearcoat);
         }
 
@@ -231,7 +231,7 @@ namespace
                 // Fss90 is used to "flatten" retroreflection based on roughness.
                 const float fss90 = square(cos_ih) * values->m_roughness;
                 const float fss = mix(1.0f, fss90, fl) * mix(1.0f, fss90, fv);
-                const float ss = 1.25f * (fss * (1.0f / (abs(cos_on) + abs(cos_in)) - 0.5f) + 0.5f);
+                const float ss = 1.25f * (fss * (1.0f / (std::abs(cos_on) + std::abs(cos_in)) - 0.5f) + 0.5f);
                 fd = mix(fd, ss, values->m_subsurface);
             }
 
@@ -239,7 +239,7 @@ namespace
             value *= fd * RcpPi<float>() * (1.0f - values->m_metallic);
 
             // Return the probability density of the sampled direction.
-            return abs(cos_in) * RcpPi<float>();
+            return std::abs(cos_in) * RcpPi<float>();
         }
 
         float evaluate_pdf(
@@ -247,7 +247,7 @@ namespace
             const Vector3f&                 incoming) const
         {
             const Vector3f& n = shading_basis.get_normal();
-            const float cos_in = abs(dot(incoming, n));
+            const float cos_in = std::abs(dot(incoming, n));
             return cos_in * RcpPi<float>();
         }
     };
@@ -390,7 +390,7 @@ namespace
         {
             InputValues* values = static_cast<InputValues*>(data);
 
-            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_min_roughness);
+            values->m_roughness = std::max(values->m_roughness, shading_point.get_ray().m_min_roughness);
 
             new (&values->m_precomputed) InputValues::Precomputed();
 

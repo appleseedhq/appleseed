@@ -136,10 +136,10 @@ TEST_SUITE(Foundation_Math_Microfacet)
         for (size_t i = 0; i < sample_count; ++i)
         {
             const float theta = radical_inverse_base2<float>(i) * HalfPi<float>();
-            const Vector3f h(0.0f, cos(theta), 0.0f);
+            const Vector3f h(0.0f, std::cos(theta), 0.0f);
             const float value = mdf.D(h, alpha, alpha);
 
-            integral += value * h.y * sin(theta);
+            integral += value * h.y * std::sin(theta);
         }
 
         integral *= HalfPi<float>() / sample_count;     // integration over theta
@@ -190,19 +190,19 @@ TEST_SUITE(Foundation_Math_Microfacet)
             result.m_min_G1 = std::min(result.m_min_G1, G1);
             result.m_max_G1 = std::max(result.m_max_G1, G1);
 
-            const float cos_thetha_o_4 = abs(4.0f * v.y);
+            const float cos_thetha_o_4 = std::abs(4.0f * v.y);
 
             float integral = 0.0f;
 
             for (float theta = 0.0f; theta < Pi<float>(); theta += angle_step)
             {
-                const float cos_theta = cos(theta);
-                const float sin_theta = sin(theta);
+                const float cos_theta = std::cos(theta);
+                const float sin_theta = std::sin(theta);
 
                 for (float phi = 0.0f; phi < TwoPi<float>(); phi += angle_step)
                 {
-                    const float cos_phi = cos(phi);
-                    const float sin_phi = sin(phi);
+                    const float cos_phi = std::cos(phi);
+                    const float sin_phi = std::sin(phi);
 
                     const Vector3f l =
                         Vector3f::make_unit_vector(

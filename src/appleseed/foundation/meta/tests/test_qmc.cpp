@@ -542,14 +542,14 @@ TEST_SUITE(Foundation_Math_QMC)
 
         for (size_t i = 0; i < SampleCount; ++i)
         {
-            rng_area += sin(rand_double2(rng) * Pi<double>());
-            qmc_area += sin(radical_inverse_base2<double>(i) * Pi<double>());
+            rng_area += std::sin(rand_double2(rng) * Pi<double>());
+            qmc_area += std::sin(radical_inverse_base2<double>(i) * Pi<double>());
 
             const double n = static_cast<double>(i + 1);
             const double v = Pi<double>() / n;
 
-            rng_rmsd[i] = Vector2d(n, abs(rng_area * v - ExactArea));
-            qmc_rmsd[i] = Vector2d(n, abs(qmc_area * v - ExactArea));
+            rng_rmsd[i] = Vector2d(n, std::abs(rng_area * v - ExactArea));
+            qmc_rmsd[i] = Vector2d(n, std::abs(qmc_area * v - ExactArea));
         }
 
         GnuplotFile plotfile;

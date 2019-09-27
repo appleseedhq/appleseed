@@ -143,8 +143,8 @@ void SphereObject::intersect(
         result.m_shading_normal = n;
 
         const Vector3f p(ray.point_at(result.m_distance) * impl->m_rcp_radius);
-        result.m_uv[0] = atan2(-p.z, p.x) * RcpTwoPi<float>();
-        result.m_uv[1] = 1.0f - (acos(p.y) * RcpPi<float>());
+        result.m_uv[0] = std::atan2(-p.z, p.x) * RcpTwoPi<float>();
+        result.m_uv[1] = 1.0f - (std::acos(p.y) * RcpPi<float>());
 
         result.m_material_slot = 0;
     }

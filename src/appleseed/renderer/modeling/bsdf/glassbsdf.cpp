@@ -101,13 +101,13 @@ namespace
             return 1.0f;
         }
 
-        cos_theta_t = min(sqrt(max(1.0f - sin_theta_t2, 0.0f)), 1.0f);
+        cos_theta_t = std::min(std::sqrt(std::max(1.0f - sin_theta_t2, 0.0f)), 1.0f);
 
         float F;
         fresnel_reflectance_dielectric(
             F,
             eta,
-            abs(cos_theta_i),
+            std::abs(cos_theta_i),
             cos_theta_t);
 
         return F;
@@ -223,7 +223,7 @@ namespace
 
             new (&values->m_precomputed) InputValues::Precomputed();
 
-            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_min_roughness);
+            values->m_roughness = std::max(values->m_roughness, shading_point.get_ray().m_min_roughness);
 
             if (shading_point.is_entering())
             {
@@ -247,8 +247,8 @@ namespace
             values->m_precomputed.m_refraction_color  = sqrt(values->m_precomputed.m_refraction_color);
 
             // Weights used when choosing reflection or refraction.
-            values->m_precomputed.m_reflection_weight = max(max_value(values->m_precomputed.m_reflection_color), 0.0f);
-            values->m_precomputed.m_refraction_weight = max(max_value(values->m_precomputed.m_refraction_color), 0.0f);
+            values->m_precomputed.m_reflection_weight = std::max(max_value(values->m_precomputed.m_reflection_color), 0.0f);
+            values->m_precomputed.m_refraction_weight = std::max(max_value(values->m_precomputed.m_refraction_color), 0.0f);
         }
 
         void sample(
@@ -604,8 +604,8 @@ namespace
                     const float d = distance / values->m_volume_transmittance_distance;
                     for (size_t i = 0, e = Spectrum::size(); i < e; ++i)
                     {
-                        const float a = log(max(values->m_volume_transmittance[i], 0.01f));
-                        absorption[i] = exp(a * d);
+                        const float a = std::log(std::max(values->m_volume_transmittance[i], 0.01f));
+                        absorption[i] = std::exp(a * d);
                     }
                 }
             }
@@ -624,7 +624,7 @@ namespace
 
                     const float a = values->m_volume_absorption[i];
                     const float optical_depth = a * d;
-                    absorption[i] = exp(-optical_depth);
+                    absorption[i] = std::exp(-optical_depth);
                 }
             }
         }
@@ -669,7 +669,7 @@ namespace
             Spectrum&                   value)
         {
             // [1] eq. 20.
-            const float denom = abs(4.0f * wo.y * wi.y);
+            const float denom = std::abs(4.0f * wo.y * wi.y);
             if (denom == 0.0f)
             {
                 value.set(0.0f);
@@ -694,7 +694,7 @@ namespace
             if (cos_oh == 0.0f)
                 return 0.0f;
 
-            const float jacobian = 1.0f / (4.0f * abs(cos_oh));
+            const float jacobian = 1.0f / (4.0f * std::abs(cos_oh));
             return jacobian * GGXMDF::pdf(wo, m, alpha_x, alpha_y);
         }
 
@@ -732,7 +732,7 @@ namespace
             const float dots = (cos_ih * cos_oh) / (wi.y * wo.y);
 
             const float sqrt_denom = cos_oh + eta * cos_ih;
-            if (abs(sqrt_denom) < 1.0e-6f)
+            if (std::abs(sqrt_denom) < 1.0e-6f)
             {
                 value.set(0.0f);
                 return;
@@ -741,7 +741,7 @@ namespace
             const float D = GGXMDF::D(m, alpha_x, alpha_y);
             const float G = GGXMDF::G(wi, wo, m, alpha_x, alpha_y);
 
-            float multiplier = abs(dots) * T * D * G / square(sqrt_denom);
+            float multiplier = std::abs(dots) * T * D * G / square(sqrt_denom);
 
             if (!adjoint)
                 multiplier *= square(eta);
@@ -763,10 +763,10 @@ namespace
             const float cos_oh = dot(m, wo);
 
             const float sqrt_denom = cos_oh + eta * cos_ih;
-            if (abs(sqrt_denom) < 1.0e-6f)
+            if (std::abs(sqrt_denom) < 1.0e-6f)
                 return 0.0f;
 
-            const float jacobian = abs(cos_ih) * square(eta / sqrt_denom);
+            const float jacobian = std::abs(cos_ih) * square(eta / sqrt_denom);
             return jacobian * GGXMDF::pdf(wo, m, alpha_x, alpha_y);
         }
     };
@@ -795,7 +795,7 @@ namespace
                 for (size_t y = 0; y < TableSize; ++y)
                 {
                     const float roughness = static_cast<float>(y) / (TableSize - 1);
-                    const float alpha = max(square(roughness), 0.001f);
+                    const float alpha = std::max(square(roughness), 0.001f);
 
                     for (size_t x = 0; x < TableSize; ++x)
                     {
@@ -879,7 +879,7 @@ namespace
                 }
             }
 
-            return min(R / static_cast<float>(SampleCount), 1.0f);
+            return std::min(R / static_cast<float>(SampleCount), 1.0f);
         }
     };
 

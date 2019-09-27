@@ -462,7 +462,7 @@ namespace
                     // Limit display rate.
                     if (elapsed < m_target_elapsed)
                     {
-                        const double ms = ceil(1000.0 * (m_target_elapsed - elapsed));
+                        const double ms = std::ceil(1000.0 * (m_target_elapsed - elapsed));
                         sleep(truncate<uint32>(ms), m_abort_switch);
                     }
                 }
@@ -665,7 +665,7 @@ namespace
 
                     if (m_ref_image)
                     {
-                        const double avg_lum_delta = abs(m_ref_image_avg_lum - avg_lum);
+                        const double avg_lum_delta = std::abs(m_ref_image_avg_lum - avg_lum);
                         output += " (";
                         output += pretty_percent(avg_lum_delta, m_ref_image_avg_lum, 3);
                         output += " error)";

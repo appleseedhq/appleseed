@@ -224,7 +224,7 @@ namespace
             // Compute the emitted importance.
             const Vector3d film_point = ndc_to_camera(ndc);
             const double square_dist_film_lens = square_norm(film_point);
-            const double dist_film_lens = sqrt(square_dist_film_lens);
+            const double dist_film_lens = std::sqrt(square_dist_film_lens);
             const double cos_theta = m_focal_length / dist_film_lens;
             const double solid_angle = m_pixel_area * cos_theta / square_dist_film_lens;
             importance = 1.0f / static_cast<float>(square_norm(outgoing) * solid_angle);
@@ -284,7 +284,7 @@ namespace
             const double x = (0.5 - point.x) * m_film_dimensions[0];
             const double y = (point.y - 0.5) * m_film_dimensions[1];
 
-            const double radius_1 = sqrt(x * x + y * y);
+            const double radius_1 = std::sqrt(x * x + y * y);
             const double rcp_radius_1 = 1.0 / radius_1;
 
             const double tan_theta_1 = radius_1 / m_focal_length;
@@ -293,7 +293,7 @@ namespace
             switch (m_projection_type) 
             {
               case Projection::EquisolidAngle:
-                theta_2 = 2.0 * asin(tan_theta_1 * 0.5);
+                theta_2 = 2.0 * std::asin(tan_theta_1 * 0.5);
                 break;
                 
               case Projection::Equidistant:
@@ -301,18 +301,18 @@ namespace
                 break;
 
               case Projection::Stereographic:
-                theta_2 = 2.0 * atan(tan_theta_1 * 0.5);
+                theta_2 = 2.0 * std::atan(tan_theta_1 * 0.5);
                 break;
 
               case Projection::Thoby:
-                theta_2 = asin(tan_theta_1 * 0.68027) * 1.40252;
+                theta_2 = std::asin(tan_theta_1 * 0.68027) * 1.40252;
                 break;
 
               default:
                 assert(false);
             }
 
-            const double radius_diff = tan(theta_2) * m_focal_length - radius_1;
+            const double radius_diff = std::tan(theta_2) * m_focal_length - radius_1;
 
             return
                 Vector3d(
@@ -329,16 +329,16 @@ namespace
             const double x = 0.5 - (point.x * k * m_rcp_film_width);
             const double y = 0.5 + (point.y * k * m_rcp_film_height);
             
-            const double radius_2 = sqrt(x * x + y * y);
+            const double radius_2 = std::sqrt(x * x + y * y);
             const double rcp_radius_2 = 1.0 / radius_2;
             
-            const double theta_2 = atan(radius_2 / m_focal_length);
+            const double theta_2 = std::atan(radius_2 / m_focal_length);
             double tan_theta_1 = 0.0;
 
             switch (m_projection_type) 
             {
               case Projection::EquisolidAngle:
-                tan_theta_1 = 2.0 * sin(theta_2 * 0.5);
+                tan_theta_1 = 2.0 * std::sin(theta_2 * 0.5);
                 break;
                 
               case Projection::Equidistant:
@@ -346,11 +346,11 @@ namespace
                 break;
 
               case Projection::Stereographic:
-                tan_theta_1 = 2.0 * tan(theta_2 * 0.5);
+                tan_theta_1 = 2.0 * std::tan(theta_2 * 0.5);
                 break;
 
               case Projection::Thoby:
-                tan_theta_1 = 1.47 * sin(0.713 * theta_2);
+                tan_theta_1 = 1.47 * std::sin(0.713 * theta_2);
                 break;
 
               default:

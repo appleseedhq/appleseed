@@ -230,7 +230,7 @@ void TextureStore::TileSwapper::load(const TileKey& key, TileRecord& record)
 
     // Track the amount of memory used by the tile cache.
     m_memory_size += record.m_tile->get_memory_size();
-    m_peak_memory_size = max(m_peak_memory_size, m_memory_size);
+    m_peak_memory_size = std::max(m_peak_memory_size, m_memory_size);
 
     if (m_params.m_track_store_size)
     {

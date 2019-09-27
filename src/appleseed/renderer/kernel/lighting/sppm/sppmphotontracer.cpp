@@ -889,7 +889,7 @@ void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
     for (size_t i = 0; i < m_params.m_light_photon_count; i += m_params.m_photon_packet_size)
     {
         const size_t photon_begin = i;
-        const size_t photon_end = min(i + m_params.m_photon_packet_size, m_params.m_light_photon_count);
+        const size_t photon_end = std::min(i + m_params.m_photon_packet_size, m_params.m_light_photon_count);
 
         job_queue.schedule(
             new LightPhotonTracingJob(
@@ -929,7 +929,7 @@ void SPPMPhotonTracer::schedule_environment_photon_tracing_jobs(
     for (size_t i = 0; i < m_params.m_env_photon_count; i += m_params.m_photon_packet_size)
     {
         const size_t photon_begin = i;
-        const size_t photon_end = min(i + m_params.m_photon_packet_size, m_params.m_env_photon_count);
+        const size_t photon_end = std::min(i + m_params.m_photon_packet_size, m_params.m_env_photon_count);
 
         job_queue.schedule(
             new EnvironmentPhotonTracingJob(

@@ -173,7 +173,7 @@ namespace
                 value.m_beauty = value.m_diffuse;
 
                 // Return the probability density of the sampled direction.
-                return abs(cos_in) * RcpPi<float>();
+                return std::abs(cos_in) * RcpPi<float>();
             }
             else
             {
@@ -199,7 +199,7 @@ namespace
             const float cos_on = dot(outgoing, n);
 
             if (cos_in * cos_on < 0.0f)
-                return abs(cos_in) * RcpPi<float>();
+                return std::abs(cos_in) * RcpPi<float>();
             else
             {
                 // No transmission in the same hemisphere as outgoing.

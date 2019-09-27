@@ -177,7 +177,7 @@ float EDF::get_max_contribution(
     if (max_contribution_exposure == std::numeric_limits<float>::max())
         return std::numeric_limits<float>::max();
 
-    return max_contribution_input * max_contribution_multiplier * pow(2.0f, max_contribution_exposure);
+    return max_contribution_input * max_contribution_multiplier * std::pow(2.0f, max_contribution_exposure);
 }
 
 float EDF::get_max_contribution(

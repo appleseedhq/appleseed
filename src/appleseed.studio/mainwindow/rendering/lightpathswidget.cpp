@@ -623,7 +623,7 @@ void LightPathsWidget::initializeGL()
 
     const auto& rc = m_camera.get_rasterization_camera();
 
-    const float fy = tan(rc.m_hfov / rc.m_aspect_ratio * 0.5) * z_near;
+    const float fy = std::tan(rc.m_hfov / rc.m_aspect_ratio * 0.5) * z_near;
     const float fx = fy * rc.m_aspect_ratio;
 
     const float shift_x = rc.m_shift_x * 2.0 * fx;

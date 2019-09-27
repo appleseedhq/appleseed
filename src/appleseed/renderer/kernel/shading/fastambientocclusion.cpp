@@ -337,7 +337,7 @@ double compute_fast_ambient_occlusion(
         if (intersector.trace(ray, true, distance))
         {
             ++occluded_samples;
-            min_distance = min(min_distance, distance);
+            min_distance = std::min(min_distance, distance);
         }
     }
 

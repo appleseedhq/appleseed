@@ -275,14 +275,14 @@ namespace
         {
             const float clamped_turbidity = clamp(turbidity, 1.0f, 10.0f) - 1.0f;
             const size_t turbidity_low = truncate<size_t>(clamped_turbidity);
-            const size_t turbidity_high = min(turbidity_low + 1, size_t(9));
+            const size_t turbidity_high = std::min(turbidity_low + 1, size_t(9));
             const float turbidity_interp = clamped_turbidity - turbidity_low;
 
             // Compute solar elevation.
             const float eta = HalfPi<float>() - sun_theta;
 
             // Transform solar elevation to [0, 1] with more samples for low elevations.
-            const float x1 = pow(eta * RcpHalfPi<float>(), (1.0f / 3.0f));
+            const float x1 = std::pow(eta * RcpHalfPi<float>(), (1.0f / 3.0f));
             const float y1 = 1.0f - x1;
 
             // Compute the square and cube of x1 and (1 - x1).
@@ -357,7 +357,7 @@ namespace
             const float             cos_alpha)
         {
             const float k = 1.0f + g * g - 2.0f * g * cos_alpha;
-            return (1.0f + cos_alpha * cos_alpha) / sqrt(k * k * k);
+            return (1.0f + cos_alpha * cos_alpha) / std::sqrt(k * k * k);
         }
 
         // Extended Perez formula.
@@ -369,9 +369,9 @@ namespace
             const float             coeffs[9])
         {
             // There is an error in the paper, coeffs[7] (H) and coeffs[8] (I) are reversed.
-            const float u = 1.0f + coeffs[0] * exp(coeffs[1] / (cos_theta + 0.01f));
+            const float u = 1.0f + coeffs[0] * std::exp(coeffs[1] / (cos_theta + 0.01f));
             const float v =   coeffs[2]
-                            + coeffs[3] * exp(coeffs[4] * gamma)
+                            + coeffs[3] * std::exp(coeffs[4] * gamma)
                             + coeffs[5] * cos_gamma * cos_gamma
                             + coeffs[6] * chi(coeffs[8], cos_gamma)
                             + coeffs[7] * sqrt_cos_theta;
@@ -390,9 +390,9 @@ namespace
                 return;
             }
 
-            const float sqrt_cos_theta = sqrt(outgoing.y);
+            const float sqrt_cos_theta = std::sqrt(outgoing.y);
             const float cos_gamma = dot(outgoing, m_sun_dir);
-            const float gamma = acos(cos_gamma);
+            const float gamma = std::acos(cos_gamma);
 
             Color3f ciexyz;
 

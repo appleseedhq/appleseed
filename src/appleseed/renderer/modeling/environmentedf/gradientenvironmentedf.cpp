@@ -185,7 +185,7 @@ namespace
         void compute_gradient(const float y, Spectrum& output) const
         {
             // Compute the blending factor between the horizon and zenith colors.
-            const float angle = acos(abs(y));
+            const float angle = std::acos(std::abs(y));
             const float blend = angle * (1.0f / HalfPi<float>());
 
             // Blend the horizon and zenith radiances.

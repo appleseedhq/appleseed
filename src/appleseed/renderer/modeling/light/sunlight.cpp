@@ -148,7 +148,7 @@ namespace
 
             // Compute the Sun's solid angle.
             // Reference: https://en.wikipedia.org/wiki/Solid_angle#Sun_and_Moon
-            m_sun_solid_angle = TwoPi<float>() * (1.0f - cos(atan(SunRadius / m_values.m_distance)));
+            m_sun_solid_angle = TwoPi<float>() * (1.0f - std::cos(std::atan(SunRadius / m_values.m_distance)));
 
             // If the Sun light is bound to an environment EDF, let it override the Sun's direction and turbidity.
             const EnvironmentEDF* env_edf = dynamic_cast<EnvironmentEDF*>(m_inputs.get_entity("environment_edf"));
@@ -323,12 +323,12 @@ namespace
         void precompute_constants()
         {
             for (size_t i = 0; i < 31; ++i)
-                m_k1[i] = -0.008735f * pow(g_light_wavelengths_um[i], -4.08f);
+                m_k1[i] = -0.008735f * std::pow(g_light_wavelengths_um[i], -4.08f);
 
             const float Alpha = 1.3f;               // ratio of small to large particle sizes (0 to 4, typically 1.3)
 
             for (size_t i = 0; i < 31; ++i)
-                m_k2[i] = pow(g_light_wavelengths_um[i], -Alpha);
+                m_k2[i] = std::pow(g_light_wavelengths_um[i], -Alpha);
         }
 
         void compute_sun_radiance(
@@ -339,25 +339,25 @@ namespace
         {
             // Compute the relative optical mass.
             const float cos_theta = -static_cast<float>(outgoing.y);
-            const float theta = acos(cos_theta);
+            const float theta = std::acos(cos_theta);
             const float theta_delta = 93.885f - rad_to_deg(theta);
             if (theta_delta < 0.0f)
             {
                 radiance.set(0.0f);
                 return;
             }
-            const float m = 1.0f / (cos_theta + 0.15f * pow(theta_delta, -1.253f));
+            const float m = 1.0f / (cos_theta + 0.15f * std::pow(theta_delta, -1.253f));
 
             // Compute transmittance due to Rayleigh scattering.
             RegularSpectrum31f tau_r;
             for (size_t i = 0; i < 31; ++i)
-                tau_r[i] = exp(m * m_k1[i]);
+                tau_r[i] = std::exp(m * m_k1[i]);
 
             // Compute transmittance due to aerosols.
             const float beta = 0.04608f * turbidity - 0.04586f;
             RegularSpectrum31f tau_a;
             for (size_t i = 0; i < 31; ++i)
-                tau_a[i] = exp(-beta * m * m_k2[i]);
+                tau_a[i] = std::exp(-beta * m * m_k2[i]);
 
             // Compute transmittance due to ozone absorption.
             const float L = 0.35f;                  // amount of ozone in cm
@@ -374,7 +374,7 @@ namespace
             };
             RegularSpectrum31f tau_o;
             for (size_t i = 0; i < 31; ++i)
-                tau_o[i] = exp(-Ko[i] * L * m);
+                tau_o[i] = std::exp(-Ko[i] * L * m);
 
 #ifdef COMPUTE_REDUNDANT
             // Compute transmittance due to mixed gases absorption.
@@ -392,7 +392,7 @@ namespace
             };
             RegularSpectrum31f tau_g;
             for (size_t i = 0; i < 31; ++i)
-                tau_g[i] = exp(-1.41f * Kg[i] * m / pow(1.0f + 118.93f * Kg[i] * m, 0.45f));
+                tau_g[i] = std::exp(-1.41f * Kg[i] * m / std::pow(1.0f + 118.93f * Kg[i] * m, 0.45f));
 #endif
 
             // Compute transmittance due to water vapor absorption.
@@ -410,7 +410,7 @@ namespace
             };
             RegularSpectrum31f tau_wa;
             for (size_t i = 0; i < 31; ++i)
-                tau_wa[i] = exp(-0.2385f * Kwa[i] * W * m / pow(1.0f + 20.07f * Kwa[i] * W * m, 0.45f));
+                tau_wa[i] = std::exp(-0.2385f * Kwa[i] * W * m / std::pow(1.0f + 20.07f * Kwa[i] * W * m, 0.45f));
 
             // Sun radiance in W.m^-2.sr^-1.um^-1.
             // The units in the paper are W.cm^-2.sr^-1.um^-1. We must multiply the values

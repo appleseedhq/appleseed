@@ -164,10 +164,10 @@ namespace
                 float value = m_accum[c];
 
                 // Clamp to 0.
-                value = max(value, 0.0f);
+                value = std::max(value, 0.0f);
 
                 // Exponential scaling.
-                if (m_gamma > 1.0f) value = pow(value, m_rcp_gamma);
+                if (m_gamma > 1.0f) value = std::pow(value, m_rcp_gamma);
 
                 // Normalize to the maximum value.
                 if (m_max_value > 0.0f)
@@ -176,7 +176,7 @@ namespace
                 // Used for determining the weight to give to the sample
                 // in the highest two bins, when the sample is saturated.
                 const float sature_level_gamma = 2.0f;
-                value = min(value, sature_level_gamma);
+                value = std::min(value, sature_level_gamma);
 
                 const float bin_float_index = value * (m_num_bins - 2);
 

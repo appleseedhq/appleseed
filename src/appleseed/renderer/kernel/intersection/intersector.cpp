@@ -108,9 +108,9 @@ void Intersector::fixed_offset(
     // Check which components of p are close to the origin.
     const bool is_small[3] =
     {
-        abs(p[0]) < Threshold,
-        abs(p[1]) < Threshold,
-        abs(p[2]) < Threshold
+        std::abs(p[0]) < Threshold,
+        std::abs(p[1]) < Threshold,
+        std::abs(p[2]) < Threshold
     };
 
     // If any of the components of p is close to the origin, we need to normalize n.
@@ -150,7 +150,7 @@ namespace
 
         for (size_t i = 0; i < 3; ++i)
         {
-            if (abs(p[i]) < Threshold)
+            if (std::abs(p[i]) < Threshold)
                 result[i] = p[i] + n[i] * Threshold;
             else
             {

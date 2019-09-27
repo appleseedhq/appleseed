@@ -1011,7 +1011,7 @@ inline std::string pretty_uint(const uint64 value)
 
 inline std::string pretty_int(const int64 value)
 {
-    const std::string result = pretty_uint(abs(value));
+    const std::string result = pretty_uint(std::abs(value));
     return value < 0 ? '-' + result : result;
 }
 

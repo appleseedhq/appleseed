@@ -101,9 +101,9 @@ uint64 SampleGeneratorJob::samples_to_samples_per_job(const uint64 samples)
         return SamplesPerJobInLinearPhase;
 
     const double x = (samples - SamplesInLinearPhase) * 0.001;
-    const uint64 y = SamplesPerJobInLinearPhase + truncate<uint64>(pow(x, CurveExponentInExponentialPhase));
+    const uint64 y = SamplesPerJobInLinearPhase + truncate<uint64>(std::pow(x, CurveExponentInExponentialPhase));
 
-    return min(y, MaxSamplesPerJobInExponentialPhase);
+    return std::min(y, MaxSamplesPerJobInExponentialPhase);
 }
 
 void SampleGeneratorJob::execute(const size_t thread_index)

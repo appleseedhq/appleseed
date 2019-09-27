@@ -81,8 +81,8 @@ Basis3d BumpMappingModifier::modify(
 #ifdef USE_SCREEN_SPACE_UV_DERIVATIVES
     const Vector2f& duvdx = shading_point.get_duvdx(UVSet);
     const Vector2f& duvdy = shading_point.get_duvdy(UVSet);
-    const float delta_u = 0.5f * (abs(duvdx[0]) + abs(duvdy[0]));
-    const float delta_v = 0.5f * (abs(duvdx[1]) + abs(duvdy[1]));
+    const float delta_u = 0.5f * (std::abs(duvdx[0]) + std::abs(duvdy[0]));
+    const float delta_v = 0.5f * (std::abs(duvdx[1]) + std::abs(duvdy[1]));
 #else
     const float delta_u = m_delta_u;
     const float delta_v = m_delta_v;

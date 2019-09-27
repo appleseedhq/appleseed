@@ -147,7 +147,7 @@ size_t get_rendering_thread_count(const ParamArray& params)
         if (num_threads < 0)
         {
             // If num_threads is negative, use all cores except -num_threads.
-            thread_count = max(static_cast<int>(core_count) + num_threads, 1);
+            thread_count = std::max(static_cast<int>(core_count) + num_threads, 1);
         }
         else
             thread_count = num_threads;

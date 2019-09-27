@@ -87,7 +87,7 @@ TEST_SUITE(ImageTools)
         Color<T, N> result;
 
         for (size_t i = 0; i < N; ++i)
-            result[i] = abs(lhs[i] - rhs[i]);
+            result[i] = std::abs(lhs[i] - rhs[i]);
 
         return result;
     }
@@ -340,10 +340,10 @@ TEST_SUITE(ImageTools)
                     if (c < 3)  // skip the alpha channel
                     {
                         // Apply gamma correction.
-                        val = pow(val, 1.0f / GammaCorrection);
+                        val = std::pow(val, 1.0f / GammaCorrection);
 
                         // Slightly brighten dark areas.
-                        val += DarksBoost * (1.0f - pow(val, 1.0f / DarksGammaCorrection));
+                        val += DarksBoost * (1.0f - std::pow(val, 1.0f / DarksGammaCorrection));
 
                         // Apply dithering.
                         const float NormalizedDitherAmp = 0.5f * DitherAmplitude / 256.0f;
@@ -354,7 +354,7 @@ TEST_SUITE(ImageTools)
                     }
 
                     // Convert to 8-bit integer.
-                    val = min(val * 256.0f, 255.0f);
+                    val = std::min(val * 256.0f, 255.0f);
                     output_color[c] = truncate<uint8>(val);
                 }
 
@@ -418,10 +418,10 @@ TEST_SUITE(ImageTools)
             {
                 const float fx = fit<size_t, float>(x, 0, ImageSize - 1, -1.0f, +1.0f);
                 const float fy = fit<size_t, float>(y, 0, ImageSize - 1, -1.0f, +1.0f);
-                const float dist = sqrt(fx * fx + fy * fy);
+                const float dist = std::sqrt(fx * fx + fy * fy);
                 const float height =
                     dist < 0.5f
-                        ? 0.5f + sqrt(1.0f - square(dist / 0.5f)) / 2.0f
+                        ? 0.5f + std::sqrt(1.0f - square(dist / 0.5f)) / 2.0f
                         : 0.5f;
                 const Color4f color(height, height, height, 1.0f);
                 image.set_pixel(x, y, color);
@@ -454,7 +454,7 @@ TEST_SUITE(ImageTools)
             for (size_t x = 0; x < ImageSize; ++x)
             {
                 const float fx = fit<size_t, float>(x, 0, ImageSize - 1, -1.0f, +1.0f);
-                const float height = 0.5f + 0.5f * cos(fx * TwoPi<float>());
+                const float height = 0.5f + 0.5f * std::cos(fx * TwoPi<float>());
                 const Color4f color(height, height, height, 1.0f);
                 image.set_pixel(x, y, color);
             }

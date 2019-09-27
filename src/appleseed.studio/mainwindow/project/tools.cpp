@@ -271,7 +271,7 @@ LineEditDoubleSliderAdaptor::LineEditDoubleSliderAdaptor(
 void LineEditDoubleSliderAdaptor::slot_set_line_edit_value(const double value)
 {
     // Format integer values such as 2 as "2.0" instead of "2".
-    const bool is_integer = floor(value) == value;
+    const bool is_integer = std::floor(value) == value;
     const QString format_string = is_integer ? "%1.0" : "%1";
     const QString new_line_edit_value = format_string.arg(value);
 
@@ -309,7 +309,7 @@ void LineEditDoubleSliderAdaptor::slot_apply_line_edit_value()
     // or if a value of a significantly smaller magnitude was entered.
     if (new_value < m_slider->minimum() ||
         new_value > m_slider->maximum() ||
-        abs(new_value) < (m_slider->maximum() - m_slider->minimum()) / 3.0)
+        std::abs(new_value) < (m_slider->maximum() - m_slider->minimum()) / 3.0)
         adjust_slider(new_value);
 
     m_slider->setValue(new_value);
@@ -323,8 +323,8 @@ void LineEditDoubleSliderAdaptor::slot_apply_line_edit_value()
 
 void LineEditDoubleSliderAdaptor::adjust_slider(const double new_value)
 {
-    const double new_min = new_value >= 0.0 ? 0.0 : -2.0 * abs(new_value);
-    const double new_max = new_value == 0.0 ? 1.0 : +2.0 * abs(new_value);
+    const double new_min = new_value >= 0.0 ? 0.0 : -2.0 * std::abs(new_value);
+    const double new_max = new_value == 0.0 ? 1.0 : +2.0 * std::abs(new_value);
     m_slider->setRange(new_min, new_max);
     m_slider->setPageStep((new_max - new_min) / 10.0);
 }
