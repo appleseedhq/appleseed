@@ -156,12 +156,37 @@ GuidedBounceMode get_guided_bounce_mode(const ParamArray& params)
 	}
 }
 
+SaveMode get_save_mode(const ParamArray& params)
+{
+	const std::string name = params.get_required<std::string>("save_tree_iterations", "none");
+
+	if (name == "none")
+	{
+		return SaveMode::None;
+	}
+	else if (name == "all")
+	{
+		return SaveMode::All;
+	}
+	else if (name == "final")
+	{
+		return SaveMode::Final;
+	}
+	else
+	{
+		RENDERER_LOG_WARNING("Unknown parameter for save mode");
+		return SaveMode::None;
+	}
+}
+
 GPTParameters::GPTParameters(const ParamArray& params)
   : m_samples_per_pass(params.get_optional<int>("samples_per_pass", 4))
   , m_fixed_bsdf_sampling_fraction(params.get_optional<float>("fixed_bsdf_sampling_fraction_value", 0.5f))
   , m_learning_rate(params.get_optional<float>("learning_rate", 0.01f))
   , m_bsdf_sampling_fraction_mode(get_bsdf_sampling_fraction_mode(params))
   , m_guided_bounce_mode(get_guided_bounce_mode(params))
+  , m_save_mode(get_save_mode(params))
+  , m_save_path(params.get_optional<std::string>("file_path", "none"))
   , m_directional_filter(get_directional_filter(params))
   , m_spatial_filter(get_spatial_filter(params))
   , m_iteration_progression(get_iteration_progression(params))
@@ -299,6 +324,26 @@ void GPTParameters::print() const
 		break;
 	}
 
+	std::string save_mode_string;
+
+	switch (m_save_mode)
+	{
+	case SaveMode::None:
+		save_mode_string = "None";
+		break;
+
+	case SaveMode::All:
+		save_mode_string = "All";
+		break;
+
+	case SaveMode::Final:
+		save_mode_string = "Final";
+		break;
+	
+	default:
+		break;
+	}
+
     RENDERER_LOG_INFO(
         "guided path tracer settings:\n"
         "  samples per pass              %s\n"
@@ -307,6 +352,8 @@ void GPTParameters::print() const
         "  spatial filter                %s\n"
         "  directional filter            %s\n"
         "  guided bounce mode            %s\n"
+        "  save iterations	             %s\n"
+        "  save path		             %s\n"
         "  direct lighting               %s\n"
         "  ibl                           %s\n"
         "  caustics                      %s\n"
@@ -331,6 +378,8 @@ void GPTParameters::print() const
         spatial_filter_string.c_str(),
         directional_filter_string.c_str(),
         bounce_mode_string.c_str(),
+        save_mode_string.c_str(),
+        m_save_path.c_str(),
         m_enable_dl ? "on" : "off",
         m_enable_ibl ? "on" : "off",
         m_enable_caustics ? "on" : "off",

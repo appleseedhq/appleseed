@@ -104,6 +104,21 @@ void GPTPassCallback::on_pass_begin(
         // Clear the frame and build the tree.
         m_framebuffer->clear();
         m_sd_tree->build(m_iter);
+
+        switch (m_params.m_save_mode)
+        {
+        case SaveMode::All:
+            m_sd_tree->write_to_disk(m_iter, true);
+            break;
+
+        case SaveMode::Final:
+            if(m_is_final_iter)
+                m_sd_tree->write_to_disk(m_iter, false);
+            break;
+        
+        default:
+            break;
+        }
     }
 
     ++m_iter;

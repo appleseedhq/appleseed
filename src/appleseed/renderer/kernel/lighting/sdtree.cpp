@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
+#include "renderer/modeling/camera/camera.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
@@ -40,6 +41,8 @@
 // Standard headers.
 #include <algorithm>
 #include <cmath>
+#include <iomanip>
+#include <sstream>
 
 using namespace foundation;
 
@@ -63,6 +66,8 @@ const float Beta2 = 0.999f;
 const float OptimizationEpsilon = 1e-8f;
 const float Regularization = 0.01f;
 
+// Helper functions.
+
 void atomic_add(
     std::atomic<float>&                 atomic,
     const float                         value)
@@ -72,31 +77,41 @@ void atomic_add(
         ;
 }
 
-// Helper functions.
-
 inline float logistic(float x)
 {
     return 1.0f / (1.0f + std::exp(-x));
 }
 
-Vector3f cylindrical_to_cartesian(
-    const Vector2f&                     cylindrical_direction)
-{
-    // We can reuse the uniform sphere sampling procedure to convert from cylindrical directions.
-    return sample_sphere_uniform(cylindrical_direction);
-}
-
 Vector2f cartesian_to_cylindrical(
     const Vector3f&                     direction)
 {
-    const float cosTheta = direction.y;
-    float phi = std::atan2(direction.z, direction.x);
+    const float cos_theta = direction.z;
+    float phi = std::atan2(direction.y, direction.x);
 
     if (phi < 0.0f)
         phi += TwoPi<float>();
 
-    // D-tree directions are stored as 2D [phi, cos(theta)] coordinates to preserve area.
-    return Vector2f(phi * RcpTwoPi<float>(), 1.0f - 0.5f * (cosTheta + 1.0f));
+    // D-tree directions are stored as 2D [cos(theta), phi] coordinates to preserve area.
+    // Theta is the angle with z-Axis to ensure compatibility with SD-tree visualizer [Müller et.al. 2017]
+    return Vector2f(
+        (cos_theta + 1.0f) * 0.5f,
+        phi * RcpTwoPi<float>());
+}
+
+Vector3f cylindrical_to_cartesian(
+    const Vector2f&                     cylindrical_direction)
+{
+    assert(cylindrical_direction[0] >= 0.0f && cylindrical_direction[0] < 1.0f);
+    assert(cylindrical_direction[1] >= 0.0f && cylindrical_direction[1] < 1.0f);
+
+    const float phi = TwoPi<float>() * cylindrical_direction[1];
+    const float cos_theta = 2.0f * cylindrical_direction[0] - 1.0f;
+    const float sin_theta = std::sqrt(1.0f - cos_theta * cos_theta);
+
+    return Vector3f(
+        std::cos(phi) * sin_theta,
+        std::sin(phi) * sin_theta,
+        cos_theta);
 }
 
 bool is_valid_spectrum(
@@ -107,6 +122,22 @@ bool is_valid_spectrum(
             return false;
     return true;
 }
+
+template<typename T>
+void write(
+    std::ofstream&                      outstream,
+    const T                             data)
+{
+    outstream.write(reinterpret_cast<const char*>(&data), sizeof(T));
+}
+
+// Node structure compatible with SD tree visualizer [Müller et al. 2017].
+
+struct VisualizerNode
+{
+    std::array<float, 4>                sums;
+    std::array<size_t, 4>               children;
+};
 
 // QuadTreeNode implementation.
 
@@ -447,6 +478,61 @@ QuadTreeNode* QuadTreeNode::choose_node(
     }
 }
 
+void QuadTreeNode::flatten(
+    std::list<VisualizerNode>&                nodes) const
+{
+    nodes.push_back({});
+    VisualizerNode& node = nodes.back();
+
+    node.sums[0] = m_upper_left_node->m_previous_iter_radiance_sum;
+    if(m_upper_left_node->m_is_leaf)
+    {
+        node.children[0] = 0;
+    }
+    else
+    {
+        const size_t next_index = nodes.size();
+        m_upper_left_node->flatten(nodes);
+        node.children[0] = next_index;
+    }
+
+    node.sums[1] = m_upper_right_node->m_previous_iter_radiance_sum;
+    if(m_upper_right_node->m_is_leaf)
+    {
+        node.children[1] = 0;
+    }
+    else
+    {
+        const size_t next_index = nodes.size();
+        m_upper_right_node->flatten(nodes);
+        node.children[1] = next_index;
+    }
+
+    node.sums[2] = m_lower_left_node->m_previous_iter_radiance_sum;
+    if (m_lower_left_node->m_is_leaf)
+    {
+        node.children[2] = 0;
+    }
+    else
+    {
+        const size_t next_index = nodes.size();
+        m_lower_left_node->flatten(nodes);
+        node.children[2] = next_index;
+    }
+
+    node.sums[3] = m_lower_right_node->m_previous_iter_radiance_sum;
+    if(m_lower_right_node->m_is_leaf)
+    {
+        node.children[3] = 0;
+    }
+    else
+    {
+        const size_t next_index = nodes.size();
+        m_lower_right_node->flatten(nodes);
+        node.children[3] = next_index;
+    }
+}
+
 struct DTreeRecord
 {
     Vector3f                    direction;
@@ -738,6 +824,24 @@ void DTree::adam_step(
     m_theta = clamp(m_theta, -20.0f, 20.0f);
 }
 
+void DTree::write_to_disk(
+    std::ofstream&                      os) const
+{
+    std::list<VisualizerNode> nodes;
+    m_root_node.flatten(nodes);
+
+    write(os, mean());
+    write(os, static_cast<uint64_t>(sample_weight()));
+    write(os, static_cast<uint64_t>(nodes.size()));
+
+    for(const auto& n : nodes)
+        for(int i = 0; i < 4; ++i)
+        {
+            write(os, n.sums[i]);
+            write(os, static_cast<uint16_t>(n.children[i]));
+        }
+}
+
 // Struct used to gather SD-tree statistics.
 
 struct DTreeStatistics
@@ -993,15 +1097,48 @@ bool STreeNode::is_leaf() const
     return m_d_tree != nullptr;
 }
 
+void STreeNode::write_to_disk(
+    std::ofstream&                      os,
+    const AABB3f&                       aabb) const
+{
+    if(is_leaf())
+    {
+        if(m_d_tree->sample_weight() > 0.0)
+        {
+            const Vector3f extent = aabb.extent();
+            write(os, aabb.min.x);
+            write(os, aabb.min.y);
+            write(os, aabb.min.z);
+            write(os, extent.x);
+            write(os, extent.y);
+            write(os, extent.z);
+
+            m_d_tree->write_to_disk(os);
+        }
+    }
+    else
+    {
+        AABB3f child_aabb(aabb);
+        const float half_extent = 0.5f * aabb.extent()[m_axis];
+        child_aabb.max[m_axis] -= half_extent;
+        m_first_node->write_to_disk(os, child_aabb);
+
+        child_aabb.min[m_axis] += half_extent;
+        child_aabb.max[m_axis] += half_extent;
+        m_second_node->write_to_disk(os, child_aabb);
+    }
+}
+
 // STree implementation.
 
 STree::STree(
-    const AABB3f&                       scene_aabb,
+    const Scene&                        scene,
     const GPTParameters&                parameters)
     : m_parameters(parameters)
-    , m_scene_aabb(scene_aabb)
+    , m_scene_aabb(scene.compute_bbox())
     , m_is_built(false)
     , m_is_final_iteration(false)
+    , m_scene(scene)
 {
     m_root_node.reset(new STreeNode(m_parameters));
 
@@ -1156,6 +1293,58 @@ Vector3f STree::clip_vector_to_aabb(
         result[i] = std::min(std::max(result[i], m_scene_aabb.min[i]), m_scene_aabb.max[i]);
     }
     return result;
+}
+
+void STree::write_to_disk(
+    const size_t                        iteration,
+    const bool                          append_iteration) const
+{
+    std::string file_path = m_parameters.m_save_path;
+
+    if(append_iteration)
+    {
+        const std::string file_extension_str = ".sdt";
+        std::ostringstream suffix;
+        suffix << "-" << std::setfill('0') << std::setw(2) << iteration << file_extension_str;
+
+        file_path =
+            file_path.substr(
+                0,
+                file_path.length() - file_extension_str.length()) +
+            suffix.str();
+    }
+
+    std::ofstream os(
+        file_path,
+        std::ios::out | std::ios::binary);
+
+    if(!os.is_open())
+    {
+        RENDERER_LOG_WARNING("Could not open file \"%s\" for writing.", file_path.c_str());
+        return;
+    }
+
+    const Camera* camera = m_scene.get_active_camera();
+
+    if (camera == nullptr)
+    {
+        RENDERER_LOG_WARNING("Could not retrieve active camera.");
+        return;
+    }
+
+    const float shutter_mid_time = camera->get_shutter_middle_time();
+    Matrix4f camera_matrix = camera->transform_sequence().evaluate(shutter_mid_time).get_local_to_parent();
+
+    // Rotate 180 degrees around y to conform to the visualizer tool's z-axis convention.
+    const Matrix4f rotate_y = Matrix4f::make_rotation_y(Pi<float>());
+    camera_matrix = camera_matrix * rotate_y;
+
+    write(os, camera_matrix(0, 0)); write(os, camera_matrix(0, 1)); write(os, camera_matrix(0, 2)); write(os, camera_matrix(0, 3));
+    write(os, camera_matrix(1, 0)); write(os, camera_matrix(1, 1)); write(os, camera_matrix(1, 2)); write(os, camera_matrix(1, 3));
+    write(os, camera_matrix(2, 0)); write(os, camera_matrix(2, 1)); write(os, camera_matrix(2, 2)); write(os, camera_matrix(2, 3));
+    write(os, camera_matrix(3, 0)); write(os, camera_matrix(3, 1)); write(os, camera_matrix(3, 2)); write(os, camera_matrix(3, 3));
+
+    m_root_node->write_to_disk(os, m_scene_aabb);
 }
 
 // GPTVertex implementation.

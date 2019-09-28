@@ -33,6 +33,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <string>
 
 // Forward declarations.
 namespace renderer
@@ -76,6 +77,13 @@ enum class GuidedBounceMode
 	PreferGlossy
 };
 
+enum class SaveMode
+{
+	None,
+	All,
+	Final
+};
+
 struct GPTParameters
 {
 	explicit GPTParameters(const ParamArray& params);
@@ -88,6 +96,8 @@ struct GPTParameters
 	const DirectionalFilter           m_directional_filter;
 	const BSDFSamplingFractionMode    m_bsdf_sampling_fraction_mode;
 	const GuidedBounceMode			  m_guided_bounce_mode;
+	const SaveMode					  m_save_mode;
+	const std::string				  m_save_path;
 	const float                       m_fixed_bsdf_sampling_fraction;
 	const float                       m_learning_rate;
 

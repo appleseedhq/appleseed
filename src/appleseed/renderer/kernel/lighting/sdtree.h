@@ -32,6 +32,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/lighting/gpt/gptparameters.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
@@ -40,6 +41,8 @@
 // Standard headers.
 #include <array>
 #include <atomic>
+#include <fstream>
+#include <list>
 #include <memory>
 #include <utility>
 #include <vector>
@@ -53,6 +56,7 @@ namespace renderer {
 // Forward declarations.
 struct DTreeRecord;
 struct DTreeStatistics;
+struct VisualizerNode;
 
 struct DTreeSample
 {
@@ -114,6 +118,10 @@ class QuadTreeNode
 
     size_t depth(
         foundation::Vector2f&               direction) const;
+
+    // Flatten the node based D-tree representation to a list format compatible with the visualizer tool.
+    void flatten(
+        std::list<VisualizerNode>&          nodes) const;
 
   private:
       // Recursively sample a direction based on the directional radiance distribution.
@@ -182,6 +190,9 @@ class DTree
     float bsdf_sampling_fraction() const;
     ScatteringMode::Mode get_scattering_mode() const;
 
+    void write_to_disk(
+        std::ofstream&                      os) const;
+
   private:
     void acquire_optimization_spin_lock();
     void release_optimization_spin_lock();
@@ -247,6 +258,10 @@ class STreeNode
         DTreeStatistics&                    statistics,
         const size_t                        depth = 1) const;
 
+    void write_to_disk(
+        std::ofstream&                      os,
+        const foundation::AABB3f&           aabb) const;
+
   private:
     STreeNode* choose_node(
         foundation::Vector3f&               point) const;
@@ -269,7 +284,7 @@ class STreeNode
 class STree {
   public:
     STree(
-        const foundation::AABB3f&           scene_aabb,
+        const renderer::Scene&              scene,
         const GPTParameters&                parameters);
 
     // Get the D-tree and its size at a scene position.
@@ -299,6 +314,10 @@ class STree {
 
     bool is_final_iteration() const;
 
+    void write_to_disk(
+        const size_t                        iteration,
+        const bool                          append_iteration) const;
+
   private:
     void box_filter_splat(
         const foundation::Vector3f&         point,
@@ -310,8 +329,9 @@ class STree {
         const foundation::Vector3f&         point);
 
     const GPTParameters                 m_parameters;
-    std::unique_ptr<STreeNode>          m_root_node;
+    const renderer::Scene&              m_scene;
     foundation::AABB3f                  m_scene_aabb;
+    std::unique_ptr<STreeNode>          m_root_node;
     bool                                m_is_built;
     bool                                m_is_final_iteration;
 };

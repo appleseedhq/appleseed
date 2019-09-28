@@ -1409,6 +1409,8 @@ namespace
             create_direct_link("guiding.learning_rate",                             "gpt.learning_rate");
             create_direct_link("guiding.iteration_progression",                     "gpt.iteration_progression");
             create_direct_link("guiding.guided_bounce_mode",                        "gpt.guided_bounce_mode");
+            create_direct_link("guiding.save_tree_iterations",                      "gpt.save_tree_iterations");
+            create_direct_link("guiding.file_path",                                 "gpt.file_path");
 
             load_directly_linked_values(config);
 
@@ -1442,9 +1444,13 @@ namespace
         }
 
       private:
-        QComboBox* m_sampling_fraction_combobox;
-        QDoubleSpinBox* m_bsdf_sampling_fraction_spinbox;
-        QDoubleSpinBox* m_learning_rate_spinbox;
+        QComboBox*                  m_sampling_fraction_combobox;
+        QDoubleSpinBox*             m_bsdf_sampling_fraction_spinbox;
+        QDoubleSpinBox*             m_learning_rate_spinbox;
+        QComboBox*                  m_save_iterations_combobox;
+        QLineEdit*                  m_path_line_edit;
+        QWidget*                    m_browse_button;
+        ParamArray                  m_file_save_settings;
 
         void create_pt_volume_settings(QVBoxLayout* parent)
         {
@@ -1600,7 +1606,7 @@ namespace
             //samples_per_pass->setValue(4);
             sublayout->addRow("Samples Per Pass:", samples_per_pass);
 
-            QComboBox *spatial_filter_combobox = create_combobox("guiding.spatial_filter");
+            QComboBox* spatial_filter_combobox = create_combobox("guiding.spatial_filter");
             spatial_filter_combobox->setToolTip(m_params_metadata.get_path("gpt.spatial_filter.help"));
             spatial_filter_combobox->addItem("Stochastic", "stochastic");
             spatial_filter_combobox->addItem("Box", "box");
@@ -1608,7 +1614,7 @@ namespace
 
             sublayout->addRow("Spatial Filter:", spatial_filter_combobox);
 
-            QComboBox *directional_filter_combobox = create_combobox("guiding.directional_filter");
+            QComboBox* directional_filter_combobox = create_combobox("guiding.directional_filter");
             directional_filter_combobox->setToolTip(m_params_metadata.get_path("gpt.directional_filter.help"));
             directional_filter_combobox->addItem("Box", "box");
             directional_filter_combobox->addItem("Nearest", "nearest");
@@ -1642,14 +1648,39 @@ namespace
                 m_sampling_fraction_combobox, SIGNAL(currentIndexChanged(int)),
                 SLOT(slot_changed_bsdf_sampling_fraction_mode(const int)));
 
-            QComboBox *iteration_combobox = create_combobox("guiding.iteration_progression");
+            QComboBox* iteration_combobox = create_combobox("guiding.iteration_progression");
             iteration_combobox->setToolTip(m_params_metadata.get_path("gpt.iteration_progression.help"));
             iteration_combobox->addItem("Combine Iterations", "combine");
             iteration_combobox->addItem("Automatic Cut-Off", "automatic");
 
             sublayout->addRow("Iteration Progression:", iteration_combobox);
 
-            QComboBox *bounce_mode_combobox = create_combobox("guiding.guided_bounce_mode");
+            m_save_iterations_combobox = create_combobox("guiding.save_tree_iterations");
+            m_save_iterations_combobox->setToolTip(m_params_metadata.get_path("gpt.save_tree_iterations.help"));
+            m_save_iterations_combobox->addItem("None", "none");
+            m_save_iterations_combobox->addItem("All", "all");
+            m_save_iterations_combobox->addItem("Final", "final");
+
+            sublayout->addRow("Save iterations:", m_save_iterations_combobox);
+
+            QVBoxLayout* file_layout = create_vertical_layout();
+            m_path_line_edit = create_line_edit("guiding.file_path");
+            m_browse_button = new QPushButton("Browse");
+            m_browse_button->setToolTip(m_params_metadata.get_path("gpt.file_path.help"));
+            m_browse_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+            file_layout->addWidget(m_path_line_edit);
+            file_layout->addWidget(m_browse_button);
+            sublayout->addRow("File Path:", file_layout);
+
+            connect(
+                m_save_iterations_combobox, SIGNAL(currentIndexChanged(int)),
+                SLOT(slot_changed_save_iterations_mode(const int)));
+
+            connect(
+                m_browse_button, SIGNAL(pressed()),
+                SLOT(slot_browse_button_pressed()));
+
+            QComboBox* bounce_mode_combobox = create_combobox("guiding.guided_bounce_mode");
             bounce_mode_combobox->setToolTip(m_params_metadata.get_path("gpt.guided_bounce_mode.help"));
             bounce_mode_combobox->addItem("Learned Distribution", "learn");
             bounce_mode_combobox->addItem("Strictly Diffuse", "strictly_diffuse");
@@ -1674,13 +1705,41 @@ namespace
         }
 
       private slots:
-          void slot_changed_bsdf_sampling_fraction_mode(const int index)
-          {
-              const QString bsdf_sampling_mode = m_sampling_fraction_combobox->itemData(index).value<QString>();
+        void slot_changed_bsdf_sampling_fraction_mode(const int index)
+        {
+            const QString bsdf_sampling_mode = m_sampling_fraction_combobox->itemData(index).value<QString>();
 
-              m_bsdf_sampling_fraction_spinbox->setEnabled(bsdf_sampling_mode == "fixed");
-              m_learning_rate_spinbox->setEnabled(bsdf_sampling_mode == "learn");
-          }
+            m_bsdf_sampling_fraction_spinbox->setEnabled(bsdf_sampling_mode == "fixed");
+            m_learning_rate_spinbox->setEnabled(bsdf_sampling_mode == "learn");
+        }
+
+        void slot_changed_save_iterations_mode(const int index)
+        {
+            const QString save_iterations_mode = m_save_iterations_combobox->itemData(index).value<QString>();
+
+            const bool enable_browsing = save_iterations_mode == "all" || save_iterations_mode == "final";
+            m_browse_button->setEnabled(enable_browsing);
+            m_path_line_edit->setEnabled(enable_browsing);
+        }
+
+        void slot_browse_button_pressed()
+        {
+            QFileDialog::Options options;
+
+            QString filepath =
+                get_save_filename(
+                    this,
+                    "Save...",
+                    "SD tree files (*.sdt)",
+                    m_file_save_settings,
+                    "",
+                    options);
+
+            if (!filepath.isEmpty())
+            {
+                m_path_line_edit->setText(filepath);
+            }
+        }
     };
 
     //

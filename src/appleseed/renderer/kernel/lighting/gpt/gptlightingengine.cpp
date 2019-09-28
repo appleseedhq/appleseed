@@ -1130,6 +1130,78 @@ Dictionary GPTLightingEngineFactory::get_params_metadata()
                             .insert("help", "Guided bounces are treated as Glossy if remaining modes allow, Diffuse otherwise"))));
 
     metadata.dictionaries().insert(
+        "save_tree_iterations",
+        Dictionary()
+            .insert("type", "enum")
+            .insert("values", "none|all|final")
+            .insert("default", "none")
+            .insert("label", "Save option for SD tree structure")
+            .insert("help", "Set which SD tree iterations to save to disk")
+            .insert(
+                "options",
+                Dictionary()
+                    .insert(
+                        "none",
+                        Dictionary()
+                            .insert("label", "None")
+                            .insert("help", "Do not save the SD tree"))
+                    .insert(
+                        "all",
+                        Dictionary()
+                            .insert("label", "All")
+                            .insert("help", "Save all SD tree iterations to disk"))
+                    .insert(
+                        "final",
+                        Dictionary()
+                            .insert("label", "Final")
+                            .insert("help", "Save final SD tree iteration to disk"))));
+
+    metadata.dictionaries().insert(
+        "file_path",
+        Dictionary()
+            .insert("type", "text")
+            .insert("default", "")
+            .insert("label", "File Path")
+            .insert("help", "Path to disk location where files will be saved"));
+
+    metadata.dictionaries().insert(
+        "guided_bounce_mode",
+        Dictionary()
+            .insert("type", "enum")
+            .insert("values", "learn|strictly_diffuse|strictly_glossy|prefer_diffuse|prefer_glossy")
+            .insert("default", "learn")
+            .insert("label", "Scattering Mode for Path Guided Bounces")
+            .insert("help", "How path guided bounces should be treated internally")
+            .insert(
+                "options",
+                Dictionary()
+                    .insert(
+                        "learn",
+                        Dictionary()
+                            .insert("label", "Learned Distribution")
+                            .insert("help", "Guided bounce modes are based on the learned radiance distribution"))
+                    .insert(
+                        "strictly_diffuse",
+                        Dictionary()
+                            .insert("label", "Strictly Diffuse")
+                            .insert("help", "Guided bounces are always treated as Diffuse"))
+                    .insert(
+                        "strictly_glossy",
+                        Dictionary()
+                            .insert("label", "Strictly Glossy")
+                            .insert("help", "Guided bounces are always treated as Glossy"))
+                    .insert(
+                        "prefer_diffuse",
+                        Dictionary()
+                            .insert("label", "Prefer Diffuse")
+                            .insert("help", "Guided bounces are treated as Diffuse if remaining modes allow, Glossy otherwise"))
+                    .insert(
+                        "prefer_glossy",
+                        Dictionary()
+                            .insert("label", "Prefer Glossy")
+                            .insert("help", "Guided bounces are treated as Glossy if remaining modes allow, Diffuse otherwise"))));
+
+    metadata.dictionaries().insert(
         "samples_per_pass",
         Dictionary()
             .insert("type", "int")

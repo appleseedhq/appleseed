@@ -228,7 +228,7 @@ bool RendererComponents::create_lighting_engine_factory()
         const GPTParameters gpt_parameters(
             get_child_and_inherit_globals(m_params, "gpt"));
 
-        m_sd_tree.reset(new STree(m_scene.compute_bbox(), gpt_parameters));
+        m_sd_tree.reset(new STree(m_scene, gpt_parameters));
 
         ParamArray uniform_pixel_renderer_params = get_child_and_inherit_globals(m_params, "uniform_pixel_renderer");
 
