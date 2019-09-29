@@ -182,10 +182,10 @@ bool Material::on_frame_begin(
     m_render_data.m_bsdf = nullptr;
     m_render_data.m_bssrdf = nullptr;
     m_render_data.m_edf = nullptr;
+    m_render_data.m_volume = nullptr;
     m_render_data.m_alpha_map = get_uncached_alpha_map();
     m_render_data.m_shader_group = nullptr;
     m_render_data.m_basis_modifier = nullptr;
-    m_render_data.m_volume = nullptr;
     m_has_render_data = true;
 
     return true;

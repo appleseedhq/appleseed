@@ -827,7 +827,7 @@ void ShadingPoint::compute_shading_basis() const
     const Vector3d sn = get_original_shading_normal();
 
     // Retrieve or compute the first tangent direction (non-normalized).
-    // Reference: Physically Based Rendering, first edition, pp. 133
+    // Reference: Physically Based Rendering, first edition, pp. 133.
     const Vector3d tangent =
         (m_members & HasTriangleVertexTangents) != 0
             ? m_assembly_instance_transform.vector_to_parent(

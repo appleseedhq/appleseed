@@ -1120,14 +1120,9 @@ IMPLEMENT_USER_DATA_GETTER(tn)
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
 
         const Vector3d& tn = shading_point->get_shading_basis().get_tangent_u();
-        OSL::Vec3 v(
-            static_cast<float>(tn.x),
-            static_cast<float>(tn.y),
-            static_cast<float>(tn.z));
-
-        reinterpret_cast<float*>(val)[0] = v.x;
-        reinterpret_cast<float*>(val)[1] = v.y;
-        reinterpret_cast<float*>(val)[2] = v.z;
+        reinterpret_cast<float*>(val)[0] = static_cast<float>(tn.x);
+        reinterpret_cast<float*>(val)[1] = static_cast<float>(tn.y);
+        reinterpret_cast<float*>(val)[2] = static_cast<float>(tn.z);
 
         if (derivatives)
             clear_derivatives(type, val);
@@ -1218,11 +1213,9 @@ IMPLEMENT_USER_DATA_GETTER(vertex_color)
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
 
         const Color3f& cv = shading_point->get_per_vertex_color();
-        const OSL::Color3 v(cv.r, cv.g, cv.b);
-
-        reinterpret_cast<float*>(val)[0] = v.x;
-        reinterpret_cast<float*>(val)[1] = v.y;
-        reinterpret_cast<float*>(val)[2] = v.z;
+        reinterpret_cast<float*>(val)[0] = cv.r;
+        reinterpret_cast<float*>(val)[1] = cv.g;
+        reinterpret_cast<float*>(val)[2] = cv.b;
 
         if (derivatives)
             clear_derivatives(type, val);

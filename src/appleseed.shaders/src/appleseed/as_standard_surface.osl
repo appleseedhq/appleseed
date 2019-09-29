@@ -708,7 +708,7 @@ shader as_standard_surface
             }
         }
 
-        // Evaluate the BSDF(BRDF+BTDF) for monochromatic dielectric IOR only.
+        // Evaluate the BSDF (BRDF+BTDF) for monochromatic dielectric IOR only.
 
         if (in_fresnel_type == 0)
         {
