@@ -48,6 +48,7 @@
 #include "renderer/api/surfaceshader.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/basis.h"
 #include "foundation/math/fp.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/apistring.h"
@@ -254,7 +255,10 @@ ItemBase* ScenePickingHandler::pick(const QPoint& point)
     sstr << "  dpdx                          " << filter_neg_zero(result.m_dpdx) << std::endl;
     sstr << "  dpdy                          " << filter_neg_zero(result.m_dpdy) << std::endl;
     sstr << "  geometric normal              " << filter_neg_zero(result.m_geometric_normal) << std::endl;
-    sstr << "  shading normal                " << filter_neg_zero(result.m_original_shading_normal) << std::endl;
+    sstr << "  original shading normal       " << filter_neg_zero(result.m_original_shading_normal) << std::endl;
+    sstr << "  shading normal                " << filter_neg_zero(result.m_shading_basis.get_normal()) << std::endl;
+    sstr << "  tangent                       " << filter_neg_zero(result.m_shading_basis.get_tangent_u()) << std::endl;
+    sstr << "  bitangent                     " << filter_neg_zero(result.m_shading_basis.get_tangent_v()) << std::endl;
     sstr << "  side                          " << get_side_name(result.m_side) << std::endl;
 
     sstr << print_entity("  camera                        ", result.m_camera) << std::endl;
