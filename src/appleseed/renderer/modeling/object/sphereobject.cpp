@@ -130,7 +130,7 @@ void SphereObject::intersect(
     const ShadingRay&      ray,
     IntersectionResult&    result) const
 {
-    result.m_hit = intersect_sphere_unit_direction(
+    result.m_hit = intersect_sphere(
         ray,
         impl->m_center,
         impl->m_radius,
@@ -138,7 +138,7 @@ void SphereObject::intersect(
 
     if (result.m_hit)
     {
-        const Vector3d n = normalize(ray.point_at(result.m_distance));
+        const Vector3d n = ray.point_at(result.m_distance);
         result.m_geometric_normal = n;
         result.m_shading_normal = n;
 
@@ -152,7 +152,7 @@ void SphereObject::intersect(
 
 bool SphereObject::intersect(const ShadingRay& ray) const
 {
-    return intersect_sphere_unit_direction(
+    return intersect_sphere(
         ray,
         impl->m_center,
         impl->m_radius);

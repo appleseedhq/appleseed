@@ -792,13 +792,15 @@ bool AssemblyLeafVisitor::visit(
                     m_shading_point.m_primitive_index = 0;
                     m_shading_point.m_primitive_pa = result.m_material_slot;
                     m_shading_point.m_geometric_normal = 
-                        assembly_instance_transform.normal_to_parent(
-                            object_instance_transform.normal_to_parent(
-                                result.m_geometric_normal));
+                        normalize(
+                            assembly_instance_transform.normal_to_parent(
+                                object_instance_transform.normal_to_parent(
+                                    result.m_geometric_normal)));
                     m_shading_point.m_original_shading_normal =
-                        assembly_instance_transform.normal_to_parent(
-                            object_instance_transform.normal_to_parent(
-                                result.m_shading_normal));
+                        normalize(
+                            assembly_instance_transform.normal_to_parent(
+                                object_instance_transform.normal_to_parent(
+                                    result.m_shading_normal)));
                     m_shading_point.m_uv = result.m_uv;
                     // HasGeometricNormal and HasOriginalShadingNormal shading point members aren't set
                     // so that the shading point can compute the hit side by itself.
