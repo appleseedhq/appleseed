@@ -296,7 +296,7 @@ namespace
                 SampleVector&               samples,
                 const Spectrum&             initial_flux)
               : m_params(params)
-              , m_camera(*scene.get_active_camera())
+              , m_camera(*scene.get_render_data().m_active_camera)
               , m_canvas_width(frame.image().properties().m_canvas_width)
               , m_canvas_height(frame.image().properties().m_canvas_height)
               , m_shading_context(shading_context)

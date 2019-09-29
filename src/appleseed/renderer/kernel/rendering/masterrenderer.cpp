@@ -405,7 +405,7 @@ struct MasterRenderer::Impl
 
         // Print settings of key entities.
         m_project.get_frame()->print_settings();
-        m_project.get_scene()->get_active_camera()->print_settings();
+        m_project.get_scene()->get_render_data().m_active_camera->print_settings();
 
         // Perform pre-render actions.
         if (!m_render_device->on_render_begin(recorder, &abort_switch) ||

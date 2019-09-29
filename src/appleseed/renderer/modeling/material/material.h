@@ -131,7 +131,7 @@ class APPLESEED_DLLSYMBOL Material
         const Project&              project,
         const BaseGroup*            parent) override;
 
-    struct RenderData
+    struct APPLESEED_DLLSYMBOL RenderData
     {
         const SurfaceShader*        m_surface_shader;
         const BSDF*                 m_bsdf;
@@ -141,6 +141,10 @@ class APPLESEED_DLLSYMBOL Material
         const Source*               m_alpha_map;
         const ShaderGroup*          m_shader_group;
         const IBasisModifier*       m_basis_modifier;   // owned by RenderData
+
+        RenderData();
+
+        void clear();
     };
 
     // Return render-time data of this entity.
@@ -148,8 +152,7 @@ class APPLESEED_DLLSYMBOL Material
     const RenderData& get_render_data() const;
 
   protected:
-    bool        m_has_render_data;
-    RenderData  m_render_data;
+    RenderData m_render_data;
 
     // Constructor.
     Material(
@@ -168,7 +171,6 @@ class APPLESEED_DLLSYMBOL Material
 
 inline const Material::RenderData& Material::get_render_data() const
 {
-    assert(m_has_render_data);
     return m_render_data;
 }
 
