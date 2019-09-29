@@ -117,6 +117,7 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
 
     result.m_camera = impl->m_project.get_uncached_active_camera();
     result.m_assembly_instance = nullptr;
+    result.m_assembly_instance_transform = Transformd::make_identity();
     result.m_assembly = nullptr;
     result.m_object_instance = nullptr;
     result.m_object = nullptr;
