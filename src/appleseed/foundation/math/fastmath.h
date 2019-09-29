@@ -118,6 +118,7 @@ namespace foundation
 //
 //   Fast square root:
 //     http://en.wikipedia.org/wiki/Methods_of_computing_square_roots
+//     https://geometrian.com/programming/tutorials/fastsqrt/index.php
 //
 //   Fast reciprocal square root:
 //     http://www.lomont.org/Math/Papers/2003/InvSqrt.pdf
@@ -153,10 +154,20 @@ float fast_cos(const float x);
 float fast_cos_full(const float x);
 float fast_cos_full_positive(const float x);    // x >= 0.0f
 
+//
 // Fast arc cosine approximation.
+//
 // Reference:
+//
 //   Cg 3.1 Toolkit Documentation
 //   https://developer.download.nvidia.com/cg/acos.html
+//
+// Of interest:
+//
+//   Inverse trigonometric functions GPU optimization for AMD GCN architecture
+//   https://seblagarde.wordpress.com/2014/12/01/inverse-trigonometric-functions-gpu-optimization-for-amd-gcn-architecture/
+//
+
 float fast_acos(const float x);
 
 // Fast reciprocal approximation.
