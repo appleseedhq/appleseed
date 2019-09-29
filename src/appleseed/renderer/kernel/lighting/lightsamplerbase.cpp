@@ -355,7 +355,8 @@ void LightSamplerBase::collect_emitting_shapes(
             o = global_transform.point_to_parent(o);
             x = global_transform.vector_to_parent(x);
             y = global_transform.vector_to_parent(y);
-            n = global_transform.normal_to_parent(n);
+            n = normalize(global_transform.normal_to_parent(n));
+            assert(is_normalized(n));
 
             const double area = norm(x) * norm(y);
 
@@ -494,7 +495,9 @@ void LightSamplerBase::collect_emitting_shapes(
             // Transform disk to world space.
             x = global_transform.vector_to_parent(x);
             y = global_transform.vector_to_parent(y);
-            n = global_transform.normal_to_parent(n);
+            n = normalize(global_transform.normal_to_parent(n));
+            assert(is_normalized(n));
+
             const Matrix4d& xform = global_transform.get_local_to_parent();
             Vector3d center, scale;
             Quaterniond rot;
