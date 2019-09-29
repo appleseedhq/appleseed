@@ -475,7 +475,7 @@ namespace
 #endif
 
         LOG_DEBUG(g_logger, "executing '%s'", command.c_str());
-        std::system(command.c_str());   // needs std:: qualifier
+        std::system(command.c_str());
     }
 
 #endif
