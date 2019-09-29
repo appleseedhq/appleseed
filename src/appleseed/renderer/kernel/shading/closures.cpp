@@ -1685,10 +1685,9 @@ void CompositeClosure::compute_closure_shading_basis(
     const float normal_square_norm = square_norm(normal);
     if APPLESEED_LIKELY(normal_square_norm != 0.0f)
     {
-        const float rcp_normal_norm = 1.0f / std::sqrt(normal_square_norm);
         m_bases[m_closure_count] =
             Basis3f(
-                normal * rcp_normal_norm,
+                normal / std::sqrt(normal_square_norm),
                 original_shading_basis.get_tangent_u());
     }
     else
@@ -1709,12 +1708,10 @@ void CompositeClosure::compute_closure_shading_basis(
         const float normal_square_norm = square_norm(normal);
         if APPLESEED_LIKELY(normal_square_norm != 0.0f)
         {
-            const float rcp_normal_norm = 1.0f / std::sqrt(normal_square_norm);
-            const float rcp_tangent_norm = 1.0f / std::sqrt(tangent_square_norm);
             m_bases[m_closure_count] =
                 Basis3f(
-                    normal * rcp_normal_norm,
-                    tangent * rcp_tangent_norm);
+                    normal / std::sqrt(normal_square_norm),
+                    tangent / std::sqrt(tangent_square_norm));
         }
         else
         {
@@ -1738,14 +1735,14 @@ InputValues* CompositeClosure::add_closure(
     const Vector3f&             normal,
     Arena&                      arena)
 {
-    return do_add_closure<InputValues>(
-        closure_type,
-        original_shading_basis,
-        weight,
-        normal,
-        false,
-        Vector3f(0.0f),
-        arena);
+    return
+        do_add_closure<InputValues, false>(
+            closure_type,
+            original_shading_basis,
+            weight,
+            normal,
+            Vector3f(0.0f),
+            arena);
 }
 
 template <typename InputValues>
@@ -1757,23 +1754,22 @@ InputValues* CompositeClosure::add_closure(
     const Vector3f&             tangent,
     Arena&                      arena)
 {
-    return do_add_closure<InputValues>(
-        closure_type,
-        original_shading_basis,
-        weight,
-        normal,
-        true,
-        tangent,
-        arena);
+    return
+        do_add_closure<InputValues, true>(
+            closure_type,
+            original_shading_basis,
+            weight,
+            normal,
+            tangent,
+            arena);
 }
 
-template <typename InputValues>
+template <typename InputValues, bool HasTangent>
 InputValues* CompositeClosure::do_add_closure(
     const ClosureID             closure_type,
     const Basis3f&              original_shading_basis,
     const Color3f&              weight,
     const Vector3f&             normal,
-    const bool                  has_tangent,
     const Vector3f&             tangent,
     Arena&                      arena)
 {
@@ -1791,9 +1787,9 @@ InputValues* CompositeClosure::do_add_closure(
     m_weights[m_closure_count].set(weight, g_std_lighting_conditions, Spectrum::Reflectance);
     m_scalar_weights[m_closure_count] = w;
 
-    if (!has_tangent)
-        compute_closure_shading_basis(normal, original_shading_basis);
-    else compute_closure_shading_basis(normal, tangent, original_shading_basis);
+    if (HasTangent)
+        compute_closure_shading_basis(normal, tangent, original_shading_basis);
+    else compute_closure_shading_basis(normal, original_shading_basis);
 
     m_closure_types[m_closure_count] = closure_type;
 

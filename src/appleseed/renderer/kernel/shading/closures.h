@@ -181,13 +181,12 @@ class APPLESEED_ALIGN(16) CompositeClosure
 
     CompositeClosure();
 
-    template <typename InputValues>
+    template <typename InputValues, bool HasTangent>
     InputValues* do_add_closure(
         const ClosureID             closure_type,
         const foundation::Basis3f&  original_shading_basis,
         const foundation::Color3f&  weight,
         const foundation::Vector3f& normal,
-        const bool                  has_tangent,
         const foundation::Vector3f& tangent,
         foundation::Arena&          arena);
 
