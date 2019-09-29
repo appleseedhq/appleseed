@@ -44,11 +44,14 @@ namespace foundation
 //
 // Distribution adapters.
 //
-// Interesting reference:
+// Interesting references:
 //
 //   Uniform random floats: How to generate a double-precision floating-point number
 //   in [0, 1] uniformly at random given a uniform random source of bits.
 //   http://mumble.net/~campbell/tmp/random_real.c
+//
+//   Doubling the speed of std::uniform_int_distribution in the GNU C++ library
+//   https://lemire.me/blog/2019/09/28/doubling-the-speed-of-stduniform_int_distribution-in-the-gnu-c-library/
 //
 
 // Return a random number in the integer interval [0, 0x7FFFFFFF].
