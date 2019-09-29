@@ -745,94 +745,91 @@ bool AssemblyLeafVisitor::visit(
         }
 
         // Check the intersection between the ray and procedural objects.
-        if (item.m_assembly->has_render_data())
+        const IndexedObjectInstanceArray& procedural_object_instances =
+            item.m_assembly->get_render_data().m_procedural_object_instances;
+
+        for (size_t j = 0, e = procedural_object_instances.size(); j < e; ++j)
         {
-            const IndexedObjectInstanceArray& procedural_object_instances =
-                item.m_assembly->get_render_data().m_procedural_object_instances;
+            // Retrieve the object instance.
+            const IndexedObjectInstance& object_instance_index_pair = procedural_object_instances[j];
+            const ObjectInstance* object_instance = object_instance_index_pair.first;
 
-            for (size_t j = 0, e = procedural_object_instances.size(); j < e; ++j)
+            // Skip this object instance if it isn't visible for this ray.
+            if (!(object_instance->get_vis_flags() & ray.m_flags))
+                continue;
+
+            // todo: transform ray differentials.
+            const Transformd& object_instance_transform = object_instance->get_transform();
+
+            // Transform the ray direction from world space to object instance space.
+            ShadingRay obj_inst_ray;
+            obj_inst_ray.m_dir =
+                object_instance_transform.vector_to_local(
+                    assembly_instance_transform.vector_to_local(ray.m_dir));
+
+            // Compute the ray origin in object space.
+            if (m_parent_shading_point &&
+                m_parent_shading_point->get_primitive_type() == ShadingPoint::PrimitiveType::PrimitiveProceduralSurface &&
+                m_parent_shading_point->get_assembly_instance().get_uid() == assembly_instance.get_uid() &&
+                m_parent_shading_point->get_object_instance().get_uid() == object_instance->get_uid() &&
+                m_parent_shading_point->get_object_instance().get_ray_bias_method() == ObjectInstance::RayBiasMethodNone)
             {
-                // Retrieve the object instance.
-                const IndexedObjectInstance& object_instance_index_pair = procedural_object_instances[j];
-                const ObjectInstance* object_instance = object_instance_index_pair.first;
+                // The caller provided the previous intersection, and we are about
+                // to intersect the object instance that contains the previous
+                // intersection. Use the properly offset intersection point as the
+                // origin of the child ray.
+                obj_inst_ray.m_org = m_parent_shading_point->get_offset_point(obj_inst_ray.m_dir);
+            }
+            else
+            {
+                // The caller didn't provide the previous intersection, or we are
+                // about to intersect an object instance that does not contain
+                // the previous intersection: simply transform the ray origin to
+                // object space.
+                obj_inst_ray.m_org =
+                    object_instance_transform.point_to_local(
+                        assembly_instance_transform.point_to_local(ray.m_org));
+            }
 
-                // Skip this object instance if it isn't visible for this ray.
-                if (!(object_instance->get_vis_flags() & ray.m_flags))
-                    continue;
+            obj_inst_ray.m_has_differentials = false;
+            obj_inst_ray.m_tmin = asm_inst_shading_point.m_ray.m_tmin;
+            obj_inst_ray.m_tmax = asm_inst_shading_point.m_ray.m_tmax;
+            obj_inst_ray.m_time = asm_inst_shading_point.m_ray.m_time;
+            obj_inst_ray.m_flags = asm_inst_shading_point.m_ray.m_flags;
+            obj_inst_ray.m_depth = asm_inst_shading_point.m_ray.m_depth;
+            obj_inst_ray.m_medium_count = asm_inst_shading_point.m_ray.m_medium_count;
 
-                // todo: transform ray differentials.
-                const Transformd& object_instance_transform = object_instance->get_transform();
+            // Ask the procedural object to intersect itself against the ray.
+            const ProceduralObject& object = static_cast<const ProceduralObject&>(object_instance->get_object());
+            ProceduralObject::IntersectionResult result;
+            object.intersect(obj_inst_ray, result);
 
-                // Transform the ray direction from world space to object instance space.
-                ShadingRay obj_inst_ray;
-                obj_inst_ray.m_dir =
-                    object_instance_transform.vector_to_local(
-                        assembly_instance_transform.vector_to_local(ray.m_dir));
-
-                // Compute the ray origin in object space.
-                if (m_parent_shading_point &&
-                    m_parent_shading_point->get_primitive_type() == ShadingPoint::PrimitiveType::PrimitiveProceduralSurface &&
-                    m_parent_shading_point->get_assembly_instance().get_uid() == assembly_instance.get_uid() &&
-                    m_parent_shading_point->get_object_instance().get_uid() == object_instance->get_uid() &&
-                    m_parent_shading_point->get_object_instance().get_ray_bias_method() == ObjectInstance::RayBiasMethodNone)
-                {
-                    // The caller provided the previous intersection, and we are about
-                    // to intersect the object instance that contains the previous
-                    // intersection. Use the properly offset intersection point as the
-                    // origin of the child ray.
-                    obj_inst_ray.m_org = m_parent_shading_point->get_offset_point(obj_inst_ray.m_dir);
-                }
-                else
-                {
-                    // The caller didn't provide the previous intersection, or we are
-                    // about to intersect an object instance that does not contain
-                    // the previous intersection: simply transform the ray origin to
-                    // object space.
-                    obj_inst_ray.m_org =
-                        object_instance_transform.point_to_local(
-                            assembly_instance_transform.point_to_local(ray.m_org));
-                }
-
-                obj_inst_ray.m_has_differentials = false;
-                obj_inst_ray.m_tmin = asm_inst_shading_point.m_ray.m_tmin;
-                obj_inst_ray.m_tmax = asm_inst_shading_point.m_ray.m_tmax;
-                obj_inst_ray.m_time = asm_inst_shading_point.m_ray.m_time;
-                obj_inst_ray.m_flags = asm_inst_shading_point.m_ray.m_flags;
-                obj_inst_ray.m_depth = asm_inst_shading_point.m_ray.m_depth;
-                obj_inst_ray.m_medium_count = asm_inst_shading_point.m_ray.m_medium_count;
-
-                // Ask the procedural object to intersect itself against the ray.
-                const ProceduralObject& object = static_cast<const ProceduralObject&>(object_instance->get_object());
-                ProceduralObject::IntersectionResult result;
-                object.intersect(obj_inst_ray, result);
-
-                // Keep track of the closest hit.
-                // todo: result is not in the same space as the shading point ray.
-                if (result.m_hit && result.m_distance < m_shading_point.m_ray.m_tmax)
-                {
-                    m_shading_point.m_ray.m_tmax = result.m_distance;
-                    m_shading_point.m_primitive_type = ShadingPoint::PrimitiveProceduralSurface;
-                    m_shading_point.m_bary = result.m_uv;
-                    m_shading_point.m_assembly_instance = item.m_assembly_instance;
-                    m_shading_point.m_assembly_instance_transform = assembly_instance_transform;
-                    m_shading_point.m_assembly_instance_transform_seq = assembly_instance_transform_seq;
-                    m_shading_point.m_object_instance_index = object_instance_index_pair.second;
-                    m_shading_point.m_primitive_index = 0;
-                    m_shading_point.m_primitive_pa = result.m_material_slot;
-                    m_shading_point.m_geometric_normal = 
-                        normalize(
-                            assembly_instance_transform.normal_to_parent(
-                                object_instance_transform.normal_to_parent(
-                                    result.m_geometric_normal)));
-                    m_shading_point.m_original_shading_normal =
-                        normalize(
-                            assembly_instance_transform.normal_to_parent(
-                                object_instance_transform.normal_to_parent(
-                                    result.m_shading_normal)));
-                    m_shading_point.m_uv = result.m_uv;
-                    // HasGeometricNormal and HasOriginalShadingNormal shading point members aren't set
-                    // so that the shading point can compute the hit side by itself.
-                }
+            // Keep track of the closest hit.
+            // todo: result is not in the same space as the shading point ray.
+            if (result.m_hit && result.m_distance < m_shading_point.m_ray.m_tmax)
+            {
+                m_shading_point.m_ray.m_tmax = result.m_distance;
+                m_shading_point.m_primitive_type = ShadingPoint::PrimitiveProceduralSurface;
+                m_shading_point.m_bary = result.m_uv;
+                m_shading_point.m_assembly_instance = item.m_assembly_instance;
+                m_shading_point.m_assembly_instance_transform = assembly_instance_transform;
+                m_shading_point.m_assembly_instance_transform_seq = assembly_instance_transform_seq;
+                m_shading_point.m_object_instance_index = object_instance_index_pair.second;
+                m_shading_point.m_primitive_index = 0;
+                m_shading_point.m_primitive_pa = result.m_material_slot;
+                m_shading_point.m_geometric_normal = 
+                    normalize(
+                        assembly_instance_transform.normal_to_parent(
+                            object_instance_transform.normal_to_parent(
+                                result.m_geometric_normal)));
+                m_shading_point.m_original_shading_normal =
+                    normalize(
+                        assembly_instance_transform.normal_to_parent(
+                            object_instance_transform.normal_to_parent(
+                                result.m_shading_normal)));
+                m_shading_point.m_uv = result.m_uv;
+                // HasGeometricNormal and HasOriginalShadingNormal shading point members aren't set
+                // so that the shading point can compute the hit side by itself.
             }
         }
     }
@@ -990,69 +987,66 @@ bool AssemblyLeafProbeVisitor::visit(
         }
 
         // Check the intersection between the ray and procedural objects.
-        if (item.m_assembly->has_render_data())
+        const IndexedObjectInstanceArray& procedural_object_instances =
+            item.m_assembly->get_render_data().m_procedural_object_instances;
+
+        for (size_t j = 0, e = procedural_object_instances.size(); j < e; ++j)
         {
-            const IndexedObjectInstanceArray& procedural_object_instances =
-                item.m_assembly->get_render_data().m_procedural_object_instances;
+            // Retrieve the object and object instance.
+            const IndexedObjectInstance& object_instance_index_pair = procedural_object_instances[j];
+            const ObjectInstance* object_instance = object_instance_index_pair.first;
 
-            for (size_t j = 0, e = procedural_object_instances.size(); j < e; ++j)
+            // Skip this object instance if it isn't visible for this ray.
+            if (!(object_instance->get_vis_flags() & ray.m_flags))
+                continue;
+
+            // todo: transform ray differentials.
+            const Transformd& object_instance_transform = object_instance->get_transform();
+
+            // Transform the ray direction from world space to object instance space.
+            ShadingRay obj_inst_ray;
+            obj_inst_ray.m_dir =
+                object_instance_transform.vector_to_local(
+                    assembly_instance_transform.vector_to_local(ray.m_dir));
+
+            // Compute the ray origin in object space.
+            if (m_parent_shading_point &&
+                m_parent_shading_point->get_primitive_type() == ShadingPoint::PrimitiveType::PrimitiveProceduralSurface &&
+                m_parent_shading_point->get_assembly_instance().get_uid() == assembly_instance.get_uid() &&
+                m_parent_shading_point->get_object_instance().get_uid() == object_instance->get_uid() &&
+                m_parent_shading_point->get_object_instance().get_ray_bias_method() == ObjectInstance::RayBiasMethodNone)
             {
-                // Retrieve the object and object instance.
-                const IndexedObjectInstance& object_instance_index_pair = procedural_object_instances[j];
-                const ObjectInstance* object_instance = object_instance_index_pair.first;
+                // The caller provided the previous intersection, and we are about
+                // to intersect the object instance that contains the previous
+                // intersection. Use the properly offset intersection point as the
+                // origin of the child ray.
+                obj_inst_ray.m_org = m_parent_shading_point->get_offset_point(obj_inst_ray.m_dir);
+            }
+            else
+            {
+                // The caller didn't provide the previous intersection, or we are
+                // about to intersect an object instance that does not contain
+                // the previous intersection: simply transform the ray origin to
+                // object space.
+                obj_inst_ray.m_org =
+                    object_instance_transform.point_to_local(
+                        assembly_instance_transform.point_to_local(ray.m_org));
+            }
 
-                // Skip this object instance if it isn't visible for this ray.
-                if (!(object_instance->get_vis_flags() & ray.m_flags))
-                    continue;
+            obj_inst_ray.m_has_differentials = false;
+            obj_inst_ray.m_tmin = asm_inst_ray.m_tmin;
+            obj_inst_ray.m_tmax = asm_inst_ray.m_tmax;
+            obj_inst_ray.m_time = asm_inst_ray.m_time;
+            obj_inst_ray.m_flags = asm_inst_ray.m_flags;
+            obj_inst_ray.m_depth = asm_inst_ray.m_depth;
+            obj_inst_ray.m_medium_count = asm_inst_ray.m_medium_count;
 
-                // todo: transform ray differentials.
-                const Transformd& object_instance_transform = object_instance->get_transform();
-
-                // Transform the ray direction from world space to object instance space.
-                ShadingRay obj_inst_ray;
-                obj_inst_ray.m_dir =
-                    object_instance_transform.vector_to_local(
-                        assembly_instance_transform.vector_to_local(ray.m_dir));
-
-                // Compute the ray origin in object space.
-                if (m_parent_shading_point &&
-                    m_parent_shading_point->get_primitive_type() == ShadingPoint::PrimitiveType::PrimitiveProceduralSurface &&
-                    m_parent_shading_point->get_assembly_instance().get_uid() == assembly_instance.get_uid() &&
-                    m_parent_shading_point->get_object_instance().get_uid() == object_instance->get_uid() &&
-                    m_parent_shading_point->get_object_instance().get_ray_bias_method() == ObjectInstance::RayBiasMethodNone)
-                {
-                    // The caller provided the previous intersection, and we are about
-                    // to intersect the object instance that contains the previous
-                    // intersection. Use the properly offset intersection point as the
-                    // origin of the child ray.
-                    obj_inst_ray.m_org = m_parent_shading_point->get_offset_point(obj_inst_ray.m_dir);
-                }
-                else
-                {
-                    // The caller didn't provide the previous intersection, or we are
-                    // about to intersect an object instance that does not contain
-                    // the previous intersection: simply transform the ray origin to
-                    // object space.
-                    obj_inst_ray.m_org =
-                        object_instance_transform.point_to_local(
-                            assembly_instance_transform.point_to_local(ray.m_org));
-                }
-
-                obj_inst_ray.m_has_differentials = false;
-                obj_inst_ray.m_tmin = asm_inst_ray.m_tmin;
-                obj_inst_ray.m_tmax = asm_inst_ray.m_tmax;
-                obj_inst_ray.m_time = asm_inst_ray.m_time;
-                obj_inst_ray.m_flags = asm_inst_ray.m_flags;
-                obj_inst_ray.m_depth = asm_inst_ray.m_depth;
-                obj_inst_ray.m_medium_count = asm_inst_ray.m_medium_count;
-
-                // Ask the procedural object to intersect itself against the ray.
-                const ProceduralObject& object = static_cast<const ProceduralObject&>(object_instance->get_object());
-                if (object.intersect(obj_inst_ray))
-                {
-                    m_hit = true;
-                    return false;
-                }
+            // Ask the procedural object to intersect itself against the ray.
+            const ProceduralObject& object = static_cast<const ProceduralObject&>(object_instance->get_object());
+            if (object.intersect(obj_inst_ray))
+            {
+                m_hit = true;
+                return false;
             }
         }
     }

@@ -72,7 +72,7 @@ TEST_SUITE(Renderer_Modeling_Camera_SphericalCamera)
         success = project->get_scene()->on_frame_begin(project.ref(), nullptr, frame_begin_recorder);
         ASSERT_TRUE(success);
 
-        const Camera* camera = project->get_scene()->get_active_camera();
+        const Camera* camera = project->get_scene()->get_render_data().m_active_camera;
 
         SamplingContext::RNGType rng;
         SamplingContext sampling_context(rng, SamplingContext::QMCMode);

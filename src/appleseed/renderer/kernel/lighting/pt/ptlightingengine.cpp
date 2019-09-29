@@ -167,7 +167,7 @@ namespace
             {
                 m_light_path_stream->begin_path(
                     pixel_context,
-                    shading_point.get_scene().get_active_camera(),
+                    shading_point.get_scene().get_render_data().m_active_camera,
                     shading_point.get_ray().m_org);
             }
 

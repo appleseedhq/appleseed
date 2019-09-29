@@ -63,6 +63,21 @@ APPLESEED_DEFINE_APIARRAY(IndexedObjectInstanceArray);
 
 
 //
+// Material::RenderData class implementation.
+//
+
+Assembly::RenderData::RenderData()
+{
+    clear();
+}
+
+void Assembly::RenderData::clear()
+{
+    m_procedural_object_instances.clear();
+}
+
+
+//
 // Assembly class implementation.
 //
 
@@ -110,7 +125,6 @@ Assembly::Assembly(
   : Entity(g_class_uid, params)
   , BaseGroup(this)
   , impl(new Impl(this))
-  , m_has_render_data(false)
 {
     set_name(name);
 }
@@ -291,8 +305,9 @@ bool Assembly::on_frame_begin(
     if (!success)
         return false;
 
+    m_render_data.clear();
+
     // Collect procedural object instances.
-    assert(!m_has_render_data);
     for (size_t i = 0, e = object_instances().size(); i < e; ++i)
     {
         const ObjectInstance* object_instance = object_instances().get_by_index(i);
@@ -300,7 +315,6 @@ bool Assembly::on_frame_begin(
         if (dynamic_cast<const ProceduralObject*>(&object) != nullptr)
             m_render_data.m_procedural_object_instances.push_back(std::make_pair(object_instance, i));
     }
-    m_has_render_data = true;
 
     return true;
 }
@@ -309,12 +323,7 @@ void Assembly::on_frame_end(
     const Project&          project,
     const BaseGroup*        parent)
 {
-    // `m_has_render_data` may be false if `on_frame_begin()` failed.
-    if (m_has_render_data)
-    {
-        m_render_data.m_procedural_object_instances.clear();
-        m_has_render_data = false;
-    }
+    m_render_data.clear();
 
     Entity::on_frame_end(project, parent);
 }

@@ -262,7 +262,7 @@ namespace
           , m_pass_hash(pass_hash)
           , m_abort_switch(abort_switch)
         {
-            const Camera* camera = scene.get_active_camera();
+            const Camera* camera = scene.get_render_data().m_active_camera;
             m_shutter_open_begin_time = camera->get_shutter_open_begin_time();
             m_shutter_close_end_time = camera->get_shutter_close_end_time();
         }
@@ -562,7 +562,7 @@ namespace
             m_scene_radius = scene_data.m_radius;
             m_safe_scene_diameter = scene_data.m_safe_diameter;
 
-            const Camera* camera = scene.get_active_camera();
+            const Camera* camera = scene.get_render_data().m_active_camera;
             m_shutter_open_begin_time = camera->get_shutter_open_begin_time();
             m_shutter_close_end_time = camera->get_shutter_close_end_time();
         }

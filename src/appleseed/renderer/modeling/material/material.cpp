@@ -64,6 +64,28 @@ namespace renderer
 {
 
 //
+// Material::RenderData class implementation.
+//
+
+Material::RenderData::RenderData()
+{
+    clear();
+}
+
+void Material::RenderData::clear()
+{
+    m_surface_shader = nullptr;
+    m_bsdf = nullptr;
+    m_bssrdf = nullptr;
+    m_edf = nullptr;
+    m_volume = nullptr;
+    m_alpha_map = nullptr;
+    m_shader_group = nullptr;
+    m_basis_modifier = nullptr;
+}
+
+
+//
 // Material class implementation.
 //
 
@@ -81,7 +103,6 @@ Material::Material(
     const char*             name,
     const ParamArray&       params)
   : ConnectableEntity(g_class_uid, params)
-  , m_has_render_data(false)
 {
     set_name(name);
 
@@ -175,18 +196,11 @@ bool Material::on_frame_begin(
     if (!ConnectableEntity::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
-    assert(!m_has_render_data);
+    m_render_data.clear();
     m_render_data.m_surface_shader = get_uncached_surface_shader();
     if (m_render_data.m_surface_shader == nullptr)
         m_render_data.m_surface_shader = project.get_scene()->get_default_surface_shader();
-    m_render_data.m_bsdf = nullptr;
-    m_render_data.m_bssrdf = nullptr;
-    m_render_data.m_edf = nullptr;
-    m_render_data.m_volume = nullptr;
     m_render_data.m_alpha_map = get_uncached_alpha_map();
-    m_render_data.m_shader_group = nullptr;
-    m_render_data.m_basis_modifier = nullptr;
-    m_has_render_data = true;
 
     return true;
 }
@@ -195,12 +209,8 @@ void Material::on_frame_end(
     const Project&          project,
     const BaseGroup*        parent)
 {
-    // `m_has_render_data` may be false if `on_frame_begin()` failed.
-    if (m_has_render_data)
-    {
-        delete m_render_data.m_basis_modifier;
-        m_has_render_data = false;
-    }
+    delete m_render_data.m_basis_modifier;
+    m_render_data.clear();
 
     ConnectableEntity::on_frame_end(project, parent);
 }

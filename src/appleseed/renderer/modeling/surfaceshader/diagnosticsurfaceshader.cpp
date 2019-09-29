@@ -515,7 +515,7 @@ void DiagnosticSurfaceShader::evaluate(
                     // Retrieve the time, the scene and the camera.
                     const float time = shading_point.get_time().m_absolute;
                     const Scene& scene = shading_point.get_scene();
-                    const Camera& camera = *scene.get_active_camera();
+                    const Camera& camera = *scene.get_render_data().m_active_camera;
 
                     // Compute the film space coordinates of the intersection point.
                     Vector2d point_ndc;

@@ -60,7 +60,7 @@ Color3f compute_screen_space_velocity_color(
 {
     Color3f result;
 
-    const Camera* camera = shading_point.get_scene().get_active_camera();
+    const Camera* camera = shading_point.get_scene().get_render_data().m_active_camera;
     assert(camera);
 
     const Vector3d& p = shading_point.get_point();

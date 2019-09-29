@@ -96,7 +96,7 @@ ProjectPoints::ProjectPoints(
             impl->m_frame_begin_recorder);
 
     if (impl->m_initialized)
-        impl->m_camera = impl->m_project->get_scene()->get_active_camera();
+        impl->m_camera = impl->m_project->get_scene()->get_render_data().m_active_camera;
 }
 
 ProjectPoints::~ProjectPoints()
