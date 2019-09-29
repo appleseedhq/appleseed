@@ -37,6 +37,7 @@
 #include "foundation/math/vector.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cmath>
 
 namespace renderer
@@ -89,7 +90,7 @@ class FresnelDielectricFun
         const foundation::Vector3f& n,
         Spectrum&                   value) const
     {
-        const float cos_oh = std::abs(foundation::dot(o, h));
+        const float cos_oh = std::min(std::abs(foundation::dot(o, h)), 1.0f);
 
         float f;
         foundation::fresnel_reflectance_dielectric(f, m_eta, cos_oh);
@@ -123,8 +124,7 @@ class FresnelDielectricSchlickFun
         const foundation::Vector3f& n,
         Spectrum&                   value) const
     {
-        const float cos_on = std::abs(foundation::dot(o, n));
-
+        const float cos_on = std::min(std::abs(foundation::dot(o, n)), 1.0f);
         foundation::fresnel_reflectance_dielectric_schlick(
             value,
             m_reflectance,
@@ -158,10 +158,8 @@ class FresnelConductorFun
         const foundation::Vector3f& n,
         Spectrum&                   value) const
     {
-        const float cos_oh = std::abs(foundation::dot(o, h));
-
+        const float cos_oh = std::min(std::abs(foundation::dot(o, h)), 1.0f);
         foundation::fresnel_reflectance_conductor(value, m_nt, m_kt, m_ni, cos_oh);
-
         value *= m_reflectance_multiplier;
     }
 
