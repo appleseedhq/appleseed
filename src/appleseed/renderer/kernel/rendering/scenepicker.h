@@ -34,6 +34,7 @@
 #include "renderer/modeling/scene/objectinstance.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/basis.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 
@@ -64,26 +65,24 @@ class APPLESEED_DLLSYMBOL ScenePicker
         foundation::Vector2d            m_ndc;
 
         bool                            m_hit;
-        ShadingPoint::PrimitiveType     m_primitive_type;
-        double                          m_distance;                     // world space
+        ShadingPoint::PrimitiveType     m_primitive_type;               // type of the hit primitive
+        double                          m_distance;                     // world space distance from the ray origin to the intersection point
 
-        foundation::Vector2f            m_bary;
-        foundation::Vector2f            m_uv;
-        foundation::Vector2f            m_duvdx;
-        foundation::Vector2f            m_duvdy;
-        foundation::Vector3d            m_point;                        // world space
-        foundation::Vector3d            m_dpdu;                         // world space
-        foundation::Vector3d            m_dpdv;                         // world space
-        foundation::Vector3d            m_dndu;                         // world space
-        foundation::Vector3d            m_dndv;                         // world space
-        foundation::Vector3d            m_dpdx;                         // world space
-        foundation::Vector3d            m_dpdy;                         // world space
-        foundation::Vector3d            m_geometric_normal;             // world space
-        foundation::Vector3d            m_original_shading_normal;      // world space
-        ObjectInstance::Side            m_side;
-
-        // Note: the (possibly perturbed) shading normal is excluded from picking results
-        // because it requires the normal modifier which is only available during rendering.
+        foundation::Vector2f            m_bary;                         // barycentric coordinates of intersection point
+        foundation::Vector2f            m_uv;                           // texture coordinates from UV set #0
+        foundation::Vector2f            m_duvdx;                        // screen space partial derivative of the texture coords wrt. X
+        foundation::Vector2f            m_duvdy;                        // screen space partial derivative of the texture coords wrt. Y
+        foundation::Vector3d            m_point;                        // world space intersection point
+        foundation::Vector3d            m_dpdu;                         // world space partial derivative of the intersection point wrt. U
+        foundation::Vector3d            m_dpdv;                         // world space partial derivative of the intersection point wrt. V
+        foundation::Vector3d            m_dndu;                         // world space partial derivative of the intersection normal wrt. U
+        foundation::Vector3d            m_dndv;                         // world space partial derivative of the intersection normal wrt. V
+        foundation::Vector3d            m_dpdx;                         // screen space partial derivative of the intersection point wrt. X
+        foundation::Vector3d            m_dpdy;                         // screen space partial derivative of the intersection point wrt. Y
+        foundation::Vector3d            m_geometric_normal;             // world space geometric normal, unit-length
+        foundation::Vector3d            m_original_shading_normal;      // original world space shading normal, unit-length
+        foundation::Basis3d             m_shading_basis;                // world space orthonormal basis around shading normal
+        ObjectInstance::Side            m_side;                         // side of the surface that was hit
 
         const Camera*                   m_camera;
         const AssemblyInstance*         m_assembly_instance;
