@@ -172,6 +172,9 @@ template <typename T, size_t N> bool has_nan(const RegularSpectrum<T, N>& s);
 // Return true if all components of a spectrum are finite (not NaN, not infinite).
 template <typename T, size_t N> bool is_finite(const RegularSpectrum<T, N>& s);
 
+// Return true if all components of a spectrum are finite (not NaN, not infinite) and non-negative.
+template <typename T, size_t N> bool is_finite_non_neg(const RegularSpectrum<T, N>& s);
+
 
 //
 // Full specializations for spectra of type float and double.
@@ -898,6 +901,18 @@ inline bool is_finite(const RegularSpectrum<T, N>& s)
     for (size_t i = 0; i < N; ++i)
     {
         if (!FP<T>::is_finite(s[i]))
+            return false;
+    }
+
+    return true;
+}
+
+template <typename T, size_t N>
+inline bool is_finite_non_neg(const RegularSpectrum<T, N>& s)
+{
+    for (size_t i = 0; i < N; ++i)
+    {
+        if (!FP<T>::is_finite_non_neg(s[i]))
             return false;
     }
 

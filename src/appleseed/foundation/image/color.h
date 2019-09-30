@@ -177,6 +177,9 @@ template <typename T, size_t N> bool has_nan(const Color<T, N>& c);
 // Return true if all components of a color are finite (not NaN, not infinite).
 template <typename T, size_t N> bool is_finite(const Color<T, N>& c);
 
+// Return true if all components of a color are finite (not NaN, not infinite) and non-negative.
+template <typename T, size_t N> bool is_finite_non_neg(const Color<T, N>& c);
+
 
 //
 // RGB color class of arbitrary type.
@@ -892,6 +895,18 @@ inline bool is_finite(const Color<T, N>& c)
     for (size_t i = 0; i < N; ++i)
     {
         if (!FP<T>::is_finite(c[i]))
+            return false;
+    }
+
+    return true;
+}
+
+template <typename T, size_t N>
+inline bool is_finite_non_neg(const Color<T, N>& c)
+{
+    for (size_t i = 0; i < N; ++i)
+    {
+        if (!FP<T>::is_finite_non_neg(c[i]))
             return false;
     }
 

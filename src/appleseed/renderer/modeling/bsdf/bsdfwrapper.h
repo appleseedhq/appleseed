@@ -143,6 +143,8 @@ void BSDFWrapper<BSDFImpl, Cull>::sample(
     if (sample.get_mode() != ScatteringMode::None)
     {
         assert(foundation::is_normalized(sample.m_incoming.get_value(), 1.0e-5f));
+        assert(sample.m_value.is_valid());
+        assert(sample.m_aov_components.is_valid());
 
         // Disabled until BSDF are evaluated in local space, because the numerous
         // conversions between local space and world space kill precision.
@@ -214,19 +216,24 @@ float BSDFWrapper<BSDFImpl, Cull>::evaluate(
             value);
     assert(probability >= 0.0f);
 
-    if (probability > 0.0f && cosine_mult)
+    if (probability > 0.0f)
     {
-        if (adjoint)
+        assert(value.is_valid());
+
+        if (cosine_mult)
         {
-            const float cos_on = std::abs(foundation::dot(outgoing, shading_basis.get_normal()));
-            const float cos_ig = std::abs(foundation::dot(incoming, geometric_normal));
-            const float cos_og = std::abs(foundation::dot(outgoing, geometric_normal));
-            value *= cos_on * cos_ig / cos_og;
-        }
-        else
-        {
-            const float cos_in = std::abs(foundation::dot(incoming, shading_basis.get_normal()));
-            value *= cos_in;
+            if (adjoint)
+            {
+                const float cos_on = std::abs(foundation::dot(outgoing, shading_basis.get_normal()));
+                const float cos_ig = std::abs(foundation::dot(incoming, geometric_normal));
+                const float cos_og = std::abs(foundation::dot(outgoing, geometric_normal));
+                value *= cos_on * cos_ig / cos_og;
+            }
+            else
+            {
+                const float cos_in = std::abs(foundation::dot(incoming, shading_basis.get_normal()));
+                value *= cos_in;
+            }
         }
     }
 

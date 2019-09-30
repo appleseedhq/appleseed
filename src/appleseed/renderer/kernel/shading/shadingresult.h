@@ -62,10 +62,10 @@ class ShadingResult
     // The main output and AOVs are cleared to transparent black.
     explicit ShadingResult(const size_t aov_count = 0);
 
-    // Return false if the main output contains NaN, negative or infinite values.
+    // Return true if the main output is finite (not NaN, not infinite) and non-negative.
     bool is_main_valid() const;
 
-    // Return false if the main output of any of the AOV contains NaN, negative or infinite values.
+    // Return true if the main output and all AOVs are finite (not NaN, not infinite) and non-negative.
     bool is_valid() const;
 
     // Composite this shading result over `background`.

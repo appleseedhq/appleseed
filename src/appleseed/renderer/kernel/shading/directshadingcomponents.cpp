@@ -29,6 +29,8 @@
 // Interface header.
 #include "directshadingcomponents.h"
 
+using namespace foundation;
+
 namespace renderer
 {
 
@@ -39,6 +41,16 @@ namespace renderer
 DirectShadingComponents::DirectShadingComponents()
 {
     set(0.0f);
+}
+
+bool DirectShadingComponents::is_valid() const
+{
+    return
+        is_finite_non_neg(m_beauty) &&
+        is_finite_non_neg(m_diffuse) &&
+        is_finite_non_neg(m_glossy) &&
+        is_finite_non_neg(m_volume) &&
+        is_finite_non_neg(m_emission);
 }
 
 void DirectShadingComponents::set(const float val)
