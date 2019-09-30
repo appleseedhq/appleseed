@@ -85,49 +85,52 @@ struct FP<float>
     static float indefinite();                              // synonym for qnan()
 
     // Extract the sign bit from a floating-point number.
-    static uint32 sign(float x);
+    static uint32 sign(const float x);
 
     // Extract the exponent bits from a floating-point number.
-    static uint32 exponent(float x);
+    static uint32 exponent(const float x);
 
     // Extract the mantissa bits from a floating-point number.
-    static uint32 mantissa(float x);
+    static uint32 mantissa(const float x);
 
     // Return true if x is a normalized number.
-    static bool is_normal(float x);
+    static bool is_normal(const float x);
 
     // Return true if x is a subnormal (denormalized) number.
-    static bool is_subnormal(float x);
+    static bool is_subnormal(const float x);
 
     // Return true if x equals +0.0 or -0.0.
-    static bool is_zero(float x);
+    static bool is_zero(const float x);
 
     // Return true if x equals +0.0.
-    static bool is_pos_zero(float x);
+    static bool is_pos_zero(const float x);
 
     // Return true if x equals -0.0.
-    static bool is_neg_zero(float x);
+    static bool is_neg_zero(const float x);
 
     // Return true if x equals +infinity or -infinity.
-    static bool is_inf(float x);
+    static bool is_inf(const float x);
 
     // Return true if x equals +infinity.
-    static bool is_pos_inf(float x);
+    static bool is_pos_inf(const float x);
 
     // Return true if x equals -infinity.
-    static bool is_neg_inf(float x);
+    static bool is_neg_inf(const float x);
 
     // Return true if x equals signaling NaN or quiet NaN (indefinite).
-    static bool is_nan(float x);
+    static bool is_nan(const float x);
 
     // Return true if x equals signaling NaN.
-    static bool is_snan(float x);
+    static bool is_snan(const float x);
 
     // Return true if x equals quiet NaN.
-    static bool is_qnan(float x);
+    static bool is_qnan(const float x);
 
     // Return true if x is neither NaN nor infinite.
-    static bool is_finite(float x);
+    static bool is_finite(const float x);
+
+    // Return true if x is neither NaN nor infinite nor negative.
+    static bool is_finite_non_neg(const float x);
 
     // Construct a 32-bit floating-point value given a sign, an exponent and a mantissa.
     static float construct(
@@ -165,49 +168,52 @@ struct FP<double>
     static double indefinite();                             // synonym for qnan()
 
     // Extract the sign bit from a floating-point number.
-    static uint64 sign(double x);
+    static uint64 sign(const double x);
 
     // Extract the exponent bits from a floating-point number.
-    static uint64 exponent(double x);
+    static uint64 exponent(const double x);
 
     // Extract the mantissa bits from a floating-point number.
-    static uint64 mantissa(double x);
+    static uint64 mantissa(const double x);
 
     // Return true if x is a normalized number.
-    static bool is_normal(double x);
+    static bool is_normal(const double x);
 
     // Return true if x is a subnormal (denormalized) number.
-    static bool is_subnormal(double x);
+    static bool is_subnormal(const double x);
 
     // Return true if x equals +0.0 or -0.0.
-    static bool is_zero(double x);
+    static bool is_zero(const double x);
 
     // Return true if x equals +0.0.
-    static bool is_pos_zero(double x);
+    static bool is_pos_zero(const double x);
 
     // Return true if x equals -0.0.
-    static bool is_neg_zero(double x);
+    static bool is_neg_zero(const double x);
 
     // Return true if x equals +infinity or -infinity.
-    static bool is_inf(double x);
+    static bool is_inf(const double x);
 
     // Return true if x equals +infinity.
-    static bool is_pos_inf(double x);
+    static bool is_pos_inf(const double x);
 
     // Return true if x equals -infinity.
-    static bool is_neg_inf(double x);
+    static bool is_neg_inf(const double x);
 
     // Return true if x equals signaling NaN or quiet NaN (indefinite).
-    static bool is_nan(double x);
+    static bool is_nan(const double x);
 
     // Return true if x equals signaling NaN.
-    static bool is_snan(double x);
+    static bool is_snan(const double x);
 
     // Return true if x equals quiet NaN.
-    static bool is_qnan(double x);
+    static bool is_qnan(const double x);
 
     // Return true if x is neither NaN nor infinite.
-    static bool is_finite(double x);
+    static bool is_finite(const double x);
+
+    // Return true if x is neither NaN nor infinite nor negative.
+    static bool is_finite_non_neg(const double x);
 
     // Construct a 64-bit floating-point value given a sign, an exponent and a mantissa.
     static double construct(
@@ -279,79 +285,91 @@ inline float FP<float>::indefinite()
     return binary_cast<float>(QNaN);
 }
 
-inline uint32 FP<float>::sign(float x)
+inline uint32 FP<float>::sign(const float x)
 {
     return (binary_cast<uint32>(x) & 0x80000000u) >> 31;
 }
 
-inline uint32 FP<float>::exponent(float x)
+inline uint32 FP<float>::exponent(const float x)
 {
     return (binary_cast<uint32>(x) >> 23) & 255;
 }
 
-inline uint32 FP<float>::mantissa(float x)
+inline uint32 FP<float>::mantissa(const float x)
 {
     return binary_cast<uint32>(x) & 0x007FFFFFu;
 }
 
-inline bool FP<float>::is_normal(float x)
+inline bool FP<float>::is_normal(const float x)
 {
     return exponent(x) > 0 && exponent(x) < 255;
 }
 
-inline bool FP<float>::is_subnormal(float x)
+inline bool FP<float>::is_subnormal(const float x)
 {
     return exponent(x) == 0 && mantissa(x) != 0;
 }
 
-inline bool FP<float>::is_zero(float x)
+inline bool FP<float>::is_zero(const float x)
 {
     return (binary_cast<uint32>(x) & 0x7FFFFFFFu) == 0;
 }
 
-inline bool FP<float>::is_pos_zero(float x)
+inline bool FP<float>::is_pos_zero(const float x)
 {
     return binary_cast<uint32>(x) == PosZero;
 }
 
-inline bool FP<float>::is_neg_zero(float x)
+inline bool FP<float>::is_neg_zero(const float x)
 {
     return binary_cast<uint32>(x) == NegZero;
 }
 
-inline bool FP<float>::is_inf(float x)
+inline bool FP<float>::is_inf(const float x)
 {
     return (binary_cast<uint32>(x) & 0x7FFFFFFFu) == PosInf;
 }
 
-inline bool FP<float>::is_pos_inf(float x)
+inline bool FP<float>::is_pos_inf(const float x)
 {
     return binary_cast<uint32>(x) == PosInf;
 }
 
-inline bool FP<float>::is_neg_inf(float x)
+inline bool FP<float>::is_neg_inf(const float x)
 {
     return binary_cast<uint32>(x) == NegInf;
 }
 
-inline bool FP<float>::is_nan(float x)
+inline bool FP<float>::is_nan(const float x)
 {
     return exponent(x) == 255 && mantissa(x) != 0;
 }
 
-inline bool FP<float>::is_snan(float x)
+inline bool FP<float>::is_snan(const float x)
 {
     return sign(x) == 0 && is_nan(x);
 }
 
-inline bool FP<float>::is_qnan(float x)
+inline bool FP<float>::is_qnan(const float x)
 {
     return sign(x) == 1 && is_nan(x);
 }
 
-inline bool FP<float>::is_finite(float x)
+inline bool FP<float>::is_finite(const float x)
 {
     return !is_inf(x) && !is_nan(x);
+}
+
+inline bool FP<float>::is_finite_non_neg(const float x)
+{
+    const uint32 ix = binary_cast<uint32>(x);
+    const uint32 sign = (ix & 0x80000000u) >> 31;
+    const uint32 exponent = (ix >> 23) & 255;
+    const uint32 mantissa = ix & 0x007FFFFFu;
+    const bool is_neg = sign == 1 && ix != 0x80000000u;
+    const bool is_nan = exponent == 255 && mantissa != 0;
+    const bool is_inf = (ix & 0x7FFFFFFFu) == PosInf;
+    return !is_neg && !is_nan && !is_inf;
 }
 
 inline float FP<float>::construct(
@@ -421,79 +439,91 @@ inline double FP<double>::indefinite()
     return binary_cast<double>(QNaN);
 }
 
-inline uint64 FP<double>::sign(double x)
+inline uint64 FP<double>::sign(const double x)
 {
     return (binary_cast<uint64>(x) & 0x8000000000000000ull) >> 63;
 }
 
-inline uint64 FP<double>::exponent(double x)
+inline uint64 FP<double>::exponent(const double x)
 {
     return (binary_cast<uint64>(x) >> 52) & 2047;
 }
 
-inline uint64 FP<double>::mantissa(double x)
+inline uint64 FP<double>::mantissa(const double x)
 {
     return binary_cast<uint64>(x) & 0x000FFFFFFFFFFFFFull;
 }
 
-inline bool FP<double>::is_normal(double x)
+inline bool FP<double>::is_normal(const double x)
 {
     return exponent(x) > 0 && exponent(x) < 2047;
 }
 
-inline bool FP<double>::is_subnormal(double x)
+inline bool FP<double>::is_subnormal(const double x)
 {
     return exponent(x) == 0 && mantissa(x) != 0;
 }
 
-inline bool FP<double>::is_zero(double x)
+inline bool FP<double>::is_zero(const double x)
 {
     return (binary_cast<uint64>(x) & 0x7FFFFFFFFFFFFFFFull) == 0;
 }
 
-inline bool FP<double>::is_pos_zero(double x)
+inline bool FP<double>::is_pos_zero(const double x)
 {
     return binary_cast<uint64>(x) == PosZero;
 }
 
-inline bool FP<double>::is_neg_zero(double x)
+inline bool FP<double>::is_neg_zero(const double x)
 {
     return binary_cast<uint64>(x) == NegZero;
 }
 
-inline bool FP<double>::is_inf(double x)
+inline bool FP<double>::is_inf(const double x)
 {
     return (binary_cast<uint64>(x) & 0x7FFFFFFFFFFFFFFFull) == PosInf;
 }
 
-inline bool FP<double>::is_pos_inf(double x)
+inline bool FP<double>::is_pos_inf(const double x)
 {
     return binary_cast<uint64>(x) == PosInf;
 }
 
-inline bool FP<double>::is_neg_inf(double x)
+inline bool FP<double>::is_neg_inf(const double x)
 {
     return binary_cast<uint64>(x) == NegInf;
 }
 
-inline bool FP<double>::is_nan(double x)
+inline bool FP<double>::is_nan(const double x)
 {
     return exponent(x) == 2047 && mantissa(x) != 0;
 }
 
-inline bool FP<double>::is_snan(double x)
+inline bool FP<double>::is_snan(const double x)
 {
     return sign(x) == 0 && is_nan(x);
 }
 
-inline bool FP<double>::is_qnan(double x)
+inline bool FP<double>::is_qnan(const double x)
 {
     return sign(x) == 1 && is_nan(x);
 }
 
-inline bool FP<double>::is_finite(double x)
+inline bool FP<double>::is_finite(const double x)
 {
     return !is_inf(x) && !is_nan(x);
+}
+
+inline bool FP<double>::is_finite_non_neg(const double x)
+{
+    const uint64 ix = binary_cast<uint64>(x);
+    const uint64 sign = (ix & 0x8000000000000000ull) >> 63;
+    const uint64 exponent = (ix >> 52) & 2047;
+    const uint64 mantissa = ix & 0x000FFFFFFFFFFFFFull;
+    const bool is_neg = sign == 1 && ix != 0x8000000000000000ull;
+    const bool is_nan = exponent == 2047 && mantissa != 0;
+    const bool is_inf = (ix & 0x7FFFFFFFFFFFFFFFull) == PosInf;
+    return !is_neg && !is_nan && !is_inf;
 }
 
 inline double FP<double>::construct(

@@ -29,6 +29,8 @@
 // Interface header.
 #include "aovcomponents.h"
 
+using namespace foundation;
+
 namespace renderer
 {
 
@@ -41,6 +43,14 @@ AOVComponents::AOVComponents()
   , m_npr_shading(0.0f)
   , m_npr_contour(0.0f)
 {
+}
+
+bool AOVComponents::is_valid() const
+{
+    return
+        is_finite_non_neg(m_albedo) &&
+        is_finite_non_neg(m_npr_shading) &&
+        is_finite_non_neg(m_npr_contour);
 }
 
 }   // namespace renderer

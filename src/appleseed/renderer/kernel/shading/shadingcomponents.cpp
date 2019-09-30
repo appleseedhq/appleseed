@@ -32,6 +32,8 @@
 // appleseed.renderer headers.
 #include "renderer/kernel/shading/directshadingcomponents.h"
 
+using namespace foundation;
+
 namespace renderer
 {
 
@@ -49,6 +51,19 @@ ShadingComponents::ShadingComponents()
   , m_indirect_glossy(0.0f)
   , m_indirect_volume(0.0f)
 {
+}
+
+bool ShadingComponents::is_valid() const
+{
+    return
+        is_finite_non_neg(m_beauty) &&
+        is_finite_non_neg(m_diffuse) &&
+        is_finite_non_neg(m_glossy) &&
+        is_finite_non_neg(m_volume) &&
+        is_finite_non_neg(m_emission) &&
+        is_finite_non_neg(m_indirect_diffuse) &&
+        is_finite_non_neg(m_indirect_glossy) &&
+        is_finite_non_neg(m_indirect_volume);
 }
 
 void ShadingComponents::add_emission(
