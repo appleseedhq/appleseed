@@ -271,8 +271,8 @@ TEST_SUITE(ImageTools)
     TEST_CASE(CompareImages)
     {
         GenericImageFileReader reader;
-        unique_ptr<Image> left_image(reader.read("left.exr"));
-        unique_ptr<Image> right_image(reader.read("right.exr"));
+        std::unique_ptr<Image> left_image(reader.read("left.exr"));
+        std::unique_ptr<Image> right_image(reader.read("right.exr"));
 
         ASSERT_TRUE(left_image.get());
         ASSERT_TRUE(right_image.get());
@@ -284,12 +284,12 @@ TEST_SUITE(ImageTools)
         // LuminanceDifferenceSign op(1.0e-9f);
         MaximumComponentDifferenceSign op(1.0e-9f);
 
-        unique_ptr<Image> result =
+        std::unique_ptr<Image> result =
             apply(
                 *apply(*left_image.get(), *right_image.get(), op).get(),
                 ColorMultiply(1.0f));
 
-        OIIOImageFileWriter writer("unit tests/outputs/test_imagetools_compareimages.png");
+        GenericImageFileWriter writer("unit tests/outputs/test_imagetools_compareimages.png");
         writer.append_image(result.get());
         writer.write();
     }
@@ -306,7 +306,7 @@ TEST_SUITE(ImageTools)
         const float DarksGammaCorrection = 10.0f;
 
         GenericImageFileReader reader;
-        unique_ptr<Image> input_image(reader.read("input.exr"));
+        std::unique_ptr<Image> input_image(reader.read("input.exr"));
 
         ASSERT_TRUE(input_image.get());
 
@@ -362,8 +362,8 @@ TEST_SUITE(ImageTools)
             }
         }
 
-        OIIOImageFileWriter writer("unit tests/outputs/test_imagetools_tweakimage.png");
-        writer.append_image(output_image);
+        GenericImageFileWriter writer("unit tests/outputs/test_imagetools_tweakimage.png");
+        writer.append_image(&output_image);
         writer.write();
     }
 
@@ -374,7 +374,7 @@ TEST_SUITE(ImageTools)
     TEST_CASE(ComputeAverageImageValue)
     {
         GenericImageFileReader reader;
-        unique_ptr<Image> input_image(reader.read("input.exr"));
+        std::unique_ptr<Image> input_image(reader.read("input.exr"));
 
         ASSERT_TRUE(input_image.get());
 
@@ -393,7 +393,7 @@ TEST_SUITE(ImageTools)
 
         avg /= static_cast<double>(props.m_pixel_count);
 
-        cerr << "Average: " << avg[0] << " " << avg[1] << " " << avg[2] << endl;
+        std::cerr << "Average: " << avg[0] << " " << avg[1] << " " << avg[2] << std::endl;
     }
 
 #endif
@@ -428,8 +428,8 @@ TEST_SUITE(ImageTools)
             }
         }
 
-        OIIOImageFileWriter writer("unit tests/outputs/test_imagetools_spherebump.exr");
-        writer.append_image(image);
+        GenericImageFileWriter writer("unit tests/outputs/test_imagetools_spherebump.exr");
+        writer.append_image(&image);
         writer.write();
     }
 
@@ -460,8 +460,81 @@ TEST_SUITE(ImageTools)
             }
         }
 
-        OIIOImageFileWriter writer("unit tests/outputs/test_imagetools_sinebump.exr");
-        writer.append_image(image);
+        GenericImageFileWriter writer("unit tests/outputs/test_imagetools_sinebump.exr");
+        writer.append_image(&image);
+        writer.write();
+    }
+
+#endif
+
+#if 0
+
+    TEST_CASE(GenerateAnisotropyMap)
+    {
+        static constexpr size_t ImageSize = 2048;
+        static constexpr size_t SubPixelGrid = 6;
+        static constexpr enum class Vector { Normal, Tangent } Vector = Vector::Tangent;
+        static constexpr enum class FieldMode { RedGreen, RedBlue } FieldMode = FieldMode::RedGreen;
+        static constexpr enum class BaseLevel { Zero, Middle } BaseLevel = BaseLevel::Middle;
+        static constexpr bool ClampToDisk = false;
+
+        Image image(ImageSize, ImageSize, 32, 32, 3, PixelFormatHalf);
+        const float half_image_size = static_cast<float>(ImageSize) / 2.0f;
+
+        for (size_t y = 0; y < ImageSize; ++y)
+        {
+            for (size_t x = 0; x < ImageSize; ++x)
+            {
+                Color3f pixel_color(0.0f);
+
+                for (size_t sy = 0; sy < SubPixelGrid; ++sy)
+                {
+                    for (size_t sx = 0; sx < SubPixelGrid; ++sx)
+                    {
+                        Color3f subpixel_color = BaseLevel == BaseLevel::Zero ? Color3f(0.0f) : Color3f(0.5f);
+
+                        const float fx = x + (0.5f + sx) / SubPixelGrid;
+                        const float fy = y + (0.5f + sy) / SubPixelGrid;
+
+                        const float dx = fx - half_image_size;
+                        const float dy = half_image_size - fy;
+
+                        const float d = std::sqrt(dx * dx + dy * dy);
+                        assert(d > 0.0f);
+
+                        if (!ClampToDisk || d <= half_image_size)
+                        {
+                            const Vector2f n(dx / d, dy / d);
+                            const Vector2f t(n.y, -n.x);
+
+                            const Vector2f v = Vector == Vector::Normal ? n : t;
+
+                            switch (FieldMode)
+                            {
+                              case FieldMode::RedGreen:
+                                subpixel_color.r = saturate((v.x + 1.0f) * 0.5f);
+                                subpixel_color.g = saturate((v.y + 1.0f) * 0.5f);
+                                break;
+
+                              case FieldMode::RedBlue:
+                                subpixel_color.r = saturate((v.x + 1.0f) * 0.5f);
+                                subpixel_color.b = saturate((v.y + 1.0f) * 0.5f);
+                                break;
+                            }
+                        }
+
+                        pixel_color += subpixel_color;
+                    }
+                }
+
+                pixel_color /= static_cast<float>(SubPixelGrid * SubPixelGrid);
+
+                image.set_pixel(x, y, pixel_color);
+            }
+        }
+
+        GenericImageFileWriter writer("unit tests/outputs/test_imagetools_anisotropymap.png");
+        writer.append_image(&image);
         writer.write();
     }
 
