@@ -356,8 +356,7 @@ void LightSamplerBase::collect_emitting_shapes(
             x = global_transform.vector_to_parent(x);
             y = global_transform.vector_to_parent(y);
             n = normalize(global_transform.normal_to_parent(n));
-            assert(is_normalized(n));
-
+            
             const double area = norm(x) * norm(y);
 
             if (area == 0.0)
@@ -496,7 +495,6 @@ void LightSamplerBase::collect_emitting_shapes(
             x = global_transform.vector_to_parent(x);
             y = global_transform.vector_to_parent(y);
             n = normalize(global_transform.normal_to_parent(n));
-            assert(is_normalized(n));
 
             const Matrix4d& xform = global_transform.get_local_to_parent();
             Vector3d center, scale;
