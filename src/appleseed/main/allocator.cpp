@@ -135,11 +135,11 @@ namespace
     uint64 g_largest_allocation_bytes = 0;  // size in bytes of the largest allocation
 
     // File to which memory operations and leaks are logged.
-    FILE* g_log_file = 0;
+    std::FILE* g_log_file = 0;
 
-    typedef pair<const void*, size_t> MemoryBlock;
-    typedef vector<MemoryBlock> MemoryBlockVector;
-    typedef map<const void*, size_t> MemoryBlockMap;
+    typedef std::pair<const void*, size_t> MemoryBlock;
+    typedef std::vector<MemoryBlock> MemoryBlockVector;
+    typedef std::map<const void*, size_t> MemoryBlockMap;
 
     // Memory blocks currently allocated.
     MemoryBlockMap g_allocated_mem_blocks;
@@ -157,7 +157,7 @@ namespace
         {
         }
 
-        void reset(FILE* file)
+        void reset(std::FILE* file)
         {
             m_file = file;
             m_level = 0;
@@ -165,9 +165,9 @@ namespace
         }
 
       private:
-        FILE*   m_file;
-        size_t  m_level;
-        bool    m_skip;
+        std::FILE*  m_file;
+        size_t      m_level;
+        bool        m_skip;
 
         virtual void OnOutput(LPCSTR szText)
         {
@@ -181,7 +181,7 @@ namespace
 
             if (m_file == nullptr)
                 StackWalker::OnOutput(szText);
-            else fprintf(m_file, "        %s", szText);
+            else std::fprintf(m_file, "        %s", szText);
 
             static const char* MainFunctionSuffix = ": main\n";
             const size_t main_function_suffix_length = strlen(MainFunctionSuffix);
@@ -203,19 +203,19 @@ namespace
 
 #endif
 
-    string get_timestamp_string()
+    std::string get_timestamp_string()
     {
-        time_t t;
-        time(&t);
+        std::time_t t;
+        std::time(&t);
 
-        const tm* local_time = localtime(&t);
+        const std::tm* local_time = localtime(&t);
 
         std::stringstream sstr;
-        sstr << setfill('0');
+        sstr << std::setfill('0');
 
-        sstr << setw(2) << local_time->tm_hour << ':';
-        sstr << setw(2) << local_time->tm_min << ':';
-        sstr << setw(2) << local_time->tm_sec;
+        sstr << std::setw(2) << local_time->tm_hour << ':';
+        sstr << std::setw(2) << local_time->tm_min << ':';
+        sstr << std::setw(2) << local_time->tm_sec;
 
         return sstr.str();
     }
@@ -224,7 +224,7 @@ namespace
     {
         assert(!g_tracking_enabled);
 
-        fprintf(
+        std::fprintf(
             g_log_file,
             "[%s] Allocated %s at %s\n",
             get_timestamp_string().c_str(),
@@ -232,12 +232,12 @@ namespace
             to_string(ptr).c_str());
 
 #ifdef DUMP_CALLSTACK_ON_ALLOCATION
-        fprintf(g_log_file, "    Call stack:\n");
+        std::fprintf(g_log_file, "    Call stack:\n");
 
         g_stack_walker.reset(g_log_file);
         g_stack_walker.ShowCallstack();
 
-        fprintf(g_log_file, "\n");
+        std::fprintf(g_log_file, "\n");
 #endif
     }
 
@@ -245,7 +245,7 @@ namespace
     {
         assert(!g_tracking_enabled);
 
-        fprintf(
+        std::fprintf(
             g_log_file,
             "[%s] FAILED to allocate %s\n",
             get_timestamp_string().c_str(),
@@ -256,15 +256,15 @@ namespace
     {
         assert(!g_tracking_enabled);
 
-        fprintf(
+        std::fprintf(
             g_log_file,
             "[%s] Deallocated %s at %s\n",
             get_timestamp_string().c_str(),
             pretty_size(size).c_str(),
-            std::to_string(ptr).c_str());
+            to_string(ptr).c_str());
 
 #ifdef DUMP_CALLSTACK_ON_ALLOCATION
-        fprintf(g_log_file, "\n");
+        std::fprintf(g_log_file, "\n");
 #endif
     }
 
@@ -290,7 +290,7 @@ namespace
     {
         assert(!g_tracking_enabled);
 
-        fprintf(
+        std::fprintf(
             g_log_file,
             "\n"
             "Statistics:\n"
@@ -318,14 +318,14 @@ namespace
 
         if (g_allocated_mem_blocks.empty())
         {
-            fprintf(g_log_file, "No memory leak detected.\n");
+            std::fprintf(g_log_file, "No memory leak detected.\n");
         }
         else
         {
             const size_t leak_count = g_allocated_mem_blocks.size();
             const uint64 leak_bytes = compute_leaked_memory_size();
 
-            fprintf(
+            std::fprintf(
                 g_log_file,
                 "Detected %s potential memory leak%s (%s in total):\n\n",
                 pretty_uint(leak_count).c_str(),
@@ -342,11 +342,11 @@ namespace
 
             for (const_each<MemoryBlockVector> i = sorted_blocks; i; ++i)
             {
-                fprintf(
+                std::fprintf(
                     g_log_file,
                     "    %s at %s\n",
                     pretty_size(i->second).c_str(),
-                    std::to_string(i->first).c_str());
+                    to_string(i->first).c_str());
             }
         }
     }
