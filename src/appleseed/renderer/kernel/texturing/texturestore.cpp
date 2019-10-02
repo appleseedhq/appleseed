@@ -196,6 +196,7 @@ void TextureStore::TileSwapper::load(const TileKey& key, TileRecord& record)
 
     // Fetch the texture.
     Texture* texture = textures.get_by_uid(key.m_texture_uid);
+    assert(texture != nullptr);
 
     if (m_params.m_track_tile_loading)
     {
@@ -272,6 +273,7 @@ bool TextureStore::TileSwapper::unload(const TileKey& key, TileRecord& record)
 
     // Fetch the texture.
     Texture* texture = textures.get_by_uid(key.m_texture_uid);
+    assert(texture != nullptr);
 
     if (m_params.m_track_tile_unloading)
     {
