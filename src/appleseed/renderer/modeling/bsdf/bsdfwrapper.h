@@ -33,6 +33,7 @@
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
+#include "renderer/utility/shadowterminator.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -40,6 +41,7 @@
 #include "foundation/platform/compiler.h"
 
 // Standard headers.
+#include <algorithm>
 #include <cassert>
 #include <cmath>
 
@@ -177,8 +179,8 @@ void BSDFWrapper<BSDFImpl, Cull>::sample(
             }
             else
             {
-                const float cos_in = std::abs(foundation::dot(sample.m_incoming.get_value(), sample.m_shading_basis.get_normal()));
-                sample.m_value *= cos_in;
+                const float cos_in = std::min(std::abs(foundation::dot(sample.m_incoming.get_value(), sample.m_shading_basis.get_normal())), 1.0f);
+                sample.m_value *= shift_cos_in_fast(cos_in, 1.0f);
             }
         }
     }
@@ -231,8 +233,8 @@ float BSDFWrapper<BSDFImpl, Cull>::evaluate(
             }
             else
             {
-                const float cos_in = std::abs(foundation::dot(incoming, shading_basis.get_normal()));
-                value *= cos_in;
+                const float cos_in = std::min(std::abs(foundation::dot(incoming, shading_basis.get_normal())), 1.0f);
+                value *= shift_cos_in_fast(cos_in, 1.0f);
             }
         }
     }

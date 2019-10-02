@@ -1467,6 +1467,7 @@ set (renderer_meta_benchmarks_sources
     renderer/meta/benchmarks/benchmark_dynamicspectrum.cpp
     renderer/meta/benchmarks/benchmark_frame.cpp
     renderer/meta/benchmarks/benchmark_localsampleaccumulationbuffer.cpp
+    renderer/meta/benchmarks/benchmark_shadowterminator.cpp
     renderer/meta/benchmarks/benchmark_transformsequence.cpp
 )
 list (APPEND appleseed_sources
@@ -2158,6 +2159,7 @@ set (renderer_utility_sources
     renderer/utility/seexpr.h
     renderer/utility/settingsparsing.cpp
     renderer/utility/settingsparsing.h
+    renderer/utility/shadowterminator.h
     renderer/utility/spectrumclamp.h
     renderer/utility/stochasticcast.h
     renderer/utility/testutils.cpp
