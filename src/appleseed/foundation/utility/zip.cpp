@@ -37,6 +37,7 @@
 
 // Boost headers.
 #include "boost/filesystem.hpp"
+#include "boost/range/iterator_range.hpp"
 
 // Standard headers.
 #include <ctime>
@@ -348,21 +349,16 @@ std::set<std::string> recursive_ls(const bf::path& dir)
 {
     std::set<std::string> files;
 
-    // A default-constructed directory_iterator acts as the end iterator.
-    for (bf::directory_iterator di(dir), de; di != de; ++di)
+    for (const bf::path& entry_path : boost::make_iterator_range(bf::directory_iterator(dir)))
     {
-        const bf::path& current_path = di->path();
-
-        if (bf::is_directory(current_path))
+        if (bf::is_directory(entry_path))
         {
-            const std::string dirname = current_path.filename().string();
-            const std::set<std::string> files_in_subdir = recursive_ls(current_path);
+            const std::string dirname = entry_path.filename().string();
 
-            for (const_each<std::set<std::string>> fi = files_in_subdir; fi; ++fi)
-                files.insert(dirname + "/" + *fi);
+            for (const std::string& filepath : recursive_ls(entry_path))
+                files.insert(dirname + "/" + filepath);
         }
-        else
-            files.insert(current_path.filename().string());
+        else files.insert(entry_path.filename().string());
     }
 
     return files;

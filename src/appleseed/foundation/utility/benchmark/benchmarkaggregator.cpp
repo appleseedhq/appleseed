@@ -42,6 +42,7 @@
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
+#include "boost/range/iterator_range.hpp"
 #include "boost/regex.hpp"
 
 // Xerces-C++ headers.
@@ -301,12 +302,10 @@ void BenchmarkAggregator::scan_directory(const char* path)
     if (!bf::is_directory(path))
         return;
 
-    for (bf::directory_iterator i(path), e; i != e; ++i)
+    for (const bf::path& entry_path : boost::make_iterator_range(bf::directory_iterator(path)))
     {
-        if (!bf::is_regular_file(i->status()))
-            continue;
-
-        scan_file(i->path().string().c_str());
+        if (bf::is_regular_file(entry_path))
+            scan_file(entry_path.string().c_str());
     }
 }
 
