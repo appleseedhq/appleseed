@@ -1414,6 +1414,7 @@ namespace
             load_directly_linked_values(config);
 
             slot_changed_bsdf_sampling_fraction_mode(m_sampling_fraction_combobox->currentIndex());
+            slot_changed_save_iterations_mode(m_save_iterations_combobox->currentIndex());
 
             load_global_max_bounce_settings(config, "gpt", "gpt.max_bounces", 8);
             load_separate_bounce_settings(config, "gpt", "guided", 8);
