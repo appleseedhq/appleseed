@@ -48,21 +48,12 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
-
-// Work around a regression in Visual Studio 2015 Update 3.
-#if defined(_MSC_VER) && _MSC_VER == 1900
-namespace boost
-{
-    template <> CurveObject const volatile* get_pointer<CurveObject const volatile>(CurveObject const volatile* p) { return p; }
-}
-#endif
 
 namespace
 {
     auto_release_ptr<CurveObject> create_curve_obj(
-        const string&       name,
-        const bpy::dict&    params)
+        const std::string&    name,
+        const bpy::dict&      params)
     {
         return
             auto_release_ptr<CurveObject>(
@@ -72,9 +63,9 @@ namespace
     }
 
     auto_release_ptr<CurveObject> read_curve_object(
-        const bpy::list&    search_paths,
-        const string&       object_name,
-        const bpy::dict&    params)
+        const bpy::list&      search_paths,
+        const std::string&    object_name,
+        const bpy::dict&      params)
     {
         SearchPaths paths;
 
@@ -103,8 +94,8 @@ namespace
     }
 
     bool write_curve_object(
-        const CurveObject*   object,
-        const string&        filename)
+        const CurveObject*    object,
+        const std::string&    filename)
     {
         return CurveObjectWriter::write(*object, filename.c_str());
     }

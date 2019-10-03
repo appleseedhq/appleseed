@@ -34,7 +34,6 @@
 #include <limits>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Math_MIS)
 {

@@ -51,16 +51,15 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
 
-string get_entity_name_dialog(
-    QWidget*        parent,
-    const string&   title,
-    const string&   label,
-    const string&   text)
+std::string get_entity_name_dialog(
+    QWidget*             parent,
+    const std::string&   title,
+    const std::string&   label,
+    const std::string&   text)
 {
     QString result;
     bool ok;
@@ -77,22 +76,22 @@ string get_entity_name_dialog(
                 &ok);
     } while (ok && result.isEmpty());
 
-    return ok ? result.toStdString() : string();
+    return ok ? result.toStdString() : std::string();
 }
 
 void open_entity_editor(
-    QWidget*                                    parent,
-    const string&                               window_title,
-    const Project&                              project,
-    renderer::ParamArray&                       settings,
-    unique_ptr<EntityEditor::IFormFactory>      form_factory,
-    unique_ptr<EntityEditor::IEntityBrowser>    entity_browser,
-    unique_ptr<CustomEntityUI>                  custom_entity_ui,
-    const Dictionary&                           values,
-    QObject*                                    receiver,
-    const char*                                 slot_apply,
-    const char*                                 slot_accept,
-    const char*                                 slot_cancel)
+    QWidget*                                         parent,
+    const std::string&                               window_title,
+    const Project&                                   project,
+    renderer::ParamArray&                            settings,
+    std::unique_ptr<EntityEditor::IFormFactory>      form_factory,
+    std::unique_ptr<EntityEditor::IEntityBrowser>    entity_browser,
+    std::unique_ptr<CustomEntityUI>                  custom_entity_ui,
+    const Dictionary&                                values,
+    QObject*                                         receiver,
+    const char*                                      slot_apply,
+    const char*                                      slot_accept,
+    const char*                                      slot_cancel)
 {
     EntityEditorWindow* editor_window =
         new EntityEditorWindow(
@@ -122,26 +121,26 @@ void open_entity_editor(
 }
 
 void open_entity_editor(
-    QWidget*                                    parent,
-    const string&                               window_title,
-    const Project&                              project,
-    renderer::ParamArray&                       settings,
-    unique_ptr<EntityEditor::IFormFactory>      form_factory,
-    unique_ptr<EntityEditor::IEntityBrowser>    entity_browser,
-    const Dictionary&                           values,
-    QObject*                                    receiver,
-    const char*                                 slot_apply,
-    const char*                                 slot_accept,
-    const char*                                 slot_cancel)
+    QWidget*                                         parent,
+    const std::string&                               window_title,
+    const Project&                                   project,
+    renderer::ParamArray&                            settings,
+    std::unique_ptr<EntityEditor::IFormFactory>      form_factory,
+    std::unique_ptr<EntityEditor::IEntityBrowser>    entity_browser,
+    const Dictionary&                                values,
+    QObject*                                         receiver,
+    const char*                                      slot_apply,
+    const char*                                      slot_accept,
+    const char*                                      slot_cancel)
 {
     open_entity_editor(
         parent,
         window_title,
         project,
         settings,
-        move(form_factory),
-        move(entity_browser),
-        unique_ptr<CustomEntityUI>(),
+        std::move(form_factory),
+        std::move(entity_browser),
+        std::unique_ptr<CustomEntityUI>(),
         values,
         receiver,
         slot_apply,
@@ -150,25 +149,25 @@ void open_entity_editor(
 }
 
 void open_entity_editor(
-    QWidget*                                    parent,
-    const string&                               window_title,
-    const Project&                              project,
-    renderer::ParamArray&                       settings,
-    unique_ptr<EntityEditor::IFormFactory>      form_factory,
-    unique_ptr<EntityEditor::IEntityBrowser>    entity_browser,
-    QObject*                                    receiver,
-    const char*                                 slot_apply,
-    const char*                                 slot_accept,
-    const char*                                 slot_cancel)
+    QWidget*                                         parent,
+    const std::string&                               window_title,
+    const Project&                                   project,
+    renderer::ParamArray&                            settings,
+    std::unique_ptr<EntityEditor::IFormFactory>      form_factory,
+    std::unique_ptr<EntityEditor::IEntityBrowser>    entity_browser,
+    QObject*                                         receiver,
+    const char*                                      slot_apply,
+    const char*                                      slot_accept,
+    const char*                                      slot_cancel)
 {
     open_entity_editor(
         parent,
         window_title,
         project,
         settings,
-        move(form_factory),
-        move(entity_browser),
-        unique_ptr<CustomEntityUI>(),
+        std::move(form_factory),
+        std::move(entity_browser),
+        std::unique_ptr<CustomEntityUI>(),
         Dictionary(),
         receiver,
         slot_apply,
@@ -176,7 +175,7 @@ void open_entity_editor(
         slot_cancel);
 }
 
-void show_error_message_box(const string& title, const string& text)
+void show_error_message_box(const std::string& title, const std::string& text)
 {
     QMessageBox msgbox;
     msgbox.setWindowTitle(QString::fromStdString(title));
@@ -272,7 +271,7 @@ LineEditDoubleSliderAdaptor::LineEditDoubleSliderAdaptor(
 void LineEditDoubleSliderAdaptor::slot_set_line_edit_value(const double value)
 {
     // Format integer values such as 2 as "2.0" instead of "2".
-    const bool is_integer = floor(value) == value;
+    const bool is_integer = std::floor(value) == value;
     const QString format_string = is_integer ? "%1.0" : "%1";
     const QString new_line_edit_value = format_string.arg(value);
 
@@ -310,7 +309,7 @@ void LineEditDoubleSliderAdaptor::slot_apply_line_edit_value()
     // or if a value of a significantly smaller magnitude was entered.
     if (new_value < m_slider->minimum() ||
         new_value > m_slider->maximum() ||
-        abs(new_value) < (m_slider->maximum() - m_slider->minimum()) / 3.0)
+        std::abs(new_value) < (m_slider->maximum() - m_slider->minimum()) / 3.0)
         adjust_slider(new_value);
 
     m_slider->setValue(new_value);
@@ -324,8 +323,8 @@ void LineEditDoubleSliderAdaptor::slot_apply_line_edit_value()
 
 void LineEditDoubleSliderAdaptor::adjust_slider(const double new_value)
 {
-    const double new_min = new_value >= 0.0 ? 0.0 : -2.0 * abs(new_value);
-    const double new_max = new_value == 0.0 ? 1.0 : +2.0 * abs(new_value);
+    const double new_min = new_value >= 0.0 ? 0.0 : -2.0 * std::abs(new_value);
+    const double new_max = new_value == 0.0 ? 1.0 : +2.0 * std::abs(new_value);
     m_slider->setRange(new_min, new_max);
     m_slider->setPageStep((new_max - new_min) / 10.0);
 }

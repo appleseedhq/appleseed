@@ -45,7 +45,6 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace
 {
@@ -91,12 +90,12 @@ namespace
             return m_shader_query->open_bytecode(shader_code);
         }
 
-        string get_shader_name() const
+        std::string get_shader_name() const
         {
             return m_shader_query->get_shader_name();
         }
 
-        string get_shader_type() const
+        std::string get_shader_type() const
         {
             return m_shader_query->get_shader_type();
         }

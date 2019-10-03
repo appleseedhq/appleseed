@@ -54,7 +54,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -158,10 +157,10 @@ void AboutWindow::set_third_party_libraries_information()
     versions.push_back(APIStringPair("Qt", QT_VERSION_STR));
 
     // Create a vector of indices into `versions` to allow enumerating libraries in sorted order.
-    vector<size_t> versions_indices(versions.size());
+    std::vector<size_t> versions_indices(versions.size());
     for (size_t i = 0, e = versions.size(); i < e; ++i)
         versions_indices[i] = i;
-    sort(
+    std::sort(
         versions_indices.begin(),
         versions_indices.end(),
         [&versions](const size_t lhs, const size_t rhs)

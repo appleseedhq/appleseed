@@ -43,7 +43,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -57,11 +56,11 @@ struct ImageStack::Impl
 
     struct NamedImage
     {
-        string              m_name;
+        std::string         m_name;
         Image*              m_image;
     };
 
-    vector<NamedImage>      m_images;
+    std::vector<NamedImage> m_images;
 };
 
 ImageStack::ImageStack(

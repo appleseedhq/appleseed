@@ -62,7 +62,6 @@
 
 using namespace bcd;
 using namespace foundation;
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace renderer
@@ -165,10 +164,10 @@ namespace
                 float value = m_accum[c];
 
                 // Clamp to 0.
-                value = max(value, 0.0f);
+                value = std::max(value, 0.0f);
 
                 // Exponential scaling.
-                if (m_gamma > 1.0f) value = pow(value, m_rcp_gamma);
+                if (m_gamma > 1.0f) value = std::pow(value, m_rcp_gamma);
 
                 // Normalize to the maximum value.
                 if (m_max_value > 0.0f)
@@ -177,7 +176,7 @@ namespace
                 // Used for determining the weight to give to the sample
                 // in the highest two bins, when the sample is saturated.
                 const float sature_level_gamma = 2.0f;
-                value = min(value, sature_level_gamma);
+                value = std::min(value, sature_level_gamma);
 
                 const float bin_float_index = value * (m_num_bins - 2);
 
@@ -477,8 +476,8 @@ bool DenoiserAOV::write_images(
 
     const bf::path boost_file_path(file_path);
     const bf::path directory = boost_file_path.parent_path();
-    const string base_file_name = boost_file_path.stem().string();
-    const string extension = boost_file_path.extension().string();
+    const std::string base_file_name = boost_file_path.stem().string();
+    const std::string extension = boost_file_path.extension().string();
 
     bool success = true;
 
@@ -486,8 +485,8 @@ bool DenoiserAOV::write_images(
 
     // Write histograms.
     stopwatch.start();
-    const string hist_file_name = base_file_name + ".hist" + extension;
-    const string hist_file_path = (directory / hist_file_name).string();
+    const std::string hist_file_name = base_file_name + ".hist" + extension;
+    const std::string hist_file_path = (directory / hist_file_name).string();
     if (ImageIO::writeMultiChannelsEXR(histograms_image(), hist_file_path.c_str()))
     {
         stopwatch.measure();
@@ -512,8 +511,8 @@ bool DenoiserAOV::write_images(
 
     // Write covariances image.
     stopwatch.start();
-    const string cov_file_name = base_file_name + ".cov" + extension;
-    const string cov_file_path = (directory / cov_file_name).string();
+    const std::string cov_file_name = base_file_name + ".cov" + extension;
+    const std::string cov_file_path = (directory / cov_file_name).string();
     if (ImageIO::writeMultiChannelsEXR(covariances_image, cov_file_path.c_str()))
     {
         stopwatch.measure();

@@ -49,7 +49,6 @@
 namespace foundation    { class Arena; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -181,8 +180,8 @@ namespace
                 //   dv = sqrt( ||xo - xi||^2 + zv^2 )
                 //
 
-                const float dr = sqrt(square_radius + zr * zr);
-                const float dv = sqrt(square_radius + zv * zv);
+                const float dr = std::sqrt(square_radius + zr * zr);
+                const float dv = std::sqrt(square_radius + zv * zv);
 
                 // The expression for R(r) in [1] is incorrect; use the correct expression from [2].
                 const float rcp_dr = 1.0f / dr;
@@ -191,8 +190,8 @@ namespace
                 const float sigma_tr_dv = sigma_tr * dv;
                 const float kr = zr * (sigma_tr_dr + 1.0f) * square(rcp_dr);
                 const float kv = zv * (sigma_tr_dv + 1.0f) * square(rcp_dv);
-                const float er = exp(-sigma_tr_dr) * rcp_dr;
-                const float ev = exp(-sigma_tr_dv) * rcp_dv;
+                const float er = std::exp(-sigma_tr_dr) * rcp_dr;
+                const float ev = std::exp(-sigma_tr_dv) * rcp_dv;
                 value[i] = alpha_prime * RcpFourPi<float>() * (kr * er - kv * ev);
             }
         }

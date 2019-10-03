@@ -47,7 +47,6 @@
 #include <cstddef>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -61,7 +60,7 @@ namespace
     class ParametricGrid
     {
       public:
-        static unique_ptr<ParametricGrid> create(const size_t res_u, const size_t res_v, const ParamArray& params)
+        static std::unique_ptr<ParametricGrid> create(const size_t res_u, const size_t res_v, const ParamArray& params)
         {
             const float width = params.get_optional<float>("width", 1.0f);
             const float height = params.get_optional<float>("height", 1.0f);
@@ -69,10 +68,10 @@ namespace
             if (width <= 0.0f || height <= 0.0f)
             {
                 RENDERER_LOG_ERROR("width and height must be greater than zero.");
-                return unique_ptr<ParametricGrid>();
+                return std::unique_ptr<ParametricGrid>();
             }
 
-            return unique_ptr<ParametricGrid>(new ParametricGrid(width, height));
+            return std::unique_ptr<ParametricGrid>(new ParametricGrid(width, height));
         }
 
         const Transformf& transform() const
@@ -160,17 +159,17 @@ namespace
     class ParametricDisk
     {
       public:
-        static unique_ptr<ParametricDisk> create(const size_t res_u, const size_t res_v, const ParamArray& params)
+        static std::unique_ptr<ParametricDisk> create(const size_t res_u, const size_t res_v, const ParamArray& params)
         {
             const float radius = params.get_optional<float>("radius", 1.0f);
 
             if (radius <= 0.0f)
             {
                 RENDERER_LOG_ERROR("radius must be greater than zero.");
-                return unique_ptr<ParametricDisk>();
+                return std::unique_ptr<ParametricDisk>();
             }
 
-            return unique_ptr<ParametricDisk>(new ParametricDisk(radius));
+            return std::unique_ptr<ParametricDisk>(new ParametricDisk(radius));
         }
 
         const Transformf& transform() const
@@ -208,7 +207,7 @@ namespace
 
             const float r = m_radius * s;
             const float theta = TwoPi<float>() * t;
-            return GVector3(r * cos(theta), r * sin(theta), 0.0f);
+            return GVector3(r * std::cos(theta), r * std::sin(theta), 0.0f);
         }
 
         GVector2 evaluate_tex_coords(const float s, const float t) const
@@ -248,17 +247,17 @@ namespace
     class ParametricSphere
     {
       public:
-        static unique_ptr<ParametricSphere> create(const size_t res_u, const size_t res_v, const ParamArray& params)
+        static std::unique_ptr<ParametricSphere> create(const size_t res_u, const size_t res_v, const ParamArray& params)
         {
             const float radius = params.get_optional<float>("radius", 1.0f);
 
             if (radius <= 0.0f)
             {
                 RENDERER_LOG_ERROR("radius must be greater than zero.");
-                return unique_ptr<ParametricSphere>();
+                return std::unique_ptr<ParametricSphere>();
             }
 
-            return unique_ptr<ParametricSphere>(new ParametricSphere(res_u, radius));
+            return std::unique_ptr<ParametricSphere>(new ParametricSphere(res_u, radius));
         }
 
         const Transformf& transform() const
@@ -312,7 +311,7 @@ namespace
     class ParametricTorus
     {
       public:
-        static unique_ptr<ParametricTorus> create(const size_t res_u, const size_t res_v, const ParamArray& params)
+        static std::unique_ptr<ParametricTorus> create(const size_t res_u, const size_t res_v, const ParamArray& params)
         {
             const float major_radius = params.get_optional<float>("major_radius", 1.0f);
             const float minor_radius = params.get_optional<float>("minor_radius", 0.2f);
@@ -320,10 +319,10 @@ namespace
             if (major_radius <= 0.0f || minor_radius <= 0.0f)
             {
                 RENDERER_LOG_ERROR("torus radii must be greater than zero.");
-                return unique_ptr<ParametricTorus>();
+                return std::unique_ptr<ParametricTorus>();
             }
 
-            return unique_ptr<ParametricTorus>(new ParametricTorus(res_u, res_v, major_radius, minor_radius));
+            return std::unique_ptr<ParametricTorus>(new ParametricTorus(res_u, res_v, major_radius, minor_radius));
         }
 
         const Transformf& transform() const
@@ -337,13 +336,13 @@ namespace
 
             const float theta = TwoPi<float>() * s;
             const float phi = TwoPi<float>() * t;
-            const float cos_phi = cos(phi);
+            const float cos_phi = std::cos(phi);
             const float r = m_circle_radius + m_tube_radius * cos_phi;
 
             return GVector3(
-                r * cos(theta),
-                r * sin(theta),
-                m_tube_radius * sin(phi));
+                r * std::cos(theta),
+                r * std::sin(theta),
+                m_tube_radius * std::sin(phi));
         }
 
         GVector2 evaluate_tex_coords(const float s, const float t) const
@@ -466,7 +465,7 @@ namespace
             return auto_release_ptr<MeshObject>();
         }
 
-        unique_ptr<ParametricSurface> surface = ParametricSurface::create(res_u, res_v, params);
+        std::unique_ptr<ParametricSurface> surface = ParametricSurface::create(res_u, res_v, params);
 
         if (surface.get() == nullptr)
             return auto_release_ptr<MeshObject>();

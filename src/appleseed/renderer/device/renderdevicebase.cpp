@@ -39,8 +39,6 @@
 // Standard headers.
 #include <string>
 
-using namespace std;
-
 namespace renderer
 {
 
@@ -69,7 +67,7 @@ const ParamArray& RenderDeviceBase::get_params() const
 
 bool RenderDeviceBase::is_progressive_render() const
 {
-    return get_params().get<string>("frame_renderer") == "progressive";
+    return get_params().get<std::string>("frame_renderer") == "progressive";
 }
 
 IRendererController* RenderDeviceBase::get_frame_renderer_controller()

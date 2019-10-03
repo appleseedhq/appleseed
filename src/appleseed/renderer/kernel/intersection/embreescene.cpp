@@ -54,7 +54,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace renderer
 {
@@ -182,7 +181,7 @@ namespace
     // Returns minimal tnear needed to compensate double to float transition of ray fields.
     float get_tnear_offset(const RTCRay& ray)
     {
-        float max_dir_component = max(abs(ray.dir_x), abs(ray.dir_y), abs(ray.dir_z));
+        float max_dir_component = max(std::abs(ray.dir_x), std::abs(ray.dir_y), std::abs(ray.dir_z));
         uint32 max_origin_exp = max(
             FP<float>::exponent(ray.org_x),
             FP<float>::exponent(ray.org_y),
@@ -199,7 +198,7 @@ namespace
 
         const float offset = FP<float>::construct(
             0,
-            max(static_cast<int32>(max_origin_exp - 23 + 11), 0),
+            std::max(static_cast<int32>(max_origin_exp - 23 + 11), 0),
             2047UL << (23 - 11));
 
         // Divide by max_dir_component to compensate inverse operation
@@ -279,7 +278,7 @@ EmbreeScene::EmbreeScene(const EmbreeScene::Arguments& arguments)
         RTCGeometry geometry_handle;
 
         // Set per instance data.
-        unique_ptr<EmbreeGeometryData> geometry_data(new EmbreeGeometryData());
+        std::unique_ptr<EmbreeGeometryData> geometry_data(new EmbreeGeometryData());
         geometry_data->m_object_instance_idx = instance_idx;
         geometry_data->m_vis_flags = object_instance->get_vis_flags();
 
@@ -508,9 +507,9 @@ EmbreeSceneFactory::EmbreeSceneFactory(const EmbreeScene::Arguments& arguments)
 {
 }
 
-unique_ptr<EmbreeScene> EmbreeSceneFactory::create()
+std::unique_ptr<EmbreeScene> EmbreeSceneFactory::create()
 {
-    return unique_ptr<EmbreeScene>(new EmbreeScene(m_arguments));
+    return std::unique_ptr<EmbreeScene>(new EmbreeScene(m_arguments));
 }
 
 }   // namespace renderer

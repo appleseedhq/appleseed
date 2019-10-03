@@ -30,8 +30,6 @@
 // Interface header.
 #include "tile.h"
 
-using namespace std;
-
 namespace foundation
 {
 

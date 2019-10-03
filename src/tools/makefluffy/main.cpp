@@ -69,7 +69,6 @@ using namespace appleseed::makefluffy;
 using namespace appleseed::shared;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace
@@ -119,9 +118,9 @@ namespace
     };
 
     void extract_support_triangles(
-        const MeshObject&           object,
-        vector<SupportTriangle>&    support_triangles,
-        CDF<size_t, GScalar>&       cdf)
+        const MeshObject&                object,
+        std::vector<SupportTriangle>&    support_triangles,
+        CDF<size_t, GScalar>&            cdf)
     {
         const size_t triangle_count = object.get_triangle_count();
         for (size_t triangle_index = 0; triangle_index < triangle_count; ++triangle_index)
@@ -183,11 +182,11 @@ namespace
     {
         const size_t ControlPointCount = 4;
 
-        vector<SupportTriangle> support_triangles;
+        std::vector<SupportTriangle> support_triangles;
         CDF<size_t, GScalar> cdf;
         extract_support_triangles(support_object, support_triangles, cdf);
 
-        const string curve_object_name = string(support_object.get_name()) + "_curves";
+        const std::string curve_object_name = std::string(support_object.get_name()) + "_curves";
         auto_release_ptr<CurveObject> curve_object(
             CurveObjectFactory().create(
                 curve_object_name.c_str(),
@@ -221,7 +220,7 @@ namespace
             do
             {
                 f = rand1(rng, -params.m_length_fuzziness, +params.m_length_fuzziness);
-                length = max(params.m_curve_length * (GScalar(1.0) + f), GScalar(0.0));
+                length = std::max(params.m_curve_length * (GScalar(1.0) + f), GScalar(0.0));
             } while (length <= 0.0);
 
             for (size_t p = 1; p < ControlPointCount; ++p)
@@ -243,8 +242,8 @@ namespace
 
     void make_fluffy(const Assembly& assembly, const FluffParams& params)
     {
-        typedef vector<const ObjectInstance*> ObjectInstanceVector;
-        typedef map<const MeshObject*, ObjectInstanceVector> ObjectToInstanceMap;
+        typedef std::vector<const ObjectInstance*> ObjectInstanceVector;
+        typedef std::map<const MeshObject*, ObjectInstanceVector> ObjectToInstanceMap;
 
         // Establish an object -> object instance mapping.
         ObjectToInstanceMap objects_to_instances;
@@ -285,7 +284,7 @@ namespace
             for (const_each<ObjectInstanceVector> j = support_object_instances; j; ++j)
             {
                 const ObjectInstance& support_instance = **j;
-                const string curve_object_instance_name = string(curve_object->get_name()) + "_inst";
+                const std::string curve_object_instance_name = std::string(curve_object->get_name()) + "_inst";
                 assembly.object_instances().insert(
                     ObjectInstanceFactory::create(
                         curve_object_instance_name.c_str(),
@@ -347,8 +346,8 @@ int main(int argc, char* argv[])
     global_logger().initialize_from(logger);
 
     // Retrieve the command line arguments.
-    const string& input_filepath = cl.m_filenames.values()[0];
-    const string& output_filepath = cl.m_filenames.values()[1];
+    const std::string& input_filepath = cl.m_filenames.values()[0];
+    const std::string& output_filepath = cl.m_filenames.values()[1];
     const FluffParams params(cl);
 
     // Construct the schema file path.

@@ -48,7 +48,6 @@
 #include <memory>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -62,7 +61,7 @@ namespace
         return tess.m_primitives.size();
     }
 
-    void copy_uv_coordinates(const StaticTriangleTess& tess, vector<Vector2f>& uv)
+    void copy_uv_coordinates(const StaticTriangleTess& tess, std::vector<Vector2f>& uv)
     {
         for (const_each<StaticTriangleTess::PrimitiveArray> i = tess.m_primitives; i; ++i)
         {
@@ -85,7 +84,7 @@ namespace
         }
     }
 
-    void copy_uv_coordinates(Object& object, vector<Vector2f>& uv)
+    void copy_uv_coordinates(Object& object, std::vector<Vector2f>& uv)
     {
         const MeshObject& mesh = static_cast<const MeshObject&>(object);
         const StaticTriangleTess& tess = mesh.get_static_triangle_tess();
@@ -159,7 +158,7 @@ void IntersectionFilter::do_update(
 
     // Build the alpha mask.
     double transparency;
-    unique_ptr<AlphaMask> alpha_mask(
+    std::unique_ptr<AlphaMask> alpha_mask(
         create_alpha_mask(
             alpha_map,
             texture_cache,

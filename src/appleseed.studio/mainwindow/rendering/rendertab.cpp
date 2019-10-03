@@ -63,7 +63,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 namespace OCIO = OCIO_NAMESPACE;
 
 namespace appleseed {
@@ -327,7 +326,7 @@ void RenderTab::create_toolbar()
     m_display_transform_combo->setObjectName("display_combo");
     {
         const char* display_name = m_ocio_config->getDefaultDisplay();
-        const string default_transform = m_ocio_config->getDefaultView(display_name);
+        const std::string default_transform = m_ocio_config->getDefaultView(display_name);
 
         int default_index = 0;
         for (int i = 0, e = m_ocio_config->getNumViews(display_name); i < e; ++i)

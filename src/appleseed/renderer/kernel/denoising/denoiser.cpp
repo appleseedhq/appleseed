@@ -52,7 +52,6 @@
 
 using namespace bcd;
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -184,7 +183,7 @@ namespace
         DenoiserOutputs outputs;
         outputs.m_pDenoisedColors = &dst;
 
-        unique_ptr<IDenoiser> denoiser;
+        std::unique_ptr<IDenoiser> denoiser;
 
         if (options.m_num_scales > 1)
             denoiser.reset(new MultiscaleDenoiser(static_cast<int>(options.m_num_scales)));

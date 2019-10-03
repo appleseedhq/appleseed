@@ -47,7 +47,6 @@
 #include "foundation/utility/statistics.h"
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -100,7 +99,7 @@ namespace
             if (dist2 == 0.0)
                 return 0.0;
             const double rcp_dist2 = 1.0 / dist2;
-            pdf *= max(dot(vertex.m_geometric_normal, w * sqrt(rcp_dist2)), 0.0);
+            pdf *= std::max(dot(vertex.m_geometric_normal, w * std::sqrt(rcp_dist2)), 0.0);
             return pdf * rcp_dist2;
         }
     };
@@ -191,8 +190,8 @@ namespace
             const double dist2 = square_norm(v);
 
             /// TODO:: the special care have to be taken for these dot products when it comes to volume
-            const double cos1 = max(-dot(normalized_v, b.m_geometric_normal), 0.0);
-            const double cos2 = max(dot(normalized_v, a.m_geometric_normal), 0.0);
+            const double cos1 = std::max(-dot(normalized_v, b.m_geometric_normal), 0.0);
+            const double cos2 = std::max(dot(normalized_v, a.m_geometric_normal), 0.0);
 
             Spectrum result(0.0f);
 

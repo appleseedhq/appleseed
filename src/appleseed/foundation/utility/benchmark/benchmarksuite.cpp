@@ -56,7 +56,6 @@
 #include <string>
 #include <vector>
 
-using namespace std;
 
 namespace foundation
 {
@@ -92,8 +91,8 @@ struct BenchmarkSuite::Impl
     typedef Stopwatch<DefaultProcessorTimer> StopwatchType;
 #endif
 
-    string                          m_name;
-    vector<IBenchmarkCaseFactory*>  m_factories;
+    std::string                          m_name;
+    std::vector<IBenchmarkCaseFactory*>  m_factories;
 
     static double measure_runtime_seconds(
         IBenchmarkCase*         benchmark,
@@ -124,12 +123,12 @@ struct BenchmarkSuite::Impl
         MeasurementFunction&    measurement_function,
         const size_t            measurement_count)
     {
-        double lowest_runtime = numeric_limits<double>::max();
+        double lowest_runtime = std::numeric_limits<double>::max();
 
         for (size_t i = 0; i < measurement_count; ++i)
         {
             const double runtime = measurement_function(benchmark, stopwatch);
-            lowest_runtime = min(lowest_runtime, runtime);
+            lowest_runtime = std::min(lowest_runtime, runtime);
         }
 
         return lowest_runtime;
@@ -152,8 +151,8 @@ struct BenchmarkSuite::Impl
         const size_t MaxMeasurementCount = 1000000;
         const double MaxTargetTotalTime = 0.1;          // seconds
         return
-            static_cast<size_t>(ceil(
-                min(MaxMeasurementCount * measurement_time, MaxTargetTotalTime) / measurement_time));
+            static_cast<size_t>(std::ceil(
+                std::min(MaxMeasurementCount * measurement_time, MaxTargetTotalTime) / measurement_time));
     }
 
     // Measure and return the overhead (in ticks) of running an empty benchmark case.
@@ -161,7 +160,7 @@ struct BenchmarkSuite::Impl
         StopwatchType&          stopwatch,
         const size_t            measurement_count)
     {
-        unique_ptr<IBenchmarkCase> empty_case(new EmptyBenchmarkCase());
+        std::unique_ptr<IBenchmarkCase> empty_case(new EmptyBenchmarkCase());
         return
             measure_runtime(
                 empty_case.get(),
@@ -224,7 +223,7 @@ void BenchmarkSuite::run(
         }
 
         // Instantiate the benchmark case.
-        unique_ptr<IBenchmarkCase> benchmark(factory->create());
+        std::unique_ptr<IBenchmarkCase> benchmark(factory->create());
 
         // Tell the listeners that a benchmark case is about to be executed.
         suite_result.begin_case(*this, *benchmark.get());
@@ -273,7 +272,7 @@ void BenchmarkSuite::run(
                 timing_result);
 
 #ifdef GENERATE_BENCHMARK_PLOTS
-            vector<Vector2d> points;
+            std::vector<Vector2d> points;
 
             const size_t PointCount = 100;
             for (size_t j = 0; j < PointCount; ++j)
@@ -283,13 +282,13 @@ void BenchmarkSuite::run(
                         benchmark.get(),
                         stopwatch,
                         BenchmarkSuite::Impl::measure_runtime_ticks,
-                        max<size_t>(1, measurement_count / PointCount));
+                        std::max<size_t>(1, measurement_count / PointCount));
                 points.emplace_back(
                     static_cast<double>(j),
                     ticks > overhead_ticks ? ticks - overhead_ticks : 0.0);
             }
 
-            const string filepath =
+            const std::string filepath =
                 format("unit benchmarks/plots/{0}_{1}.gnuplot", get_name(), benchmark->get_name());
 
             GnuplotFile plotfile;
@@ -298,7 +297,7 @@ void BenchmarkSuite::run(
 #endif
         }
 #ifdef NDEBUG
-        catch (const exception& e)
+        catch (const std::exception& e)
         {
             if (!is_empty_string(e.what()))
             {

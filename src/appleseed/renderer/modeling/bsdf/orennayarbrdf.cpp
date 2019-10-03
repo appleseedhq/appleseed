@@ -54,7 +54,6 @@ namespace renderer      { class Assembly; }
 namespace renderer      { class Project; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -135,7 +134,7 @@ namespace
                         return;
 
                     const Vector3f& outgoing = sample.m_outgoing.get_value();
-                    const float cos_on = abs(dot(outgoing, n));
+                    const float cos_on = std::abs(dot(outgoing, n));
                     oren_nayar(
                         cos_on,
                         cos_in,
@@ -179,13 +178,13 @@ namespace
                 return 0.0f;
 
             const Vector3f& n = shading_basis.get_normal();
-            const float cos_in = abs(dot(incoming, n));
+            const float cos_in = std::abs(dot(incoming, n));
 
             // Compute the BRDF value.
             const InputValues* values = static_cast<const InputValues*>(data);
             if (values->m_roughness != 0.0f)
             {
-                const float cos_on = abs(dot(outgoing, n));
+                const float cos_on = std::abs(dot(outgoing, n));
                 oren_nayar(
                     cos_on,
                     cos_in,
@@ -225,7 +224,7 @@ namespace
                 return 0.0f;
 
             const Vector3f& n = shading_basis.get_normal();
-            const float cos_in = abs(dot(incoming, n));
+            const float cos_in = std::abs(dot(incoming, n));
 
             // Compute the probability density of the sampled direction.
             const float pdf = cos_in * RcpPi<float>();
@@ -249,10 +248,10 @@ namespace
             Spectrum&                   value)
         {
             const float sigma2 = square(roughness);
-            const float theta_r = min(acos(cos_on), HalfPi<float>());
-            const float theta_i = acos(cos_in);
-            const float alpha = max(theta_r, theta_i);
-            const float beta = min(theta_r, theta_i);
+            const float theta_r = std::min(std::acos(cos_on), HalfPi<float>());
+            const float theta_i = std::acos(cos_in);
+            const float alpha = std::max(theta_r, theta_i);
+            const float beta = std::min(theta_r, theta_i);
 
             // Project outgoing and incoming vectors onto the tangent plane
             // and compute the cosine of the angle between them.
@@ -269,8 +268,8 @@ namespace
                   0.45f
                 * sigma2_009
                 * (delta_cos_phi >= 0.0f
-                      ? sin(alpha)
-                      : sin(alpha) - pow_int<3>(2.0f * beta * RcpPi<float>()));
+                      ? std::sin(alpha)
+                      : std::sin(alpha) - pow_int<3>(2.0f * beta * RcpPi<float>()));
             assert(C2 >= 0.0f);
 
             // Compute C3 coefficient.
@@ -286,8 +285,8 @@ namespace
                 reflectance_multiplier *
                 RcpPi<float>() * (
                       C1
-                    + delta_cos_phi * C2 * tan(beta)
-                    + (1.0f - abs(delta_cos_phi)) * C3 * tan(0.5f * (alpha + beta)));
+                    + delta_cos_phi * C2 * std::tan(beta)
+                    + (1.0f - std::abs(delta_cos_phi)) * C3 * std::tan(0.5f * (alpha + beta)));
 
             // Add interreflection component.
             Spectrum ir = reflectance;

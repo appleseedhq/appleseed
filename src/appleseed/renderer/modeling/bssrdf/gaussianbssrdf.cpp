@@ -51,7 +51,6 @@ namespace renderer      { class BSSRDFSample; }
 namespace renderer      { class ShadingContext; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -119,7 +118,7 @@ namespace
 
     const float IntegralThreshold = 0.999f;
     const float ScaleFactor = 1.0f / IntegralThreshold;
-    const float RmaxFactor = sqrt(-2.0f * log(1.0f - IntegralThreshold));
+    const float RmaxFactor = std::sqrt(-2.0f * std::log(1.0f - IntegralThreshold));
 
     class GaussianBSSRDF
       : public SeparableBSSRDF
@@ -194,7 +193,7 @@ namespace
 
                 // The remapping from radius to v comes from Cycles.
                 const float sqrt_v = radius * 0.25f;
-                max_sqrt_v = max(max_sqrt_v, sqrt_v);
+                max_sqrt_v = std::max(max_sqrt_v, sqrt_v);
 
                 // Precompute 1/(2v).
                 const float v = square(sqrt_v);
@@ -227,7 +226,7 @@ namespace
             //
 
             const float k = values->m_precomputed.m_k[channel];
-            const float umax = 1.0f - exp(-k * square(values->m_base_values.m_max_disk_radius));
+            const float umax = 1.0f - std::exp(-k * square(values->m_base_values.m_max_disk_radius));
 
             return sample_disk_gaussian(u * umax, k);
         }

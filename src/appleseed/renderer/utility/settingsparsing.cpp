@@ -43,18 +43,17 @@
 #include <algorithm>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
 
-string get_render_device(const ParamArray& params)
+std::string get_render_device(const ParamArray& params)
 {
     std::vector<std::string> devices;
     devices.emplace_back("cpu");
 
-    const string device =
-        params.get_optional<string>(
+    const std::string device =
+        params.get_optional<std::string>(
             "device",
             "cpu",
             devices);
@@ -64,8 +63,8 @@ string get_render_device(const ParamArray& params)
 
 Spectrum::Mode get_spectrum_mode(const ParamArray& params)
 {
-    const string spectrum_mode =
-        params.get_required<string>(
+    const std::string spectrum_mode =
+        params.get_required<std::string>(
             "spectrum_mode",
             "rgb",
             make_vector("rgb", "spectral"));
@@ -87,7 +86,7 @@ Spectrum::Mode get_spectrum_mode(const ParamArray& params)
 #endif
 }
 
-string get_spectrum_mode_name(const Spectrum::Mode mode)
+std::string get_spectrum_mode_name(const Spectrum::Mode mode)
 {
 #ifdef APPLESEED_WITH_SPECTRAL_SUPPORT
     switch (mode)
@@ -103,8 +102,8 @@ string get_spectrum_mode_name(const Spectrum::Mode mode)
 
 SamplingContext::Mode get_sampling_context_mode(const ParamArray& params)
 {
-    const string sampling_mode =
-        params.get_required<string>(
+    const std::string sampling_mode =
+        params.get_required<std::string>(
             "sampling_mode",
             "qmc",
             make_vector("rng", "qmc"));
@@ -115,7 +114,7 @@ SamplingContext::Mode get_sampling_context_mode(const ParamArray& params)
             : SamplingContext::QMCMode;
 }
 
-string get_sampling_context_mode_name(const SamplingContext::Mode mode)
+std::string get_sampling_context_mode_name(const SamplingContext::Mode mode)
 {
     switch (mode)
     {
@@ -134,7 +133,7 @@ size_t get_rendering_thread_count(const ParamArray& params)
     if (!params.strings().exist(ThreadCountParameterName))
         return core_count;
 
-    const string thread_count_str = params.strings().get<string>(ThreadCountParameterName);
+    const std::string thread_count_str = params.strings().get<std::string>(ThreadCountParameterName);
 
     if (thread_count_str == "auto")
         return core_count;
@@ -148,7 +147,7 @@ size_t get_rendering_thread_count(const ParamArray& params)
         if (num_threads < 0)
         {
             // If num_threads is negative, use all cores except -num_threads.
-            thread_count = max(static_cast<int>(core_count) + num_threads, 1);
+            thread_count = std::max(static_cast<int>(core_count) + num_threads, 1);
         }
         else
             thread_count = num_threads;

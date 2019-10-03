@@ -80,7 +80,6 @@
 using namespace appleseed::shared;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace appleseed {
@@ -90,7 +89,7 @@ ExpressionEditorWindow::ExpressionEditorWindow(
     const Project&  project,
     ParamArray&     settings,
     const QString&  widget_name,
-    const string&   expression,
+    const std::string&   expression,
     QWidget*        parent)
   : WindowBase(parent, "expression_editor_window")
   , m_ui(new Ui::ExpressionEditorWindow())
@@ -171,7 +170,7 @@ ExpressionEditorWindow::ExpressionEditorWindow(
     // Expression browser.
     m_browser = new SeExprEdBrowser(nullptr, m_editor);
     const bf::path root_path(Application::get_root_path());
-    const string scripts_path = (root_path / "seexpr").string();
+    const std::string scripts_path = (root_path / "seexpr").string();
     m_browser->addPath("Examples", scripts_path);
     m_browser->update();
     m_browser->hide();
@@ -202,7 +201,7 @@ ExpressionEditorWindow::~ExpressionEditorWindow()
 
 void ExpressionEditorWindow::apply_expression()
 {
-    const string expression = m_editor->getExpr();
+    const std::string expression = m_editor->getExpr();
     const SeExpression expr(expression);
 
     if (expr.isValid())
@@ -236,7 +235,7 @@ void ExpressionEditorWindow::slot_cancel()
 
 void ExpressionEditorWindow::slot_clear_expression()
 {
-    m_editor->setExpr(string());
+    m_editor->setExpr(std::string());
 }
 
 void ExpressionEditorWindow::slot_save_script()
@@ -263,7 +262,7 @@ void ExpressionEditorWindow::slot_save_script()
 
     if (!m_script_filepath.empty())
     {
-        ofstream script_file(m_script_filepath.c_str());
+        std::ofstream script_file(m_script_filepath.c_str());
 
         if (!script_file.is_open())
         {
@@ -293,7 +292,7 @@ void ExpressionEditorWindow::slot_load_script()
         filepath = QDir::toNativeSeparators(filepath);
 
         // Open script file.
-        ifstream script_file(filepath.toStdString().c_str());
+        std::ifstream script_file(filepath.toStdString().c_str());
         if (!script_file.is_open())
         {
             show_error_message_box(
@@ -303,7 +302,7 @@ void ExpressionEditorWindow::slot_load_script()
         }
 
         // Read script file into memory.
-        stringstream script_buffer;
+        std::stringstream script_buffer;
         script_buffer << script_file.rdbuf();
         script_file.close();
 
@@ -328,7 +327,7 @@ void ExpressionEditorWindow::slot_show_examples()
     else
     {
         if (width() > 400)
-            resize(max(400, width() - 400), height());
+            resize(std::max(400, width() - 400), height());
         m_ui->buttonbox_layout->setStretch(1, 0);
         m_browser->hide();
     }

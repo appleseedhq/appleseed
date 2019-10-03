@@ -44,18 +44,6 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
-
-// Work around a regression in Visual Studio 2015 Update 3.
-#if defined(_MSC_VER) && _MSC_VER == 1900
-namespace boost
-{
-    template <> Object const volatile* get_pointer<Object const volatile>(Object const volatile* p) { return p; }
-    template <> IObjectFactory const volatile* get_pointer<IObjectFactory const volatile>(IObjectFactory const volatile* p) { return p; }
-    template <> ObjectFactoryRegistrar const volatile* get_pointer<ObjectFactoryRegistrar const volatile>(ObjectFactoryRegistrar const volatile* p) { return p; }
-    template <> ObjectInstance const volatile* get_pointer<ObjectInstance const volatile>(ObjectInstance const volatile* p) { return p; }
-}
-#endif
 
 namespace
 {
@@ -68,9 +56,9 @@ namespace
     }
 
     auto_release_ptr<Object> create_object(
-        const string&    model,
-        const string&    name,
-        const bpy::dict& params)
+        const std::string&    model,
+        const std::string&    name,
+        const bpy::dict&      params)
     {
         const ObjectFactoryRegistrar factories;
         const IObjectFactory* factory = factories.lookup(model.c_str());
@@ -97,9 +85,9 @@ namespace
     }
 
     auto_release_ptr<ObjectInstance> create_obj_instance_with_back_mat(
-        const string&                   name,
+        const std::string&              name,
         const bpy::dict&                params,
-        const string&                   object_name,
+        const std::string&              object_name,
         const UnalignedTransformd&      transform,
         const bpy::dict&                front_material_mappings,
         const bpy::dict&                back_material_mappings)
@@ -115,9 +103,9 @@ namespace
     }
 
     auto_release_ptr<ObjectInstance> create_obj_instance(
-        const string&                   name,
+        const std::string&              name,
         const bpy::dict&                params,
-        const string&                   object_name,
+        const std::string&              object_name,
         const UnalignedTransformd&      transform,
         const bpy::dict&                front_material_mappings)
     {
@@ -136,7 +124,7 @@ namespace
         return UnalignedTransformd(obj->get_transform());
     }
 
-    string obj_inst_get_obj_name(const ObjectInstance* obj)
+    std::string obj_inst_get_obj_name(const ObjectInstance* obj)
     {
         return obj->get_object_name();
     }

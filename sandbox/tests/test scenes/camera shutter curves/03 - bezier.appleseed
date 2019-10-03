@@ -125,7 +125,7 @@
             <parameters name="generic_tile_renderer">
             </parameters>
             <parameters name="light_sampler">
-                <parameter name="algorithm" value="lighttree" />
+                <parameter name="algorithm" value="cdf" />
             </parameters>
             <parameters name="pt">
                 <parameter name="dl_light_samples" value="1.000000" />

@@ -42,8 +42,6 @@
 #include <string>
 #include <vector>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -62,9 +60,9 @@ namespace
     }
 
     bool is_surrounded_by_separators(
-        const string&               s,
-        const string::size_type     begin,
-        const string::size_type     end)
+        const std::string&               s,
+        const std::string::size_type     begin,
+        const std::string::size_type     end)
     {
         const bool separator_on_left = begin == 0 || is_separator(s[begin - 1]);
         const bool separator_on_right = end == s.size() || is_separator(s[end]);
@@ -72,47 +70,47 @@ namespace
         return separator_on_left && separator_on_right;
     }
 
-    bool is_directive(const string& line)
+    bool is_directive(const std::string& line)
     {
-        const string::size_type i = line.find_first_not_of(Blanks);
+        const std::string::size_type i = line.find_first_not_of(Blanks);
 
-        return i != string::npos && line[i] == '#';
+        return i != std::string::npos && line[i] == '#';
     }
 
-    void split_line(const string& line, string& keyword, string& arguments)
+    void split_line(const std::string& line, std::string& keyword, std::string& arguments)
     {
-        string::size_type cursor = line.find_first_not_of(Blanks);
+        std::string::size_type cursor = line.find_first_not_of(Blanks);
 
-        const string::size_type keyword_begin = cursor;
+        const std::string::size_type keyword_begin = cursor;
         cursor = line.find_first_of(Blanks, cursor);
 
         keyword =
-            cursor == string::npos
+            cursor == std::string::npos
                 ? line.substr(keyword_begin)
                 : line.substr(keyword_begin, cursor - keyword_begin);
 
         arguments.clear();
 
-        if (cursor == string::npos)
+        if (cursor == std::string::npos)
             return;
 
         cursor = line.find_first_not_of(Blanks, cursor);
 
-        if (cursor == string::npos)
+        if (cursor == std::string::npos)
             return;
 
-        const string::size_type arguments_begin = cursor;
+        const std::string::size_type arguments_begin = cursor;
 
         cursor = line.find_last_not_of(Blanks);
 
         arguments = line.substr(arguments_begin, cursor - arguments_begin + 1);
     }
 
-    void split_directive(const string& line, string& keyword, string& arguments)
+    void split_directive(const std::string& line, std::string& keyword, std::string& arguments)
     {
-        const string::size_type i = line.find_first_not_of(Blanks);
+        const std::string::size_type i = line.find_first_not_of(Blanks);
 
-        assert(i != string::npos);
+        assert(i != std::string::npos);
         assert(line[i] == '#');
 
         split_line(line.substr(i + 1), keyword, arguments);
@@ -167,7 +165,7 @@ namespace
 
         TEST_CASE(SplitDirective_GivenKeyword_ReturnsKeyword)
         {
-            string keyword, arguments;
+            std::string keyword, arguments;
             split_directive("#keyword", keyword, arguments);
 
             EXPECT_EQ("keyword", keyword);
@@ -175,7 +173,7 @@ namespace
 
         TEST_CASE(SplitDirective_GivenSpacesBeforeHashCharacter_ReturnsKeyword)
         {
-            string keyword, arguments;
+            std::string keyword, arguments;
             split_directive("   #keyword", keyword, arguments);
 
             EXPECT_EQ("keyword", keyword);
@@ -183,7 +181,7 @@ namespace
 
         TEST_CASE(SplitDirective_GivenSpacesAfterHashCharacter_ReturnsKeyword)
         {
-            string keyword, arguments;
+            std::string keyword, arguments;
             split_directive("#   keyword", keyword, arguments);
 
             EXPECT_EQ("keyword", keyword);
@@ -191,7 +189,7 @@ namespace
 
         TEST_CASE(SplitDirective_GivenSpacesBeforeAndAfterHashCharacter_ReturnsKeyword)
         {
-            string keyword, arguments;
+            std::string keyword, arguments;
             split_directive("   #   keyword", keyword, arguments);
 
             EXPECT_EQ("keyword", keyword);
@@ -199,7 +197,7 @@ namespace
 
         TEST_CASE(SplitDirective_GivenSpacesAfterKeyword_ReturnsKeyword)
         {
-            string keyword, arguments;
+            std::string keyword, arguments;
             split_directive("#keyword   ", keyword, arguments);
 
             EXPECT_EQ("keyword", keyword);
@@ -207,7 +205,7 @@ namespace
 
         TEST_CASE(SplitDirective_GivenNoArgument_ReturnsEmptyArguments)
         {
-            string keyword, arguments;
+            std::string keyword, arguments;
             split_directive("#keyword", keyword, arguments);
 
             EXPECT_EQ("", arguments);
@@ -215,7 +213,7 @@ namespace
 
         TEST_CASE(SplitDirective_GivenArguments_ReturnsArguments)
         {
-            string keyword, arguments;
+            std::string keyword, arguments;
             split_directive("#keyword arg1 arg2", keyword, arguments);
 
             EXPECT_EQ("arg1 arg2", arguments);
@@ -223,7 +221,7 @@ namespace
 
         TEST_CASE(SplitDirective_GivenSpacesAfterArguments_ReturnsArguments)
         {
-            string keyword, arguments;
+            std::string keyword, arguments;
             split_directive("#keyword arg1 arg2   ", keyword, arguments);
 
             EXPECT_EQ("arg1 arg2", arguments);
@@ -238,28 +236,28 @@ struct Preprocessor::Impl
     {
         const size_t m_line_number;
 
-        ExceptionParseError(const string& message, const size_t line_number)
+        ExceptionParseError(const std::string& message, const size_t line_number)
           : Exception(message.c_str())
           , m_line_number(line_number)
         {
         }
     };
 
-    bool                    m_succeeded;
-    string                  m_error_message;
-    size_t                  m_error_location;
+    bool                         m_succeeded;
+    std::string                  m_error_message;
+    size_t                       m_error_location;
 
-    typedef map<string, string> SymbolTable;
+    typedef std::map<std::string, std::string> SymbolTable;
 
-    SymbolTable             m_symbols;
+    SymbolTable                  m_symbols;
 
-    vector<string>          m_input_lines;
-    size_t                  m_current_input_line;
+    std::vector<std::string>     m_input_lines;
+    size_t                       m_current_input_line;
 
-    string                  m_result;
-    size_t                  m_current_output_line;
+    std::string                  m_result;
+    size_t                       m_current_output_line;
 
-    void process_text(const string& text)
+    void process_text(const std::string& text)
     {
         assert(m_result.empty());
 
@@ -277,11 +275,11 @@ struct Preprocessor::Impl
     {
         while (!is_end_of_input_text())
         {
-            string line = get_next_input_line();
+            std::string line = get_next_input_line();
 
             if (is_directive(line))
             {
-                string keyword, arguments;
+                std::string keyword, arguments;
                 split_directive(line, keyword, arguments);
                 parse_directive(keyword, arguments);
             }
@@ -292,7 +290,7 @@ struct Preprocessor::Impl
         }
     }
 
-    void parse_directive(const string& keyword, const string& arguments)
+    void parse_directive(const std::string& keyword, const std::string& arguments)
     {
         if (keyword == "define")
         {
@@ -304,13 +302,13 @@ struct Preprocessor::Impl
         }
         else
         {
-            parse_error(string("Unknown directive: #") + keyword);
+            parse_error(std::string("Unknown directive: #") + keyword);
         }
     }
 
-    void parse_define_directive(const string& arguments)
+    void parse_define_directive(const std::string& arguments)
     {
-        string symbol, value;
+        std::string symbol, value;
         split_line(arguments, symbol, value);
 
         substitute_symbols(value);
@@ -318,7 +316,7 @@ struct Preprocessor::Impl
         m_symbols[symbol] = value;
     }
 
-    void parse_ifdef_directive(const string& ifdef_arguments)
+    void parse_ifdef_directive(const std::string& ifdef_arguments)
     {
         const bool condition_value = evaluate_condition(ifdef_arguments);
 
@@ -330,11 +328,11 @@ struct Preprocessor::Impl
                 break;
             }
 
-            string line = get_next_input_line();
+            std::string line = get_next_input_line();
 
             if (is_directive(line))
             {
-                string keyword, arguments;
+                std::string keyword, arguments;
                 split_directive(line, keyword, arguments);
 
                 if (keyword == "endif")
@@ -351,31 +349,31 @@ struct Preprocessor::Impl
         }
     }
 
-    bool evaluate_condition(const string& condition) const
+    bool evaluate_condition(const std::string& condition) const
     {
         return m_symbols.find(condition) != m_symbols.end();
     }
 
-    void process_line(string& line)
+    void process_line(std::string& line)
     {
         substitute_symbols(line);
         emit_line(line);
     }
 
-    void substitute_symbols(string& line) const
+    void substitute_symbols(std::string& line) const
     {
         for (const_each<SymbolTable> i = m_symbols; i; ++i)
             substitute_symbol(line, i->first, i->second);
     }
 
     void substitute_symbol(
-        string&         line,
-        const string&   old_string,
-        const string&   new_string) const
+        std::string&         line,
+        const std::string&   old_string,
+        const std::string&   new_string) const
     {
-        string::size_type pos = line.find(old_string);
+        std::string::size_type pos = line.find(old_string);
 
-        while (pos != string::npos)
+        while (pos != std::string::npos)
         {
             if (is_surrounded_by_separators(line, pos, pos + old_string.size()))
                 line.replace(pos, old_string.size(), new_string);
@@ -384,7 +382,7 @@ struct Preprocessor::Impl
         }
     }
 
-    void parse_error(const string& message)
+    void parse_error(const std::string& message)
     {
         throw ExceptionParseError(message, m_current_input_line);
     }
@@ -394,14 +392,14 @@ struct Preprocessor::Impl
         return m_current_input_line == m_input_lines.size();
     }
 
-    const string& get_next_input_line()
+    const std::string& get_next_input_line()
     {
         assert(m_current_input_line < m_input_lines.size());
 
         return m_input_lines[m_current_input_line++];
     }
 
-    void emit_line(const string& line)
+    void emit_line(const std::string& line)
     {
         if (m_current_output_line > 0)
             m_result += '\n';

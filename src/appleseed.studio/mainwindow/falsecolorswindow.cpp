@@ -54,7 +54,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -82,15 +81,15 @@ namespace
             for (size_t i = 0; i < m_input_metadata.size(); ++i)
             {
                 Dictionary im = m_input_metadata[i];
-                const string input_name = im.get<string>("name");
+                const std::string input_name = im.get<std::string>("name");
 
                 // Don't expose the order input either. 
                 if (input_name == "order")
                     continue;
 
                 im.insert("value",
-                    values.strings().exist(input_name) ? values.get<string>(input_name) :
-                    im.strings().exist("default") ? im.get<string>("default") :
+                    values.strings().exist(input_name) ? values.get<std::string>(input_name) :
+                    im.strings().exist("default") ? im.get<std::string>("default") :
                     "");
 
                 metadata.push_back(im);
@@ -127,7 +126,7 @@ void FalseColorsWindow::initialize(
 {
     m_initial_values = values;
 
-    unique_ptr<EntityEditor::IFormFactory> form_factory(
+    std::unique_ptr<EntityEditor::IFormFactory> form_factory(
         new PostProcessingStageFormFactory(
             ColorMapPostProcessingStageFactory().get_input_metadata()));
 

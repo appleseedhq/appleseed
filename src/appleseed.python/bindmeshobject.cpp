@@ -46,21 +46,12 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
-
-// Work around a regression in Visual Studio 2015 Update 3.
-#if defined(_MSC_VER) && _MSC_VER == 1900
-namespace boost
-{
-    template <> MeshObject const volatile* get_pointer<MeshObject const volatile>(MeshObject const volatile* p) { return p; }
-}
-#endif
 
 namespace
 {
     auto_release_ptr<MeshObject> create_mesh_obj(
-        const string&       name,
-        const bpy::dict&    params)
+        const std::string&    name,
+        const bpy::dict&      params)
     {
         return
             auto_release_ptr<MeshObject>(
@@ -78,9 +69,9 @@ namespace
     }
 
     bpy::list read_mesh_objects(
-        const bpy::list&    search_paths,
-        const string&       base_object_name,
-        const bpy::dict&    params)
+        const bpy::list&      search_paths,
+        const std::string&    base_object_name,
+        const bpy::dict&      params)
     {
         SearchPaths paths;
 
@@ -118,16 +109,16 @@ namespace
     }
 
     bool write_mesh_object(
-        const MeshObject*   object,
-        const string&       object_name,
-        const string&       filename)
+        const MeshObject*     object,
+        const std::string&    object_name,
+        const std::string&    filename)
     {
         return MeshObjectWriter::write(*object, object_name.c_str(), filename.c_str());
     }
 
     auto_release_ptr<MeshObject> create_mesh_prim(
-        const string&       name,
-        const bpy::dict&    params)
+        const std::string&    name,
+        const bpy::dict&      params)
     {
         return create_primitive_mesh(name.c_str(), bpy_dict_to_param_array(params));
     }

@@ -44,7 +44,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -60,11 +59,11 @@ namespace
 
 struct CurveObject::Impl
 {
-    CurveBasis          m_basis;
-    size_t              m_curve_count;
-    vector<Curve1Type>  m_curves1;
-    vector<Curve3Type>  m_curves3;
-    vector<string>      m_material_slots;
+    CurveBasis               m_basis;
+    size_t                   m_curve_count;
+    std::vector<Curve1Type>  m_curves1;
+    std::vector<Curve3Type>  m_curves3;
+    std::vector<std::string> m_material_slots;
 
     Impl()
     {
@@ -231,7 +230,7 @@ void CurveObject::collect_asset_paths(StringArray& paths) const
 {
     if (m_params.strings().exist("filepath"))
     {
-        const string filepath = m_params.get<string>("filepath");
+        const std::string filepath = m_params.get<std::string>("filepath");
         if (!starts_with(filepath, "builtin:"))
             paths.push_back(filepath.c_str());
     }
@@ -241,7 +240,7 @@ void CurveObject::update_asset_paths(const StringDictionary& mappings)
 {
     if (m_params.strings().exist("filepath"))
     {
-        const string filepath = m_params.get<string>("filepath");
+        const std::string filepath = m_params.get<std::string>("filepath");
         if (!starts_with(filepath, "builtin:"))
             m_params.set("filepath", mappings.get(filepath.c_str()));
     }

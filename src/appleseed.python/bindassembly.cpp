@@ -46,37 +46,25 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
-
-// Work around a regression in Visual Studio 2015 Update 3.
-#if defined(_MSC_VER) && _MSC_VER == 1900
-namespace boost
-{
-    template <> Assembly const volatile* get_pointer<Assembly const volatile>(Assembly const volatile* p) { return p; }
-    template <> IAssemblyFactory const volatile* get_pointer<IAssemblyFactory const volatile>(IAssemblyFactory const volatile* p) { return p; }
-    template <> AssemblyFactoryRegistrar const volatile* get_pointer<AssemblyFactoryRegistrar const volatile>(AssemblyFactoryRegistrar const volatile* p) { return p; }
-    template <> AssemblyInstance const volatile* get_pointer<AssemblyInstance const volatile>(AssemblyInstance const volatile* p) { return p; }
-}
-#endif
 
 namespace
 {
-    auto_release_ptr<Assembly> create_assembly(const string& name)
+    auto_release_ptr<Assembly> create_assembly(const std::string& name)
     {
         return AssemblyFactory().create(name.c_str(), ParamArray());
     }
 
     auto_release_ptr<Assembly> create_assembly_with_params(
-        const string&       name,
-        const bpy::dict&    params)
+        const std::string&    name,
+        const bpy::dict&      params)
     {
         return AssemblyFactory().create(name.c_str(), bpy_dict_to_param_array(params));
     }
 
     auto_release_ptr<Assembly> create_assembly_with_model_and_params(
-        const string&       model,
-        const string&       name,
-        const bpy::dict&    params)
+        const std::string&    model,
+        const std::string&    name,
+        const bpy::dict&      params)
     {
         AssemblyFactoryRegistrar factories;
         const IAssemblyFactory* factory = factories.lookup(model.c_str());
@@ -101,9 +89,9 @@ namespace
     }
 
     auto_release_ptr<AssemblyInstance> create_assembly_instance(
-        const string&       name,
-        const bpy::dict&    params,
-        const string&       assembly_name)
+        const std::string&    name,
+        const bpy::dict&      params,
+        const std::string&    assembly_name)
     {
         return
             AssemblyInstanceFactory::create(
@@ -122,7 +110,7 @@ namespace
         instance->transform_sequence() = seq;
     }
 
-    string get_assembly_name(AssemblyInstance* instance)
+    std::string get_assembly_name(AssemblyInstance* instance)
     {
         return instance->get_assembly_name();
     }

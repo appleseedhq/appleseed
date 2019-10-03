@@ -39,8 +39,6 @@
 #include <cassert>
 #include <limits>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -99,13 +97,13 @@ void ColorMap::find_min_max_red_channel(
     float&          min_value,
     float&          max_value)
 {
-    min_value = +numeric_limits<float>::max();
-    max_value = -numeric_limits<float>::max();
+    min_value = +std::numeric_limits<float>::max();
+    max_value = -std::numeric_limits<float>::max();
 
     for_each_pixel(image, crop_window, [&min_value, &max_value](const Color3f& color)
     {
-        min_value = min(color[0], min_value);
-        max_value = max(color[0], max_value);
+        min_value = std::min(color[0], min_value);
+        max_value = std::max(color[0], max_value);
     });
 }
 
@@ -127,13 +125,13 @@ void ColorMap::find_min_max_relative_luminance(
     float&          min_luminance,
     float&          max_luminance)
 {
-    min_luminance = +numeric_limits<float>::max();
-    max_luminance = -numeric_limits<float>::max();
+    min_luminance = +std::numeric_limits<float>::max();
+    max_luminance = -std::numeric_limits<float>::max();
 
     for_each_pixel(image, crop_window, [&min_luminance, &max_luminance](const Color3f& color)
     {
-        min_luminance = min(luminance(color), min_luminance);
-        max_luminance = max(luminance(color), max_luminance);
+        min_luminance = std::min(luminance(color), min_luminance);
+        max_luminance = std::max(luminance(color), max_luminance);
     });
 }
 
@@ -244,7 +242,7 @@ Color3f ColorMap::evaluate_palette(float x) const
 
     x *= m_palette.size() - 1;
 
-    const size_t ix = min(truncate<size_t>(x), m_palette.size() - 2);
+    const size_t ix = std::min(truncate<size_t>(x), m_palette.size() - 2);
     const float w = x - ix;
 
     return lerp(m_palette[ix], m_palette[ix + 1], w);

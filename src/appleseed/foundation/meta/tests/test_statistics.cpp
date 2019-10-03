@@ -38,7 +38,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Utility_Statistics)
 {
@@ -71,7 +70,7 @@ TEST_SUITE(Foundation_Utility_Statistics)
     {
         Statistics stats;
 
-        stats.insert<string>("some value", "bunny");
+        stats.insert<std::string>("some value", "bunny");
 
         EXPECT_EQ("  some value                    bunny", stats.to_string());
     }

@@ -37,13 +37,11 @@
 #include <cassert>
 #include <map>
 
-using namespace std;
-
 namespace foundation
 {
 
-typedef map<string, string> StringMap;
-typedef map<string, Dictionary> DictionaryMap;
+typedef std::map<std::string, std::string> StringMap;
+typedef std::map<std::string, Dictionary> DictionaryMap;
 
 
 //

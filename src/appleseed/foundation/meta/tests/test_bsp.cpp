@@ -46,7 +46,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Math_BSP_Node)
 {
@@ -145,7 +144,7 @@ TEST_SUITE(Foundation_Math_BSP_Intersector)
         }
 
       private:
-        vector<AABB3d>  m_boxes;
+        std::vector<AABB3d>  m_boxes;
     };
 
     struct LeafFactory
@@ -225,7 +224,7 @@ TEST_SUITE(Foundation_Math_BSP_Intersector)
       public:
         LeafVisitor()
           : m_visited_leaf_count(0)
-          , m_closest_hit(numeric_limits<double>::max())
+          , m_closest_hit(std::numeric_limits<double>::max())
         {
         }
 
@@ -243,7 +242,7 @@ TEST_SUITE(Foundation_Math_BSP_Intersector)
                 double distance;
 
                 if (intersect(ray, ray_info, box, distance))
-                    m_closest_hit = min(m_closest_hit, distance);
+                    m_closest_hit = std::min(m_closest_hit, distance);
             }
 
             return m_closest_hit;
@@ -276,7 +275,7 @@ TEST_SUITE(Foundation_Math_BSP_Intersector)
 
         Fixture()
         {
-            unique_ptr<Leaf> root_leaf(new Leaf());
+            std::unique_ptr<Leaf> root_leaf(new Leaf());
             root_leaf->insert(AABB3d(Vector3d(-1.0, -0.5, -0.2), Vector3d(0.0, 0.5, 0.2)));
             root_leaf->insert(AABB3d(Vector3d(0.0, -0.5, -0.7), Vector3d(1.0, 0.5, 0.7)));
 
@@ -284,7 +283,7 @@ TEST_SUITE(Foundation_Math_BSP_Intersector)
             LeafFactory leaf_factory;
             LeafSplitter leaf_splitter;
 
-            builder.build(m_tree, move(root_leaf), leaf_factory, leaf_splitter);
+            builder.build(m_tree, std::move(root_leaf), leaf_factory, leaf_splitter);
         }
     };
 

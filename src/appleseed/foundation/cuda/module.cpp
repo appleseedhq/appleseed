@@ -36,8 +36,6 @@
 #include <algorithm>
 #include <cassert>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -65,8 +63,8 @@ CUDAModule::~CUDAModule()
 
 CUDAModule& CUDAModule::operator=(CUDAModule&& rhs)
 {
-    CUDAModule tmp(move(rhs));
-    swap(m_module, tmp.m_module);
+    CUDAModule tmp(std::move(rhs));
+    std::swap(m_module, tmp.m_module);
     return *this;
 }
 

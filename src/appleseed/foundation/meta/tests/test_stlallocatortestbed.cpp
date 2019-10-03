@@ -50,7 +50,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(StlAllocatorTestbed)
 {

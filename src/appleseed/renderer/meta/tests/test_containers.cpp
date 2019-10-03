@@ -41,7 +41,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 TEST_SUITE(Renderer_Modeling_Scene_Containers)
 {
@@ -51,7 +50,7 @@ TEST_SUITE(Renderer_Modeling_Scene_Containers)
     {
         DummyEntityVector entities;
 
-        const string result = make_unique_name("assembly", entities);
+        const std::string result = make_unique_name("assembly", entities);
 
         EXPECT_EQ("assembly1", result);
     }
@@ -62,7 +61,7 @@ TEST_SUITE(Renderer_Modeling_Scene_Containers)
         entities.insert(auto_release_ptr<DummyEntity>(new DummyEntity("assembly3")));
         entities.insert(auto_release_ptr<DummyEntity>(new DummyEntity("assembly1")));
 
-        const string result = make_unique_name("assembly", entities);
+        const std::string result = make_unique_name("assembly", entities);
 
         EXPECT_EQ("assembly4", result);
     }
@@ -72,7 +71,7 @@ TEST_SUITE(Renderer_Modeling_Scene_Containers)
         DummyEntityVector entities;
         entities.insert(auto_release_ptr<DummyEntity>(new DummyEntity("assembly-5")));
 
-        const string result = make_unique_name("assembly", entities);
+        const std::string result = make_unique_name("assembly", entities);
 
         EXPECT_EQ("assembly1", result);
     }
@@ -82,7 +81,7 @@ TEST_SUITE(Renderer_Modeling_Scene_Containers)
         DummyEntityVector entities;
         entities.insert(auto_release_ptr<DummyEntity>(new DummyEntity("object")));
 
-        const string result = make_unique_name("assembly", entities);
+        const std::string result = make_unique_name("assembly", entities);
 
         EXPECT_EQ("assembly1", result);
     }
@@ -92,7 +91,7 @@ TEST_SUITE(Renderer_Modeling_Scene_Containers)
         DummyEntityVector entities;
         entities.insert(auto_release_ptr<DummyEntity>(new DummyEntity("assembly_instance")));
 
-        const string result = make_unique_name("assembly", entities);
+        const std::string result = make_unique_name("assembly", entities);
 
         EXPECT_EQ("assembly1", result);
     }

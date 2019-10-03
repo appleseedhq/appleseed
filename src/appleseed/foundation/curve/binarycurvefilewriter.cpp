@@ -37,8 +37,6 @@
 // Standard headers.
 #include <cstring>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -46,7 +44,7 @@ namespace foundation
 // BinaryCurveFileWriter class implementation.
 //
 
-BinaryCurveFileWriter::BinaryCurveFileWriter(const string& filename)
+BinaryCurveFileWriter::BinaryCurveFileWriter(const std::string& filename)
   : m_filename(filename)
   , m_writer(m_file, 256 * 1024)
 {

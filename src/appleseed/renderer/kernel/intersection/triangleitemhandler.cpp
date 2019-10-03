@@ -44,15 +44,14 @@
 #include <limits>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
 
 TriangleItemHandler::TriangleItemHandler(
-    const vector<TriangleVertexInfo>&   triangle_vertex_infos,
-    const vector<GVector3>&             triangle_vertices,
-    const vector<AABB3d>&               triangle_bboxes)
+    const std::vector<TriangleVertexInfo>&   triangle_vertex_infos,
+    const std::vector<GVector3>&             triangle_vertices,
+    const std::vector<AABB3d>&               triangle_bboxes)
   : m_triangle_vertex_infos(triangle_vertex_infos)
   , m_triangle_vertices(triangle_vertices)
   , m_triangle_bboxes(triangle_bboxes)
@@ -102,10 +101,10 @@ AABB3d TriangleItemHandler::clip(
     const int v2_ge_min = v2d >= slab_min ? 1 : 0;
     const int v2_le_max = v2d <= slab_max ? 1 : 0;
 
-    __m128d bbox_min_xy = _mm_set1_pd(+numeric_limits<double>::max());
-    __m128d bbox_min_zz = _mm_set1_pd(+numeric_limits<double>::max());
-    __m128d bbox_max_xy = _mm_set1_pd(-numeric_limits<double>::max());
-    __m128d bbox_max_zz = _mm_set1_pd(-numeric_limits<double>::max());
+    __m128d bbox_min_xy = _mm_set1_pd(+std::numeric_limits<double>::max());
+    __m128d bbox_min_zz = _mm_set1_pd(+std::numeric_limits<double>::max());
+    __m128d bbox_max_xy = _mm_set1_pd(-std::numeric_limits<double>::max());
+    __m128d bbox_max_zz = _mm_set1_pd(-std::numeric_limits<double>::max());
 
     const __m128d v0_xy = _mm_load_pd(&v0.x);
     const __m128d v0_zz = _mm_set1_pd(v0.z);

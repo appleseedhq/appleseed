@@ -37,13 +37,12 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Utility_BufferedFile)
 {
     const char* Filename = "unit tests/outputs/test_bufferedfile.tmp";
     const size_t BufferSize = 4;
-    const string DataString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const std::string DataString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     TEST_CASE(InitialStateIsCorrect)
     {
@@ -135,7 +134,7 @@ TEST_SUITE(Foundation_Utility_BufferedFile)
 
         char buf[100];
         EXPECT_EQ(DataString.size(), file.read(buf, DataString.size()));
-        EXPECT_EQ(DataString, string(buf, DataString.size()));
+        EXPECT_EQ(DataString, std::string(buf, DataString.size()));
         EXPECT_EQ(DataString.size(), file.tell());
     }
 
@@ -186,7 +185,7 @@ TEST_SUITE(Foundation_Utility_BufferedFile)
 
         char buf[100];
         EXPECT_EQ(DataString.size(), file.read(buf, DataString.size()));
-        EXPECT_EQ(DataString, string(buf, DataString.size()));
+        EXPECT_EQ(DataString, std::string(buf, DataString.size()));
         EXPECT_EQ(DataString.size(), file.tell());
     }
 
@@ -218,7 +217,7 @@ TEST_SUITE(Foundation_Utility_BufferedFile)
         m_file.read(buf, 6);
         EXPECT_TRUE(m_file.seek(4, BufferedFile::SeekFromCurrent));
         EXPECT_EQ(8, m_file.read(buf, 8));
-        EXPECT_EQ("KLMNOPQR", string(buf, 8));
+        EXPECT_EQ("KLMNOPQR", std::string(buf, 8));
     }
 
     TEST_CASE_F(TestSeekingBackwardWhileReading, FileReadingFixture)
@@ -227,7 +226,7 @@ TEST_SUITE(Foundation_Utility_BufferedFile)
         m_file.read(buf, 6);
         EXPECT_TRUE(m_file.seek(-4, BufferedFile::SeekFromCurrent));
         EXPECT_EQ(8, m_file.read(buf, 8));
-        EXPECT_EQ("CDEFGHIJ", string(buf, 8));
+        EXPECT_EQ("CDEFGHIJ", std::string(buf, 8));
     }
 
     TEST_CASE_F(TestSeekingFromBeginningWhileReading, FileReadingFixture)
@@ -236,7 +235,7 @@ TEST_SUITE(Foundation_Utility_BufferedFile)
         m_file.read(buf, 8);
         EXPECT_TRUE(m_file.seek(2, BufferedFile::SeekFromBeginning));
         EXPECT_EQ(8, m_file.read(buf, 8));
-        EXPECT_EQ("CDEFGHIJ", string(buf, 8));
+        EXPECT_EQ("CDEFGHIJ", std::string(buf, 8));
     }
 
     TEST_CASE_F(TestSeekingFromEndWhileReading, FileReadingFixture)
@@ -245,7 +244,7 @@ TEST_SUITE(Foundation_Utility_BufferedFile)
         m_file.read(buf, 8);
         EXPECT_TRUE(m_file.seek(-8, BufferedFile::SeekFromEnd));
         EXPECT_EQ(8, m_file.read(buf, 8));
-        EXPECT_EQ("STUVWXYZ", string(buf, 8));
+        EXPECT_EQ("STUVWXYZ", std::string(buf, 8));
     }
 
     TEST_CASE(TestSeekingBackwardInsideBufferWhileWriting)

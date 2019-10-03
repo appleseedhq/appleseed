@@ -41,8 +41,6 @@
 #include <algorithm>
 #include <cstring>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -72,11 +70,11 @@ BufferedFile::~BufferedFile()
 
 namespace
 {
-    string build_mode_string(
+    std::string build_mode_string(
         const BufferedFile::FileType    type,
         const BufferedFile::FileMode    mode)
     {
-        string s;
+        std::string s;
 
         switch (mode)
         {
@@ -118,7 +116,7 @@ bool BufferedFile::open(
     assert(path);
     assert(buffer_size > 0);
 
-    const string mode_string = build_mode_string(type, mode);
+    const std::string mode_string = build_mode_string(type, mode);
 
     m_file = fopen(path, mode_string.c_str());
 
@@ -229,7 +227,7 @@ size_t BufferedFile::read(
         // Copy the contents of the I/O buffer to the output buffer.
         const size_t left = size - bytes;
         const size_t available = m_buffer_end - m_buffer_index;
-        const size_t count = min(left, available);
+        const size_t count = std::min(left, available);
         memcpy(
             &reinterpret_cast<uint8*>(outbuf)[bytes],
             &m_buffer[m_buffer_index],
@@ -279,7 +277,7 @@ size_t BufferedFile::read_unbuf(
         // Copy the contents of the I/O buffer into the output buffer.
         const size_t left = size - bytes;
         const size_t available = m_buffer_end - m_buffer_index;
-        const size_t count = min(left, available);
+        const size_t count = std::min(left, available);
         memcpy(
             &reinterpret_cast<uint8*>(outbuf)[bytes],
             &m_buffer[m_buffer_index],
@@ -314,7 +312,7 @@ size_t BufferedFile::write(
         // Copy the contents of the input buffer to the I/O buffer.
         const size_t left = size - bytes;
         const size_t available = m_buffer_end - m_buffer_index;
-        const size_t count = min(left, available);
+        const size_t count = std::min(left, available);
         memcpy(
             &m_buffer[m_buffer_index],
             &reinterpret_cast<const uint8*>(inbuf)[bytes],
@@ -362,7 +360,7 @@ size_t BufferedFile::write_unbuf(
         // Copy the contents of the input buffer to the I/O buffer.
         const size_t left = size - bytes;
         const size_t available = m_buffer_end - m_buffer_index;
-        const size_t count = min(left, available);
+        const size_t count = std::min(left, available);
         memcpy(
             &m_buffer[m_buffer_index],
             &reinterpret_cast<const uint8*>(inbuf)[bytes],
@@ -424,7 +422,7 @@ bool BufferedFile::seek(
         {
             assert(origin == SeekFromCurrent);
             const int64 current_index = m_file_index + static_cast<int64>(m_buffer_index);
-            target_index = max<int64>(current_index + offset, 0);
+            target_index = std::max<int64>(current_index + offset, 0);
         }
 
         if (target_index >= m_file_index &&
@@ -520,7 +518,7 @@ size_t CompressedReaderAdapter::read(
                 break;
         }
 
-        const size_t copy = min(size, m_buffer_end - m_buffer_index);
+        const size_t copy = std::min(size, m_buffer_end - m_buffer_index);
         memcpy(outbuf, &m_buffer[m_buffer_index], copy);
 
         outbuf = reinterpret_cast<uint8*>(outbuf) + copy;

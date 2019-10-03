@@ -68,7 +68,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
 {
@@ -386,7 +385,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         const ComputeRdBetterDipole better_rd_fun(Eta);
 
         const size_t PointCount = 1000;
-        vector<Vector2d> std_points, better_points;
+        std::vector<Vector2d> std_points, better_points;
 
         for (size_t i = 0; i < PointCount; ++i)
         {
@@ -429,7 +428,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         auto_release_ptr<Project> project(ProjectFactory::create("project"));
 
         const ComputeRdStandardDipole rd_fun(1.0f);
-        vector<Vector2d> ai_points, ni_points;
+        std::vector<Vector2d> ai_points, ni_points;
 
         for (size_t i = 0; i < PointCount; ++i)
         {
@@ -477,7 +476,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         auto_release_ptr<Project> project(ProjectFactory::create("project"));
 
         const ComputeRdBetterDipole rd_fun(1.0f);
-        vector<Vector2d> ai_points, ni_points;
+        std::vector<Vector2d> ai_points, ni_points;
 
         for (size_t i = 0; i < PointCount; ++i)
         {
@@ -531,7 +530,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         {
             const float albedo = 1.0f * i / (ValueCount - 1);
             const float estimated_value = compute_rcp_diffusion_length(albedo);
-            const float x = tanh(estimated_value / max(albedo, 0.01f));
+            const float x = std::tanh(estimated_value / std::max(albedo, 0.01f));
             EXPECT_FEQ_EPS(estimated_value, x, 1.0e-2f);
         }
     }
@@ -559,7 +558,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
     {
         for (size_t i = 0; i <= 10; ++i)
         {
-            const float mu = max(rcp(compute_rcp_diffusion_length(0.1f * i)), 1.001f);
+            const float mu = std::max(rcp(compute_rcp_diffusion_length(0.1f * i)), 1.001f);
             const float integral = integrate_cosine_dwivedi(mu, 10000);
 
             EXPECT_FEQ_EPS(1.0f, integral, 1.0e-2f);
@@ -618,7 +617,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             else
             {
                 current_cosine = sample_cosine_dwivedi(rcp(mu), rand_float2(rng));
-                const float sine = sqrt(1.0f - square(current_cosine));
+                const float sine = std::sqrt(1.0f - square(current_cosine));
                 Vector2f xz = sine * sample_circle_uniform(rand_float2(rng));
                 current_direction.x = xz[0];
                 current_direction.y = -current_cosine;
@@ -634,8 +633,8 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         //
 
         const size_t SampleCount = 1000;
-        vector<Vector2d> points_low_albedo;
-        vector<Vector2d> points_high_albedo;
+        std::vector<Vector2d> points_low_albedo;
+        std::vector<Vector2d> points_high_albedo;
 
         GnuplotFile plotfile;
         plotfile.set_title("Approximations for diffusion length");
@@ -671,9 +670,9 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         const size_t MaxIterations = 50;
         size_t transmitted_count_classical = 0;
         size_t transmitted_count_dwivedi = 0;
-        vector<size_t> iterations_hist_classical(MaxIterations, 0);
-        vector<size_t> iterations_hist_dwivedi(MaxIterations, 0);
-        vector<Vector2d> points;
+        std::vector<size_t> iterations_hist_classical(MaxIterations, 0);
+        std::vector<size_t> iterations_hist_dwivedi(MaxIterations, 0);
+        std::vector<Vector2d> points;
 
         GnuplotFile plotfile;
         plotfile.set_title("Histogram of randomwalk iterations");
@@ -768,7 +767,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.set_yrange(0.0, 6.0);
 
         const size_t N = 1000;
-        vector<Vector2d> points;
+        std::vector<Vector2d> points;
 
         for (size_t i = 0; i < N; ++i)
         {
@@ -791,7 +790,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.set_yrange(0.0, 20.0);
 
         const size_t N = 1000;
-        vector<Vector2d> points;
+        std::vector<Vector2d> points;
 
         for (size_t i = 0; i < N; ++i)
         {
@@ -820,11 +819,11 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const float s = normalized_diffusion_s_mfp(a);
 
             const size_t N = 1000;
-            vector<Vector2d> points;
+            std::vector<Vector2d> points;
 
             for (size_t j = 0; j < N; ++j)
             {
-                const float r = max(fit<size_t, float>(j, 0, N - 1, 0.0f, 8.0f), 0.0001f);
+                const float r = std::max(fit<size_t, float>(j, 0, N - 1, 0.0f, 8.0f), 0.0001f);
                 const float y = r * normalized_diffusion_profile(r, 1.0f, s, a);
                 points.emplace_back(r, y);
             }
@@ -868,11 +867,11 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
             const float s = normalized_diffusion_s_dmfp(a);
 
             const size_t N = 1000;
-            vector<Vector2d> points;
+            std::vector<Vector2d> points;
 
             for (size_t j = 0; j < N; ++j)
             {
-                const float r = max(fit<size_t, float>(j, 0, N - 1, 0.0f, 8.0f), 0.0001f);
+                const float r = std::max(fit<size_t, float>(j, 0, N - 1, 0.0f, 8.0f), 0.0001f);
                 const float y = r * normalized_diffusion_profile(r, 1.0f, s, a);
                 points.emplace_back(r, y);
             }
@@ -910,7 +909,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         plotfile.set_yrange(0.0, 1.0);
 
         const size_t N = 1000;
-        vector<Vector2d> points;
+        std::vector<Vector2d> points;
 
         for (size_t i = 0; i < N; ++i)
         {
@@ -1006,7 +1005,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         auto_release_ptr<Project> project(ProjectFactory::create("project"));
 
         const size_t N = 200;
-        vector<Vector2d> points;
+        std::vector<Vector2d> points;
         MersenneTwister rng;
 
         for (size_t i = 0; i < N; ++i)
@@ -1075,7 +1074,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         auto_release_ptr<Project> project(ProjectFactory::create("project"));
 
         const size_t N = 200;
-        vector<Vector2d> points;
+        std::vector<Vector2d> points;
         MersenneTwister rng;
 
         for (size_t i = 0; i < N; ++i)
@@ -1154,7 +1153,7 @@ TEST_SUITE(Renderer_Modeling_BSSRDF_SSS)
         bssrdf_eval.set_values_from_sigmas(sigma_a, sigma_s);
 
         const size_t N = 1000;
-        vector<Vector2d> points;
+        std::vector<Vector2d> points;
 
         for (size_t i = 0; i < N; ++i)
         {

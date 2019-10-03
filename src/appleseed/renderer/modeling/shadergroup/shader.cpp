@@ -47,7 +47,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -63,12 +62,12 @@ namespace
 
 struct Shader::Impl
 {
-    string                  m_type;
-    string                  m_shader;
+    std::string             m_type;
+    std::string             m_shader;
     ShaderParamContainer    m_params;
 
-    string                  m_source_code;
-    string                  m_byte_code;
+    std::string             m_source_code;
+    std::string             m_byte_code;
 
     Impl(
         const char*         type,
@@ -96,7 +95,7 @@ struct Shader::Impl
 
                 case OSLParamTypeColorArray:
                   {
-                      vector<float> values;
+                      std::vector<float> values;
                       parser.parse_float3_array(values);
                       m_params.insert(ShaderParam::create_color_array_param(i.it().key(), values));
                   }
@@ -111,7 +110,7 @@ struct Shader::Impl
 
                 case OSLParamTypeFloatArray:
                   {
-                      vector<float> values;
+                      std::vector<float> values;
                       parser.parse_float_array(values);
                       m_params.insert(ShaderParam::create_float_array_param(i.it().key(), values));
                   }
@@ -126,7 +125,7 @@ struct Shader::Impl
 
                 case OSLParamTypeIntArray:
                   {
-                      vector<int> values;
+                      std::vector<int> values;
                       parser.parse_int_array(values);
                       m_params.insert(ShaderParam::create_int_array_param(i.it().key(), values));
                   }
@@ -142,7 +141,7 @@ struct Shader::Impl
 
                   case OSLParamTypeMatrixArray:
                     {
-                        vector<float> values;
+                        std::vector<float> values;
                         parser.parse_matrix_array(values);
                         m_params.insert(ShaderParam::create_matrix_array_param(i.it().key(), values));
                     }
@@ -158,7 +157,7 @@ struct Shader::Impl
 
                 case OSLParamTypeNormalArray:
                   {
-                      vector<float> values;
+                      std::vector<float> values;
                       parser.parse_float3_array(values);
                       m_params.insert(ShaderParam::create_normal_array_param(i.it().key(), values));
                   }
@@ -174,7 +173,7 @@ struct Shader::Impl
 
                 case OSLParamTypePointArray:
                   {
-                      vector<float> values;
+                      std::vector<float> values;
                       parser.parse_float3_array(values);
                       m_params.insert(ShaderParam::create_point_array_param(i.it().key(), values));
                   }
@@ -199,7 +198,7 @@ struct Shader::Impl
 
                 case OSLParamTypeVectorArray:
                   {
-                      vector<float> values;
+                      std::vector<float> values;
                       parser.parse_float3_array(values);
                       m_params.insert(ShaderParam::create_vector_array_param(i.it().key(), values));
                   }

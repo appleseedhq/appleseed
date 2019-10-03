@@ -41,7 +41,6 @@
 #include <vector>
 
 using namespace boost;
-using namespace std;
 
 namespace foundation
 {
@@ -52,7 +51,7 @@ namespace foundation
 
 struct JobManager::Impl
 {
-    typedef vector<WorkerThread*> WorkerThreads;
+    typedef std::vector<WorkerThread*> WorkerThreads;
 
     Logger&             m_logger;
     JobQueue&           m_job_queue;

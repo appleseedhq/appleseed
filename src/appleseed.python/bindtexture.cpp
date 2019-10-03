@@ -44,18 +44,6 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
-
-// Work around a regression in Visual Studio 2015 Update 3.
-#if defined(_MSC_VER) && _MSC_VER == 1900
-namespace boost
-{
-    template <> Texture const volatile* get_pointer<Texture const volatile>(Texture const volatile* p) { return p; }
-    template <> ITextureFactory const volatile* get_pointer<ITextureFactory const volatile>(ITextureFactory const volatile* p) { return p; }
-    template <> TextureFactoryRegistrar const volatile* get_pointer<TextureFactoryRegistrar const volatile>(TextureFactoryRegistrar const volatile* p) { return p; }
-    template <> TextureInstance const volatile* get_pointer<TextureInstance const volatile>(TextureInstance const volatile* p) { return p; }
-}
-#endif
 
 namespace
 {
@@ -77,8 +65,8 @@ namespace
     }
 
     auto_release_ptr<Texture> create_texture(
-        const string&              model,
-        const string&              name,
+        const std::string&         model,
+        const std::string&         name,
         const bpy::dict&           params,
         const bpy::list&           search_paths)
     {
@@ -114,9 +102,9 @@ namespace
     }
 
     auto_release_ptr<TextureInstance> create_texture_instance(
-        const string&                   name,
+        const std::string&              name,
         const bpy::dict&                params,
-        const string&                   texture_name,
+        const std::string&              texture_name,
         const UnalignedTransformf&      transform)
     {
         return
@@ -132,7 +120,7 @@ namespace
         return UnalignedTransformf(tx->get_transform());
     }
 
-    string texture_inst_get_texture_name(const TextureInstance* tx)
+    std::string texture_inst_get_texture_name(const TextureInstance* tx)
     {
         return tx->get_texture_name();
     }

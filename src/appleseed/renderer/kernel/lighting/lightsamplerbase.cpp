@@ -47,7 +47,6 @@
 #include "foundation/utility/containers/dictionary.h"
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -356,8 +355,8 @@ void LightSamplerBase::collect_emitting_shapes(
             o = global_transform.point_to_parent(o);
             x = global_transform.vector_to_parent(x);
             y = global_transform.vector_to_parent(y);
-            n = global_transform.normal_to_parent(n);
-
+            n = normalize(global_transform.normal_to_parent(n));
+            
             const double area = norm(x) * norm(y);
 
             if (area == 0.0)
@@ -495,7 +494,8 @@ void LightSamplerBase::collect_emitting_shapes(
             // Transform disk to world space.
             x = global_transform.vector_to_parent(x);
             y = global_transform.vector_to_parent(y);
-            n = global_transform.normal_to_parent(n);
+            n = normalize(global_transform.normal_to_parent(n));
+
             const Matrix4d& xform = global_transform.get_local_to_parent();
             Vector3d center, scale;
             Quaterniond rot;

@@ -153,8 +153,8 @@ endif ()
 # Release configuration.
 set (c_compiler_flags_release
     -O3                                                 # optimization level
-    -fgcse-las                                          # Eliminates stores followed by a load to the same positions.
-    -fgcse-sm                                           # Moves load/save instructions out of loops, if possible.
+    -fgcse-las                                          # eliminates stores followed by a load to the same positions
+    -fgcse-sm                                           # moves load/save instructions out of loops, if possible
 )
 
 

@@ -36,7 +36,6 @@
 #include "foundation/utility/string.h"
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -50,9 +49,9 @@ OIIOErrorHandler::OIIOErrorHandler()
 	verbosity(VERBOSE);
 }
 
-void OIIOErrorHandler::operator()(int errcode, const string& msg)
+void OIIOErrorHandler::operator()(int errcode, const std::string& msg)
 {
-    const string modified_msg = prefix_all_lines(trim_both(msg), "osl: ");
+    const std::string modified_msg = prefix_all_lines(trim_both(msg), "osl: ");
 
     switch (errcode & ErrorCodeMask)
     {

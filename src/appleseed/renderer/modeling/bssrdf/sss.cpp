@@ -39,7 +39,6 @@
 #include <cmath>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -57,8 +56,8 @@ ComputeRdStandardDipole::ComputeRdStandardDipole(const float eta)
 float ComputeRdStandardDipole::operator()(const float alpha_prime) const
 {
     // [1] eq. 15.
-    const float sqrt_3ap = sqrt(3.0f * (1.0f - alpha_prime));
-    return (0.5f * alpha_prime) * (1.0f + exp(-(4.0f / 3.0f) * m_a * sqrt_3ap)) * exp(-sqrt_3ap);
+    const float sqrt_3ap = std::sqrt(3.0f * (1.0f - alpha_prime));
+    return (0.5f * alpha_prime) * (1.0f + std::exp(-(4.0f / 3.0f) * m_a * sqrt_3ap)) * std::exp(-sqrt_3ap);
 }
 
 ComputeRdBetterDipole::ComputeRdBetterDipole(const float eta)
@@ -72,10 +71,10 @@ float ComputeRdBetterDipole::operator()(const float alpha_prime) const
     const float cphi = 0.25f * (1.0f - m_two_c1);
     const float ce = 0.5f * (1.0f - m_three_c2);
     const float four_a = (1.0f + m_three_c2) / cphi;
-    const float mu_tr_d = sqrt((1.0f - alpha_prime) * (2.0f - alpha_prime) * (1.0f / 3.0f));
-    const float myexp = exp(-four_a * mu_tr_d);
+    const float mu_tr_d = std::sqrt((1.0f - alpha_prime) * (2.0f - alpha_prime) * (1.0f / 3.0f));
+    const float myexp = std::exp(-four_a * mu_tr_d);
     return 0.5f * square(alpha_prime)
-                * exp(-sqrt(3.0f * (1.0f - alpha_prime) / (2.0f - alpha_prime)))
+                * std::exp(-sqrt(3.0f * (1.0f - alpha_prime) / (2.0f - alpha_prime)))
                 * (ce * (1.0f + myexp) + cphi / mu_tr_d * (1.0f - myexp));
 }
 
@@ -95,7 +94,7 @@ float diffuse_mean_free_path(
     assert(sigma_a > 0.0f);
 
     const float D = diffusion_coefficient(sigma_a, sigma_t);
-    return 1.0f / sqrt(sigma_a / D);
+    return 1.0f / std::sqrt(sigma_a / D);
 }
 
 float reduced_extinction_coefficient(
@@ -105,7 +104,7 @@ float reduced_extinction_coefficient(
     assert(alpha_prime >= 0.0f);
     assert(alpha_prime < 1.0f);
 
-    return 1.0f / (sqrt(3.0f * (1.0f - alpha_prime)) * dmfp);
+    return 1.0f / (std::sqrt(3.0f * (1.0f - alpha_prime)) * dmfp);
 }
 
 float effective_extinction_coefficient(
@@ -115,7 +114,7 @@ float effective_extinction_coefficient(
 {
     const float sigma_s_prime = sigma_s * (1.0f - anisotropy);
     const float sigma_t_prime = sigma_s_prime + sigma_a;
-    return sqrt(3.0f * sigma_a * sigma_t_prime);
+    return std::sqrt(3.0f * sigma_a * sigma_t_prime);
 }
 
 void effective_extinction_coefficient(
@@ -160,7 +159,7 @@ float normalized_diffusion_s_mfp(
     const float     a)
 {
     // Equation 5.
-    const float x = abs(a - 0.8f);
+    const float x = std::abs(a - 0.8f);
     return 1.85f - a + 7.0f * (x * x * x);
 }
 
@@ -169,7 +168,7 @@ float normalized_diffusion_profile(
     const float     d)
 {
     // Equation 2.
-    const float exp_r3 = exp(-r / (3.0f * d));
+    const float exp_r3 = std::exp(-r / (3.0f * d));
     return (cube(exp_r3) + exp_r3) / (8.0f * Pi<float>() * d * r);
 }
 
@@ -209,7 +208,7 @@ namespace
         }
     };
 
-    InitializeNDCDFTable initialize_nd_cdf_table;
+    InitializeNDCDFTable g_initialize_nd_cdf_table;
 
     struct NDCDFFun
     {
@@ -268,15 +267,16 @@ float normalized_diffusion_sample(
     const float rmin = fit<size_t, float>(i - 1, 0, NDCDFTableSize - 1, 0.0f, NDCDFTableRmax) * d;
     const float rmax = fit<size_t, float>(i,     0, NDCDFTableSize - 1, 0.0f, NDCDFTableRmax) * d;
 
-    return invert_cdf_function(
-        NDCDFFun(d),
-        NDPDFFun(d),
-        u,
-        rmin,
-        rmax,
-        (rmin + rmax) * 0.5f,
-        eps,
-        max_iterations);
+    return
+        invert_cdf_function(
+            NDCDFFun(d),
+            NDPDFFun(d),
+            u,
+            rmin,
+            rmax,
+            (rmin + rmax) * 0.5f,
+            eps,
+            max_iterations);
 }
 
 float normalized_diffusion_cdf(
@@ -284,7 +284,7 @@ float normalized_diffusion_cdf(
     const float     d)
 {
     // Equation 11.
-    const float exp_r3 = exp(-r / (3.0f * d));
+    const float exp_r3 = std::exp(-r / (3.0f * d));
     return 1.0f - 0.25f * cube(exp_r3) - 0.75f * exp_r3;
 }
 

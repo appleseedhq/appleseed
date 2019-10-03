@@ -38,7 +38,6 @@
 #include "xercesc/util/XMLException.hpp"
 #include "xercesc/util/XMLExceptMsgs.hpp"
 
-using namespace std;
 using namespace xercesc;
 
 namespace foundation
@@ -125,8 +124,8 @@ bool XercesCContext::is_initialized() const
 //
 
 ErrorLogger::ErrorLogger(
-    Logger&         logger,
-    const string&   input_filepath)
+    Logger&              logger,
+    const std::string&   input_filepath)
   : m_logger(logger)
   , m_input_filepath(input_filepath)
 {

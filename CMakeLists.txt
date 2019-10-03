@@ -97,10 +97,12 @@ endif ()
 
 
 #--------------------------------------------------------------------------------------------------
-# Compiler features.
+# Language and compiler features.
 #--------------------------------------------------------------------------------------------------
 
 set (CMAKE_CXX_STANDARD 11)
+set (CMAKE_CXX_STANDARD_REQUIRED ON)
+set (CMAKE_CXX_EXTENSIONS OFF)
 
 include (WriteCompilerDetectionHeader)
 
@@ -238,6 +240,10 @@ set (Boost_MULTITHREADED TRUE)
 if (USE_STATIC_BOOST)
     set (Boost_USE_STATIC_LIBS TRUE)
 endif ()
+
+# Boost 1.70 breaks compatibility with the old way of doing things. This restores compatibility.
+# See https://gitlab.kitware.com/cmake/cmake/issues/18865 for details.
+set (Boost_NO_BOOST_CMAKE ON)
 
 find_package (Boost 1.61 REQUIRED COMPONENTS atomic chrono date_time filesystem regex system thread wave)
 

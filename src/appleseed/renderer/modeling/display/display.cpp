@@ -45,7 +45,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -90,7 +89,7 @@ void Display::release()
 
 bool Display::open(const Project& project)
 {
-    string plugin_path;
+    std::string plugin_path;
 
     // Retrieve plugin name.
     try

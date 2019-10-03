@@ -51,7 +51,6 @@ namespace renderer  { class ShadingComponents; }
 namespace renderer  { class ShadingPoint; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -75,7 +74,7 @@ namespace
           , m_samples(m_params.get_required<size_t>("samples", 16))
           , m_max_distance(m_params.get_required<double>("max_distance", 1.0))
         {
-            const string sampling_method = m_params.get_required<string>("sampling_method", "uniform");
+            const std::string sampling_method = m_params.get_required<std::string>("sampling_method", "uniform");
 
             if (sampling_method == "uniform")
                 m_sampling_method = UniformSampling;

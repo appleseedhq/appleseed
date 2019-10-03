@@ -36,7 +36,6 @@
 #include <utility>
 
 using namespace foundation;
-using namespace std;
 
 namespace
 {
@@ -61,9 +60,9 @@ namespace
         {
         }
 
-        unique_ptr<Object> create() override
+        std::unique_ptr<Object> create() override
         {
-            return unique_ptr<Object>(new Object(m_value));
+            return std::unique_ptr<Object>(new Object(m_value));
         }
     };
 }
@@ -72,8 +71,8 @@ TEST_SUITE(Foundation_Utility_Lazy_Access)
 {
     TEST_CASE(Get_GivenAccessBoundToNonNullObject_ReturnsNonNullPointer)
     {
-        unique_ptr<ObjectFactory> factory(new SimpleObjectFactory(42));
-        Lazy<Object> object(move(factory));
+        std::unique_ptr<ObjectFactory> factory(new SimpleObjectFactory(42));
+        Lazy<Object> object(std::move(factory));
 
         Access<Object> access(&object);
 
@@ -82,8 +81,8 @@ TEST_SUITE(Foundation_Utility_Lazy_Access)
 
     TEST_CASE(OperatorArrow_GivenAccessBoundToNonNullObject_GivesAccessToObject)
     {
-        unique_ptr<ObjectFactory> factory(new SimpleObjectFactory(42));
-        Lazy<Object> object(move(factory));
+        std::unique_ptr<ObjectFactory> factory(new SimpleObjectFactory(42));
+        Lazy<Object> object(std::move(factory));
 
         Access<Object> access(&object);
 
@@ -92,8 +91,8 @@ TEST_SUITE(Foundation_Utility_Lazy_Access)
 
     TEST_CASE(OperatorStar_GivenAccessBoundToNonNullObject_GivesAccessToObject)
     {
-        unique_ptr<ObjectFactory> factory(new SimpleObjectFactory(42));
-        Lazy<Object> object(move(factory));
+        std::unique_ptr<ObjectFactory> factory(new SimpleObjectFactory(42));
+        Lazy<Object> object(std::move(factory));
 
         Access<Object> access(&object);
 
@@ -102,16 +101,16 @@ TEST_SUITE(Foundation_Utility_Lazy_Access)
 
     struct NullObjectFactory : public ObjectFactory
     {
-        unique_ptr<Object> create() override
+        std::unique_ptr<Object> create() override
         {
-            return unique_ptr<Object>(nullptr);
+            return std::unique_ptr<Object>(nullptr);
         }
     };
 
     TEST_CASE(Get_GivenAccessBoundToNullObject_ReturnsNullPointer)
     {
-        unique_ptr<ObjectFactory> factory(new NullObjectFactory());
-        Lazy<Object> object(move(factory));
+        std::unique_ptr<ObjectFactory> factory(new NullObjectFactory());
+        Lazy<Object> object(std::move(factory));
 
         Access<Object> access(&object);
 

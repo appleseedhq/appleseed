@@ -45,33 +45,31 @@
 #include <fstream>
 #include <sstream>
 
-using namespace std;
-
 namespace foundation
 {
 
-bool load_text_file(const string& filename, string& contents)
+bool load_text_file(const std::string& filename, std::string& contents)
 {
-    ifstream file(filename.c_str());
+    std::ifstream file(filename.c_str());
 
     if (!file.is_open())
         return false;
 
-    stringstream sstr;
+    std::stringstream sstr;
     sstr << file.rdbuf();
     contents = sstr.str();
 
     return true;
 }
 
-bool compare_text_files(const string& filename1, const string& filename2)
+bool compare_text_files(const std::string& filename1, const std::string& filename2)
 {
-    string contents1;
+    std::string contents1;
 
     if (!load_text_file(filename1, contents1))
         return false;
 
-    string contents2;
+    std::string contents2;
 
     if (!load_text_file(filename2, contents2))
         return false;
@@ -119,7 +117,7 @@ bool are_images_feq(
 }
 
 void fit_point_cloud_to_image(
-    vector<Vector2d>&           points)
+    std::vector<Vector2d>&           points)
 {
     AABB2d aabb;
     aabb.invalidate();
@@ -139,10 +137,10 @@ void fit_point_cloud_to_image(
 }
 
 void write_point_cloud_image(
-    const string&               image_path,
-    const size_t                image_width,
-    const size_t                image_height,
-    const vector<Vector2d>&     points)
+    const std::string&               image_path,
+    const size_t                     image_width,
+    const size_t                     image_height,
+    const std::vector<Vector2d>&     points)
 {
     Image image(
         image_width,
@@ -163,8 +161,8 @@ void write_point_cloud_image(
 }
 
 void write_point_cloud_image(
-    const string&               image_path,
-    const vector<Vector2d>&     points)
+    const std::string&               image_path,
+    const std::vector<Vector2d>&     points)
 {
     write_point_cloud_image(
         image_path,

@@ -37,13 +37,12 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Utility_CommandLineParser_ValueOptionHandler)
 {
     TEST_CASE(Parse_GivenMultipleInvocations_AccumulateValues)
     {
-        ValueOptionHandler<string> handler;
+        ValueOptionHandler<std::string> handler;
         handler.set_exact_value_count(1);
         handler.set_flags(OptionHandler::Repeatable);
 

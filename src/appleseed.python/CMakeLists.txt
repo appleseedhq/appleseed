@@ -34,8 +34,10 @@
 
 set (BOOST_NEEDED_LIBS)
 
+# Don't use Boost_VERSION directly as it changed format with Boost 1.70.
+
 if (WITH_PYTHON2_BINDINGS)
-    if (Boost_VERSION GREATER_EQUAL 106700)
+    if ((Boost_MAJOR_VERSION GREATER 1) OR (Boost_MINOR_VERSION GREATER_EQUAL 67))
         set (BOOST_NEEDED_LIBS ${BOOST_NEEDED_LIBS} python27)
     else ()
         set (BOOST_NEEDED_LIBS ${BOOST_NEEDED_LIBS} python)
@@ -46,14 +48,14 @@ if (WITH_PYTHON3_BINDINGS)
     find_package (Python3 REQUIRED)
     find_package (OpenGL REQUIRED)
 
-    if (Boost_VERSION GREATER_EQUAL 106700)
-        set (BOOST_NEEDED_LIBS ${BOOST_NEEDED_LIBS} python35)
+    if ((Boost_MAJOR_VERSION GREATER 1) OR (Boost_MINOR_VERSION GREATER_EQUAL 67))
+        set (BOOST_NEEDED_LIBS ${BOOST_NEEDED_LIBS} python37)
     else ()
         set (BOOST_NEEDED_LIBS ${BOOST_NEEDED_LIBS} python3)
     endif ()
 endif ()
 
-find_package (Boost 1.61 COMPONENTS ${BOOST_NEEDED_LIBS})
+find_package (Boost 1.61 REQUIRED COMPONENTS ${BOOST_NEEDED_LIBS})
 
 
 #--------------------------------------------------------------------------------------------------
@@ -235,7 +237,7 @@ if (WITH_PYTHON2_BINDINGS)
 
     target_link_libraries (appleseed.python
         appleseed
-        ${Boost_PYTHON_LIBRARY}             # Only Boost.Python2 library
+        ${Boost_PYTHON_LIBRARY}         # Only Boost.Python2 library
         ${PYTHON_LIBRARIES}
     )
 endif ()
@@ -245,8 +247,8 @@ if (WITH_PYTHON3_BINDINGS)
 
     target_link_libraries (appleseed.python3
         appleseed
-        ${Boost_PYTHON3_LIBRARY}        # Only Boost.Python3 library
         glad
+        ${Boost_PYTHON3_LIBRARY}        # Only Boost.Python3 library
         ${PYTHON3_LIBRARY}
     )
 

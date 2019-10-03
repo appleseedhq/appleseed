@@ -76,7 +76,6 @@ using namespace appleseed::cli;
 using namespace appleseed::shared;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace
@@ -131,7 +130,7 @@ namespace
     {
         // Configure the renderer's logger: mute all log messages except warnings and errors.
         SaveLogFormatterConfig save_global_logger_config(global_logger());
-        global_logger().set_all_formats(string());
+        global_logger().set_all_formats(std::string());
         global_logger().reset_format(LogMessage::Warning);
         global_logger().reset_format(LogMessage::Error);
         global_logger().reset_format(LogMessage::Fatal);
@@ -190,7 +189,7 @@ namespace
     {
         // Configure the renderer's logger: mute all log messages except warnings and errors.
         SaveLogFormatterConfig save_global_logger_config(global_logger());
-        global_logger().set_all_formats(string());
+        global_logger().set_all_formats(std::string());
         global_logger().reset_format(LogMessage::Warning);
         global_logger().reset_format(LogMessage::Error);
         global_logger().reset_format(LogMessage::Fatal);
@@ -205,7 +204,7 @@ namespace
         // Try to add a benchmark listener that outputs to a XML file.
         auto_release_ptr<XMLFileBenchmarkListener> xmlfile_listener(
             create_xmlfile_benchmark_listener());
-        const string xmlfile_name = "benchmark." + get_time_stamp_string() + ".xml";
+        const std::string xmlfile_name = "benchmark." + get_time_stamp_string() + ".xml";
         const bf::path xmlfile_path =
               bf::path(Application::get_tests_root_path())
             / "unit benchmarks" / "results" / xmlfile_name;
@@ -288,12 +287,12 @@ namespace
         for (size_t i = 0; i < g_cl.m_params.values().size(); ++i)
         {
             // Retrieve the assignment string (of the form name=value).
-            const string& s = g_cl.m_params.values()[i];
+            const std::string& s = g_cl.m_params.values()[i];
 
             // Retrieve the name and the value of the parameter.
-            const string::size_type equal_pos = s.find_first_of('=');
-            const string path = s.substr(0, equal_pos);
-            const string value = s.substr(equal_pos + 1);
+            const std::string::size_type equal_pos = s.find_first_of('=');
+            const std::string path = s.substr(0, equal_pos);
+            const std::string value = s.substr(equal_pos + 1);
 
             // Insert the parameter.
             params.insert_path(path, value);
@@ -310,7 +309,7 @@ namespace
 
         if (g_cl.m_resolution.is_set())
         {
-            const string resolution =
+            const std::string resolution =
                   foundation::to_string(g_cl.m_resolution.values()[0]) + ' ' +
                   foundation::to_string(g_cl.m_resolution.values()[1]);
             new_params.insert("resolution", resolution);
@@ -318,7 +317,7 @@ namespace
 
         if (g_cl.m_window.is_set())
         {
-            const string crop_window =
+            const std::string crop_window =
                   foundation::to_string(g_cl.m_window.values()[0]) + ' ' +
                   foundation::to_string(g_cl.m_window.values()[1]) + ' ' +
                   foundation::to_string(g_cl.m_window.values()[2]) + ' ' +
@@ -430,12 +429,12 @@ namespace
     {
         if (g_cl.m_show_object_instances.is_set() || g_cl.m_hide_object_instances.is_set())
         {
-            const string show_regex =
+            const std::string show_regex =
                 g_cl.m_show_object_instances.is_set()
                     ? g_cl.m_show_object_instances.value()
                     : ".*";     // match everything
 
-            const string hide_regex =
+            const std::string hide_regex =
                 g_cl.m_hide_object_instances.is_set()
                     ? g_cl.m_hide_object_instances.value()
                     : "(?!)";   // match nothing
@@ -465,14 +464,14 @@ namespace
 #if defined __APPLE__ || defined _WIN32
 
     // Invoke a system command to open an image file.
-    void display_frame(const string& path)
+    void display_frame(const std::string& path)
     {
-        const string quoted_path = "\"" + path + "\"";
+        const std::string quoted_path = "\"" + path + "\"";
 
 #if defined __APPLE__
-        const string command = "open " + quoted_path;
+        const std::string command = "open " + quoted_path;
 #elif defined _WIN32
-        const string command = quoted_path;
+        const std::string command = quoted_path;
 #endif
 
         LOG_DEBUG(g_logger, "executing '%s'", command.c_str());
@@ -481,7 +480,7 @@ namespace
 
 #endif
 
-    auto_release_ptr<Project> load_project(const string& project_filepath)
+    auto_release_ptr<Project> load_project(const std::string& project_filepath)
     {
         // Construct the schema file path.
         const bf::path schema_filepath =
@@ -500,7 +499,7 @@ namespace
     bool configure_project(Project& project, ParamArray& params)
     {
         // Retrieve the name of the configuration to use.
-        const string config_name = g_cl.m_configuration.is_set()
+        const std::string config_name = g_cl.m_configuration.is_set()
             ? g_cl.m_configuration.value()
             : "final";
 
@@ -532,11 +531,11 @@ namespace
 
     bool is_progressive_render(const ParamArray& params)
     {
-        const string value = params.get_required<string>("frame_renderer", "generic");
+        const std::string value = params.get_required<std::string>("frame_renderer", "generic");
         return value == "progressive";
     }
 
-    bool render(const string& project_filename)
+    bool render(const std::string& project_filename)
     {
         // Load the project.
         auto_release_ptr<Project> project = load_project(project_filename);
@@ -549,7 +548,7 @@ namespace
             return false;
 
         // Create the tile callback factory.
-        unique_ptr<ITileCallbackFactory> tile_callback_factory;
+        std::unique_ptr<ITileCallbackFactory> tile_callback_factory;
         if (g_cl.m_send_to_stdout.is_set())
         {
             tile_callback_factory.reset(
@@ -559,7 +558,7 @@ namespace
         else if (project->get_display() == nullptr)
         {
             // Create a default tile callback if needed.
-            if (params.get_optional<string>("frame_renderer", "") != "progressive")
+            if (params.get_optional<std::string>("frame_renderer", "") != "progressive")
             {
                 tile_callback_factory.reset(
                     new ProgressTileCallbackFactory(
@@ -662,7 +661,7 @@ namespace
         return success;
     }
 
-    bool benchmark_render(const string& project_filename)
+    bool benchmark_render(const std::string& project_filename)
     {
         // Configure our logger.
         SaveLogFormatterConfig save_g_logger_config(g_logger);
@@ -671,7 +670,7 @@ namespace
 
         // Configure the renderer's logger: mute all log messages except warnings and errors.
         SaveLogFormatterConfig save_global_logger_config(global_logger());
-        global_logger().set_all_formats(string());
+        global_logger().set_all_formats(std::string());
         global_logger().reset_format(LogMessage::Warning);
         global_logger().reset_format(LogMessage::Error);
         global_logger().reset_format(LogMessage::Fatal);
@@ -777,7 +776,7 @@ int main(int argc, char* argv[])
     // Render the specified project.
     if (!g_cl.m_filename.values().empty())
     {
-        const string project_filename = g_cl.m_filename.value();
+        const std::string project_filename = g_cl.m_filename.value();
 
         if (g_cl.m_benchmark_mode.is_set())
             success = success && benchmark_render(project_filename);

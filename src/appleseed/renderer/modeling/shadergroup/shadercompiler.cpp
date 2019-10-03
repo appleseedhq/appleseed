@@ -45,7 +45,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -73,10 +72,10 @@ struct ShaderCompiler::Impl
         delete m_error_handler;
     }
 
-    string              m_stdosl_path;
-    OSL::OSLCompiler*   m_compiler;
-    OIIOErrorHandler*   m_error_handler;
-    vector<string>      m_options;
+    std::string               m_stdosl_path;
+    OSL::OSLCompiler*         m_compiler;
+    OIIOErrorHandler*         m_error_handler;
+    std::vector<std::string>  m_options;
 };
 
 ShaderCompiler::ShaderCompiler(const char* stdosl_path)
@@ -108,7 +107,7 @@ bool ShaderCompiler::compile_buffer(
     const char* source_code,
     APIString&  result) const
 {
-    string buffer;
+    std::string buffer;
     const bool ok = impl->m_compiler->compile_buffer(
         source_code,
         buffer,

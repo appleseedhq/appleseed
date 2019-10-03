@@ -56,7 +56,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -101,7 +100,7 @@ EntityBrowser<Project>::EntityBrowser(const Project& project)
 {
 }
 
-StringDictionary EntityBrowser<Project>::get_entities(const string& type) const
+StringDictionary EntityBrowser<Project>::get_entities(const std::string& type) const
 {
     return StringDictionary();
 }
@@ -116,7 +115,7 @@ EntityBrowser<BaseGroup>::EntityBrowser(const BaseGroup& base_group)
 {
 }
 
-StringDictionary EntityBrowser<BaseGroup>::get_entities(const string& type) const
+StringDictionary EntityBrowser<BaseGroup>::get_entities(const std::string& type) const
 {
     return
         type == "color" ? build_entity_dictionary(m_base_group.colors()) :
@@ -135,7 +134,7 @@ EntityBrowser<Scene>::EntityBrowser(const Scene& scene)
 {
 }
 
-StringDictionary EntityBrowser<Scene>::get_entities(const string& type) const
+StringDictionary EntityBrowser<Scene>::get_entities(const std::string& type) const
 {
     return
         type == "camera" ? build_entity_dictionary(m_scene.cameras()) :
@@ -155,7 +154,7 @@ EntityBrowser<Assembly>::EntityBrowser(const Assembly& assembly)
 {
 }
 
-StringDictionary EntityBrowser<Assembly>::get_entities(const string& type) const
+StringDictionary EntityBrowser<Assembly>::get_entities(const std::string& type) const
 {
     StringDictionary entities =
         type == "bsdf" ? build_entity_dictionary(m_assembly.bsdfs()) :
@@ -196,7 +195,7 @@ EntityBrowser<Frame>::EntityBrowser(const Frame& frame)
 {
 }
 
-StringDictionary EntityBrowser<Frame>::get_entities(const string& type) const
+StringDictionary EntityBrowser<Frame>::get_entities(const std::string& type) const
 {
     return
         type == "aov" ? build_entity_dictionary(m_frame.aovs()) :

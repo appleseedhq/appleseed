@@ -39,16 +39,15 @@
 #include "foundation/utility/memory.h"
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
 
 size_t TriangleEncoder::compute_size(
-    const vector<TriangleVertexInfo>&   triangle_vertex_infos,
-    const vector<size_t>&               triangle_indices,
-    const size_t                        item_begin,
-    const size_t                        item_count)
+    const std::vector<TriangleVertexInfo>&   triangle_vertex_infos,
+    const std::vector<size_t>&               triangle_indices,
+    const size_t                             item_begin,
+    const size_t                             item_count)
 {
     size_t size = 0;
 
@@ -69,12 +68,12 @@ size_t TriangleEncoder::compute_size(
 }
 
 void TriangleEncoder::encode(
-    const vector<TriangleVertexInfo>&   triangle_vertex_infos,
-    const vector<GVector3>&             triangle_vertices,
-    const vector<size_t>&               triangle_indices,
-    const size_t                        item_begin,
-    const size_t                        item_count,
-    MemoryWriter&                       writer)
+    const std::vector<TriangleVertexInfo>&   triangle_vertex_infos,
+    const std::vector<GVector3>&             triangle_vertices,
+    const std::vector<size_t>&               triangle_indices,
+    const size_t                             item_begin,
+    const size_t                             item_count,
+    MemoryWriter&                            writer)
 {
     for (size_t i = 0; i < item_count; ++i)
     {

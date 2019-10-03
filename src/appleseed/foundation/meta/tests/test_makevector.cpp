@@ -37,13 +37,12 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Utility_MakeVector)
 {
     TEST_CASE(TestMakeVectorWithSingleIntegerValue)
     {
-        vector<int> expected_vector;
+        std::vector<int> expected_vector;
         expected_vector.push_back(10);
 
         EXPECT_EQ(expected_vector, make_vector(10));
@@ -51,7 +50,7 @@ TEST_SUITE(Foundation_Utility_MakeVector)
 
     TEST_CASE(TestMakeVectorWithMultipleIntegerValues)
     {
-        vector<int> expected_vector;
+        std::vector<int> expected_vector;
         expected_vector.push_back(10);
         expected_vector.push_back(20);
         expected_vector.push_back(30);
@@ -61,7 +60,7 @@ TEST_SUITE(Foundation_Utility_MakeVector)
 
     TEST_CASE(TestMakeVectorWithMultipleStringValues)
     {
-        vector<string> expected_vector;
+        std::vector<std::string> expected_vector;
         expected_vector.emplace_back("hello");
         expected_vector.emplace_back("world");
         expected_vector.emplace_back("bunny");

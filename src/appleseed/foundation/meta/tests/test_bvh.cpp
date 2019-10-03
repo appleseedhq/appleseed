@@ -41,7 +41,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Math_BVH_Node)
 {
@@ -105,7 +104,7 @@ TEST_SUITE(Foundation_Math_BVH_SpatialBuilder)
     TEST_CASE(InstantiateSpatialBuilderAndSBVHPartitioner)
     {
         typedef AlignedVector<bvh::Node<AABB3d>> NodeVector;
-        typedef vector<AABB3d> AABBVector;
+        typedef std::vector<AABB3d> AABBVector;
 
         typedef bvh::Tree<NodeVector> Tree;
         typedef bvh::SBVHPartitioner<ItemHandler, AABBVector> Partitioner;

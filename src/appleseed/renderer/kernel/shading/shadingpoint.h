@@ -158,8 +158,8 @@ class ShadingPoint
     // Return the intersection point in world space, with per-object-instance ray bias applied.
     foundation::Vector3d get_biased_point(const foundation::Vector3d& direction) const;
 
-    // Return the intersection point in world space, properly offset to avoid self-intersections.
-    const foundation::Vector3d& get_offset_point(const foundation::Vector3d& direction) const;
+    // Return the intersection point in assembly instance space, properly offset to avoid self-intersections.
+    const foundation::Vector3d& get_offset_point(const foundation::Vector3d& asm_inst_direction) const;
 
     // Return the world space partial derivatives of the intersection point wrt. a given UV set.
     const foundation::Vector3d& get_dpdu(const size_t uvset) const;
@@ -361,9 +361,9 @@ class ShadingPoint
     mutable foundation::Color3f         m_color;                        // per-vertex interpolated color at intersection point
 
     // Data required to avoid self-intersections.
-    mutable foundation::Vector3d        m_asm_geo_normal;               // assembly instance space geometric normal to hit triangle
-    mutable foundation::Vector3d        m_front_point;                  // hit point refined to front, in assembly instance space
-    mutable foundation::Vector3d        m_back_point;                   // hit point refined to back, in assembly instance space
+    mutable foundation::Vector3d        m_asm_inst_geo_normal;          // assembly instance space geometric normal to hit primitive
+    mutable foundation::Vector3d        m_asm_inst_front_point;         // hit point refined to front, in assembly instance space
+    mutable foundation::Vector3d        m_asm_inst_back_point;          // hit point refined to back, in assembly instance space
 
     // OSL-related data.
     mutable OSLObjectTransformInfo      m_obj_transform_info;
@@ -605,15 +605,15 @@ inline const foundation::Vector3d& ShadingPoint::get_point() const
     return m_point;
 }
 
-inline const foundation::Vector3d& ShadingPoint::get_offset_point(const foundation::Vector3d& direction) const
+inline const foundation::Vector3d& ShadingPoint::get_offset_point(const foundation::Vector3d& asm_inst_direction) const
 {
     assert(hit_surface());
     assert(m_members & HasRefinedPoints);
 
     return
-        foundation::dot(m_asm_geo_normal, direction) > 0.0
-            ? m_front_point
-            : m_back_point;
+        foundation::dot(m_asm_inst_geo_normal, asm_inst_direction) > 0.0
+            ? m_asm_inst_front_point
+            : m_asm_inst_back_point;
 }
 
 inline const foundation::Vector3d& ShadingPoint::get_dpdu(const size_t uvset) const

@@ -79,7 +79,6 @@
 
 using namespace boost;
 using namespace foundation;
-using namespace std;
 
 
 //
@@ -211,7 +210,7 @@ namespace
 
         const tm* local_time = localtime(&t);
 
-        stringstream sstr;
+        std::stringstream sstr;
         sstr << setfill('0');
 
         sstr << setw(2) << local_time->tm_hour << ':';
@@ -262,7 +261,7 @@ namespace
             "[%s] Deallocated %s at %s\n",
             get_timestamp_string().c_str(),
             pretty_size(size).c_str(),
-            to_string(ptr).c_str());
+            std::to_string(ptr).c_str());
 
 #ifdef DUMP_CALLSTACK_ON_ALLOCATION
         fprintf(g_log_file, "\n");
@@ -339,7 +338,7 @@ namespace
             for (const_each<MemoryBlockMap> i = g_allocated_mem_blocks; i; ++i)
                 sorted_blocks.push_back(*i);
 
-            sort(sorted_blocks.begin(), sorted_blocks.end(), SortByDecreasingSize());
+            std::sort(sorted_blocks.begin(), sorted_blocks.end(), SortByDecreasingSize());
 
             for (const_each<MemoryBlockVector> i = sorted_blocks; i; ++i)
             {
@@ -347,7 +346,7 @@ namespace
                     g_log_file,
                     "    %s at %s\n",
                     pretty_size(i->second).c_str(),
-                    to_string(i->first).c_str());
+                    std::to_string(i->first).c_str());
             }
         }
     }
@@ -369,9 +368,9 @@ void log_allocation(const void* ptr, const size_t size)
 
     ++g_allocation_count;
     g_allocated_bytes += size;
-    g_peak_allocated_bytes = max(g_peak_allocated_bytes, g_allocated_bytes);
+    g_peak_allocated_bytes = std::max(g_peak_allocated_bytes, g_allocated_bytes);
     g_total_allocated_bytes += size;
-    g_largest_allocation_bytes = max<uint64>(g_largest_allocation_bytes, size);
+    g_largest_allocation_bytes = std::max<uint64>(g_largest_allocation_bytes, size);
 
     g_allocated_mem_blocks[ptr] = size;
 
@@ -490,7 +489,7 @@ namespace
         void* ptr = aligned_malloc(size, MemoryAlignment);
 
         if (!ptr)
-            throw bad_alloc();
+            throw std::bad_alloc();
 
         return ptr;
     }
@@ -506,27 +505,27 @@ namespace
 
 _Ret_notnull_ _Post_writable_byte_size_(size)
 void* operator new(size_t size)
-  throw(bad_alloc)
+  throw(std::bad_alloc)
 {
     return new_impl(size);
 }
 
 _Ret_notnull_ _Post_writable_byte_size_(size)
 void* operator new[](size_t size)
-  throw(bad_alloc)
+  throw(std::bad_alloc)
 {
     return new_impl(size);
 }
 
 _Ret_maybenull_ _Post_writable_byte_size_(size)
-void* operator new(size_t size, const nothrow_t&)
+void* operator new(size_t size, const std::nothrow_t&)
   throw()
 {
     return new_impl(size);
 }
 
 _Ret_maybenull_ _Post_writable_byte_size_(size)
-void* operator new[](size_t size, const nothrow_t&)
+void* operator new[](size_t size, const std::nothrow_t&)
   throw()
 {
     return new_impl(size);
@@ -542,12 +541,12 @@ void operator delete[](void* ptr)
     delete_impl(ptr);
 }
 
-void operator delete(void* ptr, const nothrow_t&)
+void operator delete(void* ptr, const std::nothrow_t&)
 {
     delete_impl(ptr);
 }
 
-void operator delete[](void* ptr, const nothrow_t&)
+void operator delete[](void* ptr, const std::nothrow_t&)
 {
     delete_impl(ptr);
 }

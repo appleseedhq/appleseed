@@ -35,7 +35,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Utility_CopyOnWrite)
 {
@@ -48,8 +47,8 @@ TEST_SUITE(Foundation_Utility_CopyOnWrite)
 
     TEST_CASE(ConstructWithMovableType)
     {
-        vector<int> x(1, 11);
-        CopyOnWrite<vector<int>> cow(move(x));
+        std::vector<int> x(1, 11);
+        CopyOnWrite<std::vector<int>> cow(std::move(x));
         EXPECT_TRUE(cow.unique());
         EXPECT_EQ(11, cow.read()[0]);
     }
@@ -75,7 +74,7 @@ TEST_SUITE(Foundation_Utility_CopyOnWrite)
         CopyOnWrite<int> a(11);
         EXPECT_TRUE(a.unique());
 
-        CopyOnWrite<int> b(move(a));
+        CopyOnWrite<int> b(std::move(a));
         EXPECT_TRUE(a.is_null());
         EXPECT_TRUE(b.unique());
 
@@ -105,7 +104,7 @@ TEST_SUITE(Foundation_Utility_CopyOnWrite)
         EXPECT_TRUE(a.unique());
 
         CopyOnWrite<int> b;
-        b = move(a);
+        b = std::move(a);
         EXPECT_TRUE(a.is_null());
         EXPECT_TRUE(b.unique());
 

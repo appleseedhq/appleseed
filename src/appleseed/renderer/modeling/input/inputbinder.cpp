@@ -71,7 +71,6 @@
 #include <utility>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -192,12 +191,12 @@ InputBinder::ReferencedEntity InputBinder::find_referenced_entity(
 {
     const ParamArray& entity_params = entity.get_parameters();
 
-    string param_value;
+    std::string param_value;
 
     if (entity_params.strings().exist(input.name()))
     {
         // A value is assigned to this input, retrieve it.
-        param_value = entity_params.get<string>(input.name());
+        param_value = entity_params.get<std::string>(input.name());
     }
     else if (input.type() == InputTypeOptional)
     {
@@ -284,7 +283,7 @@ void InputBinder::collect_assembly_symbols(
     build_assembly_symbol_table(assembly, symbols);
 
     // Store the symbol table of the assembly.
-    m_assembly_symbols.insert(make_pair(&assembly, symbols));
+    m_assembly_symbols.insert(std::make_pair(&assembly, symbols));
 
     // Recurse into child assemblies.
     for (const auto& child_assembly : assembly.assemblies())
@@ -492,17 +491,17 @@ void InputBinder::bind_entity_inputs(
     const char*                     entity_type,
     ConnectableEntity&              entity)
 {
-    const string entity_path(entity.get_path().c_str());
+    const std::string entity_path(entity.get_path().c_str());
     const ParamArray& entity_params = entity.get_parameters();
 
     for (auto& input : entity.get_inputs())
     {
-        string param_value;
+        std::string param_value;
 
         if (entity_params.strings().exist(input.name()))
         {
             // A value is assigned to this input, retrieve it.
-            param_value = entity_params.get<string>(input.name());
+            param_value = entity_params.get<std::string>(input.name());
         }
         else if (input.type() == InputTypeOptional)
         {
@@ -698,7 +697,7 @@ bool InputBinder::try_bind_assembly_entity_to_input(
 }
 
 bool InputBinder::try_bind_scalar_to_input(
-    const string&                   param_value,
+    const std::string&              param_value,
     InputArray::iterator&           input) const
 {
     try
@@ -742,7 +741,7 @@ void InputBinder::bind_texture_instance_to_input(
                 assembly_uid,
                 *texture_instance));
     }
-    catch (const exception& e)
+    catch (const std::exception& e)
     {
         RENDERER_LOG_ERROR(
             "while binding inputs of %s \"%s\", failed to bind \"%s\" to input \"%s\" (%s).",

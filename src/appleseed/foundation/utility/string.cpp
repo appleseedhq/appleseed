@@ -33,8 +33,6 @@
 // Standard headers.
 #include <cstring>
 
-using namespace std;
-
 namespace foundation
 {
 

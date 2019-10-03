@@ -35,7 +35,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -76,7 +75,7 @@ ParamArray& ParamArray::insert_path(const char* path, const char* value)
     assert(path);
     assert(value);
 
-    vector<string> parts;
+    std::vector<std::string> parts;
     tokenize(path, PartSeparator, parts);
 
     assert(!parts.empty());
@@ -85,7 +84,7 @@ ParamArray& ParamArray::insert_path(const char* path, const char* value)
 
     for (size_t i = 0; i < parts.size() - 1; ++i)
     {
-        const string& part = parts[i];
+        const std::string& part = parts[i];
 
         if (!leaf->dictionaries().exist(part))
             leaf->insert(part, Dictionary());
@@ -102,7 +101,7 @@ bool ParamArray::exist_path(const char* path) const
 {
     assert(path);
 
-    vector<string> parts;
+    std::vector<std::string> parts;
     tokenize(path, PartSeparator, parts);
 
     assert(!parts.empty());
@@ -124,7 +123,7 @@ const char* ParamArray::get_path(const char* path) const
 {
     assert(path);
 
-    vector<string> parts;
+    std::vector<std::string> parts;
     tokenize(path, PartSeparator, parts);
 
     assert(!parts.empty());
@@ -141,7 +140,7 @@ ParamArray& ParamArray::remove_path(const char* path)
 {
     assert(path);
 
-    vector<string> parts;
+    std::vector<std::string> parts;
     tokenize(path, PartSeparator, parts);
 
     assert(!parts.empty());

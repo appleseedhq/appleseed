@@ -44,7 +44,6 @@
 #include <memory>
 #include <string>
 
-using namespace std;
 using namespace xercesc;
 
 namespace foundation
@@ -61,8 +60,8 @@ namespace
     {
         assert(node);
 
-        const basic_string<XMLCh> name_attribute_name = transcode("name");
-        const basic_string<XMLCh> value_attribute_name = transcode("value");
+        const std::basic_string<XMLCh> name_attribute_name = transcode("name");
+        const std::basic_string<XMLCh> value_attribute_name = transcode("value");
 
         node = node->getFirstChild();
 
@@ -70,7 +69,7 @@ namespace
         {
             if (node->getNodeType() == DOMNode::ELEMENT_NODE)
             {
-                const string element_name = transcode(node->getNodeName());
+                const std::string element_name = transcode(node->getNodeName());
 
                 if (element_name == "parameters")
                 {
@@ -121,14 +120,14 @@ bool SettingsFileReader::read(
         return false;
 
     // Create the DOM parser.
-    unique_ptr<XercesDOMParser> parser(new XercesDOMParser());
+    std::unique_ptr<XercesDOMParser> parser(new XercesDOMParser());
     parser->setValidationScheme(XercesDOMParser::Val_Always);
     parser->setDoNamespaces(true);
     parser->setDoSchema(true);
     parser->setExternalNoNamespaceSchemaLocation(schema_filename);
 
     // Create the error handler.
-    unique_ptr<ErrorLogger> error_handler(new ErrorLogger(m_logger, settings_filename));
+    std::unique_ptr<ErrorLogger> error_handler(new ErrorLogger(m_logger, settings_filename));
     parser->setErrorHandler(error_handler.get());
 
     // Parse the settings file.

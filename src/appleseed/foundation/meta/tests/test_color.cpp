@@ -41,7 +41,6 @@
 #endif
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Image_Color)
 {

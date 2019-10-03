@@ -76,7 +76,6 @@ namespace renderer  { class OnFrameBeginRecorder; }
 namespace renderer  { class OnRenderBeginRecorder; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -88,7 +87,8 @@ namespace
     //
     // Reference:
     //
-    //   http://www.cs.virginia.edu/~gfx/courses/2007/ImageSynthesis/assignments/envsample.pdf
+    //   Monte Carlo Rendering with Natural Illumination
+    //   http://web.cs.wpi.edu/~emmanuel/courses/cs563/S07/projects/envsample.pdf
     //
     // Light probes:
     //
@@ -145,7 +145,7 @@ namespace
                 float exposure_multiplier;
                 m_exposure_multiplier_source->evaluate_uniform(exposure_multiplier);
 
-                payload *= multiplier * pow(2.0f, exposure * exposure_multiplier);
+                payload *= multiplier * std::pow(2.0f, exposure * exposure_multiplier);
                 importance = luminance(payload);
             }
             else
@@ -274,10 +274,10 @@ namespace
             shift_angles(theta, phi, m_theta_shift, m_phi_shift);
 
             // Compute the local space emission direction.
-            const float cos_theta = cos(theta);
-            const float sin_theta = sin(theta);
-            const float cos_phi = cos(phi);
-            const float sin_phi = sin(phi);
+            const float cos_theta = std::cos(theta);
+            const float sin_theta = std::sin(theta);
+            const float cos_phi = std::cos(phi);
+            const float sin_phi = std::sin(phi);
             const Vector3f local_outgoing =
                 Vector3f::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
 
@@ -407,7 +407,7 @@ namespace
         float   m_rcp_importance_map_height;
         float   m_probability_scale;
 
-        unique_ptr<ImageImportanceSamplerType> m_importance_sampler;
+        std::unique_ptr<ImageImportanceSamplerType> m_importance_sampler;
 
         void build_importance_map(const Scene& scene, IAbortSwitch* abort_switch)
         {
@@ -480,7 +480,7 @@ namespace
             if (is_finite(values.m_radiance))
             {
                 value = values.m_radiance;
-                value *= values.m_radiance_multiplier * pow(2.0f, values.m_exposure * values.m_exposure_multiplier);
+                value *= values.m_radiance_multiplier * std::pow(2.0f, values.m_exposure * values.m_exposure_multiplier);
             }
             else value.set(0.0f);
         }
@@ -501,7 +501,7 @@ namespace
             assert(prob_xy >= 0.0f);
 
             // Compute the probability density of the emission direction.
-            const float pdf = prob_xy > 0.0f ? prob_xy * m_probability_scale / sin(theta) : 0.0f;
+            const float pdf = prob_xy > 0.0f ? prob_xy * m_probability_scale / std::sin(theta) : 0.0f;
             assert(pdf >= 0.0f);
 
             return pdf;

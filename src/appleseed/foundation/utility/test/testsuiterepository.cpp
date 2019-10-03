@@ -39,8 +39,6 @@
 #include <cassert>
 #include <vector>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -50,7 +48,7 @@ namespace foundation
 
 struct TestSuiteRepository::Impl
 {
-    vector<TestSuite*> m_suites;
+    std::vector<TestSuite*> m_suites;
 };
 
 TestSuiteRepository::TestSuiteRepository()

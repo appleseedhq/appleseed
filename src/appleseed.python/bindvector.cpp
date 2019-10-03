@@ -39,12 +39,11 @@
 
 namespace bpy = boost::python;
 using namespace foundation;
-using namespace std;
 
 namespace
 {
     template <typename T, size_t N>
-    Vector<T, N>* construct_vec_from_list(bpy::list l)
+    Vector<T, N>* construct_vec_from_list(const bpy::list& l)
     {
         if (bpy::len(l) != N)
         {
@@ -52,7 +51,7 @@ namespace
             bpy::throw_error_already_set();
         }
 
-        unique_ptr<Vector<T, N>> r(new Vector<T, N>());
+        std::unique_ptr<Vector<T, N>> r(new Vector<T, N>());
 
         for (size_t i = 0; i < N; ++i)
         {

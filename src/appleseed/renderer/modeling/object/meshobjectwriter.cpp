@@ -51,7 +51,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -163,7 +162,7 @@ namespace
 
       private:
         const MeshObject&   m_object;
-        const string        m_object_name;
+        const std::string   m_object_name;
     };
 }
 
@@ -183,7 +182,7 @@ bool MeshObjectWriter::write(
         MeshObjectWalker walker(object, object_name);
         writer.write(walker);
     }
-    catch (const exception& e)
+    catch (const std::exception& e)
     {
         RENDERER_LOG_ERROR(
             "failed to write mesh file %s: %s.",

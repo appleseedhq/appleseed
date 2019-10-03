@@ -49,7 +49,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Math_Quaternion)
 {
@@ -156,14 +155,14 @@ TEST_SUITE(Foundation_Math_Quaternion)
         const Quaterniond q2 = Quaterniond::make_rotation(Vector3d(0.0, 0.0, 1.0), Pi<double>());
 
         const size_t PointCount = 1000;
-        vector<Vector2d> points;
+        std::vector<Vector2d> points;
 
         for (size_t i = 0; i < PointCount; ++i)
         {
             const double t = fit<size_t, double>(i, 0, PointCount - 1, 0.0, 1.0);
             const Quaterniond q_slerp = slerp(q1, q2, t);
             const Quaterniond q_fast_slerp = fast_slerp(q1, q2, t);
-            const double e = 2.0 * abs(acos(q_slerp.s) - acos(q_fast_slerp.s));
+            const double e = 2.0 * std::abs(std::acos(q_slerp.s) - std::acos(q_fast_slerp.s));
             points.emplace_back(t, e);
         }
 

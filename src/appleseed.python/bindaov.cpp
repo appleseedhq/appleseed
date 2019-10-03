@@ -44,23 +44,12 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
-
-// Work around a regression in Visual Studio 2015 Update 3.
-#if defined(_MSC_VER) && _MSC_VER == 1900
-namespace boost
-{
-    template <> AOV const volatile* get_pointer<AOV const volatile>(AOV const volatile* p) { return p; }
-    template <> IAOVFactory const volatile* get_pointer<IAOVFactory const volatile>(IAOVFactory const volatile* p) { return p; }
-    template <> AOVFactoryRegistrar const volatile* get_pointer<AOVFactoryRegistrar const volatile>(AOVFactoryRegistrar const volatile* p) { return p; }
-}
-#endif
 
 namespace
 {
     auto_release_ptr<AOV> create_aov(
-        const string&      model,
-        const bpy::dict&   params)
+        const std::string&    model,
+        const bpy::dict&      params)
     {
         AOVFactoryRegistrar factories;
         const IAOVFactory* factory = factories.lookup(model.c_str());

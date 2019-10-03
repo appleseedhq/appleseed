@@ -38,7 +38,6 @@
 #include <limits>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Math_Intersection_RayAABB)
 {
@@ -356,7 +355,7 @@ TEST_SUITE(Foundation_Math_Intersection_RayAABB)
 
         EXPECT_FALSE(hit);
         EXPECT_EQ(0.0, ray.m_tmin);
-        EXPECT_EQ(numeric_limits<double>::max(), ray.m_tmax);
+        EXPECT_EQ(std::numeric_limits<double>::max(), ray.m_tmax);
     }
 
     TEST_CASE(Clip_GivenRayPiercingPosZFaceInTheMiddle_ReturnsTrueAndUpdatesTMinAndTMax)

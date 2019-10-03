@@ -77,7 +77,6 @@ namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class OnRenderBeginRecorder; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -137,7 +136,7 @@ namespace
           , m_source(source)
           , m_width(width)
           , m_height(height)
-          , m_range(sqrt(1.0 + static_cast<double>(m_height * m_height) / (m_width * m_width)))
+          , m_range(std::sqrt(1.0 + static_cast<double>(m_height * m_height) / (m_width * m_width)))
         {
         }
 
@@ -392,7 +391,7 @@ namespace
 
             // Compute the emitted importance.
             const double square_dist_film_lens = square_norm(film_point);
-            const double dist_film_lens = sqrt(square_dist_film_lens);
+            const double dist_film_lens = std::sqrt(square_dist_film_lens);
             const double cos_theta = m_focal_length / dist_film_lens;
             const double solid_angle = m_pixel_area * cos_theta / square_dist_film_lens;
             importance = 1.0f / static_cast<float>(square_norm(outgoing) * solid_angle);
@@ -403,25 +402,25 @@ namespace
 
       private:
         // Parameters.
-        double              m_f_number;                 // F-number
-        bool                m_autofocus_enabled;        // is autofocus enabled?
-        Vector2d            m_autofocus_target;         // autofocus target on film plane, in NDC
-        double              m_focal_distance;           // focal distance in camera space
-        bool                m_diaphragm_map_bound;      // is a diaphragm map bound to the camera
-        size_t              m_diaphragm_blade_count;    // number of blades of the diaphragm, 0 for round aperture
-        double              m_diaphragm_tilt_angle;     // tilt angle of the diaphragm in radians
+        double                   m_f_number;                 // F-number
+        bool                     m_autofocus_enabled;        // is autofocus enabled?
+        Vector2d                 m_autofocus_target;         // autofocus target on film plane, in NDC
+        double                   m_focal_distance;           // focal distance in camera space
+        bool                     m_diaphragm_map_bound;      // is a diaphragm map bound to the camera
+        size_t                   m_diaphragm_blade_count;    // number of blades of the diaphragm, 0 for round aperture
+        double                   m_diaphragm_tilt_angle;     // tilt angle of the diaphragm in radians
 
         // Precomputed values.
-        double              m_lens_radius;              // radius of the lens in camera space
-        double              m_focal_ratio;              // focal distance / focal length
-        double              m_rcp_focal_ratio;          // focal length / focal distance
+        double                   m_lens_radius;              // radius of the lens in camera space
+        double                   m_focal_ratio;              // focal distance / focal length
+        double                   m_rcp_focal_ratio;          // focal length / focal distance
 
         // Vertices of the diaphragm polygon.
-        vector<Vector2d>    m_diaphragm_vertices;
+        std::vector<Vector2d>    m_diaphragm_vertices;
 
         // Importance sampler to sample the diaphragm map.
-        unique_ptr<ImageImportanceSamplerType>
-                            m_importance_sampler;
+        std::unique_ptr<ImageImportanceSamplerType>
+                                 m_importance_sampler;
 
         void extract_diaphragm_blade_count()
         {
@@ -534,7 +533,7 @@ namespace
             ray.m_org = transform.get_local_to_parent().extract_translation();
             ray.m_dir = normalize(transform.vector_to_parent(-ndc_to_camera(m_autofocus_target)));
             ray.m_tmin = 0.0;
-            ray.m_tmax = numeric_limits<double>::max();
+            ray.m_tmax = std::numeric_limits<double>::max();
             ray.m_time =
                 ShadingRay::Time::create_with_normalized_time(
                     0.5f,

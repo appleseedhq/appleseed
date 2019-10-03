@@ -40,7 +40,6 @@
 #include <utility>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -117,7 +116,7 @@ namespace
     }
 }
 
-unique_ptr<VoxelGrid> read_fluid_file(
+std::unique_ptr<VoxelGrid> read_fluid_file(
     const char*         filename,
     FluidChannels&      channels)
 {
@@ -126,21 +125,21 @@ unique_ptr<VoxelGrid> read_fluid_file(
     FILE* file = fopen(filename, "rb");
 
     if (file == nullptr)
-        return unique_ptr<VoxelGrid>(nullptr);
+        return std::unique_ptr<VoxelGrid>(nullptr);
 
     // Read the file header.
     FluidFileHeader header;
     if (fread(&header, sizeof(FluidFileHeader), 1, file) < 1)
     {
         fclose(file);
-        return unique_ptr<VoxelGrid>(nullptr);
+        return std::unique_ptr<VoxelGrid>(nullptr);
     }
 
     // Check the validity of the file header.
     if (header.m_id != CC32('F', 'L', 'D', '3'))
     {
         fclose(file);
-        return unique_ptr<VoxelGrid>(nullptr);
+        return std::unique_ptr<VoxelGrid>(nullptr);
     }
 
     const size_t voxel_count = header.m_xres * header.m_yres * header.m_zres;
@@ -188,7 +187,7 @@ unique_ptr<VoxelGrid> read_fluid_file(
         channel_count += 3;
     }
 
-    unique_ptr<VoxelGrid> grid(
+    std::unique_ptr<VoxelGrid> grid(
         new VoxelGrid(
             header.m_xres,
             header.m_yres,
@@ -278,7 +277,7 @@ unique_ptr<VoxelGrid> read_fluid_file(
 
     fclose(file);
 
-    return read == needed ? move(grid) : unique_ptr<VoxelGrid>(nullptr);
+    return read == needed ? move(grid) : std::unique_ptr<VoxelGrid>(nullptr);
 }
 
 void write_voxel_grid(

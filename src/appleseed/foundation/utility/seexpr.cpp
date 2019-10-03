@@ -30,7 +30,6 @@
 #include "seexpr.h"
 
 using namespace boost;
-using namespace std;
 
 namespace foundation
 {
@@ -45,16 +44,16 @@ SeExprFilePathExtractor::SeExprFilePathExtractor()
 }
 
 void SeExprFilePathExtractor::extract_paths(
-    const string&               expression,
+    const std::string&          expression,
     PathCollection&             paths) const
 {
-    string::const_iterator start = expression.begin();
-    string::const_iterator end = expression.end();
+    std::string::const_iterator start = expression.begin();
+    std::string::const_iterator end = expression.end();
     smatch matches;
 
     while (regex_search(start, end, matches, m_regex))
     {
-        sub_match<string::const_iterator> submatch = matches["path"];
+        sub_match<std::string::const_iterator> submatch = matches["path"];
         paths.push_back(submatch.str());
         start = submatch.second;
     }
@@ -71,9 +70,9 @@ namespace
         {
         }
 
-        string operator()(const smatch& matches) const
+        std::string operator()(const smatch& matches) const
         {
-            string result = matches["prefix"].str();
+            std::string result = matches["prefix"].str();
             result += m_mappings.find(matches["path"].str())->second;
             result += matches["suffix"].str();
             return result;
@@ -81,8 +80,8 @@ namespace
     };
 }
 
-string SeExprFilePathExtractor::replace_paths(
-    const string&               expression,
+std::string SeExprFilePathExtractor::replace_paths(
+    const std::string&          expression,
     const MappingCollection&    mappings) const
 {
     const Formatter formatter(mappings);

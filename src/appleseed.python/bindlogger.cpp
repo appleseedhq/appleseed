@@ -47,51 +47,41 @@ namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
 
-struct ILogTargetWrap
-  : public ILogTarget
-  , public bpy::wrapper<ILogTarget>
-{
-    ILogTargetWrap() {}
-    ~ILogTargetWrap() override {}
-
-    void release() override
-    {
-        delete this;
-    }
-
-    void write(
-        const LogMessage::Category  category,
-        const char*                 file,
-        const size_t                line,
-        const char*                 header,
-        const char*                 message) override
-    {
-        // Because this can be called from multiple threads
-        // we need to lock Python here.
-        ScopedGILLock lock;
-
-        try
-        {
-            this->get_override("write")(category, file, line, header, message);
-        }
-        catch (bpy::error_already_set)
-        {
-            PyErr_Print();
-        }
-    }
-};
-
-// Work around a regression in Visual Studio 2015 Update 3.
-#if defined(_MSC_VER) && _MSC_VER == 1900
-namespace boost
-{
-    template <> ILogTargetWrap const volatile* get_pointer<ILogTargetWrap const volatile>(ILogTargetWrap const volatile* p) { return p; }
-    template <> Logger const volatile* get_pointer<Logger const volatile>(Logger const volatile* p) { return p; }
-}
-#endif
-
 namespace
 {
+    struct ILogTargetWrap
+      : public ILogTarget
+      , public bpy::wrapper<ILogTarget>
+    {
+        ILogTargetWrap() {}
+        ~ILogTargetWrap() override {}
+
+        void release() override
+        {
+            delete this;
+        }
+
+        void write(
+            const LogMessage::Category  category,
+            const char*                 file,
+            const size_t                line,
+            const char*                 header,
+            const char*                 message) override
+        {
+            // Because this can be called from multiple threads
+            // we need to lock Python here.
+            ScopedGILLock lock;
+
+            try
+            {
+                this->get_override("write")(category, file, line, header, message);
+            }
+            catch (bpy::error_already_set)
+            {
+                PyErr_Print();
+            }
+        }
+    };
 
     Logger* get_global_logger()
     {

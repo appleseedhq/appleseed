@@ -33,7 +33,6 @@
 #include <cassert>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -42,7 +41,7 @@ namespace renderer
 // ShaderParamParser class implementation.
 //
 
-ShaderParamParser::ShaderParamParser(const string& s)
+ShaderParamParser::ShaderParamParser(const std::string& s)
   : m_original_string(s)
 {
     tokenize(s, Blanks, m_tokens);
@@ -50,7 +49,7 @@ ShaderParamParser::ShaderParamParser(const string& s)
     m_tok_it = m_tokens.begin();
     m_tok_end = m_tokens.end();
 
-    const string tok(*m_tok_it);
+    const std::string tok(*m_tok_it);
 
     if (tok == "color")
         m_param_type = OSLParamTypeColor;
@@ -126,12 +125,12 @@ void ShaderParamParser::parse_matrix_array(std::vector<float>& values)
         throw ExceptionOSLParamParseError();
 }
 
-string ShaderParamParser::parse_string_value()
+std::string ShaderParamParser::parse_string_value()
 {
     assert(param_type() == OSLParamTypeString);
 
     // Remove the string prefix and trim whitespace.
-    string val(m_original_string, 6, string::npos);
+    std::string val(m_original_string, 6, std::string::npos);
     return trim_both(val);
 }
 

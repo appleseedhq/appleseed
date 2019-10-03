@@ -60,38 +60,43 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
 
-namespace {
+namespace
+{
     // Number of floats per OpenGL vertex for a piece of scene geometry
     // Vector3 position and Vector3 normal.
     const size_t SceneVertexFloatStride = 6;
+
     // Number of bytes per OpenGL vertex for a piece of scene geometry.
     const size_t SceneVertexByteStride = SceneVertexFloatStride * sizeof(float);
+
     // Number of floats per triangle for a piece of scene geometry.
     const size_t SceneTriangleFloatStride = SceneVertexFloatStride * 3;
 
     // Number of floats per OpenGL vertex for a light path
     // Vector3 position and Vector3 color.
     const size_t LightPathVertexFloatStride = 6;
+
     // Number of bytes per OpenGL vertex for a piece of scene geometry.
     const size_t LightPathVertexByteStride = LightPathVertexFloatStride * sizeof(float);
+
     // Number of floats per line for a light path.
     const size_t LightPathVertexLineFloatStride = LightPathVertexFloatStride * 2;
 
     // Number of floats per OpenGL transform matrix.
     const size_t TransformFloatStride = 16;
+
     // Number of bytes per OpenGL transform matrix.
     const size_t TransformByteStride = TransformFloatStride * sizeof(float);
 
     struct OpenGLRasterizer
       : public ObjectRasterizer
     {
-        vector<float>   m_buffer;
-        size_t          m_prim_count;
+        std::vector<float>   m_buffer;
+        size_t               m_prim_count;
 
         void begin_object(const size_t triangle_count_hint) override
         {
@@ -160,7 +165,7 @@ void LightPathsWidget::set_light_paths(const LightPathArray& light_paths)
     {
         // Sort paths by descending radiance at the camera.
         const auto& light_path_recorder = m_project.get_light_path_recorder();
-        sort(
+        std::sort(
             &m_light_paths[0],
             &m_light_paths[0] + m_light_paths.size(),
             [&light_path_recorder](const LightPath& lhs, const LightPath& rhs)
@@ -240,7 +245,7 @@ void LightPathsWidget::load_object_instance(
     const Matrix4f model_matrix = assembly_transform_matrix * object_transform_matrix;
 
     // Object vertex buffer data has already been loaded; just add an instance
-    const string obj_name = string(object->get_name());
+    const std::string obj_name = std::string(object->get_name());
     size_t buf_idx = m_scene_object_index_map.at(obj_name);
 
     const GLuint object_instances_vbo = m_scene_object_instance_vbos[buf_idx];
@@ -281,7 +286,7 @@ void LightPathsWidget::load_assembly_instance(
 
 void LightPathsWidget::load_object_data(const Object& object)
 {
-    const string obj_name = string(object.get_name());
+    const std::string obj_name = std::string(object.get_name());
     RENDERER_LOG_DEBUG("opengl: uploading mesh data for object \"%s\"...", obj_name.c_str());
 
     if (m_scene_object_index_map.count(obj_name) == 0)
@@ -385,7 +390,7 @@ void LightPathsWidget::load_scene_data()
                 continue;
             }
 
-            const string obj_name = string(object->get_name());
+            const std::string obj_name = std::string(object->get_name());
             const size_t buf_idx = m_scene_object_index_map[obj_name];
             m_scene_object_instance_counts[buf_idx] += 1;
         }
@@ -440,7 +445,7 @@ void LightPathsWidget::load_light_paths_data()
         const size_t total_gl_vertex_count = 2 * (light_path_recorder.get_vertex_count() - 2) + 2;
 
         GLsizei total_index_count = 0;
-        vector<float> buffer;
+        std::vector<float> buffer;
         buffer.reserve(total_gl_vertex_count * LightPathVertexFloatStride);
         for (size_t light_path_idx = 0; light_path_idx < m_light_paths.size(); light_path_idx++)
         {
@@ -483,16 +488,18 @@ void LightPathsWidget::load_light_paths_data()
     }
 }
 
-namespace {
-    const string shader_kind_to_string(const GLint shader_kind)
+namespace
+{
+    std::string shader_kind_to_string(const GLint shader_kind)
     {
-        switch (shader_kind) {
-            case GL_VERTEX_SHADER:
-                return "Vertex";
-            case GL_FRAGMENT_SHADER:
-                return "Fragment";
-            default:
-                return "Unknown Kind";
+        switch (shader_kind)
+        {
+          case GL_VERTEX_SHADER:
+            return "Vertex";
+          case GL_FRAGMENT_SHADER:
+            return "Fragment";
+          default:
+            return "Unknown Kind";
         }
     }
 
@@ -515,7 +522,7 @@ namespace {
 
             GLint shader_kind;
             f->glGetShaderiv(shader, GL_SHADER_TYPE, &shader_kind);
-            string shader_kind_string = shader_kind_to_string(shader_kind);
+            const std::string shader_kind_string = shader_kind_to_string(shader_kind);
 
             RENDERER_LOG_ERROR("opengl: %s shader compilation failed:\n%s", shader_kind_string.c_str(), info_log);
         }
@@ -616,7 +623,7 @@ void LightPathsWidget::initializeGL()
 
     const auto& rc = m_camera.get_rasterization_camera();
 
-    const float fy = tan(rc.m_hfov / rc.m_aspect_ratio * 0.5) * z_near;
+    const float fy = std::tan(rc.m_hfov / rc.m_aspect_ratio * 0.5) * z_near;
     const float fx = fy * rc.m_aspect_ratio;
 
     const float shift_x = rc.m_shift_x * 2.0 * fx;
@@ -842,7 +849,7 @@ void LightPathsWidget::dump_selected_light_path() const
             LightPathVertex v;
             light_path_recorder.get_light_path_vertex(i, v);
 
-            const string entity_name =
+            const std::string entity_name =
                 v.m_entity != nullptr
                     ? foundation::format("\"{0}\"", v.m_entity->get_path().c_str())
                     : "n/a";

@@ -74,7 +74,6 @@ using namespace appleseed::dumpmetadata;
 using namespace appleseed::shared;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace
 {
@@ -98,7 +97,7 @@ namespace
         {
             Dictionary metadata = metadata_array[i];
 
-            const string name = metadata.get<string>("name");
+            const std::string name = metadata.get<std::string>("name");
             metadata.strings().remove("name");
 
             Dictionary wrapped_metadata;
@@ -166,12 +165,12 @@ namespace
     // Dump as Markdown.
     //
 
-    bool is_numeric_value(const string& s)
+    bool is_numeric_value(const std::string& s)
     {
-        istringstream iss(s);
+        std::istringstream iss(s);
 
         double val;
-        iss >> noskipws >> val;     // noskipws considers leading whitespace invalid
+        iss >> std::noskipws >> val;     // noskipws considers leading whitespace invalid
 
         return iss && iss.eof();
     }
@@ -188,24 +187,24 @@ namespace
             Dictionary metadata = metadata_array[i];
 
             // Parameter, Label.
-            const string param_name = metadata.get<string>("name");
-            const string param_label = metadata.get<string>("label");
+            const std::string param_name = metadata.get<std::string>("name");
+            const std::string param_label = metadata.get<std::string>("label");
 
             // Presence.
-            string param_use = metadata.get<string>("use");
+            std::string param_use = metadata.get<std::string>("use");
             if (param_use == "required")
                 param_use = format("**{0}**", param_use);
 
             // Default.
-            string param_default = metadata.strings().exist("default") ? metadata.get<string>("default") : "";
+            std::string param_default = metadata.strings().exist("default") ? metadata.get<std::string>("default") : "";
             if (param_default.empty())
                 param_default = "_None_";
             else if (!is_numeric_value(param_default))
                 param_default = format("`{0}`", param_default);
 
             // Description.
-            string param_desc = metadata.strings().exist("help") ? metadata.get<string>("help") : "";
-            if (metadata.get<string>("type") == "enumeration")
+            std::string param_desc = metadata.strings().exist("help") ? metadata.get<std::string>("help") : "";
+            if (metadata.get<std::string>("type") == "enumeration")
             {
                 if (!param_desc.empty() && !ends_with(param_desc, "."))
                     param_desc += ".";
@@ -307,7 +306,7 @@ namespace
         dump_metadata_markdown<Volume>(section_number++, file);
     }
 
-    void dump_metadata(const string& format, Logger& logger)
+    void dump_metadata(const std::string& format, Logger& logger)
     {
         if (format == "xml")
             dump_metadata_xml();

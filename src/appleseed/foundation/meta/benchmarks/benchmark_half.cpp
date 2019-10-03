@@ -37,7 +37,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 BENCHMARK_SUITE(Foundation_Math_Half)
 {
@@ -48,8 +47,8 @@ BENCHMARK_SUITE(Foundation_Math_Half)
     template <size_t Size>
     struct FloatToHalfFixture
     {
-        vector<float> m_input;
-        vector<Half> m_output;
+        std::vector<float> m_input;
+        std::vector<Half>  m_output;
 
         FloatToHalfFixture()
         {
@@ -137,8 +136,8 @@ BENCHMARK_SUITE(Foundation_Math_Half)
     template <size_t Size>
     struct HalfToFloatFixture
     {
-        vector<Half> m_input;
-        vector<float> m_output;
+        std::vector<Half>  m_input;
+        std::vector<float> m_output;
 
         HalfToFloatFixture()
         {

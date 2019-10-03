@@ -43,14 +43,13 @@
 #include "foundation/platform/_endoiioheaders.h"
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
 
 struct Entity::Impl
 {
-    string          m_name;
+    std::string     m_name;
     OIIO::ustring   m_oiio_name;
 };
 

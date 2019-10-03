@@ -50,7 +50,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -133,7 +132,7 @@ bool SPPMPassCallback::on_pass_end(
     // Shrink the lookup radius for the next pass.
     const float k = (m_pass_number + m_params.m_alpha) / (m_pass_number + 1);
     assert(k <= 1.0);
-    m_lookup_radius *= sqrt(k);
+    m_lookup_radius *= std::sqrt(k);
 
     m_stopwatch.measure();
 

@@ -54,7 +54,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace appleseed {
@@ -62,23 +61,23 @@ namespace shared {
 
 struct CommandLineHandlerBase::Impl
 {
-    const string                m_application_name;
+    const std::string                m_application_name;
 
-    FlagOptionHandler           m_help;
-    FlagOptionHandler           m_version;
-    FlagOptionHandler           m_libraries;
-    FlagOptionHandler           m_system;
-    ValueOptionHandler<string>  m_message_verbosity;
-    FlagOptionHandler           m_message_coloring;
-    FlagOptionHandler           m_display_options;
+    FlagOptionHandler                m_help;
+    FlagOptionHandler                m_version;
+    FlagOptionHandler                m_libraries;
+    FlagOptionHandler                m_system;
+    ValueOptionHandler<std::string>  m_message_verbosity;
+    FlagOptionHandler                m_message_coloring;
+    FlagOptionHandler                m_display_options;
 
 #ifdef WIN32
-    FlagOptionHandler           m_disable_abort_dialogs;
+    FlagOptionHandler                m_disable_abort_dialogs;
 #endif
 
-    string                      m_executable_name;
-    CommandLineParser           m_parser;
-    ParseResults                m_parse_results;
+    std::string                      m_executable_name;
+    CommandLineParser                m_parser;
+    ParseResults                     m_parse_results;
 
     explicit Impl(const char* application_name)
       : m_application_name(application_name)
@@ -140,11 +139,11 @@ struct CommandLineHandlerBase::Impl
         LOG_INFO(
             logger,
             "library features:\n"
-            "  Instruction sets                         %s\n"
-            "  Disney material with SeExpr support      %s\n"
-            "  Embree                                   %s\n"
-            "  Spectral support                         %s\n"
-            "  GPU support                              %s",
+            "  Instruction sets              %s\n"
+            "  Disney material with SeExpr   %s\n"
+            "  Embree                        %s\n"
+            "  Spectral support              %s\n"
+            "  GPU support                   %s",
             Appleseed::get_lib_cpu_features(),
             to_enabled_disabled(WithDisneyMaterial),
             to_enabled_disabled(WithEmbree),
@@ -164,7 +163,7 @@ struct CommandLineHandlerBase::Impl
             const char* lib_name = version.m_first.c_str();
             const char* lib_version = version.m_second.c_str();
             const size_t lib_name_length = strlen(lib_name);
-            const string spacing(30 - lib_name_length, ' ');
+            const std::string spacing(30 - lib_name_length, ' ');
             LOG_INFO(logger, "  %s%s%s", lib_name, spacing.c_str(), lib_version);
         }
     }

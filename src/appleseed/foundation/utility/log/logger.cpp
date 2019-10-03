@@ -53,7 +53,6 @@
 #include <vector>
 
 using namespace boost::posix_time;
-using namespace std;
 
 namespace foundation
 {
@@ -72,7 +71,7 @@ namespace
             const LogMessage::Category  category,
             const ptime&                datetime,
             const size_t                thread,
-            const string&               message)
+            const std::string&          message)
           : m_category(LogMessage::get_category_name(category))
           , m_padded_category(LogMessage::get_padded_category_name(category))
           , m_datetime(to_iso_extended_string(datetime) + 'Z')
@@ -82,9 +81,9 @@ namespace
         {
         }
 
-        string evaluate(const string& format) const
+        std::string evaluate(const std::string& format) const
         {
-            string result = format;
+            std::string result = format;
             result = replace(result, "{category}", m_category);
             result = replace(result, "{padded-category}", m_padded_category);
             result = replace(result, "{datetime-utc}", m_datetime);
@@ -95,12 +94,12 @@ namespace
         }
 
       private:
-        const string    m_category;
-        const string    m_padded_category;
-        const string    m_datetime;
-        const string    m_thread;
-        const string    m_process_size;
-        const string    m_message;
+        const std::string    m_category;
+        const std::string    m_padded_category;
+        const std::string    m_datetime;
+        const std::string    m_thread;
+        const std::string    m_process_size;
+        const std::string    m_message;
     };
 
     class Formatter
@@ -123,7 +122,7 @@ namespace
             set_format(category, "{datetime-utc} <{thread}> {process-size} {padded-category} | {message}");
         }
 
-        void set_all_formats(const string& format)
+        void set_all_formats(const std::string& format)
         {
             for (size_t i = 0; i < LogMessage::NumMessageCategories; ++i)
                 set_format(static_cast<LogMessage::Category>(i), format);
@@ -131,29 +130,29 @@ namespace
 
         void set_format(
             const LogMessage::Category  category,
-            const string&               format)
+            const std::string&          format)
         {
-            const string::size_type message_start = format.find("{message}");
+            const std::string::size_type message_start = format.find("{message}");
 
             m_formats[category].m_format = format;
             m_formats[category].m_header_format = format.substr(0, message_start);
             m_formats[category].m_message_format =
-                message_start != string::npos ? format.substr(message_start) :
+                message_start != std::string::npos ? format.substr(message_start) :
                 !format.empty() ? "\n" :
-                string();
+                std::string();
         }
 
-        const string& get_format(const LogMessage::Category category) const
+        const std::string& get_format(const LogMessage::Category category) const
         {
             return m_formats[category].m_format;
         }
 
-        const string& get_header_format(const LogMessage::Category category) const
+        const std::string& get_header_format(const LogMessage::Category category) const
         {
             return m_formats[category].m_header_format;
         }
 
-        const string& get_message_format(const LogMessage::Category category) const
+        const std::string& get_message_format(const LogMessage::Category category) const
         {
             return m_formats[category].m_message_format;
         }
@@ -161,9 +160,9 @@ namespace
       private:
         struct Format
         {
-            string  m_format;
-            string  m_header_format;
-            string  m_message_format;
+            std::string  m_format;
+            std::string  m_header_format;
+            std::string  m_message_format;
         };
 
         Format m_formats[LogMessage::NumMessageCategories];
@@ -191,7 +190,7 @@ namespace
         }
 
       private:
-        typedef map<boost::thread::id, size_t> ThreadIdToIntMap;
+        typedef std::map<boost::thread::id, size_t> ThreadIdToIntMap;
 
         size_t              m_thread_count;
         ThreadIdToIntMap    m_thread_id_to_int;
@@ -205,13 +204,13 @@ namespace
 
 struct Logger::Impl
 {
-    typedef list<ILogTarget*> LogTargetContainer;
+    typedef std::list<ILogTarget*> LogTargetContainer;
 
     boost::mutex            m_mutex;
     bool                    m_enabled;
     LogMessage::Category    m_verbosity_level;
     LogTargetContainer      m_targets;
-    vector<char>            m_message_buffer;
+    std::vector<char>       m_message_buffer;
     ThreadMap               m_thread_map;
     Formatter               m_formatter;
 };
@@ -321,10 +320,10 @@ void Logger::remove_target(ILogTarget* target)
 namespace
 {
     bool write_to_buffer(
-        vector<char>&   buffer,
-        const size_t    max_buffer_size,
-        const char*     format,
-        va_list         argptr)
+        std::vector<char>&   buffer,
+        const size_t         max_buffer_size,
+        const char*          format,
+        va_list              argptr)
     {
         while (true)
         {
@@ -354,7 +353,7 @@ namespace
             if (buffer_size >= max_buffer_size)
                 return false;
 
-            buffer.resize(min(needed_buffer_size, max_buffer_size));
+            buffer.resize(std::min(needed_buffer_size, max_buffer_size));
         }
     }
 }
@@ -390,8 +389,8 @@ void Logger::write(
         // Format the header and message.
         const size_t thread = impl->m_thread_map.thread_id_to_int(boost::this_thread::get_id());
         const FormatEvaluator format_evaluator(effective_category, datetime, thread, &impl->m_message_buffer[0]);
-        const string header = format_evaluator.evaluate(impl->m_formatter.get_header_format(effective_category));
-        string message = format_evaluator.evaluate(impl->m_formatter.get_message_format(effective_category));
+        const std::string header = format_evaluator.evaluate(impl->m_formatter.get_header_format(effective_category));
+        std::string message = format_evaluator.evaluate(impl->m_formatter.get_message_format(effective_category));
 
         // Remove trailing newline characters from the message.
         message = trim_right(message, "\n");

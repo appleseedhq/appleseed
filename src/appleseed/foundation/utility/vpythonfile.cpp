@@ -37,8 +37,6 @@
 // Standard headers.
 #include <sstream>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -46,7 +44,7 @@ namespace foundation
 // VPythonFile class implementation.
 //
 
-VPythonFile::VPythonFile(const string& filename)
+VPythonFile::VPythonFile(const std::string& filename)
 {
     m_file = fopen(filename.c_str(), "wt");
 
@@ -73,9 +71,9 @@ void VPythonFile::close()
 
 namespace
 {
-    string points_to_string(const size_t point_count, const Vector3d points[])
+    std::string points_to_string(const size_t point_count, const Vector3d points[])
     {
-        stringstream sstr;
+        std::stringstream sstr;
 
         for (size_t i = 0; i < point_count; ++i)
         {

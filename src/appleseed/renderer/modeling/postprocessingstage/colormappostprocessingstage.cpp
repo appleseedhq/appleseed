@@ -70,7 +70,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -132,8 +131,8 @@ namespace
         {
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
-            const string color_map =
-                m_params.get_optional<string>(
+            const std::string color_map =
+                m_params.get_optional<std::string>(
                     "color_map",
                     "inferno",
                     make_vector("inferno", "jet", "magma", "plasma", "viridis", "custom"),
@@ -153,8 +152,8 @@ namespace
             {
                 assert(color_map == "custom");
 
-                const string color_map_filepath =
-                    m_params.get_optional<string>("color_map_file_path", "", context);
+                const std::string color_map_filepath =
+                    m_params.get_optional<std::string>("color_map_file_path", "", context);
 
                 if (color_map_filepath.empty())
                 {
@@ -168,7 +167,7 @@ namespace
                         to_string(
                             project.search_paths().qualify(color_map_filepath)));
                 }
-                catch (const exception& e)
+                catch (const std::exception& e)
                 {
                     RENDERER_LOG_ERROR("%s%s", context.get(), e.what());
                     return false;
@@ -266,7 +265,7 @@ namespace
             }
         };
 
-        typedef vector<Segment> SegmentVector;
+        typedef std::vector<Segment> SegmentVector;
 
         ColorMap            m_color_map;
         bool                m_auto_range;
@@ -277,10 +276,10 @@ namespace
         bool                m_render_isolines;
         float               m_line_thickness;
 
-        void set_palette_from_image_file(const string& file_path)
+        void set_palette_from_image_file(const std::string& file_path)
         {
             GenericImageFileReader reader;
-            unique_ptr<Image> image(reader.read(file_path.c_str()));
+            std::unique_ptr<Image> image(reader.read(file_path.c_str()));
 
             if (!is_linear_image_file_format(file_path))
                 convert_srgb_to_linear_rgb(*image);
@@ -356,7 +355,7 @@ namespace
 
                 const float lum =
                     fit<size_t, float>(i, 0, m_legend_bar_ticks - 1, max_luminance, min_luminance);
-                const string label = to_string(lum);
+                const std::string label = to_string(lum);
 
                 const float label_width =
                     TextRenderer::compute_string_width(LabelFont, LabelFontHeight, label.c_str());

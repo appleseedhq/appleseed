@@ -48,7 +48,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -82,11 +81,11 @@ namespace
 
     struct Input
     {
-        string          m_name;
+        std::string     m_name;
         InputFormat     m_format;
         InputType       m_type;
         bool            m_has_default_value;
-        string          m_default_value;
+        std::string     m_default_value;
         Source*         m_source;
         Entity*         m_entity;
 
@@ -328,7 +327,7 @@ namespace
         }
     };
 
-    typedef vector<Input> InputVector;
+    typedef std::vector<Input> InputVector;
 }
 
 struct InputArray::Impl

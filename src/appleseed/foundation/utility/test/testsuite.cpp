@@ -47,8 +47,6 @@
 #include <string>
 #include <vector>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -58,8 +56,8 @@ namespace foundation
 
 struct TestSuite::Impl
 {
-    string                      m_name;
-    vector<ITestCaseFactory*>   m_factories;
+    std::string                      m_name;
+    std::vector<ITestCaseFactory*>   m_factories;
 };
 
 TestSuite::TestSuite(const char* name)
@@ -190,7 +188,7 @@ void TestSuite::run_case(
 
     try
     {
-        unique_ptr<ITestCase> test_case(test_case_factory.create());
+        std::unique_ptr<ITestCase> test_case(test_case_factory.create());
 
         test_case->run(test_listener, test_case_result);
 
@@ -202,7 +200,7 @@ void TestSuite::run_case(
         test_case_result.signal_case_failure();
     }
 #ifdef NDEBUG
-    catch (const exception& e)
+    catch (const std::exception& e)
     {
         if (e.what()[0] != '\0')
         {

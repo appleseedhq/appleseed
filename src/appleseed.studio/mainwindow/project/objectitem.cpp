@@ -59,7 +59,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -88,12 +87,12 @@ QMenu* ObjectItem::get_single_item_context_menu() const
 
 void ObjectItem::slot_instantiate()
 {
-    const string instance_name_suggestion =
+    const std::string instance_name_suggestion =
         make_unique_name(
-            string(m_entity->get_name()) + "_inst",
+            std::string(m_entity->get_name()) + "_inst",
             m_parent.object_instances());
 
-    const string instance_name =
+    const std::string instance_name =
         get_entity_name_dialog(
             treeWidget(),
             "Instantiate Object",
@@ -103,12 +102,12 @@ void ObjectItem::slot_instantiate()
     if (!instance_name.empty())
     {
         m_editor_context.m_rendering_manager.schedule_or_execute(
-            unique_ptr<RenderingManager::IScheduledAction>(
+            std::unique_ptr<RenderingManager::IScheduledAction>(
                 new EntityInstantiationAction<ObjectItem>(this, instance_name)));
     }
 }
 
-void ObjectItem::do_instantiate(const string& name)
+void ObjectItem::do_instantiate(const std::string& name)
 {
     auto_release_ptr<ObjectInstance> object_instance(
         ObjectInstanceFactory::create(
@@ -128,18 +127,18 @@ void ObjectItem::do_instantiate(const string& name)
 void ObjectItem::delete_multiple(const QList<ItemBase*>& items)
 {
     m_editor_context.m_rendering_manager.schedule_or_execute(
-        unique_ptr<RenderingManager::IScheduledAction>(
+        std::unique_ptr<RenderingManager::IScheduledAction>(
             new EntityDeletionAction<ObjectItem>(
                 qlist_static_cast<ObjectItem*>(items))));
 }
 
 namespace
 {
-    vector<UniqueID> collect_object_instances(
+    std::vector<UniqueID> collect_object_instances(
         const ObjectInstanceContainer&      object_instances,
         const UniqueID                      object_uid)
     {
-        vector<UniqueID> collected;
+        std::vector<UniqueID> collected;
 
         for (const_each<ObjectInstanceContainer> i = object_instances; i; ++i)
         {
@@ -160,11 +159,11 @@ namespace
         ObjectInstanceContainer& object_instances = assembly.object_instances();
 
         // Collect the object instances to remove.
-        const vector<UniqueID> remove_list =
+        const std::vector<UniqueID> remove_list =
             collect_object_instances(object_instances, object_uid);
 
         // Remove object instances and their corresponding project items.
-        for (const_each<vector<UniqueID>> i = remove_list; i; ++i)
+        for (const_each<std::vector<UniqueID>> i = remove_list; i; ++i)
         {
             object_instances.remove(object_instances.get_by_uid(*i));
             delete item_registry.get_item(*i);

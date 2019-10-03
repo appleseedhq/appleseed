@@ -32,8 +32,6 @@
 // appleseed.foundation headers.
 #include "foundation/utility/otherwise.h"
 
-using namespace std;
-
 namespace foundation
 {
 

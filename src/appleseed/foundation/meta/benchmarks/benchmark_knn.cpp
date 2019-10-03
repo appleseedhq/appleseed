@@ -50,7 +50,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 BENCHMARK_SUITE(Foundation_Math_Knn_Answer)
 {
@@ -97,7 +96,7 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
 {
     namespace
     {
-        bool load_points_from_disk(const char* filename, vector<Vector3f>& points)
+        bool load_points_from_disk(const char* filename, std::vector<Vector3f>& points)
         {
             assert(filename);
             assert(points.empty());
@@ -131,10 +130,10 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
     class FixtureBase
     {
       protected:
-        vector<Vector3f>    m_points;
-        vector<Vector3f>    m_query_points;
+        std::vector<Vector3f>    m_points;
+        std::vector<Vector3f>    m_query_points;
 
-        FixtureBase(const string& name)
+        FixtureBase(const std::string& name)
           : m_answer(AnswerSize)
           , m_accumulator(0)
         {
@@ -194,7 +193,7 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
         knn::QueryStatistics                m_query_stats;
 #endif
 
-        void configure_logger(const string& name)
+        void configure_logger(const std::string& name)
         {
             m_log_target.reset(create_file_log_target());
             m_log_target->open(("unit benchmarks/outputs/test_knn_" + name + "_stats.txt").c_str());

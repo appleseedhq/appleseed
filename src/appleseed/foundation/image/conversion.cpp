@@ -40,7 +40,6 @@
 #include <cassert>
 #include <cstddef>
 
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace foundation
@@ -48,7 +47,7 @@ namespace foundation
 
 bool is_linear_image_file_format(const bf::path& path)
 {
-    const string extension = lower_case(path.extension().string());
+    const std::string extension = lower_case(path.extension().string());
 
     return
         extension == ".exr"  ||

@@ -49,7 +49,6 @@
 #include <limits>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -228,7 +227,7 @@ namespace
         float get_uncached_max_contribution() const override
         {
             // We can't know the max contribution of OSL EDFs.
-            return numeric_limits<float>::max();
+            return std::numeric_limits<float>::max();
         }
 
       private:

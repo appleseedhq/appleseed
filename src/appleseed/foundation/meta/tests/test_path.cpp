@@ -41,21 +41,20 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 namespace bf = boost::filesystem;
 
 TEST_SUITE(Foundation_Platform_Path)
 {
     TEST_CASE(GetExecutablePath_GivenRunningApplication_ReturnsNonEmptyString)
     {
-        const string executable_path = get_executable_path();
+        const std::string executable_path = get_executable_path();
 
         EXPECT_FALSE(executable_path.empty());
     }
 
     TEST_CASE(GetExecutableDirectory_GivenRunningApplication_ReturnsNonEmptyString)
     {
-        const string executable_dir = get_executable_directory();
+        const std::string executable_dir = get_executable_directory();
 
         EXPECT_FALSE(executable_dir.empty());
     }

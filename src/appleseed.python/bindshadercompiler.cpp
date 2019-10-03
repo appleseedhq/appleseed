@@ -43,7 +43,6 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace
 {
@@ -52,7 +51,7 @@ namespace
         return ShaderCompilerFactory::create(stdosl_path);
     }
 
-    bpy::object compile_buffer(const ShaderCompiler* compiler, const string& buffer)
+    bpy::object compile_buffer(const ShaderCompiler* compiler, const std::string& buffer)
     {
         APIString result;
 

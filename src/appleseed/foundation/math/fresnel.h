@@ -527,7 +527,50 @@ inline void fresnel_reflectance_conductor(
     const SpectrumType&     kt,
     const T                 cos_theta_i)
 {
-    fresnel_reflectance_conductor(reflectance, nt, kt, T(1.0), cos_theta_i);
+    const T cos_theta = std::abs(cos_theta_i);
+    const T cos_theta2 = square(cos_theta);
+    const T sin_theta2 = T(1.0) - cos_theta2;
+    const T sin_theta4 = square(sin_theta2);
+
+    const SpectrumType nt2 = nt * nt;
+    const SpectrumType kt2 = kt * kt;
+
+    SpectrumType t0 = nt2 - kt2;
+    t0 -= SpectrumType(sin_theta2);
+
+    SpectrumType a2plusb2 = t0 * t0;
+    SpectrumType tmp = nt2 * kt2;
+    tmp *= T(4.0);
+    a2plusb2 += tmp;
+    a2plusb2 = sqrt(a2plusb2);
+
+    const SpectrumType t1 = a2plusb2 + SpectrumType(cos_theta2);
+
+    tmp = a2plusb2 + t0;
+    tmp *= T(0.5);
+    const SpectrumType a = sqrt(tmp);
+
+    SpectrumType t2 = a;
+    t2 *= T(2.0) * cos_theta;
+
+    tmp = t1 + t2;
+    reflectance = t1 - t2;
+    reflectance /= tmp;
+
+    SpectrumType t3 = a2plusb2;
+    t3 *= cos_theta2;
+    t3 += SpectrumType(sin_theta4);
+
+    SpectrumType t4 = t2;
+    t4 *= sin_theta2;
+
+    tmp = t3 + t4;
+    SpectrumType Rp = t3 - t4;
+    Rp /= tmp;
+    Rp *= reflectance;
+
+    reflectance += Rp;
+    reflectance *= T(0.5);
 }
 
 template <typename SpectrumType>

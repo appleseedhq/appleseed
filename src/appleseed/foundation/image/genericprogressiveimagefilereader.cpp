@@ -53,8 +53,6 @@
 #include <memory>
 #include <string>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -65,7 +63,7 @@ namespace foundation
 struct GenericProgressiveImageFileReader::Impl
 {
     Logger*                                 m_logger;
-    string                                  m_filename;
+    std::string                             m_filename;
 
 #if OIIO_VERSION < 20000
     OIIO::ImageInput*                       m_input;
@@ -264,10 +262,10 @@ Tile* GenericProgressiveImageFileReader::read_tile(
 
     // Compute tile's dimensions.
     const size_t tile_width = impl->m_is_tiled
-        ? min(impl->m_props.m_tile_width, impl->m_props.m_canvas_width - (tile_x * impl->m_props.m_tile_width))
+        ? std::min(impl->m_props.m_tile_width, impl->m_props.m_canvas_width - (tile_x * impl->m_props.m_tile_width))
         : impl->m_props.m_canvas_width;
     const size_t tile_height = impl->m_is_tiled
-        ? min(impl->m_props.m_tile_height, impl->m_props.m_canvas_height - (tile_y * impl->m_props.m_tile_height))
+        ? std::min(impl->m_props.m_tile_height, impl->m_props.m_canvas_height - (tile_y * impl->m_props.m_tile_height))
         : impl->m_props.m_canvas_height;
 
     // Create the tile.
@@ -311,8 +309,8 @@ void GenericProgressiveImageFileReader::read_tile(
 
         const size_t origin_x = tile_x * impl->m_props.m_tile_width;
         const size_t origin_y = tile_y * impl->m_props.m_tile_height;
-        const size_t tile_width = min(impl->m_props.m_tile_width, impl->m_props.m_canvas_width - origin_x);
-        const size_t tile_height = min(impl->m_props.m_tile_height, impl->m_props.m_canvas_height - origin_y);
+        const size_t tile_width = std::min(impl->m_props.m_tile_width, impl->m_props.m_canvas_width - origin_x);
+        const size_t tile_height = std::min(impl->m_props.m_tile_height, impl->m_props.m_canvas_height - origin_y);
 
         if (tile_width == impl->m_props.m_tile_width && tile_height == impl->m_props.m_tile_height)
         {
@@ -333,7 +331,7 @@ void GenericProgressiveImageFileReader::read_tile(
             assert(output_tile->get_width() == tile_width);
             assert(output_tile->get_height() == tile_height);
 
-            unique_ptr<Tile> source_tile(
+            std::unique_ptr<Tile> source_tile(
                 new Tile(
                     impl->m_props.m_tile_width,
                     impl->m_props.m_tile_height,

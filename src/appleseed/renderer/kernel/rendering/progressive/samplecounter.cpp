@@ -35,7 +35,6 @@
 #include <cassert>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -63,7 +62,7 @@ uint64 SampleCounter::reserve(const uint64 n)
         uint64 current = m_sample_count;
         assert(current <= m_max_sample_count);
 
-        const uint64 reserved = min(n, m_max_sample_count - current);
+        const uint64 reserved = std::min(n, m_max_sample_count - current);
         if (m_sample_count.compare_exchange_weak(current, current + reserved))
             return reserved;
     }

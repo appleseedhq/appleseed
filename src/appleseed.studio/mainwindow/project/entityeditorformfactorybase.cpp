@@ -38,15 +38,14 @@
 #include <cstddef>
 
 using namespace foundation;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
 
-const string EntityEditorFormFactoryBase::NameParameter = "__name";
-const string EntityEditorFormFactoryBase::ModelParameter = "__model";
+const std::string EntityEditorFormFactoryBase::NameParameter = "__name";
+const std::string EntityEditorFormFactoryBase::ModelParameter = "__model";
 
-EntityEditorFormFactoryBase::EntityEditorFormFactoryBase(const string& entity_name)
+EntityEditorFormFactoryBase::EntityEditorFormFactoryBase(const std::string& entity_name)
   : m_entity_name(entity_name)
 {
 }
@@ -55,7 +54,7 @@ void EntityEditorFormFactoryBase::add_name_input_metadata(
     const Dictionary&                   input_values,
     InputMetadataCollection&            metadata) const
 {
-    const string name = get_value(input_values, NameParameter, m_entity_name);
+    const std::string name = get_value(input_values, NameParameter, m_entity_name);
 
     metadata.push_back(
         Dictionary()
@@ -75,11 +74,11 @@ void EntityEditorFormFactoryBase::add_input_metadata(
     for (size_t i = 0; i < input_metadata.size(); ++i)
     {
         Dictionary im = input_metadata[i];
-        const string input_name = im.get<string>("name");
+        const std::string input_name = im.get<std::string>("name");
 
         im.insert("value",
-            input_values.strings().exist(input_name) ? input_values.get<string>(input_name) :
-            im.strings().exist("default") ? im.get<string>("default") :
+            input_values.strings().exist(input_name) ? input_values.get<std::string>(input_name) :
+            im.strings().exist("default") ? im.get<std::string>("default") :
             "");
 
         metadata.push_back(im);

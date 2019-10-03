@@ -1,4 +1,4 @@
-﻿
+
 //
 // This source file is part of appleseed.
 // Visit https://appleseedhq.net/ for additional information and resources.
@@ -43,27 +43,13 @@
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
-
-// Work around a regression in Visual Studio 2015 Update 3.
-#if defined(_MSC_VER) && _MSC_VER == 1900
-namespace boost
-{
-    template <> EnvironmentEDF const volatile* get_pointer<EnvironmentEDF const volatile>(EnvironmentEDF const volatile* p) { return p; }
-    template <> IEnvironmentEDFFactory const volatile* get_pointer<IEnvironmentEDFFactory const volatile>(IEnvironmentEDFFactory const volatile* p) { return p; }
-    template <> EnvironmentEDFFactoryRegistrar const volatile* get_pointer<EnvironmentEDFFactoryRegistrar const volatile>(EnvironmentEDFFactoryRegistrar const volatile* p) { return p; }
-    template <> EnvironmentShader const volatile* get_pointer<EnvironmentShader const volatile>(EnvironmentShader const volatile* p) { return p; }
-    template <> EnvironmentShaderFactoryRegistrar const volatile* get_pointer<EnvironmentShaderFactoryRegistrar const volatile>(EnvironmentShaderFactoryRegistrar const volatile* p) { return p; }
-    template <> Environment const volatile* get_pointer<Environment const volatile>(Environment const volatile* p) { return p; }
-}
-#endif
 
 namespace
 {
     auto_release_ptr<EnvironmentEDF> create_environment_edf(
-        const string&       model,
-        const string&       name,
-        const bpy::dict&    params)
+        const std::string&    model,
+        const std::string&    name,
+        const bpy::dict&      params)
     {
         EnvironmentEDFFactoryRegistrar factories;
         const IEnvironmentEDFFactory* factory = factories.lookup(model.c_str());
@@ -98,9 +84,9 @@ namespace
     }
 
     auto_release_ptr<EnvironmentShader> create_environment_shader(
-        const string&       env_shader_type,
-        const string&       name,
-        const bpy::dict&    params)
+        const std::string&    env_shader_type,
+        const std::string&    name,
+        const bpy::dict&      params)
     {
         EnvironmentShaderFactoryRegistrar factories;
         const IEnvironmentShaderFactory* factory = factories.lookup(env_shader_type.c_str());
@@ -117,8 +103,8 @@ namespace
     }
 
     auto_release_ptr<Environment> create_environment(
-        const string&       name,
-        const bpy::dict&    params)
+        const std::string&    name,
+        const bpy::dict&      params)
     {
         return EnvironmentFactory::create(name.c_str(), bpy_dict_to_param_array(params));
     }

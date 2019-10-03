@@ -40,8 +40,6 @@
 #include <string>
 #include <vector>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -54,10 +52,10 @@ struct MessageList::Impl
     struct Message
     {
         LogMessage::Category    m_category;
-        string                  m_text;
+        std::string             m_text;
     };
 
-    typedef vector<Message> Messages;
+    typedef std::vector<Message> Messages;
 
     Messages    m_messages;
 };

@@ -37,7 +37,6 @@
 
 namespace bpy = boost::python;
 using namespace foundation;
-using namespace std;
 
 namespace
 {

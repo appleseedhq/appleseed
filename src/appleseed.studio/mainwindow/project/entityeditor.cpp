@@ -86,20 +86,19 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace appleseed {
 namespace studio {
 
 EntityEditor::EntityEditor(
-    QWidget*                        parent,
-    const Project&                  project,
-    ParamArray&                     settings,
-    unique_ptr<IFormFactory>        form_factory,
-    unique_ptr<IEntityBrowser>      entity_browser,
-    unique_ptr<CustomEntityUI>      custom_ui,
-    const Dictionary&               values)
+    QWidget*                             parent,
+    const Project&                       project,
+    ParamArray&                          settings,
+    std::unique_ptr<IFormFactory>        form_factory,
+    std::unique_ptr<IEntityBrowser>      entity_browser,
+    std::unique_ptr<CustomEntityUI>      custom_ui,
+    const Dictionary&                    values)
   : QObject(parent)
   , m_parent(parent)
   , m_project(project)
@@ -173,13 +172,13 @@ void EntityEditor::create_connections()
     }
 }
 
-const Dictionary& EntityEditor::get_input_metadata(const string& name) const
+const Dictionary& EntityEditor::get_input_metadata(const std::string& name) const
 {
     for (const_each<InputMetadataCollection> i = m_input_metadata; i; ++i)
     {
         const Dictionary& metadata = *i;
 
-        if (metadata.get<string>("name") == name)
+        if (metadata.get<std::string>("name") == name)
             return metadata;
     }
 
@@ -204,8 +203,8 @@ bool EntityEditor::is_input_widget_visible(const Dictionary& metadata, const Dic
 
         const bool condition_met =
             values.strings().exist(key)
-                ? values.strings().get<string>(key) == value
-                : get_input_metadata(key).get<string>("default") == value;
+                ? values.strings().get<std::string>(key) == value
+                : get_input_metadata(key).get<std::string>("default") == value;
 
         if (!condition_met)
             return false;
@@ -216,10 +215,10 @@ bool EntityEditor::is_input_widget_visible(const Dictionary& metadata, const Dic
 
 void EntityEditor::create_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
-    const string input_name = metadata.get<string>("name");
-    const string input_type = metadata.get<string>("type");
+    const std::string input_name = metadata.get<std::string>("name");
+    const std::string input_type = metadata.get<std::string>("type");
 
-    unique_ptr<IInputWidgetProxy> widget_proxy =
+    std::unique_ptr<IInputWidgetProxy> widget_proxy =
         input_type == "text" ? create_text_input_widgets(metadata, input_widget_visible) :
         input_type == "numeric" ? create_numeric_input_widgets(metadata, input_widget_visible) :
         input_type == "integer" ? create_integer_input_widgets(metadata, input_widget_visible) :
@@ -229,13 +228,13 @@ void EntityEditor::create_input_widgets(const Dictionary& metadata, const bool i
         input_type == "colormap" ? create_colormap_input_widgets(metadata, input_widget_visible) :
         input_type == "entity" ? create_entity_input_widgets(metadata, input_widget_visible) :
         input_type == "file" ? create_file_input_widgets(metadata, input_widget_visible) :
-        unique_ptr<IInputWidgetProxy>(nullptr);
+        std::unique_ptr<IInputWidgetProxy>(nullptr);
 
     assert(widget_proxy.get());
 
     const bool rebuild_form =
         metadata.strings().exist("on_change") &&
-        metadata.get<string>("on_change") == "rebuild_form";
+        metadata.get<std::string>("on_change") == "rebuild_form";
 
     connect(
         widget_proxy.get(),
@@ -269,7 +268,7 @@ namespace
     }
 }
 
-unique_ptr<IInputWidgetProxy> EntityEditor::create_text_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
+std::unique_ptr<IInputWidgetProxy> EntityEditor::create_text_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
     QLineEdit* line_edit = new QLineEdit(m_parent);
 
@@ -283,13 +282,13 @@ unique_ptr<IInputWidgetProxy> EntityEditor::create_text_input_widgets(const Dict
         m_form_layout->addRow(create_label(metadata), line_edit);
     else line_edit->hide();
 
-    unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
-    widget_proxy->set(metadata.strings().get<string>("value"));
+    std::unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
+    widget_proxy->set(metadata.strings().get<std::string>("value"));
 
     return widget_proxy;
 }
 
-unique_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
+std::unique_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
     const Dictionary& min = metadata.dictionary("min");
     const Dictionary& max = metadata.dictionary("max");
@@ -297,8 +296,8 @@ unique_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const D
     const double slider_min = min.get<double>("value");
     const double slider_max = max.get<double>("value");
 
-    const double validator_min = min.get<string>("type") == "hard" ? slider_min : -numeric_limits<double>::max();
-    const double validator_max = max.get<string>("type") == "hard" ? slider_max : +numeric_limits<double>::max();
+    const double validator_min = min.get<std::string>("type") == "hard" ? slider_min : -std::numeric_limits<double>::max();
+    const double validator_max = max.get<std::string>("type") == "hard" ? slider_max : +std::numeric_limits<double>::max();
 
     QLineEdit* line_edit = new QLineEdit(m_parent);
     line_edit->setMaximumWidth(60);
@@ -331,22 +330,22 @@ unique_ptr<IInputWidgetProxy> EntityEditor::create_numeric_input_widgets(const D
         slider->hide();
     }
 
-    const string value = metadata.strings().get<string>("value");
+    const std::string value = metadata.strings().get<std::string>("value");
     if (!value.empty())
     {
         // Keep the first value if there is more than one.
-        istringstream istr(value);
+        std::istringstream istr(value);
         double val;
         istr >> val;
         adaptor->slot_set_line_edit_value(val);
     }
 
-    unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
+    std::unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
 
     return widget_proxy;
 }
 
-unique_ptr<IInputWidgetProxy> EntityEditor::create_integer_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
+std::unique_ptr<IInputWidgetProxy> EntityEditor::create_integer_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
     const Dictionary& min = metadata.dictionary("min");
     const Dictionary& max = metadata.dictionary("max");
@@ -387,13 +386,13 @@ unique_ptr<IInputWidgetProxy> EntityEditor::create_integer_input_widgets(const D
         slider->hide();
     }
 
-    unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
-    widget_proxy->set(metadata.strings().get<string>("value"));
+    std::unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
+    widget_proxy->set(metadata.strings().get<std::string>("value"));
 
     return widget_proxy;
 }
 
-unique_ptr<IInputWidgetProxy> EntityEditor::create_boolean_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
+std::unique_ptr<IInputWidgetProxy> EntityEditor::create_boolean_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
     QCheckBox* checkbox = new QCheckBox(m_parent);
 
@@ -404,13 +403,13 @@ unique_ptr<IInputWidgetProxy> EntityEditor::create_boolean_input_widgets(const D
         m_form_layout->addRow(create_label(metadata), checkbox);
     else checkbox->hide();
 
-    unique_ptr<IInputWidgetProxy> widget_proxy(new CheckBoxProxy(checkbox));
-    widget_proxy->set(metadata.strings().get<string>("value"));
+    std::unique_ptr<IInputWidgetProxy> widget_proxy(new CheckBoxProxy(checkbox));
+    widget_proxy->set(metadata.strings().get<std::string>("value"));
 
     return widget_proxy;
 }
 
-unique_ptr<IInputWidgetProxy> EntityEditor::create_enumeration_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
+std::unique_ptr<IInputWidgetProxy> EntityEditor::create_enumeration_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
     QComboBox* combo_box = new QComboBox(m_parent);
     combo_box->setEditable(false);
@@ -430,18 +429,18 @@ unique_ptr<IInputWidgetProxy> EntityEditor::create_enumeration_input_widgets(con
         m_form_layout->addRow(create_label(metadata), combo_box);
     else combo_box->hide();
 
-    unique_ptr<IInputWidgetProxy> widget_proxy(new ComboBoxProxy(combo_box));
+    std::unique_ptr<IInputWidgetProxy> widget_proxy(new ComboBoxProxy(combo_box));
 
     return widget_proxy;
 }
 
-unique_ptr<IInputWidgetProxy> EntityEditor::create_color_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
+std::unique_ptr<IInputWidgetProxy> EntityEditor::create_color_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
     QLineEdit* line_edit = new QLineEdit(m_parent);
 
     QToolButton* picker_button = new QToolButton(m_parent);
     picker_button->setObjectName("color_picker");
-    const string name = metadata.get<string>("name");
+    const std::string name = metadata.get<std::string>("name");
     connect(picker_button, &QToolButton::clicked, [=]() { emit slot_open_color_picker(QString::fromStdString(name)); });
 
     if (should_be_focused(metadata))
@@ -464,13 +463,13 @@ unique_ptr<IInputWidgetProxy> EntityEditor::create_color_input_widgets(const Dic
         picker_button->hide();
     }
 
-    unique_ptr<ColorPickerProxy> widget_proxy(new ColorPickerProxy(line_edit, picker_button));
+    std::unique_ptr<ColorPickerProxy> widget_proxy(new ColorPickerProxy(line_edit, picker_button));
 
     if (metadata.strings().exist("value") &&
         metadata.strings().exist("wavelength_range_widget"))
     {
-        const string value = metadata.strings().get<string>("value");
-        const string wr_widget = metadata.get<string>("wavelength_range_widget");
+        const std::string value = metadata.strings().get<std::string>("value");
+        const std::string wr_widget = metadata.get<std::string>("wavelength_range_widget");
         const IInputWidgetProxy* wr_widget_proxy = m_widget_proxies.get(wr_widget);
         if (wr_widget_proxy)
             widget_proxy->set(value, wr_widget_proxy->get());
@@ -478,30 +477,30 @@ unique_ptr<IInputWidgetProxy> EntityEditor::create_color_input_widgets(const Dic
     }
     else widget_proxy->set("0.0 0.0 0.0");
 
-    return unique_ptr<IInputWidgetProxy>(move(widget_proxy));
+    return std::unique_ptr<IInputWidgetProxy>(move(widget_proxy));
 }
 
-unique_ptr<IInputWidgetProxy> EntityEditor::create_colormap_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
+std::unique_ptr<IInputWidgetProxy> EntityEditor::create_colormap_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
-    const string name = metadata.get<string>("name");
+    const std::string name = metadata.get<std::string>("name");
 
     double validator_min, validator_max;
 
     if (metadata.dictionaries().exist("min"))
     {
         const Dictionary& min = metadata.dictionary("min");
-        validator_min = min.get<string>("type") == "hard" ? min.get<double>("value") : -numeric_limits<double>::max();
+        validator_min = min.get<std::string>("type") == "hard" ? min.get<double>("value") : -std::numeric_limits<double>::max();
     }
     else
-        validator_min = -numeric_limits<double>::max();
+        validator_min = -std::numeric_limits<double>::max();
 
     if (metadata.dictionaries().exist("max"))
     {
         const Dictionary& max = metadata.dictionary("max");
-        validator_max = max.get<string>("type") == "hard" ? max.get<double>("value") : +numeric_limits<double>::max();
+        validator_max = max.get<std::string>("type") == "hard" ? max.get<double>("value") : +std::numeric_limits<double>::max();
     }
     else
-        validator_max = +numeric_limits<double>::max();
+        validator_max = +std::numeric_limits<double>::max();
 
     const QString default_value = metadata.strings().exist("default") ? metadata.get<QString>("default") : "";
 
@@ -518,15 +517,15 @@ unique_ptr<IInputWidgetProxy> EntityEditor::create_colormap_input_widgets(const 
         m_form_layout->addRow(create_label(metadata), input_widget);
     else input_widget->hide();
 
-    unique_ptr<IInputWidgetProxy> widget_proxy(new ColorMapInputProxy(input_widget));
-    widget_proxy->set(metadata.strings().get<string>("value"));
+    std::unique_ptr<IInputWidgetProxy> widget_proxy(new ColorMapInputProxy(input_widget));
+    widget_proxy->set(metadata.strings().get<std::string>("value"));
 
     return widget_proxy;
 }
 
-unique_ptr<IInputWidgetProxy> EntityEditor::create_entity_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
+std::unique_ptr<IInputWidgetProxy> EntityEditor::create_entity_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
-    const string name = metadata.get<string>("name");
+    const std::string name = metadata.get<std::string>("name");
 
     EntityInputWidget* input_widget = new EntityInputWidget(m_parent);
     connect(input_widget, &EntityInputWidget::signal_bind_button_clicked, [=]() { emit slot_open_entity_browser(QString::fromStdString(name)); });
@@ -538,15 +537,15 @@ unique_ptr<IInputWidgetProxy> EntityEditor::create_entity_input_widgets(const Di
         m_form_layout->addRow(create_label(metadata), input_widget);
     else input_widget->hide();
 
-    unique_ptr<IInputWidgetProxy> widget_proxy(new EntityInputProxy(input_widget));
-    widget_proxy->set(metadata.strings().get<string>("value"));
+    std::unique_ptr<IInputWidgetProxy> widget_proxy(new EntityInputProxy(input_widget));
+    widget_proxy->set(metadata.strings().get<std::string>("value"));
 
     return widget_proxy;
 }
 
-unique_ptr<IInputWidgetProxy> EntityEditor::create_file_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
+std::unique_ptr<IInputWidgetProxy> EntityEditor::create_file_input_widgets(const Dictionary& metadata, const bool input_widget_visible)
 {
-    const string name = metadata.get<string>("name");
+    const std::string name = metadata.get<std::string>("name");
 
     QLineEdit* line_edit = new QLineEdit(m_parent);
 
@@ -574,8 +573,8 @@ unique_ptr<IInputWidgetProxy> EntityEditor::create_file_input_widgets(const Dict
         browse_button->hide();
     }
 
-    unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
-    widget_proxy->set(metadata.strings().get<string>("value"));
+    std::unique_ptr<IInputWidgetProxy> widget_proxy(new LineEditProxy(line_edit));
+    widget_proxy->set(metadata.strings().get<std::string>("value"));
 
     return widget_proxy;
 }
@@ -627,14 +626,14 @@ void EntityEditor::slot_open_entity_browser(const QString& widget_name)
     EntityBrowserWindow* browser_window =
         new EntityBrowserWindow(
             m_parent,
-            metadata.get<string>("label"));
+            metadata.get<std::string>("label"));
 
     const Dictionary& entity_types = metadata.dictionaries().get("entity_types");
 
     for (const_each<StringDictionary> i = entity_types.strings(); i; ++i)
     {
-        const string entity_type = i->key();
-        const string entity_label = i->value<string>();
+        const std::string entity_type = i->key();
+        const std::string entity_label = i->value<std::string>();
         const StringDictionary entities = m_entity_browser->get_entities(entity_type);
         browser_window->add_items_page(entity_type, entity_label, entities);
     }
@@ -667,7 +666,7 @@ void EntityEditor::slot_open_color_picker(const QString& widget_name)
     IInputWidgetProxy* widget_proxy = m_widget_proxies.get(widget_name.toStdString());
 
     const Dictionary& metadata = get_input_metadata(widget_name.toStdString());
-    const string wr_widget = metadata.get<string>("wavelength_range_widget");
+    const std::string wr_widget = metadata.get<std::string>("wavelength_range_widget");
     const IInputWidgetProxy* wr_widget_proxy = m_widget_proxies.get(wr_widget);
     const Color3d initial_color =
         wr_widget_proxy
@@ -712,7 +711,7 @@ void EntityEditor::slot_open_file_picker(const QString& widget_name)
 
     const Dictionary& metadata = get_input_metadata(widget_name.toStdString());
 
-    if (metadata.get<string>("file_picker_mode") == "open")
+    if (metadata.get<std::string>("file_picker_mode") == "open")
     {
         const QString file_picker_type = metadata.get<QString>("file_picker_type");
         const QString filter =

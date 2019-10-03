@@ -45,8 +45,6 @@
 #include <cstring>
 #include <memory>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -54,7 +52,7 @@ namespace foundation
 // MitsHairFileReader class implementation.
 //
 
-MitsHairFileReader::MitsHairFileReader(const string& filename, const float radius, const size_t degree)
+MitsHairFileReader::MitsHairFileReader(const std::string& filename, const float radius, const size_t degree)
   : m_filename(filename)
   , m_radius(radius)
   , m_degree(degree)
@@ -73,7 +71,7 @@ void MitsHairFileReader::read(ICurveBuilder& builder)
 
     read_and_check_signature(file);
 
-    unique_ptr<ReaderAdapter> reader;
+    std::unique_ptr<ReaderAdapter> reader;
     reader.reset(new PassthroughReaderAdapter(file));
     read_curves(*reader.get(), builder);
 }
@@ -107,7 +105,7 @@ void MitsHairFileReader::read_curves(ReaderAdapter& reader, ICurveBuilder& build
         builder.begin_curve_object(static_cast<CurveBasis>(m_degree));
         builder.begin_curve();
 
-        vector<Vector3f> vertices, new_vertices;
+        std::vector<Vector3f> vertices, new_vertices;
 
         for (uint32 c = 0; c < vertex_count; ++c)
         {

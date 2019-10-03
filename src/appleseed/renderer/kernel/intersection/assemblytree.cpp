@@ -69,7 +69,6 @@
 #include <utility>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -106,7 +105,7 @@ size_t AssemblyTree::get_memory_size() const
         - sizeof(*static_cast<const TreeType*>(this))
         + sizeof(*this)
         + m_items.capacity() * sizeof(AssemblyInstance*)
-        + m_assembly_versions.size() * sizeof(pair<UniqueID, VersionID>);
+        + m_assembly_versions.size() * sizeof(std::pair<UniqueID, VersionID>);
 }
 
 void AssemblyTree::collect_assembly_instances(
@@ -190,7 +189,7 @@ void AssemblyTree::rebuild_assembly_tree()
 
     if (!m_items.empty())
     {
-        const vector<size_t>& ordering = partitioner.get_item_ordering();
+        const std::vector<size_t>& ordering = partitioner.get_item_ordering();
         assert(m_items.size() == ordering.size());
 
         // Reorder the items according to the tree ordering.
@@ -316,7 +315,7 @@ void AssemblyTree::collect_unique_assemblies(AssemblyVector& assemblies) const
 
 void AssemblyTree::delete_unused_child_trees(const AssemblyVector& assemblies)
 {
-    set<UniqueID> assembly_uids;
+    std::set<UniqueID> assembly_uids;
 
     for (const_each<AssemblyVector> i = assemblies; i; ++i)
         assembly_uids.insert((*i)->get_uid());
@@ -405,7 +404,7 @@ void AssemblyTree::create_triangle_tree(const Assembly& assembly)
                 assembly.object_instances().begin(),
                 assembly.object_instances().end());
 
-        unique_ptr<ILazyFactory<TriangleTree>> triangle_tree_factory(
+        std::unique_ptr<ILazyFactory<TriangleTree>> triangle_tree_factory(
             new TriangleTreeFactory(
                 TriangleTree::Arguments(
                     m_scene,
@@ -413,11 +412,11 @@ void AssemblyTree::create_triangle_tree(const Assembly& assembly)
                     assembly_bbox,
                     assembly)));
 
-        tree = new Lazy<TriangleTree>(move(triangle_tree_factory));
+        tree = new Lazy<TriangleTree>(std::move(triangle_tree_factory));
         m_triangle_tree_repository.insert(hash, tree);
     }
 
-    m_triangle_trees.insert(make_pair(assembly.get_uid(), tree));
+    m_triangle_trees.insert(std::make_pair(assembly.get_uid(), tree));
 }
 
 void AssemblyTree::create_curve_tree(const Assembly& assembly)
@@ -433,7 +432,7 @@ void AssemblyTree::create_curve_tree(const Assembly& assembly)
                 assembly.object_instances().begin(),
                 assembly.object_instances().end());
 
-        unique_ptr<ILazyFactory<CurveTree>> curve_tree_factory(
+        std::unique_ptr<ILazyFactory<CurveTree>> curve_tree_factory(
             new CurveTreeFactory(
                 CurveTree::Arguments(
                     m_scene,
@@ -441,11 +440,11 @@ void AssemblyTree::create_curve_tree(const Assembly& assembly)
                     assembly_bbox,
                     assembly)));
 
-        tree = new Lazy<CurveTree>(move(curve_tree_factory));
+        tree = new Lazy<CurveTree>(std::move(curve_tree_factory));
         m_curve_tree_repository.insert(hash, tree);
     }
 
-    m_curve_trees.insert(make_pair(assembly.get_uid(), tree));
+    m_curve_trees.insert(std::make_pair(assembly.get_uid(), tree));
 }
 
 #ifdef APPLESEED_WITH_EMBREE
@@ -471,7 +470,7 @@ void AssemblyTree::create_embree_scene(const Assembly& assembly)
 
     if (scene == nullptr)
     {
-        unique_ptr<ILazyFactory<EmbreeScene>> embree_scene_factory(
+        std::unique_ptr<ILazyFactory<EmbreeScene>> embree_scene_factory(
             new EmbreeSceneFactory(
                 EmbreeScene::Arguments(
                     m_scene.get_embree_device(),
@@ -482,7 +481,7 @@ void AssemblyTree::create_embree_scene(const Assembly& assembly)
         m_embree_scene_repository.insert(hash, scene);
     }
 
-    m_embree_scenes.insert(make_pair(assembly.get_uid(), scene));
+    m_embree_scenes.insert(std::make_pair(assembly.get_uid(), scene));
 }
 
 void AssemblyTree::delete_embree_scene(const UniqueID assembly_id)
@@ -780,6 +779,7 @@ bool AssemblyLeafVisitor::visit(
                 object.intersect(instance_local_ray, result);
 
                 // Keep track of the closest hit.
+                // todo: result is not in the same space as the shading point ray.
                 if (result.m_hit && result.m_distance < m_shading_point.m_ray.m_tmax)
                 {
                     m_shading_point.m_ray.m_tmax = result.m_distance;
@@ -791,9 +791,19 @@ bool AssemblyLeafVisitor::visit(
                     m_shading_point.m_object_instance_index = object_instance_index_pair.second;
                     m_shading_point.m_primitive_index = 0;
                     m_shading_point.m_primitive_pa = result.m_material_slot;
-                    m_shading_point.m_geometric_normal = object_instance_transform.normal_to_parent(result.m_geometric_normal);
-                    m_shading_point.m_original_shading_normal = object_instance_transform.normal_to_parent(result.m_shading_normal);
+                    m_shading_point.m_geometric_normal = 
+                        normalize(
+                            assembly_instance_transform.normal_to_parent(
+                                object_instance_transform.normal_to_parent(
+                                    result.m_geometric_normal)));
+                    m_shading_point.m_original_shading_normal =
+                        normalize(
+                            assembly_instance_transform.normal_to_parent(
+                                object_instance_transform.normal_to_parent(
+                                    result.m_shading_normal)));
                     m_shading_point.m_uv = result.m_uv;
+                    // HasGeometricNormal and HasOriginalShadingNormal shading point members aren't set
+                    // so that the shading point can compute the hit side by itself.
                 }
             }
         }

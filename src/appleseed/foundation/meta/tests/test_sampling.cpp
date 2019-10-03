@@ -49,7 +49,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext)
 {
@@ -141,7 +140,7 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext_DirectIlluminationSimulat
     void shade(
         const SamplingContext&      context,
         const size_t                light_sample_count,
-        vector<Vector2d>&           light_samples)
+        std::vector<Vector2d>&      light_samples)
     {
         SamplingContext child_context = context.split(2, light_sample_count);
 
@@ -164,8 +163,8 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext_DirectIlluminationSimulat
             pixel_sample_count,
             0);
 
-        vector<Vector2d> pixel_samples;
-        vector<Vector2d> light_samples;
+        std::vector<Vector2d> pixel_samples;
+        std::vector<Vector2d> light_samples;
 
         for (size_t i = 0; i < pixel_sample_count; ++i)
         {
@@ -174,7 +173,7 @@ TEST_SUITE(Foundation_Math_Sampling_QMCSamplingContext_DirectIlluminationSimulat
             shade(sampling_context, light_sample_count, light_samples);
         }
 
-        const string filepath_prefix =
+        const std::string filepath_prefix =
             format("unit tests/outputs/test_sampling_P{0}_L{1}", pixel_sample_count, light_sample_count);
 
         write_point_cloud_image(filepath_prefix + "_pixel_samples.png", pixel_samples);
@@ -256,25 +255,25 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
     template <typename T>
     Vector<T, 3> sample_cone_uniform_30deg(const Vector<T, 2>& s)
     {
-        return sample_cone_uniform(s, cos(deg_to_rad(30.0)));
+        return sample_cone_uniform(s, std::cos(deg_to_rad(30.0)));
     }
 
     template <typename T>
     T sample_cone_uniform_30deg_pdf(const Vector<T, 3>& dir)
     {
-        return sample_cone_uniform_pdf(cos(deg_to_rad(30.0)));
+        return sample_cone_uniform_pdf(std::cos(deg_to_rad(30.0)));
     }
 
     template <typename SamplingFunction>
     void visualize_2d_function_as_image_regular(
-        const string&       filename,
-        SamplingFunction&   sampling_function,
-        const size_t        point_count)
+        const std::string&       filename,
+        SamplingFunction&        sampling_function,
+        const size_t             point_count)
     {
-        const size_t grid_size = truncate<size_t>(ceil(sqrt(static_cast<double>(point_count))));
+        const size_t grid_size = truncate<size_t>(std::ceil(std::sqrt(static_cast<double>(point_count))));
         const double AlmostOne = shift(1.0, -1);
 
-        vector<Vector2d> points;
+        std::vector<Vector2d> points;
         points.reserve(grid_size * grid_size);
 
         for (size_t y = 0; y < grid_size; ++y)
@@ -295,11 +294,11 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
 
     template <typename SamplingFunction>
     void visualize_2d_function_as_image_hammersley(
-        const string&       filename,
-        SamplingFunction&   sampling_function,
-        const size_t        point_count)
+        const std::string&       filename,
+        SamplingFunction&        sampling_function,
+        const size_t             point_count)
     {
-        vector<Vector2d> points(point_count);
+        std::vector<Vector2d> points(point_count);
 
         for (size_t i = 0; i < point_count; ++i)
         {
@@ -315,11 +314,11 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
 
     template <typename SamplingFunction>
     void visualize_2d_function_as_image_halton(
-        const string&       filename,
-        SamplingFunction&   sampling_function,
-        const size_t        point_count)
+        const std::string&       filename,
+        SamplingFunction&        sampling_function,
+        const size_t             point_count)
     {
-        vector<Vector2d> points(point_count);
+        std::vector<Vector2d> points(point_count);
 
         for (size_t i = 0; i < point_count; ++i)
         {
@@ -335,11 +334,11 @@ TEST_SUITE(Foundation_Math_Sampling_Mappings)
 
     template <typename SamplingFunction>
     void visualize_3d_function_as_vpython_program(
-        const string&       filename,
-        SamplingFunction&   sampling_function,
-        const size_t        point_count)
+        const std::string&       filename,
+        SamplingFunction&        sampling_function,
+        const size_t             point_count)
     {
-        vector<Vector3d> points(point_count);
+        std::vector<Vector3d> points(point_count);
 
         for (size_t i = 0; i < point_count; ++i)
         {

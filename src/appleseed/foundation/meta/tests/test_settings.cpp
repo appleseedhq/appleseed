@@ -38,7 +38,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Foundation_Utility_SettingsFileReader)
 {
@@ -79,7 +78,7 @@ TEST_SUITE(Foundation_Utility_SettingsFileReader)
         ASSERT_EQ(2, m_dictionary.strings().size());
 
         EXPECT_EQ(42, m_dictionary.get<int>("x"));
-        EXPECT_EQ("foo", m_dictionary.get<string>("y"));
+        EXPECT_EQ("foo", m_dictionary.get<std::string>("y"));
     }
 
     TEST_CASE_F(Read_GivenSettingsFileWithTwoDictionaryParameters_ReturnsDictionaryWithTwoDictionaryParameters, Fixture)
@@ -92,11 +91,11 @@ TEST_SUITE(Foundation_Utility_SettingsFileReader)
 
         const Dictionary& sub1 = m_dictionary.dictionaries().get("sub1");
         EXPECT_EQ(42, sub1.get<int>("x"));
-        EXPECT_EQ("foo", sub1.get<string>("y"));
+        EXPECT_EQ("foo", sub1.get<std::string>("y"));
 
         const Dictionary& sub2 = m_dictionary.dictionaries().get("sub2");
-        EXPECT_EQ("aa", sub2.get<string>("a"));
-        EXPECT_EQ("bb", sub2.get<string>("b"));
+        EXPECT_EQ("aa", sub2.get<std::string>("a"));
+        EXPECT_EQ("bb", sub2.get<std::string>("b"));
     }
 
     TEST_CASE_F(Read_GivenSettingsFileWithNewlinesInParameters_ReturnsDictionaryWithNewlinesInParameters, Fixture)
@@ -107,8 +106,8 @@ TEST_SUITE(Foundation_Utility_SettingsFileReader)
         ASSERT_EQ(2, m_dictionary.strings().size());
         ASSERT_EQ(0, m_dictionary.dictionaries().size());
 
-        EXPECT_EQ("aa", m_dictionary.get<string>("a"));
-        EXPECT_EQ("bb\nbb\nbb", m_dictionary.get<string>("b"));
+        EXPECT_EQ("aa", m_dictionary.get<std::string>("a"));
+        EXPECT_EQ("bb\nbb\nbb", m_dictionary.get<std::string>("b"));
     }
 }
 

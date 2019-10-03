@@ -47,8 +47,6 @@
 #include <sys/time.h>
 #endif
 
-using namespace std;
-
 namespace foundation
 {
 

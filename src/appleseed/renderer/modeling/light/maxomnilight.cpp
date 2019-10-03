@@ -53,7 +53,6 @@ namespace renderer      { class Project; }
 namespace renderer      { class ShadingContext; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -151,7 +150,7 @@ namespace
         {
             return
                 autodesk_max_decay(
-                    sqrt(static_cast<float>(square_distance(target, position))),
+                    std::sqrt(static_cast<float>(square_distance(target, position))),
                     m_decay_start,
                     m_decay_exponent);
         }

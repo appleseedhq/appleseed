@@ -44,7 +44,6 @@
 #include <cstddef>
 
 using namespace foundation;
-using namespace std;
 
 BENCHMARK_SUITE(SameSign)
 {
@@ -75,7 +74,7 @@ BENCHMARK_SUITE(SameSign)
 
     APPLESEED_NO_INLINE bool same_sign_naive(const float a, const float b)
     {
-        if (abs(a) == 0.0f || abs(b) == 0.0f)
+        if (std::abs(a) == 0.0f || std::abs(b) == 0.0f)
             return true;
 
         return (a >= 0.0f) == (b >= 0.0f);

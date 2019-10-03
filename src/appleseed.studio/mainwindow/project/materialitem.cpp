@@ -58,7 +58,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace appleseed {
@@ -95,22 +94,22 @@ QMenu* MaterialItem::get_single_item_context_menu() const
 
 void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
 {
-    unique_ptr<EntityEditor::IFormFactory> form_factory(
+    std::unique_ptr<EntityEditor::IFormFactory> form_factory(
         new FixedModelEntityEditorFormFactoryType(
             m_editor_context.m_project.get_factory_registrar<Material>(),
             m_entity->get_name(),
             m_entity->get_model()));
 
-    unique_ptr<EntityEditor::IEntityBrowser> entity_browser(
+    std::unique_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<Assembly>(m_parent));
 
-    unique_ptr<CustomEntityUI> custom_entity_ui;
+    std::unique_ptr<CustomEntityUI> custom_entity_ui;
 
 #ifdef APPLESEED_WITH_DISNEY_MATERIAL
     if (strcmp(m_entity->get_model(), "disney_material") == 0)
     {
         custom_entity_ui =
-            unique_ptr<CustomEntityUI>(
+            std::unique_ptr<CustomEntityUI>(
                 new DisneyMaterialCustomUI(
                     m_editor_context.m_project,
                     m_editor_context.m_settings));
@@ -122,17 +121,17 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
     if (attribute_editor)
     {
         attribute_editor->edit(
-            move(form_factory),
-            move(entity_browser),
-            move(custom_entity_ui),
+            std::move(form_factory),
+            std::move(entity_browser),
+            std::move(custom_entity_ui),
             values,
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)));
     }
     else
     {
-        const string window_title =
-            string("Edit ") +
+        const std::string window_title =
+            std::string("Edit ") +
             EntityTraitsType::get_human_readable_entity_type_name();
 
         open_entity_editor(
@@ -140,9 +139,9 @@ void MaterialItem::slot_edit(AttributeEditor* attribute_editor)
             window_title,
             m_editor_context.m_project,
             m_editor_context.m_settings,
-            move(form_factory),
-            move(entity_browser),
-            move(custom_entity_ui),
+            std::move(form_factory),
+            std::move(entity_browser),
+            std::move(custom_entity_ui),
             values,
             this,
             SLOT(slot_edit_accepted(foundation::Dictionary)),

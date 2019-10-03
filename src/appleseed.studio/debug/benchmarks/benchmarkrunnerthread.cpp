@@ -49,7 +49,6 @@
 
 using namespace appleseed::shared;
 using namespace foundation;
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace appleseed {
@@ -66,7 +65,7 @@ void BenchmarkRunnerThread::run()
     auto_release_ptr<XMLFileBenchmarkListener> xmlfile_listener(
         create_xmlfile_benchmark_listener());
 
-    const string xmlfile_name = "benchmark." + get_time_stamp_string() + ".xml";
+    const std::string xmlfile_name = "benchmark." + get_time_stamp_string() + ".xml";
     const bf::path xmlfile_path =
           bf::path(Application::get_tests_root_path())
         / "unit benchmarks"

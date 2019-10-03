@@ -66,7 +66,6 @@ namespace renderer      { class Assembly; }
 namespace renderer      { class Project; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -131,14 +130,14 @@ namespace
             values->m_specular_reflectance *= values->m_specular_reflectance_multiplier;
             values->m_diffuse_reflectance *= values->m_diffuse_reflectance_multiplier;
 
-            values->m_roughness = max(values->m_roughness, shading_point.get_ray().m_min_roughness);
+            values->m_roughness = std::max(values->m_roughness, shading_point.get_ray().m_min_roughness);
 
             new (&values->m_precomputed) InputValues::Precomputed();
             const float outside_ior = shading_point.get_ray().get_current_ior();
             values->m_precomputed.m_eta = outside_ior / values->m_ior;
 
-            values->m_precomputed.m_specular_weight = max(max_value(values->m_specular_reflectance), 0.0f);
-            values->m_precomputed.m_diffuse_weight = max(max_value(values->m_diffuse_reflectance), 0.0f);
+            values->m_precomputed.m_specular_weight = std::max(max_value(values->m_specular_reflectance), 0.0f);
+            values->m_precomputed.m_diffuse_weight = std::max(max_value(values->m_diffuse_reflectance), 0.0f);
         }
 
         void sample(
@@ -293,7 +292,7 @@ namespace
                     Fi,
                     value.m_diffuse);
 
-                pdf_diffuse = abs(wi.y) * RcpPi<float>();
+                pdf_diffuse = std::abs(wi.y) * RcpPi<float>();
             }
 
             value.m_beauty = value.m_diffuse;
@@ -337,7 +336,7 @@ namespace
 
             const float pdf_diffuse =
                 ScatteringMode::has_diffuse(modes)
-                    ? abs(wi.y) * RcpPi<float>()
+                    ? std::abs(wi.y) * RcpPi<float>()
                     : 0.0f;
 
             const float pdf =
@@ -375,7 +374,7 @@ namespace
             fresnel_reflectance_dielectric(
                 F,
                 eta,
-                min(cos_wm, 1.0f));
+                std::min(cos_wm, 1.0f));
 
             return F;
         }
@@ -392,7 +391,7 @@ namespace
             if (alpha == 0.0f)
                 return;
 
-            const float denom = abs(4.0f * wo.y * wi.y);
+            const float denom = std::abs(4.0f * wo.y * wi.y);
             if (denom == 0.0f)
             {
                 value.set(0.0f);
@@ -417,7 +416,7 @@ namespace
             if (cos_wom == 0.0f)
                 return 0.0f;
 
-            const float jacobian = 1.0f / (4.0f * abs(cos_wom));
+            const float jacobian = 1.0f / (4.0f * std::abs(cos_wom));
             return jacobian * GGXMDF::pdf(wo, m, alpha, alpha);
         }
 

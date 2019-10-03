@@ -40,8 +40,6 @@
 #include <fcntl.h>
 #include <io.h>
 
-using namespace std;
-
 namespace
 {
     void redirect(FILE* fp, const char* mode, const DWORD std_device)
@@ -63,7 +61,7 @@ namespace
         redirect(stderr, "w", STD_ERROR_HANDLE);
 
         // Make cout, wcout, cin, wcin, cerr, wcerr, clog and wclog point to the console as well.
-        ios::sync_with_stdio();
+        std::ios::sync_with_stdio();
     }
 }
 

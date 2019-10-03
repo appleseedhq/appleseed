@@ -41,7 +41,6 @@
 
 using namespace boost;
 using namespace foundation;
-using namespace std;
 
 TEST_SUITE(Boost_DateTime)
 {
@@ -49,14 +48,14 @@ TEST_SUITE(Boost_DateTime)
     {
         using namespace gregorian;
 
-        const string result = to_string(date(2010, Jun, 22));
+        const std::string result = to_string(date(2010, Jun, 22));
 
         EXPECT_EQ("2010-Jun-22", result);
     }
 
     TEST_CASE(TimeDurationToString)
     {
-        const string result = to_string(posix_time::time_duration(17, 45, 31));
+        const std::string result = to_string(posix_time::time_duration(17, 45, 31));
 
         EXPECT_EQ("17:45:31", result);
     }

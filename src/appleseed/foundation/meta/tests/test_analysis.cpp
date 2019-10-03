@@ -156,6 +156,6 @@ TEST_SUITE(Foundation_Image_Analysis)
 
         const double rmsd = compute_rms_deviation(image1, image2);
 
-        EXPECT_FEQ_EPS(sqrt(2.0 / 3.0), rmsd, 1.0e-6);
+        EXPECT_FEQ_EPS(std::sqrt(2.0 / 3.0), rmsd, 1.0e-6);
     }
 }

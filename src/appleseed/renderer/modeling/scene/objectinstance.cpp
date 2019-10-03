@@ -54,7 +54,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -134,7 +133,7 @@ struct ObjectInstance::Impl
 {
     // Order of data members impacts performance, preserve it.
     Transformd              m_transform;
-    string                  m_object_name;
+    std::string             m_object_name;
     StringDictionary        m_front_material_mappings;
     StringDictionary        m_back_material_mappings;
     OIIO::ustring           m_sss_set_identifier;
@@ -166,8 +165,8 @@ ObjectInstance::ObjectInstance(
     m_medium_priority = params.get_optional<int8>("medium_priority", 0);
 
     // Retrieve ray bias method.
-    const string ray_bias_method =
-        params.get_optional<string>(
+    const std::string ray_bias_method =
+        params.get_optional<std::string>(
             "ray_bias_method",
             "none",
             make_vector("none", "normal", "incoming_direction", "outgoing_direction"),

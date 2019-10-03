@@ -63,7 +63,6 @@
 #include <set>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -175,7 +174,7 @@ namespace
 {
     bool assembly_instances_use_alpha_mapping(
         const AssemblyInstanceContainer&  assembly_instances,
-        set<UniqueID>&                    visited_assemblies)
+        std::set<UniqueID>&               visited_assemblies)
     {
         // Regarding transparency in the Tracer,
         // we only care about camera and shadow rays.
@@ -221,7 +220,7 @@ namespace
 
     bool assembly_instances_has_participating_media(
         const AssemblyInstanceContainer&  assembly_instances,
-        set<UniqueID>&                    visited_assemblies)
+        std::set<UniqueID>&               visited_assemblies)
     {
         // Regarding participating media in the Tracer,
         // we only care about camera and shadow rays.
@@ -268,13 +267,13 @@ namespace
 
 bool Scene::uses_alpha_mapping() const
 {
-    set<UniqueID> visited_assemblies;
+    std::set<UniqueID> visited_assemblies;
     return assembly_instances_use_alpha_mapping(assembly_instances(), visited_assemblies);
 }
 
 bool Scene::has_participating_media() const
 {
-    set<UniqueID> visited_assemblies;
+    std::set<UniqueID> visited_assemblies;
     return assembly_instances_has_participating_media(assembly_instances(), visited_assemblies);
 }
 

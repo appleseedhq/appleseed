@@ -196,12 +196,12 @@ double PerspectiveCamera::extract_focal_length(const double film_width) const
 
 double PerspectiveCamera::hfov_to_focal_length(const double film_width, const double hfov)
 {
-    return 0.5 * film_width / tan(0.5 * hfov);
+    return 0.5 * film_width / std::tan(0.5 * hfov);
 }
 
 double PerspectiveCamera::focal_length_to_hfov(const double film_width, const double focal_length)
 {
-    return 2.0 * atan(film_width / (2.0 * focal_length));
+    return 2.0 * std::atan(film_width / (2.0 * focal_length));
 }
 
 Vector3d PerspectiveCamera::ndc_to_camera(const Vector2d& point) const

@@ -43,8 +43,6 @@
 #include <cmath>
 #include <cstddef>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -154,7 +152,7 @@ double compute_rms_deviation(const Image& image1, const Image& image2)
 
     mse /= props.m_pixel_count * 3.0;
 
-    return sqrt(mse);
+    return std::sqrt(mse);
 }
 
 }   // namespace foundation

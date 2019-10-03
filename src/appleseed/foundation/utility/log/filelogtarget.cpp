@@ -33,8 +33,6 @@
 // Standard headers.
 #include <cassert>
 
-using namespace std;
-
 namespace foundation
 {
 

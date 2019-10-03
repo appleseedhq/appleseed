@@ -40,7 +40,6 @@
 #include <cstring>
 
 using namespace foundation;
-using namespace std;
 
 BENCHMARK_SUITE(Foundation_Math_FastMath)
 {
@@ -69,7 +68,7 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
         memcpy(m_output, m_values, N * sizeof(float));
 
         for (size_t i = 0; i < N; ++i)
-            m_output[i] = pow(2.0f, m_output[i]);
+            m_output[i] = std::pow(2.0f, m_output[i]);
     }
 
     BENCHMARK_CASE_F(ScalarFastPow2, Fixture)
@@ -151,7 +150,7 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
         memcpy(m_output, m_values, N * sizeof(float));
 
         for (size_t i = 0; i < N; ++i)
-            m_output[i] = pow(m_output[i], Exponent);
+            m_output[i] = std::pow(m_output[i], Exponent);
     }
 
     BENCHMARK_CASE_F(ScalarFastPow, Fixture)
@@ -195,7 +194,7 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
         memcpy(m_output, m_values, N * sizeof(float));
 
         for (size_t i = 0; i < N; ++i)
-            m_output[i] = log(m_output[i]);
+            m_output[i] = std::log(m_output[i]);
     }
 
     BENCHMARK_CASE_F(ScalarFastLog, Fixture)
@@ -239,7 +238,7 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
         memcpy(m_output, m_values, N * sizeof(float));
 
         for (size_t i = 0; i < N; ++i)
-            m_output[i] = exp(m_output[i]);
+            m_output[i] = std::exp(m_output[i]);
     }
 
     BENCHMARK_CASE_F(ScalarFastExp, Fixture)
@@ -303,7 +302,7 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
         memcpy(m_output, m_values, N * sizeof(float));
 
         for (size_t i = 0; i < N; ++i)
-            m_output[i] = sqrt(m_output[i]);
+            m_output[i] = std::sqrt(m_output[i]);
     }
 
     BENCHMARK_CASE_F(FastSqrt, Fixture)
@@ -323,7 +322,7 @@ BENCHMARK_SUITE(Foundation_Math_FastMath)
         memcpy(m_output, m_values, N * sizeof(float));
 
         for (size_t i = 0; i < N; ++i)
-            m_output[i] = 1.0f / sqrt(m_output[i]);
+            m_output[i] = 1.0f / std::sqrt(m_output[i]);
     }
 
     BENCHMARK_CASE_F(FastRcpSqrt, Fixture)

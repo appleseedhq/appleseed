@@ -54,7 +54,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -114,8 +113,8 @@ void ApplicationSettingsWindow::build_connections()
 void ApplicationSettingsWindow::load_settings()
 {
     // Exploit the fact that category values match combobox item indices exactly.
-    const string message_verbosity =
-        m_settings.get_path_optional<string>(SETTINGS_MESSAGE_VERBOSITY, "info");
+    const std::string message_verbosity =
+        m_settings.get_path_optional<std::string>(SETTINGS_MESSAGE_VERBOSITY, "info");
     m_ui->combobox_message_verbosity->setCurrentIndex(
         message_verbosity == "debug"   ? 0 :
         message_verbosity == "info"    ? 1 :
@@ -125,8 +124,8 @@ void ApplicationSettingsWindow::load_settings()
         1);     // info if an unknown value was found
 
     // Sampling mode.
-    const string sampling_mode =
-        m_settings.get_path_optional<string>(SETTINGS_SAMPLING_MODE, "qmc");
+    const std::string sampling_mode =
+        m_settings.get_path_optional<std::string>(SETTINGS_SAMPLING_MODE, "qmc");
     m_ui->combobox_sampling_mode->setCurrentIndex(
         sampling_mode == "rng" ? 0 :
         sampling_mode == "qmc" ? 1 :
@@ -136,8 +135,8 @@ void ApplicationSettingsWindow::load_settings()
     m_ui->spinbox_rendering_threads->setValue(static_cast<int>(System::get_logical_cpu_core_count()));
     m_ui->spinbox_rendering_threads->setEnabled(false);
     m_ui->checkbox_rendering_threads_auto->setChecked(true);
-    const string rendering_threads_str =
-        m_settings.get_path_optional<string>(SETTINGS_RENDERING_THREADS, "auto");
+    const std::string rendering_threads_str =
+        m_settings.get_path_optional<std::string>(SETTINGS_RENDERING_THREADS, "auto");
     if (rendering_threads_str != "auto")
     {
         try
@@ -184,7 +183,7 @@ void ApplicationSettingsWindow::save_settings()
         m_ui->combobox_sampling_mode->currentIndex() == 0 ? "rng" : "qmc");
 
     // Rendering threads.
-    string rendering_threads_str;
+    std::string rendering_threads_str;
     if (m_ui->checkbox_rendering_threads_auto->isChecked())
         rendering_threads_str = "auto";
     else rendering_threads_str = to_string(m_ui->spinbox_rendering_threads->value());

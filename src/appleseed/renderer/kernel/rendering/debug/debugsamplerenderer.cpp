@@ -47,7 +47,6 @@
 namespace renderer  { class PixelContext; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -82,9 +81,9 @@ namespace
             const double d = norm(v) * 2.0;
             const double M = 0.01;
             const float c =
-                abs(0.5 - image_point.x) < M / 2 ||
-                abs(0.5 - image_point.y) < M / 2 ||
-                abs(1.0 - M / 2 - d) < M ? 0.0f : 1.0f;
+                std::abs(0.5 - image_point.x) < M / 2 ||
+                std::abs(0.5 - image_point.y) < M / 2 ||
+                std::abs(1.0 - M / 2 - d) < M ? 0.0f : 1.0f;
             shading_result.m_main = Color4f(c, c, c, 1.0f);
         }
 

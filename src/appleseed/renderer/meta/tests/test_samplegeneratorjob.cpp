@@ -41,7 +41,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 TEST_SUITE(Renderer_Kernel_Rendering_Progressive_SampleGeneratorJob)
 {
@@ -49,7 +48,7 @@ TEST_SUITE(Renderer_Kernel_Rendering_Progressive_SampleGeneratorJob)
     {
         const uint64 N = 1500000;
 
-        vector<Vector2d> points;
+        std::vector<Vector2d> points;
         points.reserve(N);
 
         for (uint64 x = 0; x < N; x += 100)

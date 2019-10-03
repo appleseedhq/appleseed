@@ -34,7 +34,6 @@
 #ifdef _WIN32
 #include "foundation/platform/windows.h"
 #endif
-#include "foundation/utility/api/apistring.h"
 
 namespace foundation
 {
@@ -70,20 +69,9 @@ class ExceptionSharedLibCannotGetSymbol
 
 
 //
-// Exception thrown when a shared library is not found.
-//
-
-class ExceptionSharedLibNotFound
-  : public Exception
-{
-  public:
-    // Constructor.
-    explicit ExceptionSharedLibNotFound(const char* error_msg);
-};
-
-
-//
 // SharedLibrary class.
+//
+// todo: use Pimpl idiom to avoid exposing Windows headers.
 //
 
 class SharedLibrary
@@ -101,9 +89,6 @@ class SharedLibrary
 
     // Get a symbol from the shared library.
     void* get_symbol(const char* name, const bool no_throw = true) const;
-
-    // Find the filename of a loaded shared library from a symbol.
-    static APIString get_filename_from_symbol(const void* address);
 
   private:
 #ifdef _WIN32

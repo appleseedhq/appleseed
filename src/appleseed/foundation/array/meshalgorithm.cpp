@@ -36,8 +36,6 @@
 // Standard headers.
 #include <algorithm>
 
-using namespace std;
-
 namespace foundation
 {
 namespace
@@ -113,7 +111,7 @@ namespace
                 else if (n == 4) m_stats.m_quad_count++;
                 else             m_stats.m_ngon_count++;
 
-                m_stats.m_max_face_sides = max(
+                m_stats.m_max_face_sides = std::max(
                     m_stats.m_max_face_sides,
                     static_cast<size_t>(n));
             }

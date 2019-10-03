@@ -43,7 +43,6 @@
 #include <cstring>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -90,8 +89,8 @@ TransformSequence& TransformSequence::operator=(TransformSequence&& rhs) APPLESE
 {
     m_capacity = rhs.m_capacity;
     m_size = rhs.m_size;
-    swap(m_keys, rhs.m_keys);
-    swap(m_interpolators, rhs.m_interpolators);
+    std::swap(m_keys, rhs.m_keys);
+    std::swap(m_interpolators, rhs.m_interpolators);
     m_can_swap_handedness = rhs.m_can_swap_handedness;
     m_all_swap_handedness = rhs.m_all_swap_handedness;
     rhs.clear();
@@ -212,7 +211,7 @@ bool TransformSequence::prepare()
 
     if (m_size > 1)
     {
-        sort(m_keys, m_keys + m_size);
+        std::sort(m_keys, m_keys + m_size);
 
         m_interpolators = new TransformInterpolatord[m_size - 1];
 
@@ -399,13 +398,13 @@ namespace
 
         double f(const double theta) const
         {
-            return m_sx.f(theta) * cos(theta) * m_p.x - m_sy.f(theta) * sin(theta) * m_p.y;
+            return m_sx.f(theta) * std::cos(theta) * m_p.x - m_sy.f(theta) * std::sin(theta) * m_p.y;
         }
 
         double d(const double theta) const
         {
-            return (m_sx.d(theta) * m_p.x - m_sy.f(theta) * m_p.y) * cos(theta) -
-                   (m_sx.f(theta) * m_p.x + m_sy.d(theta) * m_p.y) * sin(theta);
+            return (m_sx.d(theta) * m_p.x - m_sy.f(theta) * m_p.y) * std::cos(theta) -
+                   (m_sx.f(theta) * m_p.x + m_sy.d(theta) * m_p.y) * std::sin(theta);
         }
 
         double dd(const double theta) const
@@ -414,7 +413,7 @@ namespace
             const double b = m_sx.f(theta) * m_p.x + m_sy.d(theta) * m_p.y;
             const double ap = -m_sy.d(theta) * m_p.y;
             const double bp = m_sx.d(theta) * m_p.x;
-            return (ap - b) * cos(theta) - (bp + a) * sin(theta);
+            return (ap - b) * std::cos(theta) - (bp + a) * std::sin(theta);
         }
     };
 
@@ -433,13 +432,13 @@ namespace
 
         double f(const double theta) const
         {
-            return m_sx.f(theta) * sin(theta) * m_p.x + m_sy.f(theta) * cos(theta) * m_p.y;
+            return m_sx.f(theta) * std::sin(theta) * m_p.x + m_sy.f(theta) * std::cos(theta) * m_p.y;
         }
 
         double d(const double theta) const
         {
-            return (m_sx.f(theta) * m_p.x + m_sy.d(theta) * m_p.y) * cos(theta) +
-                   (m_sx.d(theta) * m_p.x - m_sy.f(theta) * m_p.y) * sin(theta);
+            return (m_sx.f(theta) * m_p.x + m_sy.d(theta) * m_p.y) * std::cos(theta) +
+                   (m_sx.d(theta) * m_p.x - m_sy.f(theta) * m_p.y) * std::sin(theta);
         }
 
         double dd(const double theta) const
@@ -448,7 +447,7 @@ namespace
             const double b = m_sx.d(theta) * m_p.x - m_sy.f(theta) * m_p.y;
             const double ap = m_sx.d(theta) * m_p.x;
             const double bp = -m_sy.d(theta) * m_p.y;
-            return (ap + b) * cos(theta) + (bp - a) * sin(theta);
+            return (ap + b) * std::cos(theta) + (bp - a) * std::sin(theta);
         }
     };
 
@@ -561,7 +560,7 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
     {
         const Vector3d v = perp / perp_norm;
         const double sin_a = clamp(perp_norm, -1.0, 1.0);
-        const double cos_a = sqrt(1.0 - sin_a * sin_a);
+        const double cos_a = std::sqrt(1.0 - sin_a * sin_a);
         axis_to_z.set_local_to_parent(Matrix4d::make_rotation(v, cos_a, +sin_a));
         axis_to_z.set_parent_to_local(Matrix4d::make_rotation(v, cos_a, -sin_a));
     }
@@ -585,8 +584,8 @@ AABB3d TransformSequence::compute_motion_segment_bbox(
         const TrajectoryX tx(sx, sy, corner2d);
         const TrajectoryY ty(sx, sy, corner2d);
 
-        const double a = min(angle, 0.0);
-        const double b = max(angle, 0.0);
+        const double a = std::min(angle, 0.0);
+        const double b = std::max(angle, 0.0);
 
         // Find all the rotation angles at which this corner is an extremum and update the motion bounding box.
         RootHandler root_handler(tx, ty, sz, axis_to_z, corner, motion_bbox);

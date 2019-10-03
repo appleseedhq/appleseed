@@ -82,7 +82,6 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -155,7 +154,7 @@ namespace
     {
         const QFontMetrics metrics(widget->font());
         const int text_width = metrics.boundingRect(text).width();
-        const int final_width = max(text_width + margin, min_width);
+        const int final_width = std::max(text_width + margin, min_width);
 
         widget->setMinimumWidth(final_width);
         widget->setMaximumWidth(final_width);
@@ -190,9 +189,9 @@ class RenderSettingsPanel
 
     virtual void save_config(Configuration& config) const = 0;
 
-    map<string, string> get_widget_values() const
+    std::map<std::string, std::string> get_widget_values() const
     {
-        map<string, string> values;
+        std::map<std::string, std::string> values;
 
         for (const_each<WidgetProxyCollection> i = m_widget_proxies; i; ++i)
             values[i->first] = i->second->get();
@@ -201,16 +200,16 @@ class RenderSettingsPanel
     }
 
   protected:
-    typedef map<string, IInputWidgetProxy*> WidgetProxyCollection;
+    typedef std::map<std::string, IInputWidgetProxy*> WidgetProxyCollection;
 
     struct DirectLink
     {
-        string  m_widget_key;
-        string  m_param_path;
-        string  m_default_value;
+        std::string  m_widget_key;
+        std::string  m_param_path;
+        std::string  m_default_value;
     };
 
-    typedef vector<DirectLink> DirectLinkCollection;
+    typedef std::vector<DirectLink> DirectLinkCollection;
 
     const ParamArray            m_params_metadata;
 
@@ -218,7 +217,7 @@ class RenderSettingsPanel
     DirectLinkCollection        m_direct_links;
 
     QSpinBox* create_integer_input(
-        const string&           widget_key,
+        const std::string&      widget_key,
         const int               min,
         const int               max,
         const int               step)
@@ -236,7 +235,7 @@ class RenderSettingsPanel
     }
 
     QSpinBox* create_integer_input(
-        const string&           widget_key,
+        const std::string&      widget_key,
         const int               min,
         const int               max,
         const int               step,
@@ -256,7 +255,7 @@ class RenderSettingsPanel
     }
 
     QDoubleSpinBox* create_double_input(
-        const string&           widget_key,
+        const std::string&      widget_key,
         const double            min,
         const double            max,
         const int               decimals,
@@ -276,7 +275,7 @@ class RenderSettingsPanel
     }
 
     QDoubleSpinBox* create_double_input(
-        const string&           widget_key,
+        const std::string&      widget_key,
         const double            min,
         const double            max,
         const int               decimals,
@@ -303,7 +302,7 @@ class RenderSettingsPanel
     }
 
     QCheckBox* create_checkbox(
-        const string&           widget_key,
+        const std::string&      widget_key,
         const QString&          label)
     {
         QCheckBox* checkbox = new QCheckBox(label);
@@ -313,7 +312,7 @@ class RenderSettingsPanel
     }
 
     QGroupBox* create_checkable_groupbox(
-        const string&           widget_key,
+        const std::string&      widget_key,
         const QString&          label)
     {
         QGroupBox* groupbox = new QGroupBox(label);
@@ -325,7 +324,7 @@ class RenderSettingsPanel
     }
 
     QRadioButton* create_radio_button(
-        const string&           widget_key,
+        const std::string&      widget_key,
         const QString&          label)
     {
         QRadioButton* radio_button = new QRadioButton(label);
@@ -335,7 +334,7 @@ class RenderSettingsPanel
     }
 
     QComboBox* create_combobox(
-        const string&           widget_key)
+        const std::string&      widget_key)
     {
         QComboBox* combobox = new QComboBox();
         m_widget_proxies[widget_key] = new ComboBoxProxy(combobox);
@@ -346,7 +345,7 @@ class RenderSettingsPanel
     }
 
     QLineEdit* create_line_edit(
-        const string&           widget_key)
+        const std::string&      widget_key)
     {
         QLineEdit* line_edit = new QLineEdit();
         m_widget_proxies[widget_key] = new LineEditProxy(line_edit);
@@ -355,9 +354,9 @@ class RenderSettingsPanel
     }
 
     void create_direct_link(
-        const string&           widget_key,
-        const string&           param_path,
-        const string&           default_value = string())
+        const std::string&      widget_key,
+        const std::string&      param_path,
+        const std::string&      default_value = std::string())
     {
         DirectLink direct_link;
         direct_link.m_widget_key = widget_key;
@@ -370,12 +369,12 @@ class RenderSettingsPanel
     {
         for (const_each<DirectLinkCollection> i = m_direct_links; i; ++i)
         {
-            const string default_value_path = i->m_param_path + ".default";
-            const string default_value =
-                m_params_metadata.get_path_optional<string>(
+            const std::string default_value_path = i->m_param_path + ".default";
+            const std::string default_value =
+                m_params_metadata.get_path_optional<std::string>(
                     default_value_path.c_str(),
                     i->m_default_value);
-            const string value = get_config<string>(config, i->m_param_path, default_value);
+            const std::string value = get_config<std::string>(config, i->m_param_path, default_value);
             set_widget(i->m_widget_key, value);
         }
     }
@@ -383,11 +382,11 @@ class RenderSettingsPanel
     void save_directly_linked_values(Configuration& config) const
     {
         for (const_each<DirectLinkCollection> i = m_direct_links; i; ++i)
-            set_config(config, i->m_param_path, get_widget<string>(i->m_widget_key));
+            set_config(config, i->m_param_path, get_widget<std::string>(i->m_widget_key));
     }
 
     template <typename T>
-    T get_widget(const string& widget_key) const
+    T get_widget(const std::string& widget_key) const
     {
         const WidgetProxyCollection::const_iterator i = m_widget_proxies.find(widget_key);
         assert(i != m_widget_proxies.end());
@@ -396,7 +395,7 @@ class RenderSettingsPanel
 
     template <typename T>
     void set_widget(
-        const string&           widget_key,
+        const std::string&      widget_key,
         const T&                value)
     {
         assert(m_widget_proxies.find(widget_key) != m_widget_proxies.end());
@@ -406,7 +405,7 @@ class RenderSettingsPanel
     template <typename T>
     static T get_config(
         const Configuration&    configuration,
-        const string&           param_path,
+        const std::string&      param_path,
         const T&                default_value)
     {
         return configuration.get_inherited_parameters().
@@ -416,7 +415,7 @@ class RenderSettingsPanel
     template <typename T>
     static void set_config(
         Configuration&          configuration,
-        const string&           param_path,
+        const std::string&      param_path,
         const T&                value)
     {
         configuration.get_parameters().insert_path(param_path, value);
@@ -785,9 +784,9 @@ namespace
 
         void load_general_sampler(const Configuration& config)
         {
-            const string default_tr_value = m_params_metadata.get_path_optional<string>(
+            const std::string default_tr_value = m_params_metadata.get_path_optional<std::string>(
                 "tile_renderer.default", "");
-            const string tr_value = get_config<string>(
+            const std::string tr_value = get_config<std::string>(
                 config, "tile_renderer", default_tr_value);
 
             if (tr_value == "adaptive")
@@ -796,9 +795,9 @@ namespace
                 return;
             }
 
-            const string default_pr_value = m_params_metadata.get_path_optional<string>(
+            const std::string default_pr_value = m_params_metadata.get_path_optional<std::string>(
                 "pixel_renderer.default", "");
-            const string pr_value = get_config<string>(
+            const std::string pr_value = get_config<std::string>(
                 config, "pixel_renderer", default_pr_value);
 
             m_image_plane_sampler_combo->setCurrentIndex(
@@ -981,7 +980,7 @@ namespace
         }
 
       protected:
-        void create_bounce_settings_group(QVBoxLayout* parent, const string& prefix, const string& config_param_path)
+        void create_bounce_settings_group(QVBoxLayout* parent, const std::string& prefix, const std::string& config_param_path)
         {
             QGroupBox* groupbox = new QGroupBox("Bounces");
             parent->addWidget(groupbox);
@@ -992,9 +991,9 @@ namespace
             create_bounce_settings(layout, prefix, config_param_path);
         }
 
-        void create_bounce_settings(QFormLayout* layout, const string& prefix, const string& config_param_path)
+        void create_bounce_settings(QFormLayout* layout, const std::string& prefix, const std::string& config_param_path)
         {
-            const string widget_base_key = prefix + ".bounces.";
+            const std::string widget_base_key = prefix + ".bounces.";
 
             QSpinBox* max_bounces = create_integer_input(widget_base_key + "max_bounces", 0, 100, 1);
             max_bounces->setToolTip(m_params_metadata.get_path((config_param_path + ".help").c_str()));
@@ -1009,7 +1008,7 @@ namespace
             layout->addRow("Russian Roulette Start Bounce:", russian_roulette_start);
         }
 
-        void create_separate_bounce_settings_group(QVBoxLayout* parent, const string& prefix, const string& config_param_path)
+        void create_separate_bounce_settings_group(QVBoxLayout* parent, const std::string& prefix, const std::string& config_param_path)
         {
             QGroupBox* groupbox = new QGroupBox("Bounces");
             parent->addWidget(groupbox);
@@ -1020,9 +1019,9 @@ namespace
             create_separate_bounce_settings(layout, prefix, config_param_path);
         }
 
-        void create_separate_bounce_settings(QFormLayout* layout, const string& prefix, const string& config_param_path)
+        void create_separate_bounce_settings(QFormLayout* layout, const std::string& prefix, const std::string& config_param_path)
         {
-            const string widget_base_key = prefix + ".bounces.";
+            const std::string widget_base_key = prefix + ".bounces.";
 
             QSpinBox* max_bounces = create_integer_input(widget_base_key + "max_bounces", 0, 100, 1);
             QSpinBox* max_diffuse_bounces = create_integer_input(widget_base_key + "max_diffuse_bounces", 0, 100, 1);
@@ -1053,8 +1052,8 @@ namespace
 
         void load_global_max_bounce_settings(
             const Configuration&    config,
-            const string&           widget_key_prefix,
-            const string&           param_path,
+            const std::string&      widget_key_prefix,
+            const std::string&      param_path,
             const int               default_max_bounces)
         {
             const int DefaultMaxBounces = 8;
@@ -1067,8 +1066,8 @@ namespace
 
         void save_bounce_settings(
             Configuration&          config,
-            const string&           widget_key_prefix,
-            const string&           param_path) const
+            const std::string&      widget_key_prefix,
+            const std::string&      param_path) const
         {
             const int max_bounces =
                 !get_widget<bool>(widget_key_prefix + ".bounces.unlimited_bounces")
@@ -1080,8 +1079,8 @@ namespace
 
         void load_separate_bounce_settings(
             const Configuration&    config,
-            const string&           prefix,
-            const string&           bounce_type,
+            const std::string&      widget_key_prefix,
+            const std::string&      bounce_type,
             const int               default_max_bounces,
             const bool              allow_unlimited = true)
         {
@@ -1089,12 +1088,12 @@ namespace
             const int DefaultMaxDiffuseBounces = 3;
 
             const int max_bounces =
-                get_config<int>(config, construct_bounce_param_path(prefix, bounce_type), default_max_bounces);
+                get_config<int>(config, construct_bounce_param_path(widget_key_prefix, bounce_type), default_max_bounces);
 
-            const string widget_max_bounce_key = prefix + ".bounces.max_" + bounce_type + "_bounces";
+            const std::string widget_max_bounce_key = widget_key_prefix + ".bounces.max_" + bounce_type + "_bounces";
 
             if (allow_unlimited)
-                set_widget(prefix + ".bounces.unlimited_" + bounce_type + "_bounces", max_bounces == -1);
+                set_widget(widget_key_prefix + ".bounces.unlimited_" + bounce_type + "_bounces", max_bounces == -1);
             if (bounce_type == "diffuse")
                 set_widget(widget_max_bounce_key, max_bounces == -1 ? DefaultMaxDiffuseBounces : max_bounces);
             else
@@ -1103,23 +1102,23 @@ namespace
 
         void save_separate_bounce_settings(
             Configuration&          config,
-            const string&           prefix,
-            const string&           bounce_type,
+            const std::string&      widget_key_prefix,
+            const std::string&      bounce_type,
             const bool              allow_unlimited = true) const
         {
             const bool unlimited_bounces =
                 allow_unlimited &&
-                get_widget<bool>(prefix + ".bounces.unlimited_" + bounce_type + "_bounces");
+                get_widget<bool>(widget_key_prefix + ".bounces.unlimited_" + bounce_type + "_bounces");
 
             const int max_bounces =
                 !unlimited_bounces
-                    ? get_widget<int>(prefix + ".bounces.max_" + bounce_type + "_bounces")
+                    ? get_widget<int>(widget_key_prefix + ".bounces.max_" + bounce_type + "_bounces")
                     : -1;
 
-            set_config(config, construct_bounce_param_path(prefix, bounce_type), max_bounces);
+            set_config(config, construct_bounce_param_path(widget_key_prefix, bounce_type), max_bounces);
         }
 
-        static string construct_bounce_param_path(const string& prefix, const string& bounce_type)
+        static std::string construct_bounce_param_path(const std::string& prefix, const std::string& bounce_type)
         {
             return prefix + ".max_" + bounce_type + "_bounces";
         }
@@ -1692,9 +1691,9 @@ namespace
             create_guided_bounce_settings(sublayout, "gpt");
         }
 
-        void create_guided_bounce_settings(QFormLayout* layout, const string& prefix)
+        void create_guided_bounce_settings(QFormLayout* layout, const std::string& prefix)
         {
-            const string widget_base_key = prefix + ".bounces.";
+            const std::string widget_base_key = prefix + ".bounces.";
 
             QSpinBox* max_guided_bounces = create_integer_input(widget_base_key + "max_guided_bounces", 0, 100, 1);
 
@@ -1779,14 +1778,14 @@ namespace
             load_global_max_bounce_settings(config, "photon_tracing", "sppm.photon_tracing_max_bounces", -1);
             load_global_max_bounce_settings(config, "radiance_estimation", "sppm.path_tracing_max_bounces", -1);
 
-            const string dl_mode = get_config<string>(config, "sppm.dl_mode", "rt");
+            const std::string dl_mode = get_config<std::string>(config, "sppm.dl_mode", "rt");
             if (dl_mode == "rt")
                 set_widget("lighting_components.dl.rt", true);
             else if (dl_mode == "sppm")
                 set_widget("lighting_components.dl.sppm", true);
             else set_widget("lighting_components.dl.off", true);
 
-            const string photon_type = get_config<string>(config, "sppm.photon_type", "poly");
+            const std::string photon_type = get_config<std::string>(config, "sppm.photon_type", "poly");
             if (photon_type == "mono")
                 set_widget("photon_type.mono", true);
             else set_widget("photon_type.poly", true);
@@ -1967,10 +1966,10 @@ namespace
             const bool override_rendering_threads = config.get_parameters().strings().exist("rendering_threads");
             set_widget("rendering_threads.override", override_rendering_threads);
 
-            const string rendering_threads =
+            const std::string rendering_threads =
                 override_rendering_threads
-                    ? get_config<string>(config, "rendering_threads", "auto")
-                    : application_settings.get_optional<string>("rendering_threads", "auto");
+                    ? get_config<std::string>(config, "rendering_threads", "auto")
+                    : application_settings.get_optional<std::string>("rendering_threads", "auto");
             set_widget("rendering_threads.auto", rendering_threads == "auto");
             set_widget("rendering_threads.value", rendering_threads == "auto" ? to_string(System::get_logical_cpu_core_count()) : rendering_threads);
 
@@ -1980,7 +1979,7 @@ namespace
             set_widget("texture_store_max_size.value", get_config<size_t>(config, "texture_store.max_size", DefaultTextureStoreSizeMB) / MB);
 
             set_widget("tile_ordering.override", config.get_parameters().exist_path("generic_frame_renderer.tile_ordering"));
-            set_widget("tile_ordering.value", get_config<string>(config, "generic_frame_renderer.tile_ordering", "spiral"));
+            set_widget("tile_ordering.value", get_config<std::string>(config, "generic_frame_renderer.tile_ordering", "spiral"));
         }
 
         void save_config(Configuration& config) const override
@@ -1990,7 +1989,7 @@ namespace
             if (get_widget<bool>("rendering_threads.override"))
             {
                 set_config(config, "rendering_threads",
-                    get_widget<bool>("rendering_threads.auto") ? "auto" : get_widget<string>("rendering_threads.value"));
+                    get_widget<bool>("rendering_threads.auto") ? "auto" : get_widget<std::string>("rendering_threads.value"));
             }
             else config.get_parameters().strings().remove("rendering_threads");
 
@@ -1999,7 +1998,7 @@ namespace
             else config.get_parameters().remove_path("texture_store.max_size");
 
             if (get_widget<bool>("tile_ordering.override"))
-                set_config(config, "generic_frame_renderer.tile_ordering", get_widget<string>("tile_ordering.value"));
+                set_config(config, "generic_frame_renderer.tile_ordering", get_widget<std::string>("tile_ordering.value"));
             else config.get_parameters().remove_path("generic_frame_renderer.tile_ordering");
         }
 
@@ -2008,7 +2007,7 @@ namespace
         {
             if (!get_widget<bool>("rendering_threads.override"))
             {
-                const string rendering_threads = m_application_settings.get_optional<string>("rendering_threads", "auto");
+                const std::string rendering_threads = m_application_settings.get_optional<std::string>("rendering_threads", "auto");
                 set_widget("rendering_threads.auto", rendering_threads == "auto");
                 set_widget("rendering_threads.value", rendering_threads == "auto" ? to_string(System::get_logical_cpu_core_count()) : rendering_threads);
             }
@@ -2102,7 +2101,7 @@ void RenderingSettingsWindow::reload()
     assert(m_project_manager.get_project() != nullptr);
 
     // Collect configuration names.
-    vector<QString> config_names;
+    std::vector<QString> config_names;
     for (const Configuration& config : m_project_manager.get_project()->configurations())
     {
         if (!BaseConfigurationFactory::is_base_configuration(config.get_name()))
@@ -2110,7 +2109,7 @@ void RenderingSettingsWindow::reload()
     }
 
     // Sort configuration names alphabetically.
-    sort(config_names.begin(), config_names.end());
+    std::sort(config_names.begin(), config_names.end());
 
     // This has the side effect of loading an empty configuration.
     m_current_configuration_name.clear();
@@ -2262,13 +2261,13 @@ Configuration& RenderingSettingsWindow::get_configuration(const QString& name) c
     return *configuration;
 }
 
-map<string, string> RenderingSettingsWindow::get_widget_values() const
+std::map<std::string, std::string> RenderingSettingsWindow::get_widget_values() const
 {
-    map<string, string> values;
+    std::map<std::string, std::string> values;
 
     for (const_each<PanelCollection> i = m_panels; i; ++i)
     {
-        const map<string, string> panel_values = (*i)->get_widget_values();
+        const std::map<std::string, std::string> panel_values = (*i)->get_widget_values();
         values.insert(panel_values.begin(), panel_values.end());
     }
 

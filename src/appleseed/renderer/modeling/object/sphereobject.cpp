@@ -44,7 +44,6 @@
 #include "foundation/utility/string.h"
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -131,7 +130,7 @@ void SphereObject::intersect(
     const ShadingRay&      ray,
     IntersectionResult&    result) const
 {
-    result.m_hit = intersect_sphere_unit_direction(
+    result.m_hit = intersect_sphere(
         ray,
         impl->m_center,
         impl->m_radius,
@@ -139,13 +138,13 @@ void SphereObject::intersect(
 
     if (result.m_hit)
     {
-        const Vector3d n = normalize(ray.point_at(result.m_distance));
+        const Vector3d n = ray.point_at(result.m_distance);
         result.m_geometric_normal = n;
         result.m_shading_normal = n;
 
         const Vector3f p(ray.point_at(result.m_distance) * impl->m_rcp_radius);
-        result.m_uv[0] = atan2(-p.z, p.x) * RcpTwoPi<float>();
-        result.m_uv[1] = 1.0f - (acos(p.y) * RcpPi<float>());
+        result.m_uv[0] = std::atan2(-p.z, p.x) * RcpTwoPi<float>();
+        result.m_uv[1] = 1.0f - (std::acos(p.y) * RcpPi<float>());
 
         result.m_material_slot = 0;
     }
@@ -153,7 +152,7 @@ void SphereObject::intersect(
 
 bool SphereObject::intersect(const ShadingRay& ray) const
 {
-    return intersect_sphere_unit_direction(
+    return intersect_sphere(
         ray,
         impl->m_center,
         impl->m_radius);

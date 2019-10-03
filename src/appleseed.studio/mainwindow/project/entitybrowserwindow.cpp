@@ -53,14 +53,13 @@
 #include <QWidget>
 
 using namespace foundation;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
 
 EntityBrowserWindow::EntityBrowserWindow(
     QWidget*                parent,
-    const string&           window_title)
+    const std::string&      window_title)
   : WindowBase(parent, "entity_browser_window")
   , m_ui(new Ui::EntityBrowserWindow())
 {
@@ -107,8 +106,8 @@ namespace
 }
 
 void EntityBrowserWindow::add_items_page(
-    const string&           page_name,
-    const string&           page_label,
+    const std::string&      page_name,
+    const std::string&      page_label,
     const StringDictionary& items)
 {
     QWidget* tab = new QWidget(m_ui->tab_widget);

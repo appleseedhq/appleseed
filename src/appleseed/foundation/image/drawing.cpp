@@ -37,8 +37,6 @@
 // Standard headers.
 #include <algorithm>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -56,10 +54,10 @@ void Drawing::draw_filled_rect(
     const int w = static_cast<int>(props.m_canvas_width);
     const int h = static_cast<int>(props.m_canvas_height);
 
-    const size_t x0 = static_cast<size_t>(max(from.x, 0));
-    const size_t y0 = static_cast<size_t>(max(from.y, 0));
-    const size_t x1 = static_cast<size_t>(min(to.x, w - 1));
-    const size_t y1 = static_cast<size_t>(min(to.y, h - 1));
+    const size_t x0 = static_cast<size_t>(std::max(from.x, 0));
+    const size_t y0 = static_cast<size_t>(std::max(from.y, 0));
+    const size_t x1 = static_cast<size_t>(std::min(to.x, w - 1));
+    const size_t y1 = static_cast<size_t>(std::min(to.y, h - 1));
 
     const Color4f color_premult = color.premultiplied();
 

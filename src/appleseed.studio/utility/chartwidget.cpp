@@ -51,7 +51,6 @@
 #include <utility>
 
 using namespace foundation;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
@@ -77,9 +76,9 @@ void ChartBase::set_grid_brush(const QBrush& brush)
     m_grid_brush = brush;
 }
 
-void ChartBase::set_tooltip_formatter(unique_ptr<IToolTipFormatter> formatter)
+void ChartBase::set_tooltip_formatter(std::unique_ptr<IToolTipFormatter> formatter)
 {
-    m_tooltip_formatter = move(formatter);
+    m_tooltip_formatter = std::move(formatter);
 }
 
 void ChartBase::add_point(const Vector2d& p)
@@ -295,7 +294,7 @@ bool LineChart::on_chart(const QPoint& mouse_position, size_t& point_index) cons
 
     const Vector2d mp(mouse_position.x(), mouse_position.y());
 
-    double closest_square_distance = numeric_limits<double>::max();
+    double closest_square_distance = std::numeric_limits<double>::max();
     size_t closest_index = 0;
 
     for (size_t i = 0; i < m_points.size(); ++i)
@@ -386,7 +385,7 @@ void ChartWidget::clear()
     m_charts.clear();
 }
 
-void ChartWidget::add_chart(unique_ptr<ChartBase> chart)
+void ChartWidget::add_chart(std::unique_ptr<ChartBase> chart)
 {
     assert(chart.get());
 

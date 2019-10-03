@@ -52,7 +52,6 @@ namespace renderer      { class Assembly; }
 namespace renderer      { class Project; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -101,7 +100,7 @@ namespace
 
             check_non_zero_emission("radiance", "radiance_multiplier");
 
-            m_cos_half_angle = cos(deg_to_rad(m_params.get_required<float>("angle", 90.0f) / 2.0f));
+            m_cos_half_angle = std::cos(deg_to_rad(m_params.get_required<float>("angle", 90.0f) / 2.0f));
 
             return true;
         }
@@ -123,7 +122,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_radiance;
-            value *= values->m_radiance_multiplier * pow(2.0f, values->m_exposure);
+            value *= values->m_radiance_multiplier * std::pow(2.0f, values->m_exposure);
 
             probability = sample_cone_uniform_pdf(m_cos_half_angle);
             assert(probability > 0.0f);
@@ -149,7 +148,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_radiance;
-            value *= values->m_radiance_multiplier * pow(2.0f, values->m_exposure);
+            value *= values->m_radiance_multiplier * std::pow(2.0f, values->m_exposure);
         }
 
         void evaluate(
@@ -174,7 +173,7 @@ namespace
 
             const InputValues* values = static_cast<const InputValues*>(data);
             value = values->m_radiance;
-            value *= values->m_radiance_multiplier * pow(2.0f, values->m_exposure);
+            value *= values->m_radiance_multiplier * std::pow(2.0f, values->m_exposure);
 
             probability = sample_cone_uniform_pdf(m_cos_half_angle);
             assert(probability > 0.0f);

@@ -56,7 +56,6 @@
 using namespace boost;
 using namespace boost::filesystem;
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -67,7 +66,7 @@ namespace renderer
 
 namespace
 {
-    string convert_to_posix(string path)
+    std::string convert_to_posix(std::string path)
     {
         replace(path.begin(), path.end(), '\\', '/');
         return path;
@@ -98,8 +97,8 @@ namespace
     // The resources pointed to by p1 and p2 must exist on the filesystem.
     bool is_extension_of(const path& p1, const path& p2)
     {
-        const string r1 = canonical(p1).string();
-        const string r2 = canonical(p2).string();
+        const std::string r1 = canonical(p1).string();
+        const std::string r2 = canonical(p2).string();
         return starts_with(r1, r2);
     }
 
@@ -133,8 +132,8 @@ bool AssetHandler::handle_assets() const
     m_project.collect_asset_paths(paths);
 
     // Remove duplicates.
-    vector<string> unique_paths = array_vector<vector<string>>(paths);
-    sort(unique_paths.begin(), unique_paths.end());
+    std::vector<std::string> unique_paths = array_vector<std::vector<std::string>>(paths);
+    std::sort(unique_paths.begin(), unique_paths.end());
     unique_paths.erase(
         unique(unique_paths.begin(), unique_paths.end()),
         unique_paths.end());
@@ -144,7 +143,7 @@ bool AssetHandler::handle_assets() const
 
     for (size_t i = 0, e = unique_paths.size(); i < e; ++i)
     {
-        string asset_path = unique_paths[i];
+        std::string asset_path = unique_paths[i];
         assert(!asset_path.empty());
 
         // Handle this asset.
@@ -168,7 +167,7 @@ bool AssetHandler::handle_assets() const
     return true;
 }
 
-bool AssetHandler::handle_asset(string& asset_path) const
+bool AssetHandler::handle_asset(std::string& asset_path) const
 {
     // Let's first get rid of the case where the asset path is absolute.
     if (path(asset_path).is_absolute())
@@ -219,7 +218,7 @@ bool AssetHandler::handle_asset(string& asset_path) const
     }
 }
 
-bool AssetHandler::handle_absolute_asset(string& asset_path) const
+bool AssetHandler::handle_absolute_asset(std::string& asset_path) const
 {
     switch (m_mode)
     {
@@ -233,7 +232,7 @@ bool AssetHandler::handle_absolute_asset(string& asset_path) const
     }
 }
 
-bool AssetHandler::make_absolute_asset_path(string& asset_path) const
+bool AssetHandler::make_absolute_asset_path(std::string& asset_path) const
 {
     // Make sure the asset path is qualified and canonized.
     path absolute_asset_path =
@@ -246,7 +245,7 @@ bool AssetHandler::make_absolute_asset_path(string& asset_path) const
     return true;
 }
 
-bool AssetHandler::copy_absolute_asset(string& asset_path) const
+bool AssetHandler::copy_absolute_asset(std::string& asset_path) const
 {
     const path old_absolute_asset_path(asset_path);
     const path asset_filename = old_absolute_asset_path.filename();
@@ -268,7 +267,7 @@ bool AssetHandler::copy_absolute_asset(string& asset_path) const
     return true;
 }
 
-bool AssetHandler::copy_relative_asset(string& asset_path) const
+bool AssetHandler::copy_relative_asset(std::string& asset_path) const
 {
     // Copy the asset file only if the destination differs from the source.
     if (m_project_old_root_dir != m_project_new_root_dir)

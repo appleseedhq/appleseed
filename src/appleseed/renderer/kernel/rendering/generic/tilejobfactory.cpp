@@ -43,7 +43,6 @@
 #include <cassert>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -66,7 +65,7 @@ void TileJobFactory::create(
     const CanvasProperties& props = frame.image().properties();
 
     // Generate tiles ordering.
-    vector<size_t> tiles;
+    std::vector<size_t> tiles;
     generate_tile_ordering(props, tile_ordering, tiles);
 
     // Make sure the right number of tiles was created.
@@ -99,7 +98,7 @@ void TileJobFactory::create(
 void TileJobFactory::generate_tile_ordering(
     const CanvasProperties&             frame_properties,
     const TileOrdering                  tile_ordering,
-    vector<size_t>&                     tiles)
+    std::vector<size_t>&                tiles)
 {
     switch (tile_ordering)
     {

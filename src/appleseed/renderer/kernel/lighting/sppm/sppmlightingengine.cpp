@@ -69,7 +69,6 @@ namespace renderer  { class PixelContext; }
 namespace renderer  { class TextureCache; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -489,7 +488,7 @@ namespace
                     // Reject photons too far away along the surface's normal.
                     const Vector3f& photon_position = photon_map.get_point(photon.m_index);
                     const Vector3f point_to_photon = photon_position - point;
-                    const float vdist = abs(dot(normal, point_to_photon));
+                    const float vdist = std::abs(dot(normal, point_to_photon));
                     if (vdist > 0.1f * radius)
                         continue;
 #endif
@@ -514,7 +513,7 @@ namespace
                     // The first step of the flux -> radiance conversion is done here.
                     // The conversion will be completed when doing density estimation.
                     float bsdf_mono_value = bsdf_value.m_beauty[photon.m_flux.m_wavelength];
-                    bsdf_mono_value /= abs(dot(photon.m_incoming, photon.m_geometric_normal));
+                    bsdf_mono_value /= std::abs(dot(photon.m_incoming, photon.m_geometric_normal));
                     bsdf_mono_value *= photon.m_flux.m_amplitude;
 
                     // Apply kernel weight.
@@ -561,7 +560,7 @@ namespace
                     // Reject photons too far away along the surface's normal.
                     const Vector3f& photon_position = photon_map.get_point(photon.m_index);
                     const Vector3f point_to_photon = photon_position - point;
-                    const float vdist = abs(dot(normal, point_to_photon));
+                    const float vdist = std::abs(dot(normal, point_to_photon));
                     if (vdist > 0.1f * radius)
                         continue;
 #endif
@@ -585,7 +584,7 @@ namespace
                     // The photons store flux but we are computing reflected radiance.
                     // The first step of the flux -> radiance conversion is done here.
                     // The conversion will be completed when doing density estimation.
-                    bsdf_value.m_beauty /= abs(dot(photon.m_incoming, photon.m_geometric_normal));
+                    bsdf_value.m_beauty /= std::abs(dot(photon.m_incoming, photon.m_geometric_normal));
                     bsdf_value.m_beauty *= photon.m_flux;
 
                     // Apply kernel weight.

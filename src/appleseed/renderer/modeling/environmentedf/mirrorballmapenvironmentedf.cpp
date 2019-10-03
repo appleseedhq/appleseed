@@ -58,7 +58,6 @@ namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Project; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -184,8 +183,8 @@ namespace
             Spectrum&               value) const
         {
             // Compute the texture coordinates corresponding to this direction.
-            const float d = sqrt(square(direction[0]) + square(direction[1]));
-            const float r = RcpTwoPi<float>() * acos(direction[2]) / d;
+            const float d = std::sqrt(square(direction[0]) + square(direction[1]));
+            const float r = RcpTwoPi<float>() * std::acos(direction[2]) / d;
             const Vector2f uv(0.5f + direction[0] * r, 0.5f + direction[1] * r);
 
             // Evaluate the input.
@@ -194,7 +193,7 @@ namespace
             if (is_finite(values.m_radiance))
             {
                 value = values.m_radiance;
-                value *= values.m_radiance_multiplier * pow(2.0f, values.m_exposure * values.m_exposure_multiplier);
+                value *= values.m_radiance_multiplier * std::pow(2.0f, values.m_exposure * values.m_exposure_multiplier);
             }
             else value.set(0.0f);
         }

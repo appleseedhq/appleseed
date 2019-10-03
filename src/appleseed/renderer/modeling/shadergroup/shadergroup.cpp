@@ -51,7 +51,6 @@
 #include <utility>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -87,7 +86,7 @@ namespace
 
 struct ShaderGroup::Impl
 {
-    typedef pair<const AssemblyInstance*, const ObjectInstance*> SurfaceAreaKey;
+    typedef std::pair<const AssemblyInstance*, const ObjectInstance*> SurfaceAreaKey;
     typedef boost::unordered_map<SurfaceAreaKey, float>          SurfaceAreaMap;
 
     ShaderContainer             m_shaders;
@@ -258,7 +257,7 @@ bool ShaderGroup::create_optimized_osl_shader_group(
 
         return true;
     }
-    catch (const exception& e)
+    catch (const std::exception& e)
     {
         RENDERER_LOG_ERROR("failed to setup shader group \"%s\": %s.", get_path().c_str(), e.what());
         return false;

@@ -63,7 +63,6 @@ namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Project; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -131,7 +130,7 @@ namespace
             m_sun_theta = deg_to_rad(m_uniform_values.m_sun_theta);
             m_sun_phi = deg_to_rad(m_uniform_values.m_sun_phi);
             m_sun_dir = Vector3f::make_unit_vector(m_sun_theta, m_sun_phi);
-            m_cos_sun_theta = cos(m_sun_theta);
+            m_cos_sun_theta = std::cos(m_sun_theta);
 
             // Precompute some stuff if turbidity is uniform.
             m_uniform_turbidity = m_inputs.source("turbidity")->is_uniform();
@@ -308,7 +307,7 @@ namespace
             const float             sun_theta)
         {
             const float chi = ((4.0f / 9.0f) - turbidity / 120.0f) * (Pi<float>() - 2.0f * sun_theta);
-            return 1000.0f * ((4.0453f * turbidity - 4.9710f) * tan(chi) - 0.2155f * turbidity + 2.4192f);
+            return 1000.0f * ((4.0453f * turbidity - 4.9710f) * std::tan(chi) - 0.2155f * turbidity + 2.4192f);
         }
 
         // Compute the x chromaticity at zenith.
@@ -342,8 +341,8 @@ namespace
             const float             cos_gamma,
             const float             coeffs[5])
         {
-            const float u = 1.0f + coeffs[0] * exp(coeffs[1] * rcp_cos_theta);
-            const float v = 1.0f + coeffs[2] * exp(coeffs[3] * gamma)
+            const float u = 1.0f + coeffs[0] * std::exp(coeffs[1] * rcp_cos_theta);
+            const float v = 1.0f + coeffs[2] * std::exp(coeffs[3] * gamma)
                                  + coeffs[4] * cos_gamma * cos_gamma;
             return u * v;
         }
@@ -378,7 +377,7 @@ namespace
 
             const float rcp_cos_theta = 1.0f / outgoing.y;
             const float cos_gamma = clamp(dot(outgoing, m_sun_dir), -1.0f, 1.0f);
-            const float gamma = acos(cos_gamma);
+            const float gamma = std::acos(cos_gamma);
 
             Color3f xyY;
 

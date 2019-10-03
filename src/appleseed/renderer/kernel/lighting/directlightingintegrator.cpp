@@ -52,7 +52,6 @@
 #include <cmath>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -367,7 +366,7 @@ void DirectLightingIntegrator::add_emitting_shape_sample_contribution(
         return;
 
     const double rcp_sample_square_distance = 1.0 / square_distance;
-    const double rcp_sample_distance = sqrt(rcp_sample_square_distance);
+    const double rcp_sample_distance = std::sqrt(rcp_sample_square_distance);
 
     // Normalize the incoming direction.
     cos_on *= rcp_sample_distance;

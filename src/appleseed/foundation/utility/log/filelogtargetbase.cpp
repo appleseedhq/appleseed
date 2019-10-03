@@ -39,8 +39,6 @@
 #include <string>
 #include <vector>
 
-using namespace std;
-
 namespace foundation
 {
 
@@ -59,11 +57,11 @@ void FileLogTargetBase::write_message(
     assert(message);
 
     // Split the message into individual lines.
-    vector<string> lines;
+    std::vector<std::string> lines;
     split(message, "\n", lines);
 
     // Emit the lines.
-    for (const_each<vector<string>> i = lines; i; ++i)
+    for (const_each<std::vector<std::string>> i = lines; i; ++i)
         fprintf(file, "%s%s\n", header, i->c_str());
 }
 

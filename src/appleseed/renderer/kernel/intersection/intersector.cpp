@@ -53,7 +53,6 @@
 #include <string>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -109,9 +108,9 @@ void Intersector::fixed_offset(
     // Check which components of p are close to the origin.
     const bool is_small[3] =
     {
-        abs(p[0]) < Threshold,
-        abs(p[1]) < Threshold,
-        abs(p[2]) < Threshold
+        std::abs(p[0]) < Threshold,
+        std::abs(p[1]) < Threshold,
+        std::abs(p[2]) < Threshold
     };
 
     // If any of the components of p is close to the origin, we need to normalize n.
@@ -151,7 +150,7 @@ namespace
 
         for (size_t i = 0; i < 3; ++i)
         {
-            if (abs(p[i]) < Threshold)
+            if (std::abs(p[i]) < Threshold)
                 result[i] = p[i] + n[i] * Threshold;
             else
             {
@@ -224,13 +223,27 @@ namespace
         const ShadingPoint&         shading_point,
         const ShadingPoint*         parent_shading_point)
     {
+        constexpr size_t MaxWarningsPerThread = 20;
+        static size_t warning_count = 0;
+
         if (shading_point.hit_surface() &&
             parent_shading_point &&
             same_triangle(*parent_shading_point, shading_point))
         {
-            RENDERER_LOG_WARNING(
-                "self-intersection detected, distance %e.",
-                shading_point.get_distance());
+            if (warning_count < MaxWarningsPerThread)
+            {
+                RENDERER_LOG_WARNING(
+                    "self-intersection detected, distance %e.",
+                    shading_point.get_distance());
+
+                ++warning_count;
+            }
+            else if (warning_count == MaxWarningsPerThread)
+            {
+                RENDERER_LOG_WARNING("more self-intersections detected, omitting warning messages for brevity.");
+
+                ++warning_count;
+            }
         }
     }
 }
@@ -477,18 +490,18 @@ namespace
         uint64  m_total_ray_count;
 
         RayCountStatisticsEntry(
-            const string&   name,
-            const uint64    ray_count,
-            const uint64    total_ray_count)
+            const std::string&   name,
+            const uint64         ray_count,
+            const uint64         total_ray_count)
           : Entry(name)
           , m_ray_count(ray_count)
           , m_total_ray_count(total_ray_count)
         {
         }
 
-        unique_ptr<Entry> clone() const override
+        std::unique_ptr<Entry> clone() const override
         {
-            return unique_ptr<Entry>(new RayCountStatisticsEntry(*this));
+            return std::unique_ptr<Entry>(new RayCountStatisticsEntry(*this));
         }
 
         void merge(const Entry* other) override
@@ -500,7 +513,7 @@ namespace
             m_total_ray_count += typed_other->m_total_ray_count;
         }
 
-        string to_string() const override
+        std::string to_string() const override
         {
             return pretty_uint(m_ray_count) + " (" + pretty_percent(m_ray_count, m_total_ray_count) + ")";
         }
@@ -514,13 +527,13 @@ StatisticsVector Intersector::get_statistics() const
     Statistics intersection_stats;
     intersection_stats.insert("total rays", total_ray_count);
     intersection_stats.insert(
-        unique_ptr<RayCountStatisticsEntry>(
+        std::unique_ptr<RayCountStatisticsEntry>(
             new RayCountStatisticsEntry(
                 "shading rays",
                 m_shading_ray_count,
                 total_ray_count)));
     intersection_stats.insert(
-        unique_ptr<RayCountStatisticsEntry>(
+        std::unique_ptr<RayCountStatisticsEntry>(
             new RayCountStatisticsEntry(
                 "probe rays",
                 m_probe_ray_count,

@@ -37,7 +37,6 @@
 #include <memory>
 
 using namespace foundation;
-using namespace std;
 
 BENCHMARK_SUITE(Foundation_Utility_PoolAllocator)
 {
@@ -77,7 +76,7 @@ BENCHMARK_SUITE(Foundation_Utility_PoolAllocator)
         }
     };
 
-    typedef allocator<uint32> DefaultAllocator;
+    typedef std::allocator<uint32> DefaultAllocator;
     typedef PoolAllocator<uint32, N> PoolAllocator;
 
     BENCHMARK_CASE_F(RepeatedAllocation_PoolAllocator, Fixture<PoolAllocator>)

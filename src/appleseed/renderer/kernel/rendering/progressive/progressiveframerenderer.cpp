@@ -79,7 +79,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace renderer
@@ -105,7 +104,7 @@ namespace
           : m_project(project)
           , m_params(params)
           , m_sample_counter(
-                m_params.m_max_average_spp < numeric_limits<uint64>::max()
+                m_params.m_max_average_spp < std::numeric_limits<uint64>::max()
                     ? m_params.m_max_average_spp * project.get_frame()->get_crop_window().volume()
                     : m_params.m_max_average_spp)
           , m_ref_image_avg_lum(0.0)
@@ -206,10 +205,10 @@ namespace
                 get_spectrum_mode_name(m_params.m_spectrum_mode).c_str(),
                 get_sampling_context_mode_name(m_params.m_sampling_mode).c_str(),
                 pretty_uint(m_params.m_thread_count).c_str(),
-                m_params.m_max_average_spp == numeric_limits<uint64>::max()
+                m_params.m_max_average_spp == std::numeric_limits<uint64>::max()
                     ? "unlimited"
                     : pretty_uint(m_params.m_max_average_spp).c_str(),
-                m_params.m_time_limit == numeric_limits<double>::max()
+                m_params.m_time_limit == std::numeric_limits<double>::max()
                     ? "unlimited"
                     : pretty_time(m_params.m_time_limit).c_str(),
                 m_params.m_max_fps,
@@ -386,8 +385,8 @@ namespace
               : m_spectrum_mode(get_spectrum_mode(params))
               , m_sampling_mode(get_sampling_context_mode(params))
               , m_thread_count(get_rendering_thread_count(params))
-              , m_max_average_spp(params.get_optional<uint64>("max_average_spp", numeric_limits<uint64>::max()))
-              , m_time_limit(params.get_optional<double>("time_limit", numeric_limits<double>::max()))
+              , m_max_average_spp(params.get_optional<uint64>("max_average_spp", std::numeric_limits<uint64>::max()))
+              , m_time_limit(params.get_optional<double>("time_limit", std::numeric_limits<double>::max()))
               , m_max_fps(params.get_optional<double>("max_fps", 30.0))
               , m_perf_stats(params.get_optional<bool>("performance_statistics", false))
               , m_luminance_stats(params.get_optional<bool>("luminance_statistics", false))
@@ -463,7 +462,7 @@ namespace
                     // Limit display rate.
                     if (elapsed < m_target_elapsed)
                     {
-                        const double ms = ceil(1000.0 * (m_target_elapsed - elapsed));
+                        const double ms = std::ceil(1000.0 * (m_target_elapsed - elapsed));
                         sleep(truncate<uint32>(ms), m_abort_switch);
                     }
                 }
@@ -553,7 +552,7 @@ namespace
             {
                 if (!m_sample_count_records.empty())
                 {
-                    const string filepath =
+                    const std::string filepath =
                         (bf::path(m_project.search_paths().get_root_path().c_str()) / "sample_count.gnuplot").string();
                     RENDERER_LOG_DEBUG("writing %s...", filepath.c_str());
 
@@ -569,7 +568,7 @@ namespace
 
                 if (!m_rmsd_records.empty())
                 {
-                    const string filepath =
+                    const std::string filepath =
                         (bf::path(m_project.search_paths().get_root_path().c_str()) / "rms_deviation.gnuplot").string();
                     RENDERER_LOG_DEBUG("writing %s...", filepath.c_str());
 
@@ -629,8 +628,8 @@ namespace
 
             double                          m_rcp_pixel_count;
             SampleCountHistory<128>         m_sample_count_history;
-            vector<Vector2d>                m_sample_count_records;     // total sample count over time
-            vector<Vector2d>                m_rmsd_records;             // RMS deviation over time
+            std::vector<Vector2d>           m_sample_count_records;     // total sample count over time
+            std::vector<Vector2d>           m_rmsd_records;             // RMS deviation over time
 
             void record_and_print_perf_stats(const double time)
             {
@@ -657,7 +656,7 @@ namespace
                 // Develop the accumulation buffer to the frame.
                 m_buffer.develop_to_frame(*m_project.get_frame(), m_abort_switch);
 
-                string output;
+                std::string output;
 
                 if (m_luminance_stats)
                 {
@@ -666,7 +665,7 @@ namespace
 
                     if (m_ref_image)
                     {
-                        const double avg_lum_delta = abs(m_ref_image_avg_lum - avg_lum);
+                        const double avg_lum_delta = std::abs(m_ref_image_avg_lum - avg_lum);
                         output += " (";
                         output += pretty_percent(avg_lum_delta, m_ref_image_avg_lum, 3);
                         output += " error)";
@@ -692,33 +691,33 @@ namespace
         // Progressive frame renderer implementation details.
         //
 
-        const Project&                          m_project;
-        const Parameters                        m_params;
-        SampleCounter                           m_sample_counter;
+        const Project&                               m_project;
+        const Parameters                             m_params;
+        SampleCounter                                m_sample_counter;
 
-        unique_ptr<SampleAccumulationBuffer>    m_buffer;
+        std::unique_ptr<SampleAccumulationBuffer>    m_buffer;
 
-        JobQueue                                m_job_queue;
-        unique_ptr<JobManager>                  m_job_manager;
-        AbortSwitch                             m_abort_switch;
+        JobQueue                                     m_job_queue;
+        std::unique_ptr<JobManager>                  m_job_manager;
+        AbortSwitch                                  m_abort_switch;
 
-        typedef vector<ISampleGenerator*> SampleGeneratorVector;
-        SampleGeneratorVector                   m_sample_generators;
+        typedef std::vector<ISampleGenerator*>       SampleGeneratorVector;
+        SampleGeneratorVector                        m_sample_generators;
 
-        typedef vector<SampleGeneratorJob*> SampleGeneratorJobVector;
-        SampleGeneratorJobVector                m_sample_generator_jobs;
+        typedef std::vector<SampleGeneratorJob*>     SampleGeneratorJobVector;
+        SampleGeneratorJobVector                     m_sample_generator_jobs;
 
-        auto_release_ptr<ITileCallback>         m_tile_callback;
+        auto_release_ptr<ITileCallback>              m_tile_callback;
 
-        unique_ptr<DisplayFunc>                 m_display_func;
-        unique_ptr<boost::thread>               m_display_thread;
-        AbortSwitch                             m_display_thread_abort_switch;
+        std::unique_ptr<DisplayFunc>                 m_display_func;
+        std::unique_ptr<boost::thread>               m_display_thread;
+        AbortSwitch                                  m_display_thread_abort_switch;
 
-        double                                  m_ref_image_avg_lum;
-        unique_ptr<StatisticsFunc>              m_statistics_func;
-        unique_ptr<boost::thread>               m_statistics_thread;
+        double                                       m_ref_image_avg_lum;
+        std::unique_ptr<StatisticsFunc>              m_statistics_func;
+        std::unique_ptr<boost::thread>               m_statistics_thread;
 
-        TimedRendererController                 m_renderer_controller;
+        TimedRendererController                      m_renderer_controller;
 
         void print_sample_generators_stats() const
         {

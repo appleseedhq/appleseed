@@ -54,7 +54,6 @@ namespace renderer      { class Assembly; }
 namespace renderer      { class Project; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -152,7 +151,7 @@ namespace
 
             // Return the probability density of the sampled direction.
             const Vector3f& n = shading_basis.get_normal();
-            const float cos_in = abs(dot(incoming, n));
+            const float cos_in = std::abs(dot(incoming, n));
             return cos_in * RcpPi<float>();
         }
 
@@ -170,7 +169,7 @@ namespace
 
             // Return the probability density of the sampled direction.
             const Vector3f& n = shading_basis.get_normal();
-            const float cos_in = abs(dot(incoming, n));
+            const float cos_in = std::abs(dot(incoming, n));
             return cos_in * RcpPi<float>();
         }
     };

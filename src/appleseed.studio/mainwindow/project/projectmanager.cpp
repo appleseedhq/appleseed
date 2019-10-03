@@ -53,7 +53,6 @@
 using namespace appleseed::shared;
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace appleseed {
@@ -83,7 +82,7 @@ bool ProjectManager::load_project(const std::string& filepath)
     return do_load_project(filepath);
 }
 
-void ProjectManager::load_project_async(const string& filepath)
+void ProjectManager::load_project_async(const std::string& filepath)
 {
     m_is_loading = true;
 
@@ -93,7 +92,7 @@ void ProjectManager::load_project_async(const string& filepath)
         QtConcurrent::run(this, &ProjectManager::do_load_project, filepath));
 }
 
-bool ProjectManager::load_builtin_project(const string& name)
+bool ProjectManager::load_builtin_project(const std::string& name)
 {
     ProjectFileReader reader;
     m_project = reader.load_builtin(name.c_str());
@@ -103,7 +102,7 @@ bool ProjectManager::load_builtin_project(const string& name)
     return true;
 }
 
-bool ProjectManager::save_project_as(const string& filepath)
+bool ProjectManager::save_project_as(const std::string& filepath)
 {
     const bool successful = do_save_project(filepath, ProjectFileWriter::Defaults);
 
@@ -118,7 +117,7 @@ bool ProjectManager::save_project_as(const string& filepath)
     return successful;
 }
 
-bool ProjectManager::pack_project_as(const string& filepath)
+bool ProjectManager::pack_project_as(const std::string& filepath)
 {
     return do_save_project(filepath, ProjectFileWriter::Defaults);
 }
@@ -144,7 +143,7 @@ bool ProjectManager::is_project_loading() const
     return m_is_loading;
 }
 
-string ProjectManager::get_project_display_name() const
+std::string ProjectManager::get_project_display_name() const
 {
     assert(m_project.get());
 
@@ -185,7 +184,7 @@ void ProjectManager::slot_load_project_async_complete()
     emit signal_load_project_async_complete(m_async_io_filepath, successful);
 }
 
-string ProjectManager::get_project_schema_filepath()
+std::string ProjectManager::get_project_schema_filepath()
 {
     const bf::path schema_filepath =
           bf::path(Application::get_root_path())
@@ -195,11 +194,11 @@ string ProjectManager::get_project_schema_filepath()
     return schema_filepath.string();
 }
 
-bool ProjectManager::do_load_project(const string& filepath)
+bool ProjectManager::do_load_project(const std::string& filepath)
 {
     try
     {
-        const string schema_filepath = get_project_schema_filepath();
+        const std::string schema_filepath = get_project_schema_filepath();
 
         ProjectFileReader reader;
         auto_release_ptr<Project> loaded_project(
@@ -213,13 +212,13 @@ bool ProjectManager::do_load_project(const string& filepath)
 
         return true;
     }
-    catch (const bad_alloc&)
+    catch (const std::bad_alloc&)
     {
         RENDERER_LOG_ERROR("failed to load project file %s (ran out of memory).", filepath.c_str());
         return false;
     }
 #ifdef NDEBUG
-    catch (const exception& e)
+    catch (const std::exception& e)
     {
         RENDERER_LOG_ERROR("failed to load project file %s (%s).", filepath.c_str(), e.what());
         return false;
@@ -233,7 +232,7 @@ bool ProjectManager::do_load_project(const string& filepath)
 }
 
 bool ProjectManager::do_save_project(
-    const string&                       filepath,
+    const std::string&                  filepath,
     const ProjectFileWriter::Options    options)
 {
     assert(m_project.get());

@@ -64,7 +64,6 @@ namespace renderer      { class Assembly; }
 namespace renderer      { class Project; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -89,7 +88,7 @@ namespace
             const Vector3f& n,
             Spectrum&       value) const
         {
-            const float cos_oh = abs(dot(o, h));
+            const float cos_oh = std::abs(dot(o, h));
 
             float f;
             fresnel_reflectance_dielectric(f, m_eta, cos_oh);

@@ -66,7 +66,6 @@ namespace renderer  { class BSSRDFSample; }
 namespace renderer  { class ShadingContext; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -110,7 +109,7 @@ namespace
             m_inputs.declare("volume_anisotropy", InputFormatFloat, "0.0");
             m_inputs.declare("surface_roughness", InputFormatFloat, "0.01");
 
-            const string lambertian_brdf_name = string(name) + "_lambertian_brdf";
+            const std::string lambertian_brdf_name = std::string(name) + "_lambertian_brdf";
             m_lambertian_brdf = LambertianBRDFFactory().create(lambertian_brdf_name.c_str(), ParamArray());
             m_lambertian_brdf_data.m_reflectance.set(1.0f);
             m_lambertian_brdf_data.m_reflectance_multiplier = 1.0f;
@@ -139,8 +138,8 @@ namespace
 
             const OnFrameBeginMessageContext context("bssrdf", this);
 
-            const string surface_bsdf =
-                m_params.get_optional<string>(
+            const std::string surface_bsdf =
+                m_params.get_optional<std::string>(
                     "surface_bsdf_model",
                     "diffuse",
                     make_vector("diffuse", "glass"),
@@ -194,7 +193,7 @@ namespace
                 precomputed.m_extinction[i] = rcp(values->m_mfp[i]);
 
                 // Compute diffusion length, required by Dwivedi sampling.
-                const float kappa = min(compute_rcp_diffusion_length(precomputed.m_albedo[i]), 0.99f);
+                const float kappa = std::min(compute_rcp_diffusion_length(precomputed.m_albedo[i]), 0.99f);
                 if (i == 0 || kappa < precomputed.m_rcp_diffusion_length)
                     precomputed.m_rcp_diffusion_length = kappa;
             }
@@ -266,7 +265,7 @@ namespace
             else
             {
                 const Vector3f outgoing_normal(outgoing_point.get_shading_normal());
-                const float cos_on = min(abs(dot(outgoing_dir, outgoing_normal)), 1.0f);
+                const float cos_on = std::min(std::abs(dot(outgoing_dir, outgoing_normal)), 1.0f);
                 float fo = 1.0f;
                 if (values->m_fresnel_weight != 0.0f)
                 {
@@ -407,7 +406,7 @@ namespace
             if (bsdf_sample.get_mode() == ScatteringMode::None)
                 return false;
 
-            const float cos_in = min(abs(dot(
+            const float cos_in = std::min(std::abs(dot(
                 bsdf_sample.m_geometric_normal,
                 bsdf_sample.m_incoming.get_value())), 1.0f);
             float fi;
@@ -452,7 +451,7 @@ namespace
             const char*             bssrdf_name,
             const char*             mdf_name)
         {
-            const string glass_bsdf_name = string(bssrdf_name) + "_glass_bsdf_" + mdf_name;
+            const std::string glass_bsdf_name = std::string(bssrdf_name) + "_glass_bsdf_" + mdf_name;
 
             auto_release_ptr<BSDF> bsdf =
                 GlassBSDFFactory().create(
@@ -483,7 +482,7 @@ namespace
 
         static float albedo_from_reflectance_anisotropic(const float r, const float g)
         {
-            const float s = 4.09712f + 4.20863f * r - sqrt(9.59271f + r * (41.6808f + 17.7126f * r));
+            const float s = 4.09712f + 4.20863f * r - std::sqrt(9.59271f + r * (41.6808f + 17.7126f * r));
             const float s2 = s * s;
             return (1.0f - s2) / (1.0f - g * s2);
         }
@@ -493,10 +492,10 @@ namespace
             const float             cosine,
             const float             s)
         {
-            assert(abs(cosine) <= 1.0f);
+            assert(std::abs(cosine) <= 1.0f);
             const Basis3f basis(normal);
             const Vector2f tangent = sample_circle_uniform(s);
-            const float sine = sqrt(max(1.0f - cosine * cosine, 0.0f));
+            const float sine = std::sqrt(std::max(1.0f - cosine * cosine, 0.0f));
             return
                 basis.get_tangent_u() * tangent.x * sine +
                 basis.get_tangent_v() * tangent.y * sine +
@@ -512,7 +511,7 @@ namespace
             const float s = sampling_context.next2<float>();
 
             // Compute the probability of extending this path.
-            const float scattering_prob = min(max_value(bssrdf_sample.m_value), 0.99f);
+            const float scattering_prob = std::min(max_value(bssrdf_sample.m_value), 0.99f);
 
             // Russian Roulette.
             if (!pass_rr(scattering_prob, s))
@@ -541,7 +540,7 @@ namespace
                     const float x = -distance * extinction[i];
                     assert(FP<float>::is_finite(x));
 
-                    transmission[i] = exp(x);
+                    transmission[i] = std::exp(x);
 
                     // One-sample estimator (Veach: 9.2.4 eq. 9.15).
                     mis_base += transmission[i] * channel_pdf[i];
@@ -554,7 +553,7 @@ namespace
                     const float x = -distance * extinction[i];
                     assert(FP<float>::is_finite(x));
 
-                    transmission[i] = exp(x) * extinction[i];
+                    transmission[i] = std::exp(x) * extinction[i];
 
                     // One-sample estimator (Veach: 9.2.4 eq. 9.15).
                     mis_base += transmission[i] * channel_pdf[i];
@@ -579,7 +578,7 @@ namespace
                     const float x = -distance * extinction[i];
                     assert(FP<float>::is_finite(x));
 
-                    transmission[i] = exp(x);
+                    transmission[i] = std::exp(x);
 
                     // One-sample estimator (Veach: 9.2.4 eq. 9.15).
                     mis_base += transmission[i];
@@ -592,7 +591,7 @@ namespace
                     const float x = -distance * extinction[i];
                     assert(FP<float>::is_finite(x));
 
-                    transmission[i] = exp(x) * extinction[i];
+                    transmission[i] = std::exp(x) * extinction[i];
 
                     // One-sample estimator (Veach: 9.2.4 eq. 9.15).
                     mis_base += transmission[i];

@@ -55,7 +55,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -75,7 +74,7 @@ namespace
             const Dictionary&       params,
             const bool              is_vector)
           : m_param_name(name)
-          , m_expr(params.get<string>(name))
+          , m_expr(params.get<std::string>(name))
           , m_is_vector(is_vector)
           , m_is_constant(false)
           , m_texture_is_srgb(true)
@@ -94,12 +93,12 @@ namespace
         {
         }
 
-        string& expression()
+        std::string& expression()
         {
             return m_expr;
         }
 
-        const string& expression() const
+        const std::string& expression() const
         {
             return m_expr;
         }
@@ -127,8 +126,8 @@ namespace
 
             // Case of a simple texture lookup of the form texture("path/to/texture", $u, $v).
             {
-                const string expression = trim_both(m_expression.getExpr(), " \r\n");
-                vector<string> tokens;
+                const std::string expression = trim_both(m_expression.getExpr(), " \r\n");
+                std::vector<std::string> tokens;
                 tokenize(expression, "()", tokens);
 
                 if (tokens.size() != 2)
@@ -137,7 +136,7 @@ namespace
                 if (trim_both(tokens[0]) != "texture")
                     return true;
 
-                const string inner_content = tokens[1];
+                const std::string inner_content = tokens[1];
                 tokens.clear();
                 tokenize(inner_content, ",", tokens);
 
@@ -185,10 +184,10 @@ namespace
                         &color[0]))
                 {
                     // Failed to find or open the texture.
-                    const string message = texture_system.geterror();
+                    const std::string message = texture_system.geterror();
                     if (!message.empty())
                     {
-                        const string modified_message = prefix_all_lines(trim_both(message), "oiio: ");
+                        const std::string modified_message = prefix_all_lines(trim_both(message), "oiio: ");
                         RENDERER_LOG_ERROR("%s", modified_message.c_str());
                     }
                     return Color3f(1.0f, 0.0f, 1.0f);
@@ -209,7 +208,7 @@ namespace
 
       private:
         const char*                 m_param_name;
-        string                      m_expr;
+        std::string                 m_expr;
         bool                        m_is_vector;
         bool                        m_is_constant;
         Color3d                     m_constant_value;
@@ -252,7 +251,7 @@ struct DisneyMaterialLayer::Impl
     {
     }
 
-    const string            m_name;
+    const std::string       m_name;
     const int               m_layer_number;
     DisneyLayerParam        m_mask;
     DisneyLayerParam        m_base_color;
@@ -358,7 +357,7 @@ void DisneyMaterialLayer::evaluate_expressions(
     values.m_specular =
         lerp(
             values.m_specular,
-            max(impl->m_specular.evaluate(shading_point, texture_system)[0], 0.0f),
+            std::max(impl->m_specular.evaluate(shading_point, texture_system)[0], 0.0f),
             mask);
 
     values.m_specular_tint =
@@ -548,11 +547,11 @@ Dictionary DisneyMaterialLayer::get_default_values()
     for (size_t i = 0; i < input_metadata.size(); ++i)
     {
         const Dictionary& im = input_metadata[i];
-        const string input_name = im.get<string>("name");
+        const std::string input_name = im.get<std::string>("name");
 
         if (im.strings().exist("default"))
         {
-            const string input_value = im.get<string>("default");
+            const std::string input_value = im.get<std::string>("default");
             values.insert(input_name, input_value);
         }
     }
@@ -572,12 +571,12 @@ namespace
 
 struct DisneyMaterial::Impl
 {
-    typedef vector<DisneyMaterialLayer> DisneyMaterialLayerContainer;
+    typedef std::vector<DisneyMaterialLayer> DisneyMaterialLayerContainer;
 
     static const size_t MaxThreadCount = 256;
 
     DisneyMaterialLayerContainer                m_layers;
-    unique_ptr<DisneyLayeredBRDF>               m_brdf;
+    std::unique_ptr<DisneyLayeredBRDF>          m_brdf;
     mutable TLS<DisneyMaterialLayerContainer*>  m_per_thread_layers;
 
     explicit Impl(const DisneyMaterial* parent)
@@ -656,7 +655,7 @@ void DisneyMaterial::update_asset_paths(const StringDictionary& mappings)
     SeExprFilePathExtractor::MappingCollection mappings_;
 
     for (const_each<StringDictionary> i = mappings; i; ++i)
-        mappings_.insert(make_pair(i->key(), i->value()));
+        mappings_.insert(std::make_pair(i->key(), i->value()));
 
     for (each<DictionaryDictionary> layer_it = m_params.dictionaries(); layer_it; ++layer_it)
     {
@@ -714,7 +713,7 @@ void DisneyMaterial::add_layer(Dictionary layer_values)
     // Assign a name to the layer if there isn't one already.
     if (!layer_values.strings().exist("layer_name"))
     {
-        const string layer_name = make_unique_name("layer", impl->m_layers);
+        const std::string layer_name = make_unique_name("layer", impl->m_layers);
         layer_values.insert("layer_name", layer_name);
     }
 
@@ -723,12 +722,12 @@ void DisneyMaterial::add_layer(Dictionary layer_values)
     {
         int layer_number = 0;
         for (const_each<Impl::DisneyMaterialLayerContainer> i = impl->m_layers; i; ++i)
-            layer_number = max(layer_number, i->get_layer_number());
+            layer_number = std::max(layer_number, i->get_layer_number());
         layer_values.insert("layer_number", layer_number);
     }
 
     // Insert the layer into the material.
-    const string& layer_name = layer_values.get<string>("layer_name");
+    const std::string& layer_name = layer_values.get<std::string>("layer_name");
     m_params.insert(layer_name, layer_values);
 }
 
@@ -753,14 +752,14 @@ const DisneyMaterialLayer& DisneyMaterial::get_layer(
 
     assert(thread_index < Impl::MaxThreadCount);
 
-    vector<DisneyMaterialLayer>* layers =
+    std::vector<DisneyMaterialLayer>* layers =
         impl->m_per_thread_layers[thread_index];
 
     if (layers == nullptr)
     {
-        layers = new vector<DisneyMaterialLayer>(impl->m_layers);
+        layers = new std::vector<DisneyMaterialLayer>(impl->m_layers);
 
-        for (const_each<vector<DisneyMaterialLayer>> it = *layers; it; ++it)
+        for (const_each<std::vector<DisneyMaterialLayer>> it = *layers; it; ++it)
         {
             APPLESEED_UNUSED const bool ok = it->prepare_expressions();
             assert(ok);

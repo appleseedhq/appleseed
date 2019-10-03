@@ -39,7 +39,6 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -108,7 +107,7 @@ void spectral_values_to_spectrum(
     assert(low_wavelength < high_wavelength);
 
     // Generate the wavelengths for which this spectrum is defined.
-    vector<float> wavelengths(input_spectrum_count);
+    std::vector<float> wavelengths(input_spectrum_count);
     generate_wavelengths(
         low_wavelength,
         high_wavelength,

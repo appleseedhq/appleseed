@@ -41,14 +41,13 @@
 #include <vector>
 
 using namespace foundation;
-using namespace std;
 namespace bf = boost::filesystem;
 
 TEST_SUITE(Foundation_Utility_Zip)
 {
     TEST_CASE(Unzip)
     {
-        const string TargetDirectory = "unit tests/outputs/test_zip/";
+        const std::string TargetDirectory = "unit tests/outputs/test_zip/";
 
         try
         {
@@ -59,7 +58,7 @@ TEST_SUITE(Foundation_Utility_Zip)
             EXPECT_TRUE(bf::exists(TargetDirectory));
             EXPECT_FALSE(bf::is_empty(TargetDirectory));
 
-            const string ExpectedFiles[] =
+            const std::string ExpectedFiles[] =
             {
                 "subfolder/a.txt",
                 "subfolder/b.txt",
@@ -67,14 +66,14 @@ TEST_SUITE(Foundation_Utility_Zip)
                 "d.png"
             };
 
-            const set<string> actual_files = recursive_ls(TargetDirectory);
+            const std::set<std::string> actual_files = recursive_ls(TargetDirectory);
 
             for (size_t i = 0; i < countof(ExpectedFiles); ++i)
                 EXPECT_EQ(1, actual_files.count(ExpectedFiles[i]));
 
             bf::remove_all(TargetDirectory);
         }
-        catch (const exception& e)
+        catch (const std::exception& e)
         {
             bf::remove_all(TargetDirectory);
             throw e;
@@ -83,9 +82,9 @@ TEST_SUITE(Foundation_Utility_Zip)
 
     TEST_CASE(ZipUnzipRoundtrip)
     {
-        const string InitialDirectory = "unit tests/inputs/test_zip";
-        const string TargetZip = "unit tests/outputs/test_zip.zip";
-        const string TargetDirectory = "unit tests/outputs/test_zip";
+        const std::string InitialDirectory = "unit tests/inputs/test_zip";
+        const std::string TargetZip = "unit tests/outputs/test_zip.zip";
+        const std::string TargetDirectory = "unit tests/outputs/test_zip";
 
         try
         {
@@ -96,18 +95,18 @@ TEST_SUITE(Foundation_Utility_Zip)
             zip(TargetZip, InitialDirectory);
             unzip(TargetZip, TargetDirectory);
 
-            const set<string> expected_files = recursive_ls(InitialDirectory);
-            const set<string> actual_files = recursive_ls(TargetDirectory);
+            const std::set<std::string> expected_files = recursive_ls(InitialDirectory);
+            const std::set<std::string> actual_files = recursive_ls(TargetDirectory);
 
             ASSERT_EQ(expected_files.size(), actual_files.size());
 
-            for (set<string>::iterator it = actual_files.begin(); it != actual_files.end(); ++it)
+            for (std::set<std::string>::iterator it = actual_files.begin(); it != actual_files.end(); ++it)
                 EXPECT_EQ(1, expected_files.count(*it));
 
             bf::remove(TargetZip);
             bf::remove_all(TargetDirectory);
         }
-        catch (const exception& e)
+        catch (const std::exception& e)
         {
             bf::remove(TargetZip);
             bf::remove_all(TargetDirectory);
@@ -127,7 +126,7 @@ TEST_SUITE(Foundation_Utility_Zip)
 
     TEST_CASE(GetFilenamesWithExtensionFromZip)
     {
-        const vector<string> files =
+        const std::vector<std::string> files =
             get_filenames_with_extension_from_zip(
                 "unit tests/inputs/test_zip_validzipfile.zip",
                 ".txt");

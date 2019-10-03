@@ -41,7 +41,6 @@
 // Standard headers.
 #include <string>
 
-using namespace std;
 namespace bf = boost::filesystem;
 
 namespace foundation
@@ -49,9 +48,9 @@ namespace foundation
 
 struct GenericCurveFileReader::Impl
 {
-    string  m_filename;
-    float   m_radius;
-    size_t  m_degree;
+    std::string  m_filename;
+    float        m_radius;
+    size_t       m_degree;
 };
 
 GenericCurveFileReader::GenericCurveFileReader(const char* filename, const float radius, const size_t degree)
@@ -70,7 +69,7 @@ GenericCurveFileReader::~GenericCurveFileReader()
 void GenericCurveFileReader::read(ICurveBuilder& builder)
 {
     const bf::path filepath(impl->m_filename);
-    const string extension = lower_case(filepath.extension().string());
+    const std::string extension = lower_case(filepath.extension().string());
 
     if (extension == ".binarycurve")
     {

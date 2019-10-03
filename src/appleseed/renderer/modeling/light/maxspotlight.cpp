@@ -57,7 +57,6 @@ namespace renderer      { class Assembly; }
 namespace renderer      { class Project; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -110,10 +109,10 @@ namespace
             const double outer_half_angle = deg_to_rad(m_params.get_required<double>("outer_angle", 30.0) / 2.0);
             const double tilt_angle = deg_to_rad(m_params.get_optional<double>("tilt_angle", 0.0));
 
-            m_cos_inner_half_angle = cos(inner_half_angle);
-            m_cos_outer_half_angle = cos(outer_half_angle);
-            m_rcp_screen_half_size = 1.0 / tan(outer_half_angle);
-            m_up = Vector3d(sin(tilt_angle), cos(tilt_angle), 0.0);
+            m_cos_inner_half_angle = std::cos(inner_half_angle);
+            m_cos_outer_half_angle = std::cos(outer_half_angle);
+            m_rcp_screen_half_size = 1.0 / std::tan(outer_half_angle);
+            m_up = Vector3d(std::sin(tilt_angle), std::cos(tilt_angle), 0.0);
 
             m_decay_start = m_params.get_optional<float>("decay_start", 0.0f);
             m_decay_exponent = m_params.get_optional<float>("decay_exponent", 2.0f);
@@ -171,7 +170,7 @@ namespace
         {
             return
                 autodesk_max_decay(
-                    sqrt(static_cast<float>(square_distance(target, position))),
+                    std::sqrt(static_cast<float>(square_distance(target, position))),
                     m_decay_start,
                     m_decay_exponent);
         }

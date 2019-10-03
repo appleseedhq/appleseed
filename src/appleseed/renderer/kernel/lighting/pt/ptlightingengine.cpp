@@ -75,7 +75,6 @@ namespace renderer  { class PixelContext; }
 namespace renderer  { class TextureCache; }
 
 using namespace foundation;
-using namespace std;
 
 namespace renderer
 {
@@ -573,7 +572,7 @@ namespace
                 if (vertex.m_prev_mode != ScatteringMode::Specular)
                 {
                     assert(vertex.m_prev_prob > 0.0f);
-                    const float env_sample_count = max(m_params.m_ibl_env_sample_count, 1.0f);
+                    const float env_sample_count = std::max(m_params.m_ibl_env_sample_count, 1.0f);
                     const float mis_weight =
                         mis_power2(
                             1.0f * vertex.m_prev_prob,
@@ -735,7 +734,7 @@ namespace
                 // Multiple importance sampling.
                 if (vertex.m_prev_mode != ScatteringMode::Specular)
                 {
-                    const float light_sample_count = max(m_params.m_dl_light_sample_count, 1.0f);
+                    const float light_sample_count = std::max(m_params.m_dl_light_sample_count, 1.0f);
                     const float mis_weight =
                         mis_power2(
                             1.0f * vertex.get_bsdf_prob_area(),

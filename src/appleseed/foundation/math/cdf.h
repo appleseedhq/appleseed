@@ -111,7 +111,6 @@ size_t sample_pdf_linear_search(
 template <typename T>
 size_t sample_cdf_linear_search(
     const T*            cdf,
-    const size_t        size,
     const T             x);
 
 template <typename RandomAccessIter, typename Weight>
@@ -173,6 +172,7 @@ inline void CDF<Item, Weight>::clear()
 {
     m_items.clear();
     m_weight_sum = Weight(0.0);
+    m_densities.clear();
 }
 
 template <typename Item, typename Weight>
