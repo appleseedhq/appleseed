@@ -114,15 +114,6 @@ Vector3f cylindrical_to_cartesian(
         cos_theta);
 }
 
-bool is_valid_spectrum(
-    const Spectrum&                     s)
-{
-    for (int i = 0; i < s.size(); i++)
-        if (!std::isfinite(s[i]) || s[i] < 0.0f)
-            return false;
-    return true;
-}
-
 template<typename T>
 void write(
     std::ofstream&                      outstream,
@@ -1359,18 +1350,23 @@ void GPTVertex::record_to_tree(
     STree&                              sd_tree,
     SamplingContext&                    sampling_context)
 {
-    if (!is_valid_spectrum(m_radiance) || !is_valid_spectrum(m_bsdf_value))
-        return;
+    Spectrum incoming_radiance;
+    Spectrum product;
 
-    Spectrum incoming_radiance(0.0f);
-
-    for(size_t i = 0; i < incoming_radiance.size(); ++i)
+    for(size_t i = 0; i < Spectrum::size(); ++i)
     {
-        const float rcp_factor = m_throughput[i] == 0.0f ? 0.0f : 1.0f / m_throughput[i];
-        incoming_radiance[i] = m_radiance[i] * rcp_factor;
-    }
+        // Check if components are valid.
+        if (!std::isfinite(m_radiance[i]) || m_radiance[i] < 0.0f ||
+            !std::isfinite(m_bsdf_value[i]) || m_bsdf_value[i] < 0.0f)
+        {
+            return;
+        }
 
-    Spectrum product = incoming_radiance * m_bsdf_value;
+        const float rcp_factor = m_throughput[i] == 0.0f ? 0.0f : 1.0f / m_throughput[i];
+
+        incoming_radiance[i] = m_radiance[i] * rcp_factor;
+        product[i] = incoming_radiance[i] * m_bsdf_value[i];
+    }
 
     DTreeRecord d_tree_record{
         m_direction,
