@@ -838,63 +838,64 @@ void DTree::write_to_disk(
 struct DTreeStatistics
 {
     DTreeStatistics()
-      : max_d_tree_depth(0)
-      , min_max_d_tree_depth(std::numeric_limits<size_t>::max())
-      , average_max_d_tree_depth(0)
-      , max_s_tree_depth(0)
-      , min_max_s_tree_depth(std::numeric_limits<size_t>::max())
-      , average_max_s_tree_depth(0)
-      , max_mean_radiance(0)
-      , min_mean_radiance(std::numeric_limits<float>::max())
-      , average_mean_radiance(0)
-      , max_d_tree_nodes(0)
+      : num_d_trees(0)
+      , min_d_tree_depth(std::numeric_limits<size_t>::max())
+      , max_d_tree_depth(0)
+      , average_d_tree_depth(0.0f)
       , min_d_tree_nodes(std::numeric_limits<size_t>::max())
-      , average_d_tree_nodes(0)
-      , max_sample_weight(0)
+      , max_d_tree_nodes(0)
+      , average_d_tree_nodes(0.0f)
       , min_sample_weight(std::numeric_limits<float>::max())
-      , average_sample_weight(0)
-      , num_d_trees(0)
-      , num_s_tree_nodes(0)
-      , glossy_d_tree_fraction(0.0f)
-      , mean_sampling_fraction(0.0f)
+      , max_sample_weight(0.0f)
+      , average_sample_weight(0.0f)
       , min_sampling_fraction(std::numeric_limits<float>::max())
       , max_sampling_fraction(0.0f)
+      , average_sampling_fraction(0.0f)
+      , min_mean_radiance(std::numeric_limits<float>::max())
+      , max_mean_radiance(0.0f)
+      , average_mean_radiance(0.0f)
+      , glossy_d_tree_fraction(0.0f)
+      , num_s_tree_nodes(0)
+      , min_s_tree_depth(std::numeric_limits<size_t>::max())
+      , max_s_tree_depth(0)
+      , average_s_tree_depth(0.0f)
     {}
 
-    size_t                              max_d_tree_depth;
-    size_t                              min_max_d_tree_depth;
-    float                               average_max_d_tree_depth;
-    size_t                              max_s_tree_depth;
-    size_t                              min_max_s_tree_depth;
-    float                               average_max_s_tree_depth;
-    float                               max_mean_radiance;
-    float                               min_mean_radiance;
-    float                               average_mean_radiance;
-    size_t                              max_d_tree_nodes;
-    size_t                              min_d_tree_nodes;
-    float                               average_d_tree_nodes;
-    float                               max_sample_weight;
-    float                               min_sample_weight;
-    float                               average_sample_weight;
     size_t                              num_d_trees;
-    size_t                              num_s_tree_nodes;
-    float                               glossy_d_tree_fraction;
-    float                               mean_sampling_fraction;
+    size_t                              min_d_tree_depth;
+    size_t                              max_d_tree_depth;
+    float                               average_d_tree_depth;
+    size_t                              min_d_tree_nodes;
+    size_t                              max_d_tree_nodes;
+    float                               average_d_tree_nodes;
+    float                               min_sample_weight;
+    float                               max_sample_weight;
+    float                               average_sample_weight;
     float                               min_sampling_fraction;
     float                               max_sampling_fraction;
+    float                               average_sampling_fraction;
+    float                               min_mean_radiance;
+    float                               max_mean_radiance;
+    float                               average_mean_radiance;
+    float                               glossy_d_tree_fraction;
+
+    size_t                              num_s_tree_nodes;
+    size_t                              min_s_tree_depth;
+    size_t                              max_s_tree_depth;
+    float                               average_s_tree_depth;
 
     void build()
     {
         if(num_d_trees <= 0)
             return;
 
-        average_max_d_tree_depth /= num_d_trees;
-        average_max_s_tree_depth /= num_d_trees;
+        average_d_tree_depth /= num_d_trees;
+        average_s_tree_depth /= num_d_trees;
         average_d_tree_nodes /= num_d_trees;
         average_mean_radiance /= num_d_trees;
         average_sample_weight /= num_d_trees;
         glossy_d_tree_fraction /= num_d_trees;
-        mean_sampling_fraction /= num_d_trees;
+        average_sampling_fraction /= num_d_trees;
     }
 };
 
@@ -1032,11 +1033,8 @@ void STreeNode::gather_statistics(
         ++statistics.num_d_trees;
         const size_t d_tree_depth = m_d_tree->max_depth();
         statistics.max_d_tree_depth = std::max(statistics.max_d_tree_depth, d_tree_depth);
-        statistics.min_max_d_tree_depth = std::min(statistics.min_max_d_tree_depth, d_tree_depth);
-        statistics.average_max_d_tree_depth += d_tree_depth;
-        statistics.max_s_tree_depth = std::max(statistics.max_s_tree_depth, depth);
-        statistics.min_max_s_tree_depth = std::min(statistics.min_max_s_tree_depth, depth);
-        statistics.average_max_s_tree_depth += depth;
+        statistics.min_d_tree_depth = std::min(statistics.min_d_tree_depth, d_tree_depth);
+        statistics.average_d_tree_depth += d_tree_depth;
 
         const float mean_radiance = m_d_tree->mean();
         statistics.max_mean_radiance = std::max(statistics.max_mean_radiance, mean_radiance);
@@ -1059,7 +1057,11 @@ void STreeNode::gather_statistics(
         const float bsdf_sampling_fraction = m_d_tree->bsdf_sampling_fraction();
         statistics.min_sampling_fraction = std::min(statistics.min_sampling_fraction, bsdf_sampling_fraction);
         statistics.max_sampling_fraction = std::max(statistics.max_sampling_fraction, bsdf_sampling_fraction);
-        statistics.mean_sampling_fraction += bsdf_sampling_fraction;
+        statistics.average_sampling_fraction += bsdf_sampling_fraction;
+
+        statistics.max_s_tree_depth = std::max(statistics.max_s_tree_depth, depth);
+        statistics.min_s_tree_depth = std::min(statistics.min_s_tree_depth, depth);
+        statistics.average_s_tree_depth += depth;
     }
     else
     {
@@ -1214,35 +1216,39 @@ void STree::build(
     statistics.build();
 
     RENDERER_LOG_INFO(
-        "SD tree statistics: [min, max, avg]\n"
-        "  D-Tree depth                 = [%s, %s, %s]\n"
+        "SD-Tree statistics: [min, max, avg]\n"
+        "S-Tree:\n"
+        "  Node Count                   = %s\n"
         "  S-Tree depth                 = [%s, %s, %s]\n"
-        "  Mean radiance                = [%s, %s, %s]\n"
-        "  D-Tree node count            = [%s, %s, %s]\n"
-        "  Sample weight                = [%s, %s, %s]\n"
-        "  BSDF sampling fraction       = [%s, %s, %s]\n"
-        "  Glossy D-Tree fraction       = %s\n"
-        "  Num D-Trees                  = %s\n\n",
-        pretty_uint(statistics.min_max_d_tree_depth).c_str(),
-        pretty_uint(statistics.max_d_tree_depth).c_str(),
-        pretty_scalar(statistics.average_max_d_tree_depth, 2).c_str(),
-        pretty_uint(statistics.min_max_s_tree_depth).c_str(),
+        "D-Tree:\n"
+        "  Tree Count                   = %s\n"
+        "  Node Count                   = [%s, %s, %s]\n"
+        "  D-Tree Depth                 = [%s, %s, %s]\n"
+        "  Mean Radiance                = [%s, %s, %s]\n"
+        "  Sample Weight                = [%s, %s, %s]\n"
+        "  BSDF Sampling Fraction       = [%s, %s, %s]\n"
+        "  Glossy D-Tree Fraction       = %s\n",
+        pretty_uint(statistics.num_s_tree_nodes).c_str(),
+        pretty_uint(statistics.min_s_tree_depth).c_str(),
         pretty_uint(statistics.max_s_tree_depth).c_str(),
-        pretty_scalar(statistics.average_max_s_tree_depth, 2).c_str(),
-        pretty_scalar(statistics.min_mean_radiance, 3).c_str(),
-        pretty_scalar(statistics.max_mean_radiance, 3).c_str(),
-        pretty_scalar(statistics.average_mean_radiance, 4).c_str(),
+        pretty_scalar(statistics.average_s_tree_depth, 2).c_str(),
+        pretty_uint(statistics.num_d_trees).c_str(),
         pretty_uint(statistics.min_d_tree_nodes).c_str(),
         pretty_uint(statistics.max_d_tree_nodes).c_str(),
-        pretty_scalar(statistics.average_d_tree_nodes, 3).c_str(),
+        pretty_scalar(statistics.average_d_tree_nodes, 1).c_str(),
+        pretty_uint(statistics.min_d_tree_depth).c_str(),
+        pretty_uint(statistics.max_d_tree_depth).c_str(),
+        pretty_scalar(statistics.average_d_tree_depth, 2).c_str(),
+        pretty_scalar(statistics.min_mean_radiance, 3).c_str(),
+        pretty_scalar(statistics.max_mean_radiance, 3).c_str(),
+        pretty_scalar(statistics.average_mean_radiance, 3).c_str(),
         pretty_scalar(statistics.min_sample_weight, 3).c_str(),
         pretty_scalar(statistics.max_sample_weight, 3).c_str(),
         pretty_scalar(statistics.average_sample_weight, 3).c_str(),
         pretty_scalar(statistics.min_sampling_fraction, 3).c_str(),
         pretty_scalar(statistics.max_sampling_fraction, 3).c_str(),
-        pretty_scalar(statistics.mean_sampling_fraction, 3).c_str(),
-        pretty_scalar(statistics.glossy_d_tree_fraction, 3).c_str(),
-        pretty_uint(statistics.num_d_trees).c_str());
+        pretty_scalar(statistics.average_sampling_fraction, 3).c_str(),
+        pretty_scalar(statistics.glossy_d_tree_fraction, 3).c_str());
 
     m_is_built = true;
 }
