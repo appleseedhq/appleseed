@@ -198,8 +198,15 @@ void GPTPassCallback::image_to_buffer(
     m_inverse_variance_buffer.push_back(inverse_variance);
 }
 
+// Inverse variance weighted sample combination [Müller 2019]
 void GPTPassCallback::combine_iterations(const Frame& frame)
 {
+    assert(m_image_buffer.size() > 0 && m_inverse_variance_buffer.size() == m_image_buffer.size());
+
+    // No need to weight single image.
+    if (m_image_buffer.size() == 1)
+        return;
+
     float total_inverse_variances = 0.0f;
 
     for (const float& var : m_inverse_variance_buffer)
@@ -207,8 +214,24 @@ void GPTPassCallback::combine_iterations(const Frame& frame)
         total_inverse_variances += var;
     }
 
+    // If no variance was detected use the last image as is.
     if (total_inverse_variances <= 0.0f)
         return;
+
+    // Calculate the weights.
+    std::string weight_str = "[";
+
+    for (float& var : m_inverse_variance_buffer)
+    {
+        var /= total_inverse_variances;
+        weight_str += pretty_scalar(var, 3) + ", ";
+    }
+    weight_str = weight_str.substr(0, weight_str.size() - 2) + "]"; // subtract last comma
+
+    RENDERER_LOG_INFO(
+        "Applying inverse variance weighted sample combination on last %s images with weights %s",
+        pretty_uint(m_image_buffer.size()).c_str(),
+        weight_str.c_str());
 
     CanvasProperties image_properties = frame.image().properties();
 
@@ -219,8 +242,8 @@ void GPTPassCallback::combine_iterations(const Frame& frame)
     for (size_t y = 0; y < image_properties.m_canvas_height; ++y)
         for (size_t x = 0; x < image_properties.m_canvas_width; ++x)
         {
-            auto image_iterator = m_image_buffer.cbegin();
-            auto variance_iterator = m_inverse_variance_buffer.cbegin();
+            auto image_itr = m_image_buffer.cbegin();
+            auto weight_itr = m_inverse_variance_buffer.cbegin();
 
             // Clear the final pixel receiver.
             float* channel = final_pixel.get();
@@ -231,16 +254,16 @@ void GPTPassCallback::combine_iterations(const Frame& frame)
             for (size_t i = 0; i < m_image_buffer.size(); ++i)
             {
                 // Get image's pixel data.
-                image_iterator->get_pixel(x, y, temp_pixel.get(), image_properties.m_channel_count);
+                image_itr->get_pixel(x, y, temp_pixel.get(), image_properties.m_channel_count);
 
                 // Add inverse variance weighted channels to final pixel.
                 float* final_channel = final_pixel.get();
                 float* temp_channel = temp_pixel.get();
                 for (size_t c = 0; c < image_properties.m_channel_count; ++c)
-                    final_channel[c] += temp_channel[c] * (*variance_iterator / total_inverse_variances);
+                    final_channel[c] += temp_channel[c] * (*weight_itr);
 
-                ++image_iterator;
-                ++variance_iterator;
+                ++image_itr;
+                ++weight_itr;
             }
 
             // Set the final pixel in the frame.
