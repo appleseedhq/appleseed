@@ -49,7 +49,7 @@ shader as_glass
         string label = "Transmittance Color",
         string page = "Transmittance"
     ]],
-    float in_transmittance_amount = 0.8
+    float in_transmittance_amount = 0.99
     [[
         string as_maya_attribute_name = "transmittanceAmount",
         string as_maya_attribute_short_name = "ta",
