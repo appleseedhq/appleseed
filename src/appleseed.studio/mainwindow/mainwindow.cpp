@@ -641,7 +641,7 @@ void MainWindow::build_toolbar()
     connect(m_action_start_final_rendering, SIGNAL(triggered()), SLOT(slot_start_final_rendering()));
     m_ui->main_toolbar->addAction(m_action_start_final_rendering);
 
-    m_action_pause_resume_rendering = new QAction(load_icons("rendering_pause_resume"), combine_name_and_shortcut("Pause/Resume Rendering", m_ui->action_rendering_pause_resume_rendering->shortcut()), this);
+    m_action_pause_resume_rendering = new QAction(load_icons("rendering_pause_resume"), combine_name_and_shortcut("Pause Rendering", m_ui->action_rendering_pause_resume_rendering->shortcut()), this);
     m_action_pause_resume_rendering->setCheckable(true);
     connect(m_action_pause_resume_rendering, SIGNAL(toggled(bool)), SLOT(slot_pause_or_resume_rendering(const bool)));
     m_ui->main_toolbar->addAction(m_action_pause_resume_rendering);
