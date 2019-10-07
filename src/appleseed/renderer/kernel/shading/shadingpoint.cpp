@@ -817,7 +817,6 @@ void ShadingPoint::compute_triangle_normals() const
 void ShadingPoint::compute_curve_normals() const
 {
     // We assume flat ribbons facing incoming rays.
-
     m_geometric_normal = m_original_shading_normal = -m_ray.m_dir;
 }
 
@@ -869,20 +868,16 @@ void ShadingPoint::compute_shading_basis() const
     m_shading_basis.build(sn, s, t);
 
     // Apply the basis modifier if the material has one.
-    if (m_primitive_type == PrimitiveTriangle)
+    if (material != nullptr)
     {
-        const Material* material = get_material();
-        if (material)
+        const Material::RenderData& material_data = material->get_render_data();
+        if (material_data.m_basis_modifier)
         {
-            const Material::RenderData& material_data = material->get_render_data();
-            if (material_data.m_basis_modifier)
-            {
-                m_shading_basis =
-                    material_data.m_basis_modifier->modify(
-                        *m_texture_cache,
-                        m_shading_basis,
-                        *this);
-            }
+            m_shading_basis =
+                material_data.m_basis_modifier->modify(
+                    *m_texture_cache,
+                    m_shading_basis,
+                    *this);
         }
     }
 }
