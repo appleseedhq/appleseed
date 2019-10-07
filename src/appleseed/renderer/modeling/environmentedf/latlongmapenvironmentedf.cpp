@@ -215,7 +215,7 @@ namespace
             Spectrum&               value,
             float&                  probability) const override
         {
-            if (m_importance_sampler.get() == nullptr)
+            if (!m_importance_sampler)
             {
                 RENDERER_LOG_WARNING(
                     "cannot sample environment edf \"%s\" because it is not bound to the environment.",
@@ -299,7 +299,7 @@ namespace
         {
             assert(is_normalized(outgoing));
 
-            if (m_importance_sampler.get() == nullptr)
+            if (!m_importance_sampler)
             {
                 RENDERER_LOG_WARNING(
                     "cannot compute pdf for environment edf \"%s\" because it is not bound to the environment.",
@@ -334,7 +334,7 @@ namespace
         {
             assert(is_normalized(outgoing));
 
-            if (m_importance_sampler.get() == nullptr)
+            if (!m_importance_sampler)
             {
                 RENDERER_LOG_WARNING(
                     "cannot compute pdf for environment edf \"%s\" because it is not bound to the environment.",
@@ -465,7 +465,7 @@ namespace
         {
             assert(u >= 0.0f && u < 1.0f);
             assert(v >= 0.0f && v < 1.0f);
-            assert(m_importance_sampler.get());
+            assert(m_importance_sampler);
 
             // Compute the probability density of this sample in the importance map.
             const size_t x = truncate<size_t>(m_importance_map_width * u);
