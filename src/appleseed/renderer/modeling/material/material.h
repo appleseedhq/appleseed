@@ -133,6 +133,14 @@ class APPLESEED_DLLSYMBOL Material
 
     struct APPLESEED_DLLSYMBOL RenderData
     {
+        enum class DefaultTangentMode
+        {
+            LocalX,
+            LocalY,
+            LocalZ,
+            Radial
+        };
+
         const SurfaceShader*        m_surface_shader;
         const BSDF*                 m_bsdf;
         const BSSRDF*               m_bssrdf;
@@ -140,7 +148,8 @@ class APPLESEED_DLLSYMBOL Material
         const Volume*               m_volume;
         const Source*               m_alpha_map;
         const ShaderGroup*          m_shader_group;
-        const IBasisModifier*       m_basis_modifier;   // owned by RenderData
+        const IBasisModifier*       m_basis_modifier;           // owned by RenderData
+        DefaultTangentMode          m_default_tangent_mode;
 
         RenderData();
 
@@ -162,6 +171,9 @@ class APPLESEED_DLLSYMBOL Material
     const char* get_non_empty(const ParamArray& params, const char* name) const;
 
     IBasisModifier* create_basis_modifier(const MessageContext& context) const;
+
+  private:
+    RenderData::DefaultTangentMode get_default_tangent_mode() const;
 };
 
 

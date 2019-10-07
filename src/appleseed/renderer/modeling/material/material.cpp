@@ -201,6 +201,7 @@ bool Material::on_frame_begin(
     if (m_render_data.m_surface_shader == nullptr)
         m_render_data.m_surface_shader = project.get_scene()->get_default_surface_shader();
     m_render_data.m_alpha_map = get_uncached_alpha_map();
+    m_render_data.m_default_tangent_mode = get_default_tangent_mode();
 
     return true;
 }
@@ -280,6 +281,20 @@ IBasisModifier* Material::create_basis_modifier(const MessageContext& context) c
                 : NormalMappingModifier::UpVectorZ;
         return new NormalMappingModifier(displacement_source, up_vector);
     }
+}
+
+Material::RenderData::DefaultTangentMode Material::get_default_tangent_mode() const
+{
+    const std::string default_tangent_mode =
+        m_params.get_optional<std::string>(
+            "default_tangent_mode",
+            "radial",
+            make_vector("local_x", "local_y", "local_z", "radial"));
+    return
+        default_tangent_mode == "local_x" ? RenderData::DefaultTangentMode::LocalX :
+        default_tangent_mode == "local_y" ? RenderData::DefaultTangentMode::LocalY :
+        default_tangent_mode == "local_z" ? RenderData::DefaultTangentMode::LocalZ :
+                                            RenderData::DefaultTangentMode::Radial;
 }
 
 }   // namespace renderer

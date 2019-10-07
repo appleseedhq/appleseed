@@ -823,22 +823,48 @@ void ShadingPoint::compute_curve_normals() const
 
 void ShadingPoint::compute_shading_basis() const
 {
-    // Compute the unperturbed shading normal.
-    const Vector3d sn = get_original_shading_normal();
+    const Material* material = get_material();
 
-    // Retrieve or compute the first tangent direction (non-normalized).
-    // Reference: Physically Based Rendering, first edition, pp. 133.
-    const Vector3d tangent =
-        (m_members & HasTriangleVertexTangents) != 0
-            ? m_assembly_instance_transform.vector_to_parent(
-                  m_object_instance->get_transform().vector_to_parent(
-                        Vector3d(m_t0) * static_cast<double>(1.0f - m_bary[0] - m_bary[1])
-                      + Vector3d(m_t1) * static_cast<double>(m_bary[0])
-                      + Vector3d(m_t2) * static_cast<double>(m_bary[1])))
-            : get_dpdu(0);
+    // Compute the global direction of the first tangent.
+    Vector3d tangent;
+    const Transformd& object_instance_transform = m_object_instance->get_transform();
+    if ((m_members & HasTriangleVertexTangents) != 0)
+    {
+        tangent =
+            m_assembly_instance_transform.vector_to_parent(
+                object_instance_transform.vector_to_parent(
+                      Vector3d(m_t0) * static_cast<double>(1.0f - m_bary[0] - m_bary[1])
+                    + Vector3d(m_t1) * static_cast<double>(m_bary[0])
+                    + Vector3d(m_t2) * static_cast<double>(m_bary[1])));
+    }
+    else if (material == nullptr ||
+             material->get_render_data().m_default_tangent_mode == Material::RenderData::DefaultTangentMode::Radial)
+    {
+        tangent =
+            get_point() -
+            m_assembly_instance_transform.point_to_parent(
+                object_instance_transform.get_parent_origin());
+    }
+    else
+    {
+        switch (material->get_render_data().m_default_tangent_mode)
+        {
+          case Material::RenderData::DefaultTangentMode::LocalX:
+            tangent = object_instance_transform.get_parent_x();
+            break;
+          case Material::RenderData::DefaultTangentMode::LocalY:
+            tangent = object_instance_transform.get_parent_y();
+            break;
+          case Material::RenderData::DefaultTangentMode::LocalZ:
+            tangent = object_instance_transform.get_parent_z();
+            break;
+        }
+        tangent = m_assembly_instance_transform.vector_to_parent(tangent);
+    }
 
     // Construct an orthonormal basis.
-    const Vector3d t = normalize(cross(tangent, sn));
+    const Vector3d& sn = get_original_shading_normal();
+    const Vector3d t = safe_normalize(cross(tangent, sn));  // arbitrary fallback vector
     const Vector3d s = normalize(cross(sn, t));
     m_shading_basis.build(sn, s, t);
 
