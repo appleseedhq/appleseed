@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017-2018 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2017-2019 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -353,9 +353,7 @@ shader as_subsurface
                         (vector) in_anisotropy_map * 2.0 - 1.0);
 
                     tangent = normalize(
-                        vector_map[0] * Tn +
-                        vector_map[1] * Bn +
-                        vector_map[2] * Nn);
+                        vector_map[0] * Tn + vector_map[1] * Bn);
                 }
             }
             else

@@ -331,10 +331,7 @@ shader as_glass
                 vector vector_map = normalize(
                     (vector) in_anisotropy_map * 2.0 - 1.0);
 
-                tangent = normalize(
-                    vector_map[0] * Tn +
-                    vector_map[1] * Bn +
-                    vector_map[2] * Nn);
+                tangent = normalize(vector_map[0] * Tn + vector_map[1] * Bn);
             }
         }
         else
