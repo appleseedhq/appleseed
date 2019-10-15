@@ -40,6 +40,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/distance.h"
+#include "foundation/math/fastmath.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
@@ -221,7 +222,7 @@ namespace
             m_inputs.evaluate(shading_context.get_texture_cache(), SourceInputs(uv), &values);
 
             radiance = values.m_intensity;
-            radiance *= values.m_intensity_multiplier * std::pow(2.0f, values.m_exposure * values.m_exposure_multiplier);
+            radiance *= values.m_intensity_multiplier * fast_pow2(values.m_exposure * values.m_exposure_multiplier);
 
             if (cos_theta < m_cos_inner_half_angle)
             {

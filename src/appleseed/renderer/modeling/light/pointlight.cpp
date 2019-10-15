@@ -36,6 +36,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/distance.h"
+#include "foundation/math/fastmath.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -108,7 +109,7 @@ namespace
             check_non_zero_emission("intensity", "intensity_multiplier");
 
             m_inputs.evaluate_uniforms(&m_values);
-            m_values.m_intensity *= m_values.m_intensity_multiplier * std::pow(2.0f, m_values.m_exposure);
+            m_values.m_intensity *= m_values.m_intensity_multiplier * fast_pow2(m_values.m_exposure);
 
             return true;
         }

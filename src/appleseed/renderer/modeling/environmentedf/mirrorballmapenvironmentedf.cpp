@@ -40,6 +40,7 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/fastmath.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
@@ -193,7 +194,7 @@ namespace
             if (is_finite(values.m_radiance))
             {
                 value = values.m_radiance;
-                value *= values.m_radiance_multiplier * std::pow(2.0f, values.m_exposure * values.m_exposure_multiplier);
+                value *= values.m_radiance_multiplier * fast_pow2(values.m_exposure * values.m_exposure_multiplier);
             }
             else value.set(0.0f);
         }

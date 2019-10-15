@@ -38,6 +38,7 @@
 #include "renderer/modeling/input/sourceinputs.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/fastmath.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/arena.h"
 
@@ -177,7 +178,7 @@ float EDF::get_max_contribution(
     if (max_contribution_exposure == std::numeric_limits<float>::max())
         return std::numeric_limits<float>::max();
 
-    return max_contribution_input * max_contribution_multiplier * std::pow(2.0f, max_contribution_exposure);
+    return max_contribution_input * max_contribution_multiplier * fast_pow2(max_contribution_exposure);
 }
 
 float EDF::get_max_contribution(

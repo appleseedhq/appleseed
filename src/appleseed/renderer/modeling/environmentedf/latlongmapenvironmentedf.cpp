@@ -50,6 +50,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
+#include "foundation/math/fastmath.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/sampling/imageimportancesampler.h"
 #include "foundation/math/scalar.h"
@@ -113,7 +114,7 @@ namespace
           , m_radiance_source(radiance_source)
           , m_multiplier_source(multiplier_source)
           , m_exposure_source(exposure_source)
-          , m_exposure_multiplier_source(exposure_multiplier_source) 
+          , m_exposure_multiplier_source(exposure_multiplier_source)
           , m_rcp_width(1.0f / width)
           , m_rcp_height(1.0f / height)
         {
@@ -145,7 +146,7 @@ namespace
                 float exposure_multiplier;
                 m_exposure_multiplier_source->evaluate_uniform(exposure_multiplier);
 
-                payload *= multiplier * std::pow(2.0f, exposure * exposure_multiplier);
+                payload *= multiplier * fast_pow2(exposure * exposure_multiplier);
                 importance = luminance(payload);
             }
             else
@@ -480,7 +481,7 @@ namespace
             if (is_finite(values.m_radiance))
             {
                 value = values.m_radiance;
-                value *= values.m_radiance_multiplier * std::pow(2.0f, values.m_exposure * values.m_exposure_multiplier);
+                value *= values.m_radiance_multiplier * fast_pow2(values.m_exposure * values.m_exposure_multiplier);
             }
             else value.set(0.0f);
         }
