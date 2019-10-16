@@ -34,9 +34,11 @@
 #include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
-#include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/volume/volume.h"
+
+// appleseed.foundation headers.
+#include "foundation/math/basis.h"
 
 using namespace foundation;
 
@@ -55,10 +57,11 @@ BSDFSampler::BSDFSampler(
   : m_bsdf(bsdf)
   , m_bsdf_data(bsdf_data)
   , m_bsdf_sampling_modes(bsdf_sampling_modes)
-  , m_shading_basis(shading_point.get_shading_basis())
-  , m_geometric_normal(shading_point.get_geometric_normal())
   , m_shading_point(shading_point)
 {
+    m_local_geometry.m_shading_point = &shading_point;
+    m_local_geometry.m_geometric_normal = Vector3f(shading_point.get_geometric_normal());
+    m_local_geometry.m_shading_basis = Basis3f(shading_point.get_shading_basis());
 }
 
 const Vector3d& BSDFSampler::get_point() const
@@ -143,12 +146,14 @@ bool BSDFSampler::sample(
     DirectShadingComponents&    value,
     float&                      pdf) const
 {
-    BSDFSample sample(&m_shading_point, Dual3f(outgoing));
+    BSDFSample sample;
     m_bsdf.sample(
         sampling_context,
         m_bsdf_data,
         false,                  // not adjoint
         true,                   // multiply by |cos(incoming, normal)|
+        m_local_geometry,
+        Dual3f(outgoing),
         m_bsdf_sampling_modes,
         sample);
 
@@ -174,8 +179,7 @@ float BSDFSampler::evaluate(
             m_bsdf_data,
             false,              // not adjoint
             true,               // multiply by |cos(incoming, normal)|
-            Vector3f(m_geometric_normal),
-            Basis3f(m_shading_basis),
+            m_local_geometry,
             Vector3f(outgoing),
             Vector3f(incoming),
             light_sampling_modes,

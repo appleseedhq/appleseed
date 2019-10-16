@@ -51,8 +51,8 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/dual.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/arena.h"
@@ -188,6 +188,8 @@ namespace
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
+            const LocalGeometry&        local_geometry,
+            const Dual3f&               outgoing,
             const int                   modes,
             BSDFSample&                 sample) const override
         {
@@ -204,10 +206,12 @@ namespace
                 sampling_context.next2<float>(),
                 num_matching_closures,
                 pdfs);
+
             const Basis3f& modified_basis = c->get_closure_shading_basis(closure_index);
 
-            sample.m_shading_basis = modified_basis;
-            sample.m_shading_point->set_shading_basis(Basis3d(modified_basis));
+            LocalGeometry closure_geometry = local_geometry;
+            closure_geometry.m_shading_basis = modified_basis;
+            closure_geometry.m_shading_point->set_shading_basis(Basis3d(modified_basis));
 
             bsdf_from_closure_id(c->get_closure_type(closure_index))
                 .sample(
@@ -215,6 +219,8 @@ namespace
                     c->get_closure_input_values(closure_index),
                     adjoint,
                     false,
+                    closure_geometry,
+                    outgoing,
                     modes,
                     sample);
             sample.m_value *= c->get_closure_weight(closure_index);
@@ -241,9 +247,8 @@ namespace
                                 c->get_closure_input_values(i),
                                 adjoint,
                                 false,
-                                sample.m_geometric_normal,
-                                c->get_closure_shading_basis(closure_index),
-                                sample.m_outgoing.get_value(),
+                                closure_geometry,
+                                outgoing.get_value(),
                                 sample.m_incoming.get_value(),
                                 modes,
                                 s);
@@ -265,14 +270,15 @@ namespace
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
-            const Vector3f&             geometric_normal,
-            const Basis3f&              shading_basis,
+            const LocalGeometry&        local_geometry,
             const Vector3f&             outgoing,
             const Vector3f&             incoming,
             const int                   modes,
             DirectShadingComponents&    value) const override
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
+
+            LocalGeometry closure_geometry = local_geometry;
 
             float pdfs[CompositeSurfaceClosure::MaxClosureEntries];
             c->compute_pdfs(modes, pdfs);
@@ -283,6 +289,8 @@ namespace
             {
                 if (pdfs[i] > 0.0f)
                 {
+                    closure_geometry.m_shading_basis = c->get_closure_shading_basis(i);
+
                     DirectShadingComponents s;
                     const float closure_pdf =
                         pdfs[i] *
@@ -291,8 +299,7 @@ namespace
                                 c->get_closure_input_values(i),
                                 adjoint,
                                 false,
-                                geometric_normal,
-                                c->get_closure_shading_basis(i),
+                                closure_geometry,
                                 outgoing,
                                 incoming,
                                 modes,
@@ -313,13 +320,14 @@ namespace
         float evaluate_pdf(
             const void*                 data,
             const bool                  adjoint,
-            const Vector3f&             geometric_normal,
-            const Basis3f&              shading_basis,
+            const LocalGeometry&        local_geometry,
             const Vector3f&             outgoing,
             const Vector3f&             incoming,
             const int                   modes) const override
         {
             const CompositeSurfaceClosure* c = static_cast<const CompositeSurfaceClosure*>(data);
+
+            LocalGeometry closure_geometry = local_geometry;
 
             float pdfs[CompositeSurfaceClosure::MaxClosureEntries];
             c->compute_pdfs(modes, pdfs);
@@ -330,17 +338,19 @@ namespace
             {
                 if (pdfs[i] > 0.0f)
                 {
+                    closure_geometry.m_shading_basis = c->get_closure_shading_basis(i);
+
                     const float closure_pdf =
                         pdfs[i] *
                         bsdf_from_closure_id(c->get_closure_type(i))
                             .evaluate_pdf(
                                 c->get_closure_input_values(i),
                                 adjoint,
-                                geometric_normal,
-                                c->get_closure_shading_basis(i),
+                                closure_geometry,
                                 outgoing,
                                 incoming,
                                 modes);
+
                     pdf += closure_pdf;
                 }
             }

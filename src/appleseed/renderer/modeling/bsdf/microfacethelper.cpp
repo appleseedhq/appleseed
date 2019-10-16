@@ -48,7 +48,6 @@
 #include <cmath>
 
 using namespace foundation;
-
 namespace bf = boost::filesystem;
 
 namespace renderer

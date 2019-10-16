@@ -39,6 +39,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/dual.h"
 #include "foundation/math/fp.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/sampling/mappings.h"
@@ -106,6 +107,8 @@ namespace
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
+            const LocalGeometry&        local_geometry,
+            const Dual3f&               outgoing,
             const int                   modes,
             BSDFSample&                 sample) const override
         {
@@ -145,15 +148,15 @@ namespace
 
                 // Compute the incoming direction in world space.
                 const Vector3f wi = sample_hemisphere_cosine(Vector2f(s[0], s[1]));
-                incoming = sample.m_shading_basis.transform_to_parent(wi);
+                incoming = local_geometry.m_shading_basis.transform_to_parent(wi);
 
                 // Compute the halfway vector in world space.
-                h = normalize(incoming + sample.m_outgoing.get_value());
+                h = normalize(incoming + outgoing.get_value());
 
                 // Compute the glossy exponent, needed to evaluate the PDF.
-                const float cos_hn = dot(h, sample.m_shading_basis.get_normal());
-                const float cos_hu = dot(h, sample.m_shading_basis.get_tangent_u());
-                const float cos_hv = dot(h, sample.m_shading_basis.get_tangent_v());
+                const float cos_hn = dot(h, local_geometry.m_shading_basis.get_normal());
+                const float cos_hu = dot(h, local_geometry.m_shading_basis.get_tangent_u());
+                const float cos_hv = dot(h, local_geometry.m_shading_basis.get_tangent_v());
                 const float exp_den = 1.0f - cos_hn * cos_hn;
                 const float exp_u = values->m_nu * cos_hu * cos_hu;
                 const float exp_v = values->m_nv * cos_hv * cos_hv;
@@ -191,21 +194,20 @@ namespace
                 const float sin_theta = std::sqrt(1.0f - cos_theta * cos_theta);
 
                 // Compute the halfway vector in world space.
-                h = sample.m_shading_basis.transform_to_parent(
+                h = local_geometry.m_shading_basis.transform_to_parent(
                     Vector3f::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi));
 
                 // Compute the incoming direction in world space.
-                const Vector3f& outgoing = sample.m_outgoing.get_value();
-                incoming = reflect(outgoing, h);
-                if (force_above_surface(incoming, sample.m_geometric_normal))
-                    h = normalize(incoming + outgoing);
+                incoming = reflect(outgoing.get_value(), h);
+                if (force_above_surface(incoming, local_geometry.m_geometric_normal))
+                    h = normalize(incoming + outgoing.get_value());
             }
 
             // Compute dot products.
-            const Vector3f& shading_normal = sample.m_shading_basis.get_normal();
+            const Vector3f& shading_normal = local_geometry.m_shading_basis.get_normal();
             const float cos_in = std::abs(dot(incoming, shading_normal));
-            const float cos_on = std::abs(dot(sample.m_outgoing.get_value(), shading_normal));
-            const float cos_oh = std::min(std::abs(dot(sample.m_outgoing.get_value(), h)), 1.0f);
+            const float cos_on = std::abs(dot(outgoing.get_value(), shading_normal));
+            const float cos_oh = std::min(std::abs(dot(outgoing.get_value(), h)), 1.0f);
             const float cos_hn = std::abs(dot(h, shading_normal));
 
             float pdf_diffuse = 0.0f, pdf_glossy = 0.0f;
@@ -251,7 +253,7 @@ namespace
                 sample.m_value.m_beauty = sample.m_value.m_diffuse;
                 sample.m_value.m_beauty += sample.m_value.m_glossy;
                 sample.m_min_roughness = 1.0f;
-                sample.compute_reflected_differentials();
+                sample.compute_reflected_differentials(local_geometry, outgoing);
             }
         }
 
@@ -259,8 +261,7 @@ namespace
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
-            const Vector3f&             geometric_normal,
-            const Basis3f&              shading_basis,
+            const LocalGeometry&        local_geometry,
             const Vector3f&             outgoing,
             const Vector3f&             incoming,
             const int                   modes,
@@ -291,13 +292,13 @@ namespace
             const Vector3f h = normalize(incoming + outgoing);
 
             // Compute dot products.
-            const Vector3f& shading_normal = shading_basis.get_normal();
+            const Vector3f& shading_normal = local_geometry.m_shading_basis.get_normal();
             const float cos_in = std::abs(dot(incoming, shading_normal));
             const float cos_on = std::abs(dot(outgoing, shading_normal));
             const float cos_oh = std::abs(dot(outgoing, h));
             const float cos_hn = std::abs(dot(h, shading_normal));
-            const float cos_hu = std::abs(dot(h, shading_basis.get_tangent_u()));
-            const float cos_hv = std::abs(dot(h, shading_basis.get_tangent_v()));
+            const float cos_hu = std::abs(dot(h, local_geometry.m_shading_basis.get_tangent_u()));
+            const float cos_hv = std::abs(dot(h, local_geometry.m_shading_basis.get_tangent_v()));
 
             float pdf_diffuse = 0.0f, pdf_glossy = 0.0f;
 
@@ -347,8 +348,7 @@ namespace
         float evaluate_pdf(
             const void*                 data,
             const bool                  adjoint,
-            const Vector3f&             geometric_normal,
-            const Basis3f&              shading_basis,
+            const LocalGeometry&        local_geometry,
             const Vector3f&             outgoing,
             const Vector3f&             incoming,
             const int                   modes) const override
@@ -382,7 +382,7 @@ namespace
             if (ScatteringMode::has_diffuse(modes))
             {
                 // Evaluate the PDF of the diffuse component.
-                const float cos_in = std::abs(dot(incoming, shading_basis.get_normal()));
+                const float cos_in = std::abs(dot(incoming, local_geometry.m_shading_basis.get_normal()));
                 pdf_diffuse = cos_in * RcpPi<float>();
                 assert(pdf_diffuse >= 0.0f);
             }
@@ -391,9 +391,9 @@ namespace
             {
                 // Evaluate the PDF for the halfway vector (equation 6).
                 const float cos_oh = std::abs(dot(outgoing, h));
-                const float cos_hn = std::abs(dot(h, shading_basis.get_normal()));
-                const float cos_hu = dot(h, shading_basis.get_tangent_u());
-                const float cos_hv = dot(h, shading_basis.get_tangent_v());
+                const float cos_hn = std::abs(dot(h, local_geometry.m_shading_basis.get_normal()));
+                const float cos_hu = dot(h, local_geometry.m_shading_basis.get_tangent_u());
+                const float cos_hv = dot(h, local_geometry.m_shading_basis.get_tangent_v());
                 const float exp_num_u = values->m_nu * cos_hu * cos_hu;
                 const float exp_num_v = values->m_nv * cos_hv * cos_hv;
                 const float exp_den = 1.0f - cos_hn * cos_hn;

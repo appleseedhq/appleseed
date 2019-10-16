@@ -327,12 +327,19 @@ void DiagnosticSurfaceShader::evaluate(
                         ray.m_dir - ray.m_rx.m_dir,
                         ray.m_dir - ray.m_ry.m_dir);
 
-                    BSDFSample sample(&shading_point, Dual3f(outgoing));
+                    BSDF::LocalGeometry local_geometry;
+                    local_geometry.m_shading_point = &shading_point;
+                    local_geometry.m_geometric_normal = Vector3f(shading_point.get_geometric_normal());
+                    local_geometry.m_shading_basis = Basis3f(shading_point.get_shading_basis());
+
+                    BSDFSample sample;
                     material_data.m_bsdf->sample(
                         sampling_context,
                         material_data.m_bsdf->evaluate_inputs(shading_context, shading_point),
                         false,
                         false,
+                        local_geometry,
+                        Dual3f(outgoing),
                         ScatteringMode::All,
                         sample);
 
@@ -648,12 +655,19 @@ void DiagnosticSurfaceShader::evaluate(
                         ray.m_dir - ray.m_rx.m_dir,
                         ray.m_dir - ray.m_ry.m_dir);
 
-                    BSDFSample sample(&shading_point, Dual3f(outgoing));
+                    BSDF::LocalGeometry local_geometry;
+                    local_geometry.m_shading_point = &shading_point;
+                    local_geometry.m_geometric_normal = Vector3f(shading_point.get_geometric_normal());
+                    local_geometry.m_shading_basis = Basis3f(shading_point.get_shading_basis());
+
+                    BSDFSample sample;
                     material_data.m_bsdf->sample(
                         sampling_context,
                         material_data.m_bsdf->evaluate_inputs(shading_context, shading_point),
                         false,
                         false,
+                        local_geometry,
+                        Dual3f(outgoing),
                         ScatteringMode::All,
                         sample);
 

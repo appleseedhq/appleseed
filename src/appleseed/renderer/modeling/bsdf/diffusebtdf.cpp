@@ -40,6 +40,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/dual.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/vector.h"
@@ -107,6 +108,8 @@ namespace
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
+            const LocalGeometry&        local_geometry,
+            const Dual3f&               outgoing,
             const int                   modes,
             BSDFSample&                 sample) const override
         {
@@ -132,7 +135,7 @@ namespace
                 // Flip the incoming direction to the other side of the surface.
                 wi.y = -wi.y;
 
-                sample.m_incoming = Dual3f(sample.m_shading_basis.transform_to_parent(wi));
+                sample.m_incoming = Dual3f(local_geometry.m_shading_basis.transform_to_parent(wi));
 
                 // Compute the BRDF value.
                 sample.m_value.m_diffuse = values->m_transmittance;
@@ -149,8 +152,7 @@ namespace
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
-            const Vector3f&             geometric_normal,
-            const Basis3f&              shading_basis,
+            const LocalGeometry&        local_geometry,
             const Vector3f&             outgoing,
             const Vector3f&             incoming,
             const int                   modes,
@@ -159,7 +161,7 @@ namespace
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0f;
 
-            const Vector3f& n = shading_basis.get_normal();
+            const Vector3f& n = local_geometry.m_shading_basis.get_normal();
             const float cos_in = dot(incoming, n);
             const float cos_on = dot(outgoing, n);
 
@@ -185,8 +187,7 @@ namespace
         float evaluate_pdf(
             const void*                 data,
             const bool                  adjoint,
-            const Vector3f&             geometric_normal,
-            const Basis3f&              shading_basis,
+            const LocalGeometry&        local_geometry,
             const Vector3f&             outgoing,
             const Vector3f&             incoming,
             const int                   modes) const override
@@ -194,7 +195,7 @@ namespace
             if (!ScatteringMode::has_diffuse(modes))
                 return 0.0f;
 
-            const Vector3f& n = shading_basis.get_normal();
+            const Vector3f& n = local_geometry.m_shading_basis.get_normal();
             const float cos_in = dot(incoming, n);
             const float cos_on = dot(outgoing, n);
 

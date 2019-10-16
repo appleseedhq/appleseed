@@ -476,14 +476,17 @@ namespace
                         vertex.get_shading_normal());
 
                 // Evaluate the BSDF at the vertex position.
+                BSDF::LocalGeometry local_geometry;
+                local_geometry.m_shading_point = vertex.m_shading_point;
+                local_geometry.m_geometric_normal = Vector3f(geometric_normal);
+                local_geometry.m_shading_basis = Basis3f(vertex.get_shading_basis());
                 DirectShadingComponents bsdf_value;
                 const float bsdf_prob =
                     vertex.m_bsdf->evaluate(
                         vertex.m_bsdf_data,
                         true,                                       // adjoint
                         true,                                       // multiply by |cos(incoming, normal)|
-                        Vector3f(geometric_normal),
-                        Basis3f(vertex.get_shading_basis()),
+                        local_geometry,
                         Vector3f(vertex.m_outgoing.get_value()),    // outgoing (toward the light)
                         -Vector3f(camera_outgoing),                 // incoming (toward the camera)
                         ScatteringMode::All,                        // todo: likely incorrect

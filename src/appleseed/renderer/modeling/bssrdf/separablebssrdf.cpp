@@ -395,15 +395,17 @@ bool SeparableBSSRDF::do_sample(
     bssrdf_sample.m_brdf_data = &m_brdf_data;
 
     // Sample the BSDF at the incoming point.
-    bsdf_sample.m_shading_point = &bssrdf_sample.m_incoming_point;
-    bsdf_sample.m_geometric_normal = Vector3f(bssrdf_sample.m_incoming_point.get_geometric_normal());
-    bsdf_sample.m_shading_basis = Basis3f(bssrdf_sample.m_incoming_point.get_shading_basis());
-    bsdf_sample.m_outgoing = Dual3f(outgoing_dir);      // chosen arbitrarily (no outgoing direction at the incoming point)
+    BSDF::LocalGeometry local_geometry;
+    local_geometry.m_shading_point = &bssrdf_sample.m_incoming_point;
+    local_geometry.m_geometric_normal = Vector3f(bssrdf_sample.m_incoming_point.get_geometric_normal());
+    local_geometry.m_shading_basis = Basis3f(bssrdf_sample.m_incoming_point.get_shading_basis());
     bssrdf_sample.m_brdf->sample(
         sampling_context,
         bssrdf_sample.m_brdf_data,
         false,
         true,
+        local_geometry,
+        Dual3f(outgoing_dir),   // chosen arbitrarily (no outgoing direction at the incoming point)
         ScatteringMode::All,
         bsdf_sample);
 

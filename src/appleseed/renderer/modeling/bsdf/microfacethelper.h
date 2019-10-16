@@ -39,6 +39,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/dual.h"
 #include "foundation/math/microfacet.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -57,7 +58,7 @@ namespace renderer
 
 inline float microfacet_alpha_from_roughness(const float roughness)
 {
-    return std::max(0.001f, foundation::square(roughness));
+    return std::max(0.001f, roughness * roughness);
 }
 
 inline void microfacet_alpha_from_roughness(
@@ -66,17 +67,18 @@ inline void microfacet_alpha_from_roughness(
     float&          alpha_x,
     float&          alpha_y)
 {
+    const float square_roughness = roughness * roughness;
     if (anisotropy >= 0.0f)
     {
         const float aspect = std::sqrt(1.0f - anisotropy * 0.9f);
-        alpha_x = std::max(0.001f, foundation::square(roughness) / aspect);
-        alpha_y = std::max(0.001f, foundation::square(roughness) * aspect);
+        alpha_x = std::max(0.001f, square_roughness / aspect);
+        alpha_y = std::max(0.001f, square_roughness * aspect);
     }
     else
     {
         const float aspect = std::sqrt(1.0f + anisotropy * 0.9f);
-        alpha_x = std::max(0.001f, foundation::square(roughness) * aspect);
-        alpha_y = std::max(0.001f, foundation::square(roughness) / aspect);
+        alpha_x = std::max(0.001f, square_roughness * aspect);
+        alpha_y = std::max(0.001f, square_roughness / aspect);
     }
 }
 
@@ -95,10 +97,11 @@ class MicrofacetBRDFHelper
         const float                     alpha_x,
         const float                     alpha_y,
         FresnelFun                      f,
+        const BSDF::LocalGeometry&      local_geometry,
+        const foundation::Dual3f&       outgoing,
         BSDFSample&                     sample)
     {
-        const foundation::Vector3f& outgoing = sample.m_outgoing.get_value();
-        foundation::Vector3f wo = sample.m_shading_basis.transform_to_local(outgoing);
+        foundation::Vector3f wo = local_geometry.m_shading_basis.transform_to_local(outgoing.get_value());
 
         if (wo.y == 0.0f)
             return;
@@ -115,7 +118,7 @@ class MicrofacetBRDFHelper
 
         // Force the outgoing direction to lie above the geometric surface.
         const foundation::Vector3f ng =
-            sample.m_shading_basis.transform_to_local(sample.m_geometric_normal);
+            local_geometry.m_shading_basis.transform_to_local(local_geometry.m_geometric_normal);
         if (BSDF::force_above_surface(wi, ng))
             m = foundation::normalize(wo + wi);
 
@@ -136,7 +139,7 @@ class MicrofacetBRDFHelper
         //             pdf(
         //                 alpha_x,
         //                 alpha_y,
-        //                 sample.m_shading_basis,
+        //                 local_geometry.m_shading_basis,
         //                 outgoing,
         //                 incoming);
         //
@@ -165,10 +168,10 @@ class MicrofacetBRDFHelper
             sample.m_value.m_glossy *= D * G / std::abs(4.0f * cos_on * cos_in);
 
             const foundation::Vector3f incoming =
-                sample.m_shading_basis.transform_to_parent(wi);
+                local_geometry.m_shading_basis.transform_to_parent(wi);
             sample.m_incoming = foundation::Dual<foundation::Vector3f>(incoming);
 
-            sample.compute_reflected_differentials();
+            sample.compute_reflected_differentials(local_geometry, outgoing);
         }
     }
 
@@ -176,14 +179,14 @@ class MicrofacetBRDFHelper
     static float evaluate(
         const float                     alpha_x,
         const float                     alpha_y,
-        const foundation::Basis3f&      shading_basis,
+        FresnelFun                      f,
+        const BSDF::LocalGeometry&      local_geometry,
         const foundation::Vector3f&     outgoing,
         const foundation::Vector3f&     incoming,
-        FresnelFun                      f,
         Spectrum&                       value)
     {
-        foundation::Vector3f wo = shading_basis.transform_to_local(outgoing);
-        foundation::Vector3f wi = shading_basis.transform_to_local(incoming);
+        foundation::Vector3f wo = local_geometry.m_shading_basis.transform_to_local(outgoing);
+        foundation::Vector3f wi = local_geometry.m_shading_basis.transform_to_local(incoming);
 
         if (wo.y == 0.0f || wi.y == 0.0f)
             return 0.0f;
@@ -226,12 +229,12 @@ class MicrofacetBRDFHelper
     static float pdf(
         const float                     alpha_x,
         const float                     alpha_y,
-        const foundation::Basis3f&      shading_basis,
+        const BSDF::LocalGeometry&      local_geometry,
         const foundation::Vector3f&     outgoing,
         const foundation::Vector3f&     incoming)
     {
-        foundation::Vector3f wo = shading_basis.transform_to_local(outgoing);
-        foundation::Vector3f wi = shading_basis.transform_to_local(incoming);
+        foundation::Vector3f wo = local_geometry.m_shading_basis.transform_to_local(outgoing);
+        foundation::Vector3f wi = local_geometry.m_shading_basis.transform_to_local(incoming);
 
         // Flip the incoming and outgoing vectors to be in the same
         // hemisphere as the shading normal if needed.
@@ -256,10 +259,7 @@ class MicrofacetBRDFHelper
     }
 };
 
-float get_directional_albedo(
-    const float                 cos_theta,
-    const float                 roughness);
-
+float get_directional_albedo(const float cos_theta, const float roughness);
 float get_average_albedo(const float roughness);
 
 // Write the computed tables to OpenEXR images and C++ arrays.

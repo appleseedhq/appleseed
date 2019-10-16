@@ -44,6 +44,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/dual.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/microfacet.h"
 #include "foundation/math/minmax.h"
@@ -69,8 +70,7 @@ namespace renderer      { class Assembly; }
 namespace renderer      { class Project; }
 
 using namespace foundation;
-
-namespace bfs = boost::filesystem;
+namespace bf = boost::filesystem;
 
 namespace renderer
 {
@@ -256,6 +256,8 @@ namespace
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
+            const LocalGeometry&        local_geometry,
+            const Dual3f&               outgoing,
             const int                   modes,
             BSDFSample&                 sample) const override
         {
@@ -267,12 +269,12 @@ namespace
             const Basis3f basis(
                 values->m_precomputed.m_backfacing
                     ? Basis3f(
-                          -sample.m_shading_basis.get_normal(),
-                           sample.m_shading_basis.get_tangent_u(),
-                          -sample.m_shading_basis.get_tangent_v())
-                    : sample.m_shading_basis);
+                          -local_geometry.m_shading_basis.get_normal(),
+                           local_geometry.m_shading_basis.get_tangent_u(),
+                          -local_geometry.m_shading_basis.get_tangent_v())
+                    : local_geometry.m_shading_basis);
 
-            const Vector3f wo = basis.transform_to_local(sample.m_outgoing.get_value());
+            const Vector3f wo = basis.transform_to_local(outgoing.get_value());
 
             const float eta =
                 wo.y > 0.0f
@@ -385,8 +387,8 @@ namespace
                 sample.m_min_roughness = values->m_roughness;
 
                 if (is_refraction)
-                    sample.compute_transmitted_differentials(1.0f / eta);
-                else sample.compute_reflected_differentials();
+                    sample.compute_transmitted_differentials(local_geometry, 1.0f / eta, outgoing);
+                else sample.compute_reflected_differentials(local_geometry, outgoing);
             }
         }
 
@@ -394,8 +396,7 @@ namespace
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
-            const Vector3f&             geometric_normal,
-            const Basis3f&              shading_basis,
+            const LocalGeometry&        local_geometry,
             const Vector3f&             outgoing,
             const Vector3f&             incoming,
             const int                   modes,
@@ -408,8 +409,11 @@ namespace
 
             const Basis3f basis(
                 values->m_precomputed.m_backfacing
-                    ? Basis3f(-shading_basis.get_normal(), shading_basis.get_tangent_u(), -shading_basis.get_tangent_v())
-                    : shading_basis);
+                    ? Basis3f(
+                          -local_geometry.m_shading_basis.get_normal(),
+                           local_geometry.m_shading_basis.get_tangent_u(),
+                          -local_geometry.m_shading_basis.get_tangent_v())
+                    : local_geometry.m_shading_basis);
 
             const Vector3f wo = basis.transform_to_local(outgoing);
 
@@ -503,8 +507,7 @@ namespace
         float evaluate_pdf(
             const void*                 data,
             const bool                  adjoint,
-            const Vector3f&             geometric_normal,
-            const Basis3f&              shading_basis,
+            const LocalGeometry&        local_geometry,
             const Vector3f&             outgoing,
             const Vector3f&             incoming,
             const int                   modes) const override
@@ -516,8 +519,11 @@ namespace
 
             const Basis3f basis(
                 values->m_precomputed.m_backfacing
-                    ? Basis3f(-shading_basis.get_normal(), shading_basis.get_tangent_u(), -shading_basis.get_tangent_v())
-                    : shading_basis);
+                    ? Basis3f(
+                          -local_geometry.m_shading_basis.get_normal(),
+                           local_geometry.m_shading_basis.get_tangent_u(),
+                          -local_geometry.m_shading_basis.get_tangent_v())
+                    : local_geometry.m_shading_basis);
 
             const Vector3f wo = basis.transform_to_local(outgoing);
 
@@ -1206,7 +1212,7 @@ auto_release_ptr<BSDF> GlassBSDFFactory::create(
 
 void write_glass_directional_albedo_tables(const char* directory)
 {
-    const bfs::path dir(directory);
+    const bf::path dir(directory);
 
     const GlassAlbedoTable ggx_table(MinEta, MaxEta);
     const GlassAlbedoTable ggx_rcp_eta_table(1.0f / MaxEta, 1.0f / MinEta);

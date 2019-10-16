@@ -280,14 +280,18 @@ namespace
                     const BDPTVertex& prev2_vertex = *get_vertex_start_from_light(i - 2);
                     const BDPTVertex& prev_vertex = *get_vertex_start_from_light(i - 1);
                     const BDPTVertex& vertex = *get_vertex_start_from_light(i);
-                    float pdf_w = prev_vertex.m_bsdf->evaluate_pdf(
-                        prev_vertex.m_bsdf_data,
-                        true,
-                        static_cast<Vector3f>(prev_vertex.m_geometric_normal),
-                        prev_vertex.m_shading_basis,
-                        static_cast<Vector3f>(normalize(vertex.m_position - prev_vertex.m_position)),
-                        static_cast<Vector3f>(normalize(prev2_vertex.m_position - prev_vertex.m_position)),
-                        ScatteringMode::All);
+                    BSDF::LocalGeometry local_geometry;
+                    local_geometry.m_shading_point = &prev_vertex.m_shading_point;
+                    local_geometry.m_geometric_normal = Vector3f(prev_vertex.m_geometric_normal);
+                    local_geometry.m_shading_basis = prev_vertex.m_shading_basis;
+                    const float pdf_w =
+                        prev_vertex.m_bsdf->evaluate_pdf(
+                            prev_vertex.m_bsdf_data,
+                            true,
+                            local_geometry,
+                            static_cast<Vector3f>(normalize(vertex.m_position - prev_vertex.m_position)),
+                            static_cast<Vector3f>(normalize(prev2_vertex.m_position - prev_vertex.m_position)),
+                            ScatteringMode::All);
                     float pdf_a = static_cast<float>(prev_vertex.convert_density(pdf_w, vertex));
                     assert(pdf_a >= 0.0f);
                     result *= pdf_a;
@@ -301,14 +305,18 @@ namespace
                 {
                     const BDPTVertex& prev_vertex = *get_vertex_start_from_camera(i - 1);
                     const BDPTVertex& vertex = *get_vertex_start_from_camera(i);
-                    float pdf_w = prev_vertex.m_bsdf->evaluate_pdf(
-                        prev_vertex.m_bsdf_data,
-                        false,
-                        static_cast<Vector3f>(prev_vertex.m_geometric_normal),
-                        prev_vertex.m_shading_basis,
-                        static_cast<Vector3f>(normalize(vertex.m_position - prev_vertex.m_position)),
-                        static_cast<Vector3f>(prev_vertex.m_dir_to_prev_vertex),
-                        ScatteringMode::All);
+                    BSDF::LocalGeometry local_geometry;
+                    local_geometry.m_shading_point = &prev_vertex.m_shading_point;
+                    local_geometry.m_geometric_normal = Vector3f(prev_vertex.m_geometric_normal);
+                    local_geometry.m_shading_basis = prev_vertex.m_shading_basis;
+                    const float pdf_w =
+                        prev_vertex.m_bsdf->evaluate_pdf(
+                            prev_vertex.m_bsdf_data,
+                            false,
+                            local_geometry,
+                            static_cast<Vector3f>(normalize(vertex.m_position - prev_vertex.m_position)),
+                            static_cast<Vector3f>(prev_vertex.m_dir_to_prev_vertex),
+                            ScatteringMode::All);
                     float pdf_a = static_cast<float>(prev_vertex.convert_density(pdf_w, vertex));
                     assert(pdf_a >= 0.0f);
                     result *= pdf_a;
@@ -318,14 +326,18 @@ namespace
                     const BDPTVertex& prev2_vertex = *get_vertex_start_from_camera(i - 2);
                     const BDPTVertex& prev_vertex = *get_vertex_start_from_camera(i - 1);
                     const BDPTVertex& vertex = *get_vertex_start_from_camera(i);
-                    float pdf_w = prev_vertex.m_bsdf->evaluate_pdf(
-                        prev_vertex.m_bsdf_data,
-                        false,
-                        static_cast<Vector3f>(prev_vertex.m_geometric_normal),
-                        prev_vertex.m_shading_basis,
-                        static_cast<Vector3f>(normalize(vertex.m_position - prev_vertex.m_position)),
-                        static_cast<Vector3f>(normalize(prev2_vertex.m_position - prev_vertex.m_position)),
-                        ScatteringMode::All);
+                    BSDF::LocalGeometry local_geometry;
+                    local_geometry.m_shading_point = &prev_vertex.m_shading_point;
+                    local_geometry.m_geometric_normal = Vector3f(prev_vertex.m_geometric_normal);
+                    local_geometry.m_shading_basis = prev_vertex.m_shading_basis;
+                    const float pdf_w =
+                        prev_vertex.m_bsdf->evaluate_pdf(
+                            prev_vertex.m_bsdf_data,
+                            false,
+                            local_geometry,
+                            static_cast<Vector3f>(normalize(vertex.m_position - prev_vertex.m_position)),
+                            static_cast<Vector3f>(normalize(prev2_vertex.m_position - prev_vertex.m_position)),
+                            ScatteringMode::All);
                     float pdf_a = static_cast<float>(prev_vertex.convert_density(pdf_w, vertex));
                     assert(pdf_a >= 0.0f);
                     result *= pdf_a;
@@ -371,13 +383,17 @@ namespace
 
                 Spectrum geometry = compute_geometry_term(shading_context, shading_point, camera_vertex, light_vertex);
 
+                BSDF::LocalGeometry local_geometry;
+                local_geometry.m_shading_point = &camera_vertex.m_shading_point;
+                local_geometry.m_geometric_normal = Vector3f(camera_vertex.m_geometric_normal);
+                local_geometry.m_shading_basis = camera_vertex.m_shading_basis;
+
                 DirectShadingComponents camera_eval_bsdf;
                 camera_vertex.m_bsdf->evaluate(
                     camera_vertex.m_bsdf_data,
                     false,   // Adjoint
                     false,
-                    static_cast<Vector3f>(camera_vertex.m_geometric_normal),
-                    camera_vertex.m_shading_basis,
+                    local_geometry,
                     static_cast<Vector3f>(normalize(light_vertex.m_position - camera_vertex.m_position)),
                     static_cast<Vector3f>(camera_vertex.m_dir_to_prev_vertex),
                     ScatteringMode::All,
@@ -394,25 +410,33 @@ namespace
                     light_vertex.m_bsdf_data == nullptr || camera_vertex.m_bsdf == nullptr)
                     return;
 
+                BSDF::LocalGeometry camera_local_geometry;
+                camera_local_geometry.m_shading_point = &camera_vertex.m_shading_point;
+                camera_local_geometry.m_geometric_normal = Vector3f(camera_vertex.m_geometric_normal);
+                camera_local_geometry.m_shading_basis = camera_vertex.m_shading_basis;
+
                 DirectShadingComponents camera_eval_bsdf;
                 camera_vertex.m_bsdf->evaluate(
                     camera_vertex.m_bsdf_data,
                     false,   // Adjoint
                     false,
-                    static_cast<Vector3f>(camera_vertex.m_geometric_normal),
-                    camera_vertex.m_shading_basis,
+                    camera_local_geometry,
                     static_cast<Vector3f>(normalize(light_vertex.m_position - camera_vertex.m_position)),
                     static_cast<Vector3f>(camera_vertex.m_dir_to_prev_vertex),
                     ScatteringMode::All,
                     camera_eval_bsdf);
+
+                BSDF::LocalGeometry light_local_geometry;
+                light_local_geometry.m_shading_point = &light_vertex.m_shading_point;
+                light_local_geometry.m_geometric_normal = Vector3f(light_vertex.m_geometric_normal);
+                light_local_geometry.m_shading_basis = light_vertex.m_shading_basis;
 
                 DirectShadingComponents light_eval_bsdf;
                 light_vertex.m_bsdf->evaluate(
                     light_vertex.m_bsdf_data,
                     true,   // Adjoint
                     false,
-                    static_cast<Vector3f>(light_vertex.m_geometric_normal),
-                    light_vertex.m_shading_basis,
+                    light_local_geometry,
                     static_cast<Vector3f>(normalize(camera_vertex.m_position - light_vertex.m_position)),
                     static_cast<Vector3f>(light_vertex.m_dir_to_prev_vertex),
                     ScatteringMode::All,

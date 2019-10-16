@@ -42,6 +42,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/dual.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/microfacet.h"
 #include "foundation/math/qmc.h"
@@ -232,14 +233,16 @@ namespace
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
+            const LocalGeometry&        local_geometry,
+            const Dual3f&               outgoing,
             const int                   modes,
             BSDFSample&                 sample) const override
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
             // Define aliases to match notations in the paper.
-            const Vector3f& V = sample.m_outgoing.get_value();
-            const Vector3f& N = sample.m_shading_basis.get_normal();
+            const Vector3f& V = outgoing.get_value();
+            const Vector3f& N = local_geometry.m_shading_basis.get_normal();
             const float dot_VN = std::abs(dot(V, N));
 
             // Compute specular albedo for outgoing angle.
@@ -277,7 +280,7 @@ namespace
 
                 // Compute the incoming direction.
                 const Vector3f wi = sample_hemisphere_cosine(Vector2f(s[0], s[1]));
-                incoming = sample.m_shading_basis.transform_to_parent(wi);
+                incoming = local_geometry.m_shading_basis.transform_to_parent(wi);
 
                 // Compute the halfway vector.
                 H = normalize(incoming + V);
@@ -292,7 +295,7 @@ namespace
 
                 // Sample the microfacet distribution to get an halfway vector H.
                 const Vector3f local_H = m_mdf->sample(Vector2f(s[0], s[1]));
-                H = sample.m_shading_basis.transform_to_parent(local_H);
+                H = local_geometry.m_shading_basis.transform_to_parent(local_H);
 
                 // The incoming direction is the reflection of V around H.
                 dot_HV = dot(H, V);
@@ -352,7 +355,7 @@ namespace
                 sample.m_value.m_beauty = sample.m_value.m_diffuse;
                 sample.m_value.m_beauty += sample.m_value.m_glossy;
                 sample.m_min_roughness = values->m_roughness;
-                sample.compute_reflected_differentials();
+                sample.compute_reflected_differentials(local_geometry, outgoing);
             }
         }
 
@@ -360,8 +363,7 @@ namespace
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
-            const Vector3f&             geometric_normal,
-            const Basis3f&              shading_basis,
+            const LocalGeometry&        local_geometry,
             const Vector3f&             outgoing,
             const Vector3f&             incoming,
             const int                   modes,
@@ -370,7 +372,7 @@ namespace
             // Define aliases to match the notations in the paper.
             const Vector3f& V = outgoing;
             const Vector3f& L = incoming;
-            const Vector3f& N = shading_basis.get_normal();
+            const Vector3f& N = local_geometry.m_shading_basis.get_normal();
             const float dot_VN = std::abs(dot(V, N));
             const float dot_LN = std::abs(dot(L, N));
 
@@ -446,8 +448,7 @@ namespace
         float evaluate_pdf(
             const void*                 data,
             const bool                  adjoint,
-            const Vector3f&             geometric_normal,
-            const Basis3f&              shading_basis,
+            const LocalGeometry&        local_geometry,
             const Vector3f&             outgoing,
             const Vector3f&             incoming,
             const int                   modes) const override
@@ -455,7 +456,7 @@ namespace
             // Define aliases to match the notations in the paper.
             const Vector3f& V = outgoing;
             const Vector3f& L = incoming;
-            const Vector3f& N = shading_basis.get_normal();
+            const Vector3f& N = local_geometry.m_shading_basis.get_normal();
             const float dot_VN = std::abs(dot(V, N));
             const float dot_LN = std::abs(dot(L, N));
 
