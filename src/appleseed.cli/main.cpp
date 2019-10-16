@@ -264,7 +264,7 @@ namespace
         {
             params.insert_path(
                 "uniform_pixel_renderer.samples",
-                g_cl.m_samples.values());
+                g_cl.m_samples.value());
         }
 
         if (g_cl.m_passes.is_set())
