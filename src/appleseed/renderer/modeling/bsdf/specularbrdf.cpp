@@ -41,6 +41,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/dual.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -86,6 +87,8 @@ namespace
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
+            const LocalGeometry&        local_geometry,
+            const Dual3f&               outgoing,
             const int                   modes,
             BSDFSample&                 sample) const override
         {
@@ -93,8 +96,8 @@ namespace
                 return;
 
             // No reflection below the shading surface.
-            const Vector3f& shading_normal = sample.m_shading_basis.get_normal();
-            const float cos_on = dot(sample.m_outgoing.get_value(), shading_normal);
+            const Vector3f& shading_normal = local_geometry.m_shading_basis.get_normal();
+            const float cos_on = dot(outgoing.get_value(), shading_normal);
             if (cos_on < 0.0f)
                 return;
 
@@ -104,7 +107,7 @@ namespace
                 values->m_reflectance,
                 values->m_reflectance_multiplier);
 
-            SpecularBRDFHelper::sample(f, sample);
+            SpecularBRDFHelper::sample(f, local_geometry, outgoing, sample);
 
             if (sample.get_mode() != ScatteringMode::None)
                 sample.m_value.m_beauty = sample.m_value.m_glossy;
@@ -114,8 +117,7 @@ namespace
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
-            const Vector3f&             geometric_normal,
-            const Basis3f&              shading_basis,
+            const LocalGeometry&        local_geometry,
             const Vector3f&             outgoing,
             const Vector3f&             incoming,
             const int                   modes,
@@ -127,8 +129,7 @@ namespace
         float evaluate_pdf(
             const void*                 data,
             const bool                  adjoint,
-            const Vector3f&             geometric_normal,
-            const Basis3f&              shading_basis,
+            const LocalGeometry&        local_geometry,
             const Vector3f&             outgoing,
             const Vector3f&             incoming,
             const int                   modes) const override

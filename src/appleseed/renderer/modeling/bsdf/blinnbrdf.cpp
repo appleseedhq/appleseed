@@ -43,6 +43,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/dual.h"
 #include "foundation/math/microfacet.h"
 #include "foundation/math/minmax.h"
 #include "foundation/math/sampling/mappings.h"
@@ -145,6 +146,8 @@ namespace
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
+            const LocalGeometry&        local_geometry,
+            const Dual3f&               outgoing,
             const int                   modes,
             BSDFSample&                 sample) const override
         {
@@ -159,6 +162,8 @@ namespace
                 values->m_exponent,
                 values->m_exponent,
                 f,
+                local_geometry,
+                outgoing,
                 sample);
             sample.m_value.m_beauty = sample.m_value.m_glossy;
 
@@ -169,8 +174,7 @@ namespace
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
-            const Vector3f&             geometric_normal,
-            const Basis3f&              shading_basis,
+            const LocalGeometry&        local_geometry,
             const Vector3f&             outgoing,
             const Vector3f&             incoming,
             const int                   modes,
@@ -186,10 +190,10 @@ namespace
                 MicrofacetBRDFHelper<BlinnMDF, false>::evaluate(
                     values->m_exponent,
                     values->m_exponent,
-                    shading_basis,
+                    f,
+                    local_geometry,
                     outgoing,
                     incoming,
-                    f,
                     value.m_glossy);
             assert(pdf >= 0.0f);
 
@@ -201,8 +205,7 @@ namespace
         float evaluate_pdf(
             const void*                 data,
             const bool                  adjoint,
-            const Vector3f&             geometric_normal,
-            const Basis3f&              shading_basis,
+            const LocalGeometry&        local_geometry,
             const Vector3f&             outgoing,
             const Vector3f&             incoming,
             const int                   modes) const override
@@ -216,7 +219,7 @@ namespace
                 MicrofacetBRDFHelper<BlinnMDF, false>::pdf(
                     values->m_exponent,
                     values->m_exponent,
-                    shading_basis,
+                    local_geometry,
                     outgoing,
                     incoming);
             assert(pdf >= 0.0f);

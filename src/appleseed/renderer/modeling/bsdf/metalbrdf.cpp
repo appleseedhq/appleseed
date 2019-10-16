@@ -44,6 +44,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/dual.h"
 #include "foundation/math/microfacet.h"
 #include "foundation/math/minmax.h"
 #include "foundation/math/sampling/mappings.h"
@@ -147,6 +148,8 @@ namespace
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
+            const LocalGeometry&        local_geometry,
+            const Dual3f&               outgoing,
             const int                   modes,
             BSDFSample&                 sample) const override
         {
@@ -163,7 +166,7 @@ namespace
             {
                 if (ScatteringMode::has_specular(modes))
                 {
-                    SpecularBRDFHelper::sample(f, sample);
+                    SpecularBRDFHelper::sample(f, local_geometry, outgoing, sample);
                     sample.m_value.m_beauty = sample.m_value.m_glossy;
                 }
 
@@ -184,14 +187,16 @@ namespace
                     alpha_x,
                     alpha_y,
                     f,
+                    local_geometry,
+                    outgoing,
                     sample);
 
                 if (sample.get_mode() != ScatteringMode::None)
                 {
                     apply_energy_compensation_factor(
                         values,
-                        sample.m_outgoing.get_value(),
-                        sample.m_shading_basis.get_normal(),
+                        outgoing.get_value(),
+                        local_geometry.m_shading_basis.get_normal(),
                         sample.m_value.m_glossy);
 
                     sample.m_min_roughness = values->m_roughness;
@@ -205,8 +210,7 @@ namespace
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
-            const Vector3f&             geometric_normal,
-            const Basis3f&              shading_basis,
+            const LocalGeometry&        local_geometry,
             const Vector3f&             outgoing,
             const Vector3f&             incoming,
             const int                   modes,
@@ -234,16 +238,16 @@ namespace
                 MicrofacetBRDFHelper<GGXMDF, false>::evaluate(
                     alpha_x,
                     alpha_y,
-                    shading_basis,
+                    f,
+                    local_geometry,
                     outgoing,
                     incoming,
-                    f,
                     value.m_glossy);
 
             apply_energy_compensation_factor(
                 values,
                 outgoing,
-                shading_basis.get_normal(),
+                local_geometry.m_shading_basis.get_normal(),
                 value.m_glossy);
 
             value.m_beauty = value.m_glossy;
@@ -255,8 +259,7 @@ namespace
         float evaluate_pdf(
             const void*                 data,
             const bool                  adjoint,
-            const Vector3f&             geometric_normal,
-            const Basis3f&              shading_basis,
+            const LocalGeometry&        local_geometry,
             const Vector3f&             outgoing,
             const Vector3f&             incoming,
             const int                   modes) const override
@@ -277,7 +280,7 @@ namespace
                 MicrofacetBRDFHelper<GGXMDF, false>::pdf(
                     alpha_x,
                     alpha_y,
-                    shading_basis,
+                    local_geometry,
                     outgoing,
                     incoming);
 

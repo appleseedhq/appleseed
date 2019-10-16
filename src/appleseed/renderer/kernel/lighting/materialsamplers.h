@@ -31,14 +31,13 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/shadingray.h"
+#include "renderer/modeling/bsdf/bsdf.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/basis.h"
 #include "foundation/math/dual.h"
 #include "foundation/math/vector.h"
 
 // Forward declarations.
-namespace renderer  { class BSDF; }
 namespace renderer  { class DirectShadingComponents; }
 namespace renderer  { class ShadingContext; }
 namespace renderer  { class ShadingPoint; }
@@ -140,9 +139,8 @@ class BSDFSampler
     const BSDF&                         m_bsdf;
     const void*                         m_bsdf_data;
     const int                           m_bsdf_sampling_modes;
-    const foundation::Basis3d&          m_shading_basis;
-    const foundation::Vector3d&         m_geometric_normal;
     const ShadingPoint&                 m_shading_point;
+    BSDF::LocalGeometry                 m_local_geometry;
 };
 
 class VolumeSampler

@@ -46,15 +46,16 @@ class SpecularBRDFHelper
   public:
     template <typename FresnelFun>
     static void sample(
-        FresnelFun          f,
-        BSDFSample&         sample)
+        FresnelFun                  f,
+        const BSDF::LocalGeometry&  local_geometry,
+        const foundation::Dual3f&   outgoing,
+        BSDFSample&                 sample)
     {
-        const foundation::Vector3f& n = sample.m_shading_basis.get_normal();
-        const foundation::Vector3f& outgoing = sample.m_outgoing.get_value();
+        const foundation::Vector3f& n = local_geometry.m_shading_basis.get_normal();
 
         // Compute the incoming direction.
-        foundation::Vector3f incoming = foundation::reflect(outgoing, n);
-        BSDF::force_above_surface(incoming, sample.m_geometric_normal);
+        foundation::Vector3f incoming = foundation::reflect(outgoing.get_value(), n);
+        BSDF::force_above_surface(incoming, local_geometry.m_geometric_normal);
 
         // No reflection below the shading surface.
         const float cos_in = dot(incoming, n);
@@ -63,11 +64,11 @@ class SpecularBRDFHelper
 
         sample.set_to_scattering(ScatteringMode::Specular, BSDF::DiracDelta);
 
-        f(outgoing, n, n, sample.m_value.m_glossy);
+        f(outgoing.get_value(), n, n, sample.m_value.m_glossy);
         sample.m_value.m_glossy /= cos_in;
 
         sample.m_incoming = foundation::Dual3f(incoming);
-        sample.compute_reflected_differentials();
+        sample.compute_reflected_differentials(local_geometry, outgoing);
     }
 };
 

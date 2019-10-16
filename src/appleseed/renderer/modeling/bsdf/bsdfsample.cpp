@@ -29,9 +29,11 @@
 // Interface header.
 #include "bsdfsample.h"
 
+// appleseed.foundation headers.
+#include "foundation/math/basis.h"
+
 // Standard headers.
 #include <algorithm>
-#include <cassert>
 #include <cmath>
 
 using namespace foundation;
@@ -43,40 +45,47 @@ namespace renderer
 // BSDFSample class implementation.
 //
 
-void BSDFSample::compute_reflected_differentials()
+void BSDFSample::compute_reflected_differentials(
+    const BSDF::LocalGeometry&  local_geometry,
+    const Dual3f&               outgoing)
 {
-    if (m_outgoing.has_derivatives())
+    if (outgoing.has_derivatives())
     {
         //
-        // Physically Based Rendering, first edition, page 513.
+        // Reference:
+        //
+        //   Physically Based Rendering, first edition, page 513.
         //
 
         Vector3f dndx, dndy;
         float ddndx, ddndy;
-        compute_normal_derivatives(dndx, dndy, ddndx, ddndy);
+        compute_normal_derivatives(local_geometry, outgoing, dndx, dndy, ddndx, ddndy);
 
-        const Vector3f& n = m_shading_basis.get_normal();
-        const float dot_on = dot(m_outgoing.get_value(), n);
+        const Vector3f& n = local_geometry.m_shading_basis.get_normal();
+        const float dot_on = dot(outgoing.get_value(), n);
 
         m_incoming.set_derivatives(
-            -m_outgoing.get_dx() + 2.0f * Vector3f(dot_on * dndx + ddndx * n),
-            -m_outgoing.get_dy() + 2.0f * Vector3f(dot_on * dndy + ddndy * n));
+            -outgoing.get_dx() + 2.0f * Vector3f(dot_on * dndx + ddndx * n),
+            -outgoing.get_dy() + 2.0f * Vector3f(dot_on * dndy + ddndy * n));
 
         if (m_probability != BSDF::DiracDelta)
             apply_pdf_differentials_heuristic();
     }
 }
 
-void BSDFSample::compute_transmitted_differentials(const float eta)
+void BSDFSample::compute_transmitted_differentials(
+    const BSDF::LocalGeometry&  local_geometry,
+    const float                 eta,
+    const Dual3f&               outgoing)
 {
-    if (m_outgoing.has_derivatives())
+    if (outgoing.has_derivatives())
     {
         Vector3f dndx, dndy;
         float ddndx, ddndy;
-        compute_normal_derivatives(dndx, dndy, ddndx, ddndy);
+        compute_normal_derivatives(local_geometry, outgoing, dndx, dndy, ddndx, ddndy);
 
-        const Vector3f& n = m_shading_basis.get_normal();
-        const float dot_on = dot(-m_outgoing.get_value(), n);
+        const Vector3f& n = local_geometry.m_shading_basis.get_normal();
+        const float dot_on = dot(-outgoing.get_value(), n);
         const float dot_in = dot(m_incoming.get_value(), n);
         const float mu = eta * dot_on - dot_in;
 
@@ -85,8 +94,8 @@ void BSDFSample::compute_transmitted_differentials(const float eta)
         const float dmudy = a * ddndy;
 
         m_incoming.set_derivatives(
-            eta * m_outgoing.get_dx() - Vector3f(mu * dndx + dmudx * n),
-            eta * m_outgoing.get_dy() - Vector3f(mu * dndy + dmudy * n));
+            eta * outgoing.get_dx() - Vector3f(mu * dndx + dmudx * n),
+            eta * outgoing.get_dy() - Vector3f(mu * dndy + dmudy * n));
 
         if (m_probability != BSDF::DiracDelta)
             apply_pdf_differentials_heuristic();
@@ -94,28 +103,32 @@ void BSDFSample::compute_transmitted_differentials(const float eta)
 }
 
 void BSDFSample::compute_normal_derivatives(
-    Vector3f&   dndx,
-    Vector3f&   dndy,
-    float&      ddndx,
-    float&      ddndy) const
+    const BSDF::LocalGeometry&  local_geometry,
+    const Dual3f&               outgoing,
+    Vector3f&                   dndx,
+    Vector3f&                   dndy,
+    float&                      ddndx,
+    float&                      ddndy)
 {
     //
-    // Physically Based Rendering, first edition, page 513.
+    // Reference:
+    //
+    //   Physically Based Rendering, first edition, page 513.
     //
 
-    const Vector3f dndu(m_shading_point->get_dndu(0));
-    const Vector3f dndv(m_shading_point->get_dndv(0));
+    const Vector3f dndu(local_geometry.m_shading_point->get_dndu(0));
+    const Vector3f dndv(local_geometry.m_shading_point->get_dndv(0));
 
-    const Vector2f duvdx(m_shading_point->get_duvdx(0));
-    const Vector2f duvdy(m_shading_point->get_duvdy(0));
+    const Vector2f duvdx(local_geometry.m_shading_point->get_duvdx(0));
+    const Vector2f duvdy(local_geometry.m_shading_point->get_duvdy(0));
 
     dndx = dndu * duvdx[0] + dndv * duvdx[1];
     dndy = dndu * duvdy[0] + dndv * duvdy[1];
 
-    const Vector3f& n = m_shading_basis.get_normal();
+    const Vector3f& n = local_geometry.m_shading_basis.get_normal();
 
-    ddndx = dot(m_outgoing.get_dx(), n) + dot(m_outgoing.get_value(), dndx);
-    ddndy = dot(m_outgoing.get_dy(), n) + dot(m_outgoing.get_value(), dndy);
+    ddndx = dot(outgoing.get_dx(), n) + dot(outgoing.get_value(), dndx);
+    ddndy = dot(outgoing.get_dy(), n) + dot(outgoing.get_value(), dndy);
 }
 
 void BSDFSample::apply_pdf_differentials_heuristic()
