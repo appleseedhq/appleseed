@@ -439,6 +439,7 @@ shader as_texture
             "twidth", in_t_filter_width,
             "swrap", wrap_mode[0],
             "twrap", wrap_mode[1],
+            "firstchannel", in_starting_channel,
             "missingcolor", in_color,
             "missingalpha", in_alpha,
             "alpha", out_alpha,
