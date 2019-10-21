@@ -172,6 +172,7 @@ namespace
             const void*             data,
             const ShadingPoint&     outgoing_point,
             const Vector3f&         outgoing_dir,
+            const int               modes,
             BSSRDFSample&           bssrdf_sample,
             BSDFSample&             bsdf_sample) const override
         {
@@ -196,6 +197,7 @@ namespace
                         c->get_closure_input_values(closure_index),
                         outgoing_point,
                         outgoing_dir,
+                        modes,
                         bssrdf_sample,
                         bsdf_sample);
 

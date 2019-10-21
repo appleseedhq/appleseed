@@ -511,7 +511,6 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
 
         // Subsurface scattering.
         BSSRDFSample bssrdf_sample;
-        bssrdf_sample.m_modes = vertex.m_scattering_modes;
         if (vertex.m_bssrdf)
         {
             // Sample the BSSRDF and terminate the path if no incoming point is found.
@@ -521,6 +520,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
                     vertex.m_bssrdf_data,
                     *vertex.m_shading_point,
                     foundation::Vector3f(vertex.m_outgoing.get_value()),
+                    vertex.m_scattering_modes,
                     bssrdf_sample,
                     bsdf_sample))
                 break;
