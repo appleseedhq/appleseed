@@ -207,6 +207,7 @@ namespace
             const void*             data,
             const ShadingPoint&     outgoing_point,
             const Vector3f&         outgoing_dir,
+            const int               modes,
             BSSRDFSample&           bssrdf_sample,
             BSDFSample&             bsdf_sample) const override
         {
@@ -251,6 +252,7 @@ namespace
                         create_glass_inputs(shading_context.get_arena(), values),
                         outgoing_point,
                         outgoing_dir,
+                        modes,
                         bssrdf_sample,
                         bsdf_sample,
                         volume_scattering_occurred,
@@ -403,7 +405,7 @@ namespace
                 true,
                 local_geometry,
                 Dual3f(local_geometry.m_geometric_normal),  // chosen arbitrarily (no outgoing direction at the incoming point)
-                bssrdf_sample.m_modes,
+                modes,
                 bsdf_sample);
             if (bsdf_sample.get_mode() == ScatteringMode::None)
                 return false;
@@ -611,6 +613,7 @@ namespace
             GlassBSDFInputValues*   glass_inputs,
             const ShadingPoint&     outgoing_point,
             const Vector3f&         outgoing_dir,
+            const int               modes,
             BSSRDFSample&           bssrdf_sample,
             BSDFSample&             bsdf_sample,
             bool&                   volume_scattering_occurred,
@@ -665,7 +668,7 @@ namespace
                 assert(n_iteration != 1 || crossing_interface);  // no reflection should happen at the entry point
                 if (n_iteration != 1 && crossing_interface)
                 {
-                    if (!ScatteringMode::has_glossy(bssrdf_sample.m_modes))
+                    if (!ScatteringMode::has_glossy(modes))
                         return false;
 
                     // The ray was refracted with zero scattering.

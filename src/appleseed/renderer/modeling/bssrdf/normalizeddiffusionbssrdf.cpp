@@ -155,21 +155,24 @@ namespace
             const void*             data,
             const ShadingPoint&     outgoing_point,
             const Vector3f&         outgoing_dir,
+            const int               modes,
             BSSRDFSample&           bssrdf_sample,
             BSDFSample&             bsdf_sample) const override
         {
             const NormalizedDiffusionBSSRDFInputValues* values =
                 static_cast<const NormalizedDiffusionBSSRDFInputValues*>(data);
 
-            return do_sample(
-                shading_context,
-                sampling_context,
-                data,
-                values->m_base_values,
-                outgoing_point,
-                outgoing_dir,
-                bssrdf_sample,
-                bsdf_sample);
+            return
+                do_sample(
+                    shading_context,
+                    sampling_context,
+                    data,
+                    values->m_base_values,
+                    outgoing_point,
+                    outgoing_dir,
+                    modes,
+                    bssrdf_sample,
+                    bsdf_sample);
         }
 
         float sample_profile(

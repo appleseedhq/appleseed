@@ -120,6 +120,7 @@ class DipoleBSSRDF
         const void*                 data,
         const ShadingPoint&         outgoing_point,
         const foundation::Vector3f& outgoing_dir,
+        const int                   modes,
         BSSRDFSample&               bssrdf_sample,
         BSDFSample&                 bsdf_sample) const override;
 

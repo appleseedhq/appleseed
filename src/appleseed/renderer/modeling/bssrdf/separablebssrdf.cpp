@@ -360,13 +360,14 @@ bool SeparableBSSRDF::do_sample(
     const InputValues&      values,
     const ShadingPoint&     outgoing_point,
     const Vector3f&         outgoing_dir,
+    const int               modes,
     BSSRDFSample&           bssrdf_sample,
     BSDFSample&             bsdf_sample) const
 {
     if (values.m_weight == 0.0f)
         return false;
 
-    if (!ScatteringMode::has_diffuse(bssrdf_sample.m_modes))
+    if (!ScatteringMode::has_diffuse(modes))
         return false;
 
     // Choose a channel.
@@ -416,7 +417,7 @@ bool SeparableBSSRDF::do_sample(
         outgoing_dir,
         bssrdf_sample.m_incoming_point,
         bsdf_sample.m_incoming.get_value(),
-        bssrdf_sample.m_modes,
+        modes,
         bssrdf_sample.m_value);
 
     return true;
