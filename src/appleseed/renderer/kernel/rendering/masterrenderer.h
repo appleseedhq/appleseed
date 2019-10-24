@@ -79,9 +79,7 @@ class APPLESEED_DLLSYMBOL MasterRenderer
     {
         enum Status { Succeeded, Aborted, Failed };
 
-        Status  m_status;
-        double  m_render_time;
-        double  m_post_processing_time;
+        Status m_status;
 
         RenderingResult();
     };

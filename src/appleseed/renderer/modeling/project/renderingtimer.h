@@ -33,10 +33,9 @@
 #include "foundation/platform/timers.h"
 #include "foundation/utility/stopwatch.h"
 
-namespace appleseed {
-namespace studio {
+namespace renderer
+{
 
 typedef foundation::Stopwatch<foundation::DefaultWallclockTimer> RenderingTimer;
 
-}   // namespace studio
-}   // namespace appleseed
+}   // namespace renderer

@@ -597,7 +597,7 @@ namespace
         LOG_INFO(
             g_logger,
             "rendering finished in %s.",
-            pretty_time(rendering_result.m_render_time, 3).c_str());
+            pretty_time(project->get_rendering_timer().get_seconds(), 3).c_str());
 
         bool success = true;
 
@@ -704,13 +704,13 @@ namespace
             auto result = renderer.render(renderer_controller);
             if (result.m_status != MasterRenderer::RenderingResult::Succeeded)
                 return false;
-            total_time_seconds = result.m_render_time;
+            total_time_seconds = project->get_rendering_timer().get_seconds();
 
             // Render a second time.
             result = renderer.render(renderer_controller);
             if (result.m_status != MasterRenderer::RenderingResult::Succeeded)
                 return false;
-            render_time_seconds = result.m_render_time;
+            render_time_seconds = project->get_rendering_timer().get_seconds();
         }
 
         // Write the frame to disk.

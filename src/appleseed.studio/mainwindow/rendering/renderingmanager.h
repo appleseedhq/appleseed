@@ -31,7 +31,6 @@
 
 // appleseed.studio headers.
 #include "mainwindow/rendering/qtrenderercontroller.h"
-#include "mainwindow/rendering/renderingtimer.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
@@ -172,8 +171,6 @@ class RenderingManager
                                                 m_tile_callback_factory;
     std::unique_ptr<renderer::MasterRenderer>   m_master_renderer;
     std::unique_ptr<QThread>                    m_master_renderer_thread;
-
-    RenderingTimer                              m_rendering_timer;
 
     typedef std::vector<IScheduledAction*> ScheduledActionCollection;
     typedef std::map<std::string, IStickyAction*> StickyActionCollection;
