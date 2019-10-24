@@ -94,6 +94,7 @@ IRendererController::Status RenderDeviceBase::wait_for_event(
             if (is_paused)
             {
                 frame_renderer.resume_rendering();
+                renderer_controller.on_rendering_resume();
                 is_paused = false;
             }
             break;
@@ -101,6 +102,7 @@ IRendererController::Status RenderDeviceBase::wait_for_event(
           case IRendererController::PauseRendering:
             if (!is_paused)
             {
+                renderer_controller.on_rendering_pause();
                 frame_renderer.pause_rendering();
                 is_paused = true;
             }

@@ -88,6 +88,11 @@ UniqueID Project::get_class_uid()
 
 struct Project::Impl
 {
+    // Project metadata.
+    size_t                              m_format_revision;
+    std::string                         m_path;
+    SearchPaths                         m_search_paths;
+
     // The plugin store must live at least as long as the factory registrars
     // and the scene entities since some factory registrars and some entities
     // may be defined by plugins. It thus must be constructed first in order
@@ -111,11 +116,6 @@ struct Project::Impl
     TextureFactoryRegistrar             m_texture_factory_registrar;
     VolumeFactoryRegistrar              m_volume_factory_registrar;
 
-    // Project metadata.
-    size_t                              m_format_revision;
-    std::string                         m_path;
-    SearchPaths                         m_search_paths;
-
     // Scene description.
     auto_release_ptr<Scene>             m_scene;
     auto_release_ptr<Frame>             m_frame;
@@ -125,6 +125,7 @@ struct Project::Impl
     // Project-specific components.
     LightPathRecorder                   m_light_path_recorder;
     std::unique_ptr<TraceContext>       m_trace_context;
+    RenderingTimer                      m_rendering_timer;
 
     explicit Impl(const Project& project)
       : m_format_revision(ProjectFormatRevision)
@@ -184,69 +185,9 @@ SearchPaths& Project::search_paths() const
     return impl->m_search_paths;
 }
 
-void Project::set_scene(auto_release_ptr<Scene> scene)
-{
-    impl->m_scene = scene;
-}
-
-Scene* Project::get_scene() const
-{
-    return impl->m_scene.get();
-}
-
-Camera* Project::get_uncached_active_camera() const
-{
-    if (const Scene* scene = get_scene())
-    {
-        if (const Frame* frame = get_frame())
-        {
-            if (const char* camera_name = frame->get_active_camera_name())
-                return scene->cameras().get_by_name(camera_name);
-        }
-    }
-
-    return nullptr;
-}
-
-void Project::set_frame(auto_release_ptr<Frame> frame)
-{
-    impl->m_frame = frame;
-}
-
-Frame* Project::get_frame() const
-{
-    return impl->m_frame.get();
-}
-
-void Project::set_display(auto_release_ptr<Display> display)
-{
-    impl->m_display = display;
-}
-
-Display* Project::get_display() const
-{
-    return impl->m_display.get();
-}
-
 PluginStore& Project::get_plugin_store() const
 {
     return impl->m_plugin_store;
-}
-
-LightPathRecorder& Project::get_light_path_recorder() const
-{
-    return impl->m_light_path_recorder;
-}
-
-ConfigurationContainer& Project::configurations() const
-{
-    return impl->m_configurations;
-}
-
-void Project::add_default_configurations()
-{
-    add_default_configuration("final", "base_final");
-    add_default_configuration("interactive", "base_interactive");
 }
 
 template <>
@@ -339,12 +280,114 @@ const EntityTraits<Volume>::FactoryRegistrarType& Project::get_factory_registrar
     return impl->m_volume_factory_registrar;
 }
 
+void Project::set_scene(auto_release_ptr<Scene> scene)
+{
+    impl->m_scene = scene;
+}
+
+Scene* Project::get_scene() const
+{
+    return impl->m_scene.get();
+}
+
+Camera* Project::get_uncached_active_camera() const
+{
+    if (const Scene* scene = get_scene())
+    {
+        if (const Frame* frame = get_frame())
+        {
+            if (const char* camera_name = frame->get_active_camera_name())
+                return scene->cameras().get_by_name(camera_name);
+        }
+    }
+
+    return nullptr;
+}
+
+void Project::set_frame(auto_release_ptr<Frame> frame)
+{
+    impl->m_frame = frame;
+}
+
+Frame* Project::get_frame() const
+{
+    return impl->m_frame.get();
+}
+
+void Project::set_display(auto_release_ptr<Display> display)
+{
+    impl->m_display = display;
+}
+
+Display* Project::get_display() const
+{
+    return impl->m_display.get();
+}
+
+ConfigurationContainer& Project::configurations() const
+{
+    return impl->m_configurations;
+}
+
+void Project::add_default_configurations()
+{
+    add_default_configuration("final", "base_final");
+    add_default_configuration("interactive", "base_interactive");
+}
+
+LightPathRecorder& Project::get_light_path_recorder() const
+{
+    return impl->m_light_path_recorder;
+}
+
+#ifdef APPLESEED_WITH_EMBREE
+
+void Project::set_use_embree(const bool value)
+{
+    if (impl->m_trace_context)
+        impl->m_trace_context->set_use_embree(value);
+}
+
+#endif
+
+bool Project::has_trace_context() const
+{
+    return impl->m_trace_context.get() != nullptr;
+}
+
+const TraceContext& Project::get_trace_context() const
+{
+    if (!impl->m_trace_context)
+    {
+        assert(impl->m_scene.get());
+        impl->m_trace_context.reset(new TraceContext(*impl->m_scene));
+    }
+
+    return *impl->m_trace_context;
+}
+
+void Project::update_trace_context()
+{
+    if (impl->m_trace_context)
+        impl->m_trace_context->update();
+}
+
+RenderingTimer& Project::get_rendering_timer()
+{
+    return impl->m_rendering_timer;
+}
+
+const RenderingTimer& Project::get_rendering_timer() const
+{
+    return impl->m_rendering_timer;
+}
+
 void Project::collect_asset_paths(StringArray& paths) const
 {
-    if (impl->m_scene.get() != nullptr)
+    if (impl->m_scene)
         impl->m_scene->collect_asset_paths(paths);
 
-    if (impl->m_frame.get() != nullptr)
+    if (impl->m_frame)
         impl->m_frame->collect_asset_paths(paths);
 
     for (const Configuration& config : configurations())
@@ -353,10 +396,10 @@ void Project::collect_asset_paths(StringArray& paths) const
 
 void Project::update_asset_paths(const StringDictionary& mappings)
 {
-    if (impl->m_scene.get() != nullptr)
+    if (impl->m_scene)
         impl->m_scene->update_asset_paths(mappings);
 
-    if (impl->m_frame.get() != nullptr)
+    if (impl->m_frame)
         impl->m_frame->update_asset_paths(mappings);
 
     for (Configuration& config : configurations())
@@ -372,8 +415,10 @@ bool Project::on_frame_begin(
     if (!Entity::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
-    assert(impl->m_scene.get() != nullptr);
-    assert(impl->m_frame.get() != nullptr);
+    impl->m_rendering_timer.start();
+
+    assert(impl->m_scene);
+    assert(impl->m_frame);
 
     if (!impl->m_scene->on_frame_begin(project, nullptr, recorder, abort_switch))
         return false;
@@ -384,37 +429,12 @@ bool Project::on_frame_begin(
     return true;
 }
 
-bool Project::has_trace_context() const
+void Project::on_frame_end(
+    const Project&              project,
+    const BaseGroup*            parent)
 {
-    return impl->m_trace_context.get() != nullptr;
+    impl->m_rendering_timer.measure();
 }
-
-const TraceContext& Project::get_trace_context() const
-{
-    if (impl->m_trace_context.get() == nullptr)
-    {
-        assert(impl->m_scene.get());
-        impl->m_trace_context.reset(new TraceContext(*impl->m_scene));
-    }
-
-    return *impl->m_trace_context;
-}
-
-void Project::update_trace_context()
-{
-    if (impl->m_trace_context.get() != nullptr)
-        impl->m_trace_context->update();
-}
-
-#ifdef APPLESEED_WITH_EMBREE
-
-void Project::set_use_embree(const bool value)
-{
-    if (impl->m_trace_context.get() != nullptr)
-        impl->m_trace_context->set_use_embree(value);
-}
-
-#endif
 
 void Project::add_base_configurations()
 {

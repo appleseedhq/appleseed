@@ -52,7 +52,6 @@
 // appleseed.foundation headers.
 #include "foundation/image/analysis.h"
 #include "foundation/image/image.h"
-#include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/job/iabortswitch.h"
@@ -363,7 +362,7 @@ void RenderingManager::slot_reinitialize_rendering()
 
 void RenderingManager::print_final_rendering_time()
 {
-    const double rendering_time = m_rendering_timer.get_seconds();
+    const double rendering_time = m_project->get_rendering_timer().get_seconds();
     const std::string rendering_time_string = pretty_time(rendering_time, 3);
 
     RENDERER_LOG_INFO("rendering finished in %s.", rendering_time_string.c_str());
@@ -438,32 +437,38 @@ void RenderingManager::slot_rendering_begin()
     if (m_rendering_mode == InteractiveRendering)
         m_render_tab->get_camera_controller()->set_enabled(true);
 
-    m_rendering_timer.clear();
-
     m_has_camera_changed = false;
+
+    // Start printing rendering time in the status bar.
+    m_status_bar.stop_rendering_time_display();
+    m_status_bar.start_rendering_time_display(&m_project->get_rendering_timer());
 }
 
 void RenderingManager::slot_rendering_pause()
 {
     assert(m_master_renderer.get());
 
-    m_rendering_timer.pause();
+    m_project->get_rendering_timer().pause();
 }
 
 void RenderingManager::slot_rendering_resume()
 {
     assert(m_master_renderer.get());
 
-    m_rendering_timer.resume();
+    m_project->get_rendering_timer().resume();
 }
 
 void RenderingManager::slot_rendering_end()
 {
+    // Disable camera interaction.
     if (m_rendering_mode == InteractiveRendering)
         m_render_tab->get_camera_controller()->set_enabled(false);
 
-    // Save the controller target point into the camera when rendering ends.
+    // Save the controller target point into the camera.
     m_render_tab->get_camera_controller()->save_camera_target();
+
+    // Stop printing rendering time in the status bar.
+    m_status_bar.stop_rendering_time_display();
 
     print_final_rendering_time();
 
@@ -478,11 +483,15 @@ void RenderingManager::slot_rendering_end()
 
 void RenderingManager::slot_rendering_failed()
 {
+    // Disable camera interaction.
     if (m_rendering_mode == InteractiveRendering)
         m_render_tab->get_camera_controller()->set_enabled(false);
 
-    // Save the controller target point into the camera when rendering ends.
+    // Save the controller target point into the camera.
     m_render_tab->get_camera_controller()->save_camera_target();
+
+    // Stop printing rendering time in the status bar.
+    m_status_bar.stop_rendering_time_display();
 }
 
 void RenderingManager::slot_frame_begin()
@@ -493,18 +502,10 @@ void RenderingManager::slot_frame_begin()
         m_render_tab->get_camera_controller()->update_camera_transform();
         m_has_camera_changed = false;
     }
-
-    // Start printing rendering time in the status bar.
-    m_status_bar.start_rendering_time_display(&m_rendering_timer);
-    m_rendering_timer.start();
 }
 
 void RenderingManager::slot_frame_end()
 {
-    // Stop printing rendering time in the status bar.
-    m_rendering_timer.measure();
-    m_status_bar.stop_rendering_time_display();
-
     // Ensure that the render widget is up-to-date.
     m_render_tab->get_render_widget()->update();
 }

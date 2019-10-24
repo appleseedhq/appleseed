@@ -145,8 +145,9 @@ ProgressTileCallbackFactory::ProgressTileCallbackFactory(
     const size_t    pass_count)
   : impl(new Impl())
 {
-    impl->m_callback = std::unique_ptr<ITileCallback>(
-        new ProgressTileCallback(logger, pass_count));
+    impl->m_callback =
+        std::unique_ptr<ITileCallback>(
+            new ProgressTileCallback(logger, pass_count));
 }
 
 ProgressTileCallbackFactory::~ProgressTileCallbackFactory()

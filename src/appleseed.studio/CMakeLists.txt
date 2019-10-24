@@ -268,7 +268,6 @@ set (mainwindow_rendering_sources
     mainwindow/rendering/renderclipboardhandler.h
     mainwindow/rendering/renderingmanager.cpp
     mainwindow/rendering/renderingmanager.h
-    mainwindow/rendering/renderingtimer.h
     mainwindow/rendering/renderregionhandler.cpp
     mainwindow/rendering/renderregionhandler.h
     mainwindow/rendering/rendertab.cpp
