@@ -421,14 +421,13 @@ void ShadingPoint::refine_and_offset() const
           {
 #ifdef RENDERER_ADAPTIVE_OFFSET
               // Compute the location of the intersection point in object space.
-              ShadingRay::RayType obj_inst_ray = m_object_instance->get_transform().to_local(asm_inst_ray);
+              ShadingRay obj_inst_ray = m_object_instance->get_transform().to_local(asm_inst_ray);
 
               // Offset the ray origin to the hit point.
               obj_inst_ray.m_org += obj_inst_ray.m_tmax * obj_inst_ray.m_dir;
 
-              const ProceduralObject& object = static_cast<const ProceduralObject&>(get_object());
-
               // Compute the offset points and geometric normal in object space.
+              const ProceduralObject& object = static_cast<const ProceduralObject&>(get_object());
               object.refine_and_offset(
                   obj_inst_ray,
                   m_refine_space_front_point,
