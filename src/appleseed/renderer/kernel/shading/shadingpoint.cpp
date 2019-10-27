@@ -372,7 +372,7 @@ void ShadingPoint::refine_and_offset() const
     cache_source_geometry();
 
     // Compute the location of the intersection point in assembly instance space.
-    ShadingRay::RayType asm_inst_ray = m_assembly_instance_transform.to_local(m_ray);
+    ShadingRay asm_inst_ray = m_assembly_instance_transform.to_local(m_ray);
 
     switch (m_primitive_type)
     {

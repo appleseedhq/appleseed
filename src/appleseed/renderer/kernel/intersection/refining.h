@@ -40,7 +40,7 @@ namespace renderer
 {
 
 //
-// Ray refining functions.
+// Intersection point refining functions.
 //
 // Reference:
 //
@@ -55,14 +55,16 @@ foundation::Vector3d refine(
     const foundation::Vector3d& direction,
     const IntersectionFunction& intersect);
 
-// Offset a point away from a surface represented by its normal using a fixed offset.
+// Compute a front and a back point for a point on a surface by offsetting the surface
+// point by its normal and inversed normal using a fixed offset.
 void fixed_offset(
     const foundation::Vector3d& p,
     foundation::Vector3d        n,
     foundation::Vector3d&       front,
     foundation::Vector3d&       back);
 
-// Offset a point away from a surface represented by its normal using adaptive offset.
+// Compute a front and a back point for a point on a surface by offsetting the surface
+// point by its normal and inversed normal using an adaptive offset.
 template <typename IntersectionFunction>
 void adaptive_offset(
     const foundation::Vector3d& p,
@@ -71,11 +73,13 @@ void adaptive_offset(
     foundation::Vector3d&       back,
     const IntersectionFunction& intersect);
 
+// Offset a point by the smallest possible amount using its normal.
 foundation::Vector3d adaptive_offset_point_step(
     const foundation::Vector3d& p,
     const foundation::Vector3d& n,
     const foundation::int64     mag);
 
+// Offset a point away from a surface represented by its normal using an adaptive offset.
 template <typename IntersectionFunction>
 foundation::Vector3d adaptive_offset_point(
     const foundation::Vector3d& p,
@@ -85,7 +89,7 @@ foundation::Vector3d adaptive_offset_point(
 
 
 //
-// Ray refining functions implementation.
+// Intersection point refining functions implementation.
 //
 
 template <typename IntersectionFunction>

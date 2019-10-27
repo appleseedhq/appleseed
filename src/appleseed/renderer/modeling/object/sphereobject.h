@@ -50,7 +50,7 @@ namespace renderer
 //
 // A sphere object.
 //
-// The sphere is assumed to be centered at the origin and of radius 1.
+// The sphere is centered at the origin and is of radius 1.
 //
 
 class APPLESEED_DLLSYMBOL SphereObject

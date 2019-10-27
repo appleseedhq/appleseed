@@ -79,8 +79,8 @@ namespace
         assert(lhs.hit_surface());
         assert(rhs.hit_surface());
 
-        // todo: this won't work for procedural objects. It can returns false-positives in such case.
-        // Being on the same primitive doesn't mean it's a self intersection.
+        // todo: this won't work for procedural objects. It can return false positives in such case.
+        // Being on the same primitive doesn't mean it's a self-intersection.
         // For triangles you have a different normal for each primitive; this is not the case with
         // procedural objects.
         return
