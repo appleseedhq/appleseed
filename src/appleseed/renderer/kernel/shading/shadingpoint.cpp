@@ -435,7 +435,7 @@ void ShadingPoint::refine_and_offset() const
                   m_refine_space_geo_normal);
 #else
               assert(false);
-#endif              
+#endif
           }
         break;
 
