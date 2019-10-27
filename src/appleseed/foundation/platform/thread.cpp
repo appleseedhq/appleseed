@@ -70,7 +70,13 @@ namespace foundation
     //
     // Reference:
     //
+    //   How to: Set a Thread Name in Native Code
     //   https://msdn.microsoft.com/en-us/library/xcb2z8hs.aspx
+    //
+    // Also:
+    //
+    //   Issue 2692213003: Use Windows 10 thread naming API, SetThreadDescription (Closed)
+    //   https://codereview.chromium.org/2692213003
     //
 
 #pragma pack(push, 8)
