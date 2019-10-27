@@ -68,6 +68,9 @@ class APPLESEED_DLLSYMBOL SphereObject
 
     const char* get_material_slot(const size_t index) const override;
 
+    foundation::Vector3d get_center() const;
+    double get_radius() const;
+
     void intersect(
         const ShadingRay&       ray,
         IntersectionResult&     result) const override;

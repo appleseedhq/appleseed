@@ -45,9 +45,6 @@
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/string.h"
 
-// Standard headers.
-#include <functional>
-
 using namespace foundation;
 
 namespace renderer
@@ -92,6 +89,16 @@ size_t SphereObject::get_material_slot_count() const
 const char* SphereObject::get_material_slot(const size_t index) const
 {
     return "default";
+}
+
+Vector3d SphereObject::get_center() const
+{
+    return Vector3d(0.0, 0.0, 0.0);
+}
+
+double SphereObject::get_radius() const
+{
+    return 1.0;
 }
 
 void SphereObject::intersect(

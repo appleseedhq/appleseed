@@ -422,7 +422,7 @@ void LightSamplerBase::collect_emitting_shapes(
             Vector3d center, scale;
             Quaterniond rot;
             xform.decompose(scale, rot, center);
-            double radius = 1.0;
+            double radius = sphere.get_radius();
 
             if (feq(scale.x, scale.y) && feq(scale.x, scale.z))
                 radius *= scale.x;

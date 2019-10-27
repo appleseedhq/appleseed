@@ -372,14 +372,16 @@ void ShadingPoint::refine_and_offset() const
     cache_source_geometry();
 
     // Compute the location of the intersection point in assembly instance space.
-    ShadingRay asm_inst_ray = m_assembly_instance_transform.to_local(m_ray);
+    ShadingRay refine_space_ray(m_ray);
+    refine_space_ray.m_org = m_assembly_instance_transform.point_to_local(refine_space_ray.m_org);
+    refine_space_ray.m_dir = m_assembly_instance_transform.vector_to_local(refine_space_ray.m_dir);
 
     switch (m_primitive_type)
     {
       case PrimitiveTriangle:
         {
             // Offset the ray origin to the hit point.
-            asm_inst_ray.m_org += asm_inst_ray.m_tmax * asm_inst_ray.m_dir;
+            refine_space_ray.m_org += refine_space_ray.m_tmax * refine_space_ray.m_dir;
 
             const auto intersection_handling = [&triangle_support_plane = m_triangle_support_plane](const Vector3d& p, const Vector3d& n)
             {
@@ -387,22 +389,22 @@ void ShadingPoint::refine_and_offset() const
             };
 
             // Refine the location of the intersection point.
-            asm_inst_ray.m_org =
+            refine_space_ray.m_org =
                 refine(
-                    asm_inst_ray.m_org,
-                    asm_inst_ray.m_dir,
+                    refine_space_ray.m_org,
+                    refine_space_ray.m_dir,
                     intersection_handling);
 
             // Compute the geometric normal to the hit triangle in assembly instance space.
             // Note that it doesn't need to be normalized at this point.
             m_refine_space_geo_normal = Vector3d(compute_triangle_normal(m_v0, m_v1, m_v2));
             m_refine_space_geo_normal = m_object_instance->get_transform().normal_to_parent(m_refine_space_geo_normal);
-            m_refine_space_geo_normal = faceforward(m_refine_space_geo_normal, asm_inst_ray.m_dir);
+            m_refine_space_geo_normal = faceforward(m_refine_space_geo_normal, refine_space_ray.m_dir);
 
             // Compute the offset points in assembly instance space.
 #ifdef RENDERER_ADAPTIVE_OFFSET
             adaptive_offset(
-                asm_inst_ray.m_org,
+                refine_space_ray.m_org,
                 m_refine_space_geo_normal,
                 m_refine_space_front_point,
                 m_refine_space_back_point,
@@ -421,15 +423,17 @@ void ShadingPoint::refine_and_offset() const
           {
 #ifdef RENDERER_ADAPTIVE_OFFSET
               // Compute the location of the intersection point in object space.
-              ShadingRay obj_inst_ray = m_object_instance->get_transform().to_local(asm_inst_ray);
+              const Transformd& object_instance_transform = m_object_instance->get_transform();
+              refine_space_ray.m_org = object_instance_transform.point_to_local(refine_space_ray.m_org);
+              refine_space_ray.m_dir = object_instance_transform.vector_to_local(refine_space_ray.m_dir);
 
               // Offset the ray origin to the hit point.
-              obj_inst_ray.m_org += obj_inst_ray.m_tmax * obj_inst_ray.m_dir;
+              refine_space_ray.m_org += refine_space_ray.m_tmax * refine_space_ray.m_dir;
 
               // Compute the offset points and geometric normal in object space.
               const ProceduralObject& object = static_cast<const ProceduralObject&>(get_object());
               object.refine_and_offset(
-                  obj_inst_ray,
+                  refine_space_ray,
                   m_refine_space_front_point,
                   m_refine_space_back_point,
                   m_refine_space_geo_normal);
@@ -443,16 +447,16 @@ void ShadingPoint::refine_and_offset() const
       case PrimitiveCurve3:
         {
             // Offset the ray origin to the hit point.
-            asm_inst_ray.m_org += asm_inst_ray.m_tmax * asm_inst_ray.m_dir;
+            refine_space_ray.m_org += refine_space_ray.m_tmax * refine_space_ray.m_dir;
 
             assert(is_curve_primitive());
 
-            m_refine_space_geo_normal = normalize(-asm_inst_ray.m_dir);
+            m_refine_space_geo_normal = normalize(-refine_space_ray.m_dir);
 
             // todo: this does not look correct, considering the flat ribbon nature of curves.
             const double Eps = 1.0e-6;
-            m_refine_space_front_point = asm_inst_ray.m_org + Eps * m_refine_space_geo_normal;
-            m_refine_space_back_point = asm_inst_ray.m_org - Eps * m_refine_space_geo_normal;
+            m_refine_space_front_point = refine_space_ray.m_org + Eps * m_refine_space_geo_normal;
+            m_refine_space_back_point = refine_space_ray.m_org - Eps * m_refine_space_geo_normal;
         }
         break;
 
