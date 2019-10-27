@@ -381,9 +381,7 @@ void ShadingPoint::refine_and_offset() const
             // Offset the ray origin to the hit point.
             asm_inst_ray.m_org += asm_inst_ray.m_tmax * asm_inst_ray.m_dir;
 
-            const TriangleSupportPlaneType& triangle_support_plane = m_triangle_support_plane;
-
-            const auto intersection_handling = [&triangle_support_plane](const Vector3d& p, const Vector3d& n) {
+            const auto intersection_handling = [&triangle_support_plane = m_triangle_support_plane](const Vector3d& p, const Vector3d& n) {
                 return triangle_support_plane.intersect(p, n);
             };
 
