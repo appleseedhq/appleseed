@@ -1000,7 +1000,7 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
     return true;
 }
 
-template<typename PathVisitor, typename VolumeVisitor, bool Adjoint>
+template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
 inline const ShadingPoint& PathTracer<PathVisitor, VolumeVisitor, Adjoint>::get_path_vertex(const size_t i) const
 {
     return reinterpret_cast<const ShadingPoint*>(m_shading_point_arena.get_storage())[i];
