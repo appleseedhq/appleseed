@@ -205,9 +205,9 @@ inline foundation::Vector3d adaptive_offset_point_step(
         else
         {
             const auto pi = foundation::binary_cast<foundation::uint64>(p[i]);
-            const foundation::int64 choosen_mag =
+            const foundation::int64 eps_lut_index =
                 (pi ^ foundation::binary_cast<foundation::uint64>(n[i])) >> 63;
-            result[i] = foundation::binary_cast<double>(pi + eps_lut[choosen_mag]);
+            result[i] = foundation::binary_cast<double>(pi + eps_lut[eps_lut_index]);
         }
     }
 
