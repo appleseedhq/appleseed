@@ -207,15 +207,13 @@ bool RectangleObject::intersect(const ShadingRay& ray) const
 }
 
 void RectangleObject::refine_and_offset(
-    const Ray3d&        obj_inst_ray,
+    const ShadingRay&   obj_inst_ray,
     Vector3d&           obj_inst_front_point,
     Vector3d&           obj_inst_back_point,
     Vector3d&           obj_inst_geo_normal) const
 {
-    const Vector3d& corner = impl->m_corner;
-    const Vector3d& n = impl->m_normal;
-
-    const auto intersection_handling = [&corner, &n](const Vector3d& p, const Vector3d& dir) {
+    const auto intersection_handling = [&corner = impl->m_corner, &n = impl->m_normal](const Vector3d& p, const Vector3d& dir)
+    {
         const Ray3d ray(p, dir);
         return foundation::intersect(ray, corner, n);
     };
@@ -226,7 +224,7 @@ void RectangleObject::refine_and_offset(
             obj_inst_ray.m_dir,
             intersection_handling);
 
-    obj_inst_geo_normal = faceforward(n, obj_inst_ray.m_dir);
+    obj_inst_geo_normal = faceforward(impl->m_normal, obj_inst_ray.m_dir);
 
     adaptive_offset(
         refined_intersection_point,

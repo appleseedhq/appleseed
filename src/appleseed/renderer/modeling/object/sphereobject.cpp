@@ -81,8 +81,7 @@ const char* SphereObject::get_model() const
 
 GAABB3 SphereObject::compute_local_bbox() const
 {
-    GAABB3 bbox(GVector3(-1.0), GVector3(1.0));
-    return bbox;
+    return GAABB3(GVector3(-1.0), GVector3(1.0));
 }
 
 size_t SphereObject::get_material_slot_count() const
@@ -150,13 +149,14 @@ namespace
 }
 
 void SphereObject::refine_and_offset(
-    const Ray3d&        obj_inst_ray,
+    const ShadingRay&   obj_inst_ray,
     Vector3d&           obj_inst_front_point,
     Vector3d&           obj_inst_back_point,
     Vector3d&           obj_inst_geo_normal) const
 {
     // Handle refining for the ray origin point.
-    const auto intersection_handling = [](const Vector3d& p, const Vector3d& dir) {
+    const auto intersection_handling = [](const Vector3d& p, const Vector3d& dir)
+    {
         const Ray3d ray(p, dir);
         return intersect_sphere_always(ray);
     };

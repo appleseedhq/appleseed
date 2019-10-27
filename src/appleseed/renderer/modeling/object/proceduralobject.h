@@ -32,7 +32,6 @@
 #include "renderer/modeling/object/object.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/ray.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
 
@@ -67,28 +66,28 @@ class APPLESEED_DLLSYMBOL ProceduralObject
     // Compute the intersection between a ray expressed in object space and
     // the surface of this object and return detailed intersection results.
     virtual void intersect(
-        const ShadingRay&               ray,
-        IntersectionResult&             result) const = 0;
+        const ShadingRay&       ray,
+        IntersectionResult&     result) const = 0;
 
     // Compute the intersection between a ray expressed in object space and
     // the surface of this object and simply return whether there was a hit.
     virtual bool intersect(
-        const ShadingRay&               ray) const = 0;
+        const ShadingRay&       ray) const = 0;
 
     // Compute a front point, a back point and the geometric normal in object
     // instance space for a given ray with origin being a point on the surface
     // of the object.
     virtual void refine_and_offset(
-        const foundation::Ray3d&        obj_inst_ray,
-        foundation::Vector3d&           obj_inst_front_point,
-        foundation::Vector3d&           obj_inst_back_point,
-        foundation::Vector3d&           obj_inst_geo_normal) const = 0;
+        const ShadingRay&       obj_inst_ray,
+        foundation::Vector3d&   obj_inst_front_point,
+        foundation::Vector3d&   obj_inst_back_point,
+        foundation::Vector3d&   obj_inst_geo_normal) const = 0;
 
   protected:
     // Constructor.
     ProceduralObject(
-        const char*                     name,
-        const ParamArray&               params);
+        const char*             name,
+        const ParamArray&       params);
 };
 
 }   // namespace renderer

@@ -169,12 +169,13 @@ bool DiskObject::intersect(const ShadingRay& ray) const
 }
 
 void DiskObject::refine_and_offset(
-    const Ray3d&        obj_inst_ray,
+    const ShadingRay&   obj_inst_ray,
     Vector3d&           obj_inst_front_point,
     Vector3d&           obj_inst_back_point,
     Vector3d&           obj_inst_geo_normal) const
 {
-    const auto intersection_handling = [](const Vector3d& p, const Vector3d& dir) {
+    const auto intersection_handling = [](const Vector3d& p, const Vector3d& dir)
+    {
         assert(is_normalized(dir));
         return -p.y / dir.y;
     };

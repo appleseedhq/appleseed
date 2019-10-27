@@ -33,7 +33,6 @@
 #include "renderer/modeling/object/proceduralobject.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/ray.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
 
@@ -70,24 +69,24 @@ class APPLESEED_DLLSYMBOL SphereObject
     const char* get_material_slot(const size_t index) const override;
 
     void intersect(
-        const ShadingRay&               ray,
-        IntersectionResult&             result) const override;
+        const ShadingRay&       ray,
+        IntersectionResult&     result) const override;
 
     bool intersect(const ShadingRay& ray) const override;
 
     void refine_and_offset(
-        const foundation::Ray3d&        obj_inst_ray,
-        foundation::Vector3d&           obj_inst_front_point,
-        foundation::Vector3d&           obj_inst_back_point,
-        foundation::Vector3d&           obj_inst_geo_normal) const override;
+        const ShadingRay&       obj_inst_ray,
+        foundation::Vector3d&   obj_inst_front_point,
+        foundation::Vector3d&   obj_inst_back_point,
+        foundation::Vector3d&   obj_inst_geo_normal) const override;
 
   private:
     friend class SphereObjectFactory;
 
     // Constructor.
     SphereObject(
-        const char*                 name,
-        const ParamArray&           params);
+        const char*             name,
+        const ParamArray&       params);
 };
 
 

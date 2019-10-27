@@ -159,7 +159,7 @@ class ShadingPoint
     foundation::Vector3d get_biased_point(const foundation::Vector3d& direction) const;
 
     // Return the intersection point, properly offset to avoid self-intersections.
-    // The intersection point space depends on the primitive type.
+    // The intersection point and direction space depends on the primitive type.
     const foundation::Vector3d& get_offset_point(const foundation::Vector3d& direction) const;
 
     // Return the world space partial derivatives of the intersection point wrt. a given UV set.
@@ -362,7 +362,7 @@ class ShadingPoint
     mutable foundation::Color3f         m_color;                        // per-vertex interpolated color at intersection point
 
     // Data required to avoid self-intersections.
-    mutable foundation::Vector3d        m_refine_space_geo_normal;       // primitive specific space geometric normal to hit primitive
+    mutable foundation::Vector3d        m_refine_space_geo_normal;       // primitive-specific space geometric normal to hit primitive
     mutable foundation::Vector3d        m_refine_space_front_point;      // hit point refined to front, in primitive specific space
     mutable foundation::Vector3d        m_refine_space_back_point;       // hit point refined to back, in primitive specific space
 
