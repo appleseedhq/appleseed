@@ -186,8 +186,11 @@ void DiskObject::refine_and_offset(
             obj_inst_ray.m_dir,
             intersection_handling);
 
-    obj_inst_geo_normal = faceforward(Vector3d(0.0, 1.0, 0.0), obj_inst_ray.m_dir);
-
+    obj_inst_geo_normal =
+        obj_inst_ray.m_dir.y < 0.0
+        ? obj_inst_ray.m_dir
+        : -obj_inst_ray.m_dir;
+            
     adaptive_offset(
         refined_intersection_point,
         obj_inst_geo_normal,
