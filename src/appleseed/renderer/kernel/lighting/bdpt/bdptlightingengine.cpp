@@ -62,7 +62,7 @@ namespace
         Camera, Light, Surface, Medium
     };
 
-    /// TODO:: decide if we should use existing PathVertex (in PathVertex.h) or just keep using BDPTVertex
+    /// todo: decide if we should use existing PathVertex (in PathVertex.h) or just keep using BDPTVertex
     struct BDPTVertex
     {
         Vector3d                m_position;
@@ -104,7 +104,7 @@ namespace
         }
     };
 
-    /// TODO:: supports the case where t == 1 (if pdf for camera can be queried)
+    /// todo: supports the case where t == 1 (if pdf for camera can be queried)
     class BDPTLightingEngine
       : public ILightingEngine
     {
@@ -155,7 +155,7 @@ namespace
             ShadingComponents&          radiance,               // output radiance, in W.sr^-1.m^-2
             AOVComponents&              aov_components) override
         {
-            /// TODO:: use arena to alloc BDPTVertices instead
+            /// todo: use arena to alloc BDPTVertices instead
             BDPTVertex* camera_vertices = new BDPTVertex[m_num_max_vertices - 1];
             BDPTVertex* light_vertices = new BDPTVertex[m_num_max_vertices];
 
@@ -189,7 +189,7 @@ namespace
             const Vector3d normalized_v = normalize(v);
             const double dist2 = square_norm(v);
 
-            /// TODO:: the special care have to be taken for these dot products when it comes to volume
+            /// todo: the special care have to be taken for these dot products when it comes to volume
             const double cos1 = std::max(-dot(normalized_v, b.m_geometric_normal), 0.0);
             const double cos2 = std::max(dot(normalized_v, a.m_geometric_normal), 0.0);
 
@@ -213,7 +213,7 @@ namespace
             return result;
         }
 
-        /// TODO:: precompute path density using fwd_pdf and rev_pdf.
+        /// todo: precompute path density using fwd_pdf and rev_pdf.
         /// in the final code, this function should be removed and the mis weight computation should be very simple.
         /// example: https://github.com/mmp/pbrt-v3/blob/master/src/integrators/bdpt.cpp#L228
         float compute_path_density(
@@ -253,7 +253,7 @@ namespace
                 }
             };
 
-            /// TODO:: swap all pdf computation to rev_pdf and fwd_pdf
+            /// todo: swap all pdf computation to rev_pdf and fwd_pdf
             float result = 1.0f;
             // start from light
             for (size_t i = 1; i <= p; i++)
@@ -269,7 +269,7 @@ namespace
                 {
                     const BDPTVertex& prev_vertex = *get_vertex_start_from_light(i - 1);
                     const BDPTVertex& vertex = *get_vertex_start_from_light(i);
-                    /// TODO:: fix this. This assumes diffuse light source.
+                    /// todo: fix this. This assumes diffuse light source.
                     float pdf_w = static_cast<float>(dot(normalize(vertex.m_position - prev_vertex.m_position), prev_vertex.m_geometric_normal) * RcpPi<float>());
                     float pdf_a = static_cast<float>(prev_vertex.convert_density(pdf_w, vertex));
                     assert(pdf_a >= 0.0f);
@@ -375,13 +375,13 @@ namespace
                 const BDPTVertex& light_vertex = light_vertices[s - 1];
                 const BDPTVertex& camera_vertex = camera_vertices[t - 2];
 
-                /// TODO:: need to take care of light material as well
+                /// todo: need to take care of light material as well
                 if (camera_vertex.m_bsdf == nullptr || camera_vertex.m_bsdf_data == nullptr)
                 {
                     return;
                 }
 
-                Spectrum geometry = compute_geometry_term(shading_context, shading_point, camera_vertex, light_vertex);
+                const Spectrum geometry = compute_geometry_term(shading_context, shading_point, camera_vertex, light_vertex);
 
                 BSDF::LocalGeometry local_geometry;
                 local_geometry.m_shading_point = &camera_vertex.m_shading_point;
@@ -454,7 +454,7 @@ namespace
             if (numerator == 0.0f)
                 return;
 
-            /// TODO:: unhandled case where (numerator <= 0) (specular surface / impossible path).
+            /// todo: unhandled case where (numerator <= 0) (specular surface / impossible path).
             assert(FP<float>::is_finite(numerator));
             assert(numerator > 0.0f);
 
@@ -463,7 +463,7 @@ namespace
             for (size_t i = 0; i <= s + t - 2; i++)
                 denominator += compute_path_density(light_vertices, camera_vertices, s, t, i, s + t - i);
 
-            /// TODO:: unhandled case where (denominator <= 0) (specular surface / impossible path).
+            /// todo: unhandled case where (denominator <= 0) (specular surface / impossible path).
             assert(FP<float>::is_finite(denominator));
             assert(denominator > 0.0f);
 
@@ -722,7 +722,7 @@ namespace
                 bdpt_vertex.m_position = vertex.get_point();
                 bdpt_vertex.m_shading_basis = Basis3f(vertex.get_shading_basis());
                 bdpt_vertex.m_shading_point = *vertex.m_shading_point;
-                /// TODO:: compute rev_pdf here
+                /// todo: compute rev_pdf here
 
                 if (vertex.m_edf)
                 {

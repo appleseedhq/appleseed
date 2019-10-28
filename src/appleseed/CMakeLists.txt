@@ -1856,7 +1856,6 @@ set (renderer_modeling_input_sources
     renderer/modeling/input/inputbinder.h
     renderer/modeling/input/scalarsource.h
     renderer/modeling/input/sourceinputs.h
-    renderer/modeling/input/sourceinputs.cpp
     renderer/modeling/input/source.h
     renderer/modeling/input/symbol.h
     renderer/modeling/input/texturesource.cpp
