@@ -46,31 +46,33 @@ namespace renderer
 //   https://computergraphics.stackexchange.com/questions/4986
 //
 
-inline float shift_cos_in(const float cos_in, const float correction)
+// The `correction_factor` parameter is in [0,1): 0 means no correction while higher values
+// push the shadow boundary further away from the geometric boundary.
+inline float shift_cos_in(const float cos_in, const float correction_factor)
 {
     assert(std::abs(cos_in) <= 1.0f);
-    assert(correction >= 0.0f && correction < 1.0f);
+    assert(correction_factor >= 0.0f && correction_factor < 1.0f);
 
-    if (correction == 0.0f)
+    if (correction_factor == 0.0f)
         return cos_in;
 
-    const float k = 1.0f / (1.0f - correction);
     const float angle = foundation::fast_acos(cos_in);
-    return std::max(std::cos(angle * k), 0.0f);
+    const float frequency_multiplier = 1.0f / (1.0f - correction_factor);
+    return std::max(std::cos(angle * frequency_multiplier), 0.0f);
 }
 
-// The `k` parameter should be set `1.0f / (1.0f - correction)` where `correction` is a correction factor in [0,1).
-// 0 means no correction while higher values pushes the shadow boundary further away from the geometric boundary.
-inline float shift_cos_in_fast(const float cos_in, const float k)
+// The `frequency_multiplier` parameter should be set `1.0f / (1.0f - correction_factor)`.
+// See above for the meaning of the `correction_factor` parameter.
+inline float shift_cos_in_fast(const float cos_in, const float frequency_multiplier)
 {
     assert(std::abs(cos_in) <= 1.0f);
-    assert(k >= 1.0f);
+    assert(frequency_multiplier >= 1.0f);
 
-    if (k == 1.0f)
+    if (frequency_multiplier == 1.0f)
         return cos_in;
 
     const float angle = foundation::fast_acos(cos_in);
-    return std::max(std::cos(angle * k), 0.0f);
+    return std::max(std::cos(angle * frequency_multiplier), 0.0f);
 }
 
 }   // namespace renderer
