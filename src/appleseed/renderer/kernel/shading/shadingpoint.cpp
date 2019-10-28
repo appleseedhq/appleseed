@@ -1017,7 +1017,7 @@ void ShadingPoint::initialize_osl_shader_globals(
 
         m_shader_globals.flipHandedness =
             m_assembly_instance_transform_seq->swaps_handedness(m_assembly_instance_transform) !=
-            get_object_instance().transform_swaps_handedness() ? 1 : 0;
+            get_object_instance().get_render_data().m_transform_swaps_handedness ? 1 : 0;
 
         // Surface position and incident ray direction differentials.
         if (ray.m_has_differentials)
