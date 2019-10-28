@@ -497,7 +497,7 @@ bool ObjectInstance::on_frame_begin(
     }
 
     m_render_data.clear();
-    m_transform_swaps_handedness = get_transform().swaps_handedness();
+    m_render_data.m_transform_swaps_handedness = get_transform().swaps_handedness();
 
     const float shadow_terminator_correction = m_params.get_optional("shadow_terminator_correction", 0.0f);
     m_render_data.m_shadow_terminator_freq_mult = 1.0f / (1.0f - shadow_terminator_correction);

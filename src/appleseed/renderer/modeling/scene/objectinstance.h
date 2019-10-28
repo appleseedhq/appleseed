@@ -99,9 +99,6 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     // Return the transform of this instance.
     const foundation::Transformd& get_transform() const;
 
-    // Return true if the transform of this instance swaps handedness.
-    bool transform_swaps_handedness() const;
-
     // Return true if the normals of this instance must be flipped.
     bool must_flip_normals() const;
 
@@ -187,7 +184,8 @@ class APPLESEED_DLLSYMBOL ObjectInstance
 
     struct APPLESEED_DLLSYMBOL RenderData
     {
-        float m_shadow_terminator_freq_mult;
+        bool    m_transform_swaps_handedness;       // true if the transform of this instance swaps handedness
+        float   m_shadow_terminator_freq_mult;      // see renderer/utility/shadowterminator.h
 
         RenderData();
 
@@ -208,7 +206,6 @@ class APPLESEED_DLLSYMBOL ObjectInstance
 
     foundation::uint32  m_vis_flags;
     foundation::int8    m_medium_priority;
-    bool                m_transform_swaps_handedness;
     bool                m_flip_normals;
 
     Object*             m_object;
@@ -254,10 +251,6 @@ class APPLESEED_DLLSYMBOL ObjectInstanceFactory
 // ObjectInstance class implementation.
 //
 
-inline bool ObjectInstance::transform_swaps_handedness() const
-{
-    return m_transform_swaps_handedness;
-}
 
 inline bool ObjectInstance::must_flip_normals() const
 {
