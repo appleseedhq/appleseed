@@ -212,10 +212,10 @@ void RectangleObject::refine_and_offset(
     Vector3d&           obj_inst_back_point,
     Vector3d&           obj_inst_geo_normal) const
 {
-    const auto intersection_handling = [&corner = impl->m_corner, &n = impl->m_normal](const Vector3d& p, const Vector3d& dir)
+    const auto intersection_handling = [this](const Vector3d& p, const Vector3d& dir)
     {
         const Ray3d ray(p, dir);
-        return foundation::intersect(ray, corner, n);
+        return foundation::intersect(ray, impl->m_corner, impl->m_normal);
     };
 
     const Vector3d refined_intersection_point =
