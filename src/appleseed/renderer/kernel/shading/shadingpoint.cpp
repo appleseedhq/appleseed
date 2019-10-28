@@ -115,11 +115,6 @@ void ShadingPoint::flip_side()
         m_side = ObjectInstance::BackSide;
     else m_side = ObjectInstance::FrontSide;
 
-    // Clear the biased point if it depends on a normal vector.
-    if ((m_members & HasBiasedPoint) &&
-        m_object_instance->get_ray_bias_method() == ObjectInstance::RayBiasMethodNormal)
-        m_members &= ~HasBiasedPoint;
-
     // Flip the geometric normal.
     assert(m_members & HasGeometricNormal);
     m_geometric_normal = -m_geometric_normal;
@@ -466,54 +461,6 @@ void ShadingPoint::refine_and_offset() const
 
     // The refined intersection points are now available.
     m_members |= ShadingPoint::HasRefinedPoints;
-}
-
-Vector3d ShadingPoint::get_biased_point(const Vector3d& direction) const
-{
-    assert(hit_surface());
-
-    if (!(m_members & HasBiasedPoint))
-    {
-        cache_source_geometry();
-
-        switch (m_object_instance->get_ray_bias_method())
-        {
-          case ObjectInstance::RayBiasMethodNone:
-            {
-                m_biased_point = get_point();
-                m_members |= HasBiasedPoint;
-                return m_biased_point;
-            }
-
-          case ObjectInstance::RayBiasMethodNormal:
-            {
-                const Vector3d& p = get_point();
-                const Vector3d& n = get_geometric_normal();
-                const double bias = m_object_instance->get_ray_bias_distance();
-                return dot(direction, n) > 0.0 ? p + bias * n : p - bias * n;
-            }
-
-          case ObjectInstance::RayBiasMethodIncomingDirection:
-            {
-                const Vector3d& p = get_point();
-                const double bias = m_object_instance->get_ray_bias_distance();
-                m_biased_point = p + bias * m_ray.m_dir;
-                m_members |= HasBiasedPoint;
-                return m_biased_point;
-            }
-
-          case ObjectInstance::RayBiasMethodOutgoingDirection:
-            {
-                const Vector3d& p = get_point();
-                const double bias = m_object_instance->get_ray_bias_distance();
-                return p + bias * normalize(direction);
-            }
-
-          assert_otherwise;
-        }
-    }
-
-    return m_biased_point;
 }
 
 void ShadingPoint::compute_world_space_partial_derivatives() const
@@ -1275,7 +1222,6 @@ void PoisonImpl<renderer::ShadingPoint>::do_poison(renderer::ShadingPoint& point
     always_poison(point.m_duvdx);
     always_poison(point.m_duvdy);
     always_poison(point.m_point);
-    always_poison(point.m_biased_point);
     always_poison(point.m_dpdu);
     always_poison(point.m_dpdv);
     always_poison(point.m_dndu);

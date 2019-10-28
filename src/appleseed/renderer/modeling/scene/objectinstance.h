@@ -112,18 +112,6 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     // Return the medium priority of this instance.
     foundation::int8 get_medium_priority() const;
 
-    enum RayBiasMethod
-    {
-        RayBiasMethodNone,                  // no ray bias for this object instance
-        RayBiasMethodNormal,                // shift the ray's origin along the surface's geometric normal
-        RayBiasMethodIncomingDirection,     // shift the ray's origin along the incoming ray's direction
-        RayBiasMethodOutgoingDirection      // shift the ray's origin along the outgoing ray's direction
-    };
-
-    // Return the ray bias settings. The bias distance is expressed in world space.
-    RayBiasMethod get_ray_bias_method() const;
-    double get_ray_bias_distance() const;
-
     // Check if this object instance is in the same SSS set as another.
     bool is_in_same_sss_set(const ObjectInstance& other) const;
 
@@ -220,8 +208,6 @@ class APPLESEED_DLLSYMBOL ObjectInstance
 
     foundation::uint32  m_vis_flags;
     foundation::int8    m_medium_priority;
-    RayBiasMethod       m_ray_bias_method;
-    double              m_ray_bias_distance;
     bool                m_transform_swaps_handedness;
     bool                m_flip_normals;
 
@@ -291,16 +277,6 @@ inline void ObjectInstance::set_vis_flags(const foundation::uint32 flags)
 inline foundation::int8 ObjectInstance::get_medium_priority() const
 {
     return m_medium_priority;
-}
-
-inline ObjectInstance::RayBiasMethod ObjectInstance::get_ray_bias_method() const
-{
-    return m_ray_bias_method;
-}
-
-inline double ObjectInstance::get_ray_bias_distance() const
-{
-    return m_ray_bias_distance;
 }
 
 inline Object& ObjectInstance::get_object() const

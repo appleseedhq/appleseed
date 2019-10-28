@@ -155,9 +155,6 @@ class ShadingPoint
     // Return the intersection point in world space.
     const foundation::Vector3d& get_point() const;
 
-    // Return the intersection point in world space, with per-object-instance ray bias applied.
-    foundation::Vector3d get_biased_point(const foundation::Vector3d& direction) const;
-
     // Return the intersection point, properly offset to avoid self-intersections.
     // The intersection point and direction space depends on the primitive type.
     const foundation::Vector3d& get_offset_point(const foundation::Vector3d& direction) const;
@@ -312,19 +309,18 @@ class ShadingPoint
         HasTriangleVertexTangents       = 1UL << 2,
         HasUV0                          = 1UL << 3,
         HasPoint                        = 1UL << 4,
-        HasBiasedPoint                  = 1UL << 5,
-        HasRefinedPoints                = 1UL << 6,
-        HasWorldSpaceDerivatives        = 1UL << 7,
-        HasGeometricNormal              = 1UL << 8,
-        HasOriginalShadingNormal        = 1UL << 9,
-        HasShadingBasis                 = 1UL << 10,
-        HasWorldSpaceTriangleVertices   = 1UL << 11,
-        HasMaterials                    = 1UL << 12,
-        HasWorldSpacePointVelocity      = 1UL << 13,
-        HasAlpha                        = 1UL << 14,
-        HasPerVertexColor               = 1UL << 15,
-        HasScreenSpaceDerivatives       = 1UL << 16,
-        HasOSLShaderGlobals             = 1UL << 17
+        HasRefinedPoints                = 1UL << 5,
+        HasWorldSpaceDerivatives        = 1UL << 6,
+        HasGeometricNormal              = 1UL << 7,
+        HasOriginalShadingNormal        = 1UL << 8,
+        HasShadingBasis                 = 1UL << 9,
+        HasWorldSpaceTriangleVertices   = 1UL << 10,
+        HasMaterials                    = 1UL << 11,
+        HasWorldSpacePointVelocity      = 1UL << 12,
+        HasAlpha                        = 1UL << 13,
+        HasPerVertexColor               = 1UL << 14,
+        HasScreenSpaceDerivatives       = 1UL << 15,
+        HasOSLShaderGlobals             = 1UL << 16
     };
     mutable foundation::uint32          m_members;
 
@@ -343,7 +339,6 @@ class ShadingPoint
     mutable foundation::Vector2f        m_duvdx;                        // screen space partial derivative of the texture coords wrt. X
     mutable foundation::Vector2f        m_duvdy;                        // screen space partial derivative of the texture coords wrt. Y
     mutable foundation::Vector3d        m_point;                        // world space intersection point
-    mutable foundation::Vector3d        m_biased_point;                 // world space intersection point with per-object-instance bias applied
     mutable foundation::Vector3d        m_dpdu;                         // world space partial derivative of the intersection point wrt. U
     mutable foundation::Vector3d        m_dpdv;                         // world space partial derivative of the intersection point wrt. V
     mutable foundation::Vector3d        m_dndu;                         // world space partial derivative of the intersection normal wrt. U

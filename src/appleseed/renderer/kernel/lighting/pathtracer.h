@@ -765,9 +765,8 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
 
     // Construct the scattered ray.
     const ShadingRay& ray = vertex.get_ray();
-    const foundation::Vector3d incoming(sample.m_incoming.get_value());
-    next_ray.m_org = vertex.m_shading_point->get_biased_point(incoming);
-    next_ray.m_dir = foundation::improve_normalization<2>(incoming);
+    next_ray.m_org = vertex.m_shading_point->get_point();
+    next_ray.m_dir = foundation::improve_normalization<2>(foundation::Vector3d(sample.m_incoming.get_value()));
     next_ray.m_time = ray.m_time;
     next_ray.m_flags = ScatteringMode::get_vis_flags(sample.get_mode()),
     next_ray.m_depth = ray.m_depth + 1;

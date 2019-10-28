@@ -179,24 +179,6 @@ ObjectInstance::ObjectInstance(
     // Retrieve medium priority.
     m_medium_priority = params.get_optional<int8>("medium_priority", 0);
 
-    // Retrieve ray bias method.
-    const std::string ray_bias_method =
-        params.get_optional<std::string>(
-            "ray_bias_method",
-            "none",
-            make_vector("none", "normal", "incoming_direction", "outgoing_direction"),
-            context);
-    if (ray_bias_method == "none")
-        m_ray_bias_method = RayBiasMethodNone;
-    else if (ray_bias_method == "normal")
-        m_ray_bias_method = RayBiasMethodNormal;
-    else if (ray_bias_method == "incoming_direction")
-        m_ray_bias_method = RayBiasMethodIncomingDirection;
-    else m_ray_bias_method = RayBiasMethodOutgoingDirection;
-
-    // Retrieve ray bias distance.
-    m_ray_bias_distance = params.get_optional<double>("ray_bias_distance", 0.0);
-
     // Retrieve SSS set ID.
     impl->m_sss_set_identifier = params.get_optional<std::string>("sss_set_id", "");
 
@@ -556,28 +538,6 @@ DictionaryArray ObjectInstanceFactory::get_input_metadata()
                     .insert("type", "hard"))
             .insert("use", "optional")
             .insert("default", "0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "ray_bias_method")
-            .insert("label", "Ray Bias Method")
-            .insert("type", "enumeration")
-            .insert("items",
-                Dictionary()
-                    .insert("No Ray Bias", "none")
-                    .insert("Shift Along Surface Normal", "normal")
-                    .insert("Shift Along Incoming Direction", "incoming_direction")
-                    .insert("Shift Along Outgoing Direction", "outgoing_direction"))
-            .insert("use", "optional")
-            .insert("default", "none"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "ray_bias_distance")
-            .insert("label", "Ray Bias Distance")
-            .insert("type", "text")
-            .insert("use", "optional")
-            .insert("default", "0.0"));
 
     metadata.push_back(
         Dictionary()

@@ -2275,6 +2275,48 @@ namespace
             params.set("exposure", exposure * exposure_multiplier);
         }
     };
+
+
+    //
+    // Update from revision 32 to revision 33.
+    //
+
+    class UpdateFromRevision_32
+      : public Updater
+    {
+      public:
+        UpdateFromRevision_32(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 32)
+        {
+        }
+
+        void update() override
+        {
+            if (Scene* scene = m_project.get_scene())
+                update_collection(scene->assemblies());
+        }
+
+      private:
+        template <typename Collection>
+        static void update_collection(Collection& collection)
+        {
+            for (auto& item : collection)
+                update_entity(item);
+        }
+
+        static void update_entity(Assembly& assembly)
+        {
+            update_collection(assembly.object_instances());
+            update_collection(assembly.assemblies());
+        }
+
+        static void update_entity(ObjectInstance& object_instance)
+        {
+            ParamArray& params = object_instance.get_parameters();
+            params.strings().remove("ray_bias_method");
+            params.strings().remove("ray_bias_distance");
+        }
+    };
 }
 
 bool ProjectFileUpdater::update(
@@ -2339,6 +2381,7 @@ void ProjectFileUpdater::update(
       CASE_UPDATE_FROM_REVISION(29);
       CASE_UPDATE_FROM_REVISION(30);
       CASE_UPDATE_FROM_REVISION(31);
+      CASE_UPDATE_FROM_REVISION(32);
 
       case ProjectFormatRevision:
         // Project is up-to-date.
