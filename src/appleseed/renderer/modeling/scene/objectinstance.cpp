@@ -116,6 +116,21 @@ bool has_participating_media(const MaterialArray& materials)
 
 
 //
+// ObjectInstance::RenderData class implementation.
+//
+
+ObjectInstance::RenderData::RenderData()
+{
+    clear();
+}
+
+void ObjectInstance::RenderData::clear()
+{
+    m_shadow_terminator_freq_mult = 1.0f;
+}
+
+
+//
 // ObjectInstance class implementation.
 //
 
@@ -482,8 +497,6 @@ bool ObjectInstance::on_frame_begin(
     if (!Entity::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
-    m_transform_swaps_handedness = get_transform().swaps_handedness();
-
     const OnFrameBeginMessageContext context("object instance", this);
 
     const bool uses_materials_alpha_mapping =
@@ -501,7 +514,22 @@ bool ObjectInstance::on_frame_begin(
         }
     }
 
+    m_render_data.clear();
+    m_transform_swaps_handedness = get_transform().swaps_handedness();
+
+    const float shadow_terminator_correction = m_params.get_optional("shadow_terminator_correction", 0.0f);
+    m_render_data.m_shadow_terminator_freq_mult = 1.0f / (1.0f - shadow_terminator_correction);
+
     return true;
+}
+
+void ObjectInstance::on_frame_end(
+    const Project&          project,
+    const BaseGroup*        parent)
+{
+    m_render_data.clear();
+
+    Entity::on_frame_end(project, parent);
 }
 
 

@@ -34,6 +34,7 @@
 #include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
+#include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/utility/shadowterminator.h"
 
 // appleseed.foundation headers.
@@ -186,7 +187,7 @@ void BSDFWrapper<BSDFImpl, Cull>::sample(
             }
             else
             {
-                const float shadow_terminator_freq_mult = local_geometry.m_shading_point->get_object().get_render_data().m_shadow_terminator_freq_mult;
+                const float shadow_terminator_freq_mult = local_geometry.m_shading_point->get_object_instance().get_render_data().m_shadow_terminator_freq_mult;
                 const float cos_in = std::min(std::abs(foundation::dot(sample.m_incoming.get_value(), local_geometry.m_shading_basis.get_normal())), 1.0f);
                 sample.m_value *= shift_cos_in_fast(cos_in, shadow_terminator_freq_mult);
             }
@@ -239,7 +240,7 @@ float BSDFWrapper<BSDFImpl, Cull>::evaluate(
             }
             else
             {
-                const float shadow_terminator_freq_mult = local_geometry.m_shading_point->get_object().get_render_data().m_shadow_terminator_freq_mult;
+                const float shadow_terminator_freq_mult = local_geometry.m_shading_point->get_object_instance().get_render_data().m_shadow_terminator_freq_mult;
                 const float cos_in = std::min(std::abs(foundation::dot(incoming, local_geometry.m_shading_basis.get_normal())), 1.0f);
                 value *= shift_cos_in_fast(cos_in, shadow_terminator_freq_mult);
             }

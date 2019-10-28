@@ -193,11 +193,30 @@ class APPLESEED_DLLSYMBOL ObjectInstance
         OnFrameBeginRecorder&       recorder,
         foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
+    void on_frame_end(
+        const Project&              project,
+        const BaseGroup*            parent) override;
+
+    struct APPLESEED_DLLSYMBOL RenderData
+    {
+        float m_shadow_terminator_freq_mult;
+
+        RenderData();
+
+        void clear();
+    };
+
+    // Return render-time data of this entity.
+    // Render-time data are available between on_frame_begin() and on_frame_end() calls.
+    const RenderData& get_render_data() const;
+
   private:
     friend class ObjectInstanceFactory;
 
     struct Impl;
     Impl* impl;
+
+    RenderData          m_render_data;
 
     foundation::uint32  m_vis_flags;
     foundation::int8    m_medium_priority;
@@ -298,6 +317,11 @@ inline const MaterialArray& ObjectInstance::get_front_materials() const
 inline const MaterialArray& ObjectInstance::get_back_materials() const
 {
     return m_back_materials;
+}
+
+inline const ObjectInstance::RenderData& ObjectInstance::get_render_data() const
+{
+    return m_render_data;
 }
 
 }   // namespace renderer

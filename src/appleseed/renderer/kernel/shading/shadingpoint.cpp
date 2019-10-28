@@ -980,7 +980,7 @@ void ShadingPoint::compute_alpha() const
       case PrimitiveTriangle:
       case PrimitiveProceduralSurface:
         {
-            if (const Source* alpha_map = get_object().get_alpha_map())
+            if (const Source* alpha_map = get_object().get_render_data().m_alpha_map)
             {
                 Alpha a;
                 alpha_map->evaluate(*m_texture_cache, SourceInputs(get_uv(0)), a);
