@@ -566,8 +566,7 @@ namespace
         // Compute the ray origin in assembly instance space.
         if (parent_sp &&
             parent_sp->get_assembly_instance().get_uid() == assembly_instance.get_uid() &&
-            parent_sp->get_primitive_type() == ShadingPoint::PrimitiveType::PrimitiveTriangle &&
-            parent_sp->get_object_instance().get_ray_bias_method() == ObjectInstance::RayBiasMethodNone)
+            parent_sp->get_primitive_type() == ShadingPoint::PrimitiveType::PrimitiveTriangle)
         {
             // The caller provided the previous intersection, and we are about
             // to intersect the assembly instance that contains the previous
@@ -771,8 +770,7 @@ bool AssemblyLeafVisitor::visit(
             if (m_parent_shading_point &&
                 m_parent_shading_point->get_primitive_type() == ShadingPoint::PrimitiveType::PrimitiveProceduralSurface &&
                 m_parent_shading_point->get_assembly_instance().get_uid() == assembly_instance.get_uid() &&
-                m_parent_shading_point->get_object_instance().get_uid() == object_instance->get_uid() &&
-                m_parent_shading_point->get_object_instance().get_ray_bias_method() == ObjectInstance::RayBiasMethodNone)
+                m_parent_shading_point->get_object_instance().get_uid() == object_instance->get_uid())
             {
                 // The caller provided the previous intersection, and we are about
                 // to intersect the object instance that contains the previous
@@ -1013,8 +1011,7 @@ bool AssemblyLeafProbeVisitor::visit(
             if (m_parent_shading_point &&
                 m_parent_shading_point->get_primitive_type() == ShadingPoint::PrimitiveType::PrimitiveProceduralSurface &&
                 m_parent_shading_point->get_assembly_instance().get_uid() == assembly_instance.get_uid() &&
-                m_parent_shading_point->get_object_instance().get_uid() == object_instance->get_uid() &&
-                m_parent_shading_point->get_object_instance().get_ray_bias_method() == ObjectInstance::RayBiasMethodNone)
+                m_parent_shading_point->get_object_instance().get_uid() == object_instance->get_uid())
             {
                 // The caller provided the previous intersection, and we are about
                 // to intersect the object instance that contains the previous
