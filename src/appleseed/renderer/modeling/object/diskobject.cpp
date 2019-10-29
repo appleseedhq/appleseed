@@ -188,8 +188,8 @@ void DiskObject::refine_and_offset(
 
     obj_inst_geo_normal =
         obj_inst_ray.m_dir.y < 0.0
-        ? Vector3d(0.0, 1.0, 0.0)
-        : Vector3d(0.0, -1.0, 0.0);
+            ? Vector3d(0.0, 1.0, 0.0)
+            : Vector3d(0.0, -1.0, 0.0);
             
     adaptive_offset(
         refined_intersection_point,
