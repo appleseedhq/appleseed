@@ -362,7 +362,7 @@ void LightSamplerBase::collect_emitting_shapes(
             if (area <= 0.0)
             {
                 RENDERER_LOG_WARNING(
-                    "rectangle object \"%s\" has zero area; it will be ignored.",
+                    "rectangle object \"%s\" has zero or negative area; it will be ignored.",
                     rectangle.get_name());
                 continue;
             }
@@ -436,7 +436,7 @@ void LightSamplerBase::collect_emitting_shapes(
             if (radius <= 0.0)
             {
                 RENDERER_LOG_WARNING(
-                    "sphere object \"%s\" has zero radius; it will be ignored.",
+                    "sphere object \"%s\" has zero or negative radius; it will be ignored.",
                     sphere.get_name());
                 continue;
             }
@@ -513,7 +513,7 @@ void LightSamplerBase::collect_emitting_shapes(
             if (r <= 0.0)
             {
                 RENDERER_LOG_WARNING(
-                    "disk object \"%s\" has zero radius; it will be ignored.",
+                    "disk object \"%s\" has zero or negative radius; it will be ignored.",
                     disk.get_name());
                 continue;
             }
