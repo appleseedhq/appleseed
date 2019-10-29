@@ -372,9 +372,7 @@ void ShadingPoint::refine_and_offset() const
     cache_source_geometry();
 
     // Compute the location of the intersection point in assembly instance space.
-    ShadingRay refine_space_ray(m_ray);
-    refine_space_ray.m_org = m_assembly_instance_transform.point_to_local(refine_space_ray.m_org);
-    refine_space_ray.m_dir = m_assembly_instance_transform.vector_to_local(refine_space_ray.m_dir);
+    ShadingRay::RayType refine_space_ray = m_assembly_instance_transform.to_local(m_ray);
 
     switch (m_primitive_type)
     {
@@ -423,9 +421,7 @@ void ShadingPoint::refine_and_offset() const
           {
 #ifdef RENDERER_ADAPTIVE_OFFSET
               // Compute the location of the intersection point in object space.
-              const Transformd& object_instance_transform = m_object_instance->get_transform();
-              refine_space_ray.m_org = object_instance_transform.point_to_local(refine_space_ray.m_org);
-              refine_space_ray.m_dir = object_instance_transform.vector_to_local(refine_space_ray.m_dir);
+              refine_space_ray = m_object_instance->get_transform().to_local(refine_space_ray);
 
               // Offset the ray origin to the hit point.
               refine_space_ray.m_org += refine_space_ray.m_tmax * refine_space_ray.m_dir;

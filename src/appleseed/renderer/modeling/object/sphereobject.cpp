@@ -156,7 +156,7 @@ namespace
 }
 
 void SphereObject::refine_and_offset(
-    const ShadingRay&   obj_inst_ray,
+    const Ray3d&        obj_inst_ray,
     Vector3d&           obj_inst_front_point,
     Vector3d&           obj_inst_back_point,
     Vector3d&           obj_inst_geo_normal) const
