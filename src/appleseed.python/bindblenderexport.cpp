@@ -326,7 +326,7 @@ void export_mesh_blender80_pose(
     }
 }
 
-void bind_blender_mesh_converter()
+void bind_blender_export()
 {
     bpy::def("export_mesh_blender79", &export_mesh_blender79);
     bpy::def("export_mesh_blender79_pose", &export_mesh_blender79_pose);

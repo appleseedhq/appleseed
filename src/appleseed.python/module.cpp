@@ -37,7 +37,7 @@ void bind_appleseed();
 void bind_assembly();
 void bind_basis();
 void bind_bbox();
-void bind_blender_mesh_converter();
+void bind_blender_export();
 void bind_bsdf();
 void bind_bssrdf();
 void bind_camera();
@@ -139,7 +139,7 @@ extern "C" void bind_appleseed_python_classes()
 
 #if PY_MAJOR_VERSION == 3
     bind_blender_progressive_tile_callback();
-    bind_blender_mesh_converter();
+    bind_blender_export();
 #endif
 }
 
