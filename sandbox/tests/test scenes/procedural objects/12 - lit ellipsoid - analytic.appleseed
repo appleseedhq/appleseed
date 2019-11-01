@@ -35,9 +35,7 @@
                 <parameter name="irradiance" value="1" />
                 <parameter name="irradiance_multiplier" value="2" />
             </light>
-            <object name="sphere" model="sphere_object">
-                <parameter name="radius" value="1.0" />
-            </object>
+            <object name="sphere" model="sphere_object" />
             <object_instance name="sphere_inst" object="sphere">
                 <transform>
                     <matrix>

@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/intersection/intersector.h"
+#include "renderer/kernel/intersection/refining.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/modeling/camera/camera.h"
@@ -455,7 +456,7 @@ bool RendererServices::trace(
         Vector3d front(P);
         Vector3d back = front;
 
-        Intersector::fixed_offset(
+        fixed_offset(
             parent->get_point(),
             parent->get_geometric_normal(),
             front,

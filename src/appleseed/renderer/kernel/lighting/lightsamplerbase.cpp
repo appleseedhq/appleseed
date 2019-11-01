@@ -359,10 +359,10 @@ void LightSamplerBase::collect_emitting_shapes(
             
             const double area = norm(x) * norm(y);
 
-            if (area == 0.0)
+            if (area <= 0.0)
             {
                 RENDERER_LOG_WARNING(
-                    "rectangle object \"%s\" has zero area; it will be ignored.",
+                    "rectangle object \"%s\" has zero or negative area; it will be ignored.",
                     rectangle.get_name());
                 continue;
             }
@@ -422,7 +422,7 @@ void LightSamplerBase::collect_emitting_shapes(
             Vector3d center, scale;
             Quaterniond rot;
             xform.decompose(scale, rot, center);
-            double radius = sphere.get_uncached_radius();
+            double radius = sphere.get_radius();
 
             if (feq(scale.x, scale.y) && feq(scale.x, scale.z))
                 radius *= scale.x;
@@ -433,10 +433,10 @@ void LightSamplerBase::collect_emitting_shapes(
                     sphere.get_name());
             }
 
-            if (radius == 0.0)
+            if (radius <= 0.0)
             {
                 RENDERER_LOG_WARNING(
-                    "sphere object \"%s\" has zero radius; it will be ignored.",
+                    "sphere object \"%s\" has zero or negative radius; it will be ignored.",
                     sphere.get_name());
                 continue;
             }
@@ -510,10 +510,10 @@ void LightSamplerBase::collect_emitting_shapes(
                     disk.get_name());
             }
 
-            if (r == 0.0)
+            if (r <= 0.0)
             {
                 RENDERER_LOG_WARNING(
-                    "disk object \"%s\" has zero radius; it will be ignored.",
+                    "disk object \"%s\" has zero or negative radius; it will be ignored.",
                     disk.get_name());
                 continue;
             }

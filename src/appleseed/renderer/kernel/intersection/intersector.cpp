@@ -69,148 +69,20 @@ Intersector::Intersector(
 {
 }
 
-Vector3d Intersector::refine(
-    const TriangleSupportPlaneType& support_plane,
-    const Vector3d&                 point,
-    const Vector3d&                 direction)
-{
-    Vector3d result = point;
-
-    const size_t RefinementSteps = 2;
-
-    for (size_t i = 0; i < RefinementSteps; ++i)
-    {
-        const double t = support_plane.intersect(result, direction);
-        result += t * direction;
-    }
-
-    return result;
-}
-
-void Intersector::fixed_offset(
-    const Vector3d&                 p,
-    Vector3d                        n,
-    Vector3d&                       front,
-    Vector3d&                       back)
-{
-    //
-    // Reference:
-    //
-    //   Quasi-Monte Carlo light transport simulation by efficient ray tracing
-    //   http://vts.uni-ulm.de/docs/2008/6265/vts_6265_8393.pdf
-    //
-
-    // Offset parameters.
-    const double Threshold = 1.0e-25;
-    const int EpsMag = 8;
-    static const int EpsLut[2] = { EpsMag, -EpsMag };
-
-    // Check which components of p are close to the origin.
-    const bool is_small[3] =
-    {
-        std::abs(p[0]) < Threshold,
-        std::abs(p[1]) < Threshold,
-        std::abs(p[2]) < Threshold
-    };
-
-    // If any of the components of p is close to the origin, we need to normalize n.
-    if (is_small[0] | is_small[1] | is_small[2])
-        n = normalize(n);
-
-    // Compute the offset points.
-    for (size_t i = 0; i < 3; ++i)
-    {
-        if (is_small[i])
-        {
-            const double shift = n[i] * Threshold;
-            front[i] = p[i] + shift;
-            back[i] = p[i] - shift;
-        }
-        else
-        {
-            const uint64 pi = binary_cast<uint64>(p[i]);
-            const int shift = EpsLut[(pi ^ binary_cast<uint64>(n[i])) >> 63];
-            front[i] = binary_cast<double>(pi + shift);
-            back[i] = binary_cast<double>(pi - shift);
-        }
-    }
-}
-
 namespace
 {
-    Vector3d adaptive_offset_point_step(
-        const Vector3d&                 p,
-        const Vector3d&                 n,
-        const int64                     mag)
-    {
-        const double Threshold = 1.0e-25;
-        const int64 eps_lut[2] = { mag, -mag };
-
-        Vector3d result;
-
-        for (size_t i = 0; i < 3; ++i)
-        {
-            if (std::abs(p[i]) < Threshold)
-                result[i] = p[i] + n[i] * Threshold;
-            else
-            {
-                const uint64 pi = binary_cast<uint64>(p[i]);
-                const int64 shift = eps_lut[(pi ^ binary_cast<uint64>(n[i])) >> 63];
-                result[i] = binary_cast<double>(pi + shift);
-            }
-        }
-
-        return result;
-    }
-
-    Vector3d adaptive_offset_point(
-        const TriangleSupportPlaneType& support_plane,
-        const Vector3d&                 p,
-        const Vector3d&                 n,
-        const int64                     initial_mag)
-    {
-        int64 mag = initial_mag;
-        Vector3d result = p;
-
-        for (size_t i = 0; i < 64; ++i)
-        {
-            result = adaptive_offset_point_step(result, n, mag);
-
-            if (support_plane.intersect(result, n) < 0.0)
-                break;
-
-            mag *= 2;
-        }
-
-        return result;
-    }
-}
-
-void Intersector::adaptive_offset(
-    const TriangleSupportPlaneType& support_plane,
-    const Vector3d&                 p,
-    Vector3d                        n,
-    Vector3d&                       front,
-    Vector3d&                       back)
-{
-    const int64 InitialMag = 8;
-
-    n = normalize(n);
-
-    front = adaptive_offset_point(support_plane, p, n, InitialMag);
-    back = adaptive_offset_point(support_plane, p, -n, InitialMag);
-}
-
-namespace
-{
-    // Return true if two shading points reference the same triangle.
-    inline bool same_triangle(
+    // Return true if two shading points reference the same primitive.
+    inline bool same_primitive(
         const ShadingPoint&         lhs,
         const ShadingPoint&         rhs)
     {
         assert(lhs.hit_surface());
         assert(rhs.hit_surface());
 
+        // todo: this won't work for procedural objects. It can return false positives in such case.
+        // Being on the same primitive doesn't mean it's a self-intersection.
+        // For triangles you have a different normal for each primitive; this is not the case with
+        // procedural objects.
         return
             lhs.get_primitive_type() == rhs.get_primitive_type() &&
             lhs.get_primitive_index() == rhs.get_primitive_index() &&
@@ -228,7 +100,7 @@ namespace
 
         if (shading_point.hit_surface() &&
             parent_shading_point &&
-            same_triangle(*parent_shading_point, shading_point))
+            same_primitive(*parent_shading_point, shading_point))
         {
             if (warning_count < MaxWarningsPerThread)
             {
