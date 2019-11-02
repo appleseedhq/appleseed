@@ -810,9 +810,19 @@ void ShadingPoint::compute_shading_basis() const
 
     // Construct an orthonormal basis.
     const Vector3d& sn = get_original_shading_normal();
-    const Vector3d t = safe_normalize(cross(tangent, sn));  // arbitrary fallback vector
-    const Vector3d s = normalize(cross(sn, t));
-    m_shading_basis.build(sn, s, t);
+    const Vector3d bitangent = cross(tangent, sn);
+    const double norm_bitangent = norm(bitangent);
+    if (norm_bitangent >= 1.0e-6)
+    {
+        const Vector3d t = bitangent / norm_bitangent;
+        const Vector3d s = cross(sn, t);
+        m_shading_basis.build(sn, s, t);
+    }
+    else
+    {
+        // Fall back to arbitrary tangents if the tangent and the shading normal are colinear.
+        m_shading_basis.build(sn);
+    }
 
     // Apply the basis modifier if the material has one.
     if (material != nullptr)
