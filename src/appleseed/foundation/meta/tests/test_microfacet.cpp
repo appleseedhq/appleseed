@@ -253,7 +253,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(BlinnMDF_Evaluate_ReturnsNonNegativeValues)
     {
-        const BlinnMDF mdf;
+        const BlinnMDF mdf = {};
 
         EXPECT_TRUE(is_positive(mdf, 10.0f, 10.0f, PositivityTestSampleCount));
     }
@@ -267,7 +267,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(BlinnMDF_Integral_EqualsOne)
     {
-        const BlinnMDF mdf;
+        const BlinnMDF mdf = {};
 
         const float integral = integrate(mdf, 10.0f, IntegrationSampleCount);
 
@@ -281,7 +281,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(BeckmannMDF_Evaluate_ReturnsNonNegativeValues)
     {
-        const BeckmannMDF mdf;
+        const BeckmannMDF mdf = {};
 
         EXPECT_TRUE(is_positive(mdf, 0.5f, 0.5f, PositivityTestSampleCount));
     }
@@ -295,7 +295,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(BeckmannMDF_Integral_EqualsOne)
     {
-        const BeckmannMDF mdf;
+        const BeckmannMDF mdf = {};
 
         const float integral = integrate(mdf, 0.5f, IntegrationSampleCount);
 
@@ -337,7 +337,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(GGXMDF_Evaluate_ReturnsNonNegativeValues)
     {
-        const GGXMDF mdf;
+        const GGXMDF mdf = {};
 
         EXPECT_TRUE(is_positive(mdf, 0.5f, 0.5f, PositivityTestSampleCount));
     }
@@ -354,7 +354,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(GGXMDF_Integral_EqualsOne)
     {
-        const GGXMDF mdf;
+        const GGXMDF mdf = {};
 
         const float integral = integrate(mdf, 0.5f, IntegrationSampleCount);
 
@@ -396,7 +396,7 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(WardMDF_Evaluate_ReturnsNonNegativeValues)
     {
-        const WardMDF mdf;
+        const WardMDF mdf = {};
 
         EXPECT_TRUE(is_positive(mdf, 0.5f, 0.5f, PositivityTestSampleCount));
     }
@@ -415,14 +415,14 @@ TEST_SUITE(Foundation_Math_Microfacet)
 
     TEST_CASE(GTR1MDF_Evaluate_ReturnsNonNegativeValues)
     {
-        const GTR1MDF mdf;
+        const GTR1MDF mdf = {};
 
         EXPECT_TRUE(is_positive(mdf, 10.0f, 10.0f, PositivityTestSampleCount));
     }
 
     TEST_CASE(GTR1MDF_Integral_EqualsOne)
     {
-        const GTR1MDF mdf;
+        const GTR1MDF mdf = {};
 
         const float integral = integrate(mdf, 10.0f, IntegrationSampleCount);
 
