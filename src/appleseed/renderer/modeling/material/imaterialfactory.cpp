@@ -104,8 +104,8 @@ void IMaterialFactory::add_displacement_metadata(DictionaryArray& metadata)
             .insert("type", "numeric")
             .insert("min",
                 Dictionary()
-                    .insert("value", "0.0")
-                    .insert("type", "hard"))
+                    .insert("value", "-1.0")
+                    .insert("type", "soft"))
             .insert("max",
                 Dictionary()
                     .insert("value", "1.0")
