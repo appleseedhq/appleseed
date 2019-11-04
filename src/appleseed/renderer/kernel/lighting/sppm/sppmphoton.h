@@ -35,10 +35,10 @@
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
 #include "foundation/platform/thread.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 #include <vector>
 
 namespace renderer
@@ -50,7 +50,7 @@ namespace renderer
 
 struct SpectrumLine
 {
-    foundation::uint32      m_wavelength;
+    std::uint32_t           m_wavelength;
     float                   m_amplitude;
 };
 

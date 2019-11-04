@@ -42,6 +42,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 using namespace foundation;
 using namespace renderer;
@@ -119,10 +120,10 @@ TEST_SUITE(Renderer_Kernel_Rendering_LocalSampleAccumulationBuffer)
 
         for (size_t i = 0; i < 100; ++i)
         {
-            const int32 min_x = rand_int1(rng, 0, 31);
-            const int32 min_y = rand_int1(rng, 0, 31);
-            const int32 max_x = min_x + rand_int1(rng, 0, 31 - min_x);
-            const int32 max_y = min_y + rand_int1(rng, 0, 31 - min_y);
+            const std::int32_t min_x = rand_int1(rng, 0, 31);
+            const std::int32_t min_y = rand_int1(rng, 0, 31);
+            const std::int32_t max_x = min_x + rand_int1(rng, 0, 31 - min_x);
+            const std::int32_t max_y = min_y + rand_int1(rng, 0, 31 - min_y);
 
             const AABB2u crop_window(
                 Vector2u(

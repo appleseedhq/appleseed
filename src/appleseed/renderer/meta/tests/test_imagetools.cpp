@@ -44,6 +44,7 @@
 // Standard headers.
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <iostream>
 #include <memory>
 #include <utility>
@@ -355,7 +356,7 @@ TEST_SUITE(ImageTools)
 
                     // Convert to 8-bit integer.
                     val = std::min(val * 256.0f, 255.0f);
-                    output_color[c] = truncate<uint8>(val);
+                    output_color[c] = truncate<std::uint8_t>(val);
                 }
 
                 output_image.set_pixel(x, y, output_color);

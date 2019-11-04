@@ -36,6 +36,7 @@
 // Standard headers.
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 
 namespace renderer
 {
@@ -78,14 +79,14 @@ void adaptive_offset(
 foundation::Vector3d adaptive_offset_point_step(
     const foundation::Vector3d& p,
     const foundation::Vector3d& n,
-    const foundation::int64     mag);
+    const std::int64_t          mag);
 
 // Offset a point away from a surface represented by its normal using an adaptive offset.
 template <typename IntersectionFunction>
 foundation::Vector3d adaptive_offset_point(
     const foundation::Vector3d& p,
     const foundation::Vector3d& n,
-    const foundation::int64     initial_mag,
+    const std::int64_t          initial_mag,
     const IntersectionFunction& intersect);
 
 
@@ -146,8 +147,8 @@ inline void fixed_offset(
         }
         else
         {
-            const auto pi = foundation::binary_cast<foundation::uint64>(p[i]);
-            const int shift = EpsLut[(pi ^ foundation::binary_cast<foundation::uint64>(n[i])) >> 63];
+            const auto pi = foundation::binary_cast<std::uint64_t>(p[i]);
+            const int shift = EpsLut[(pi ^ foundation::binary_cast<std::uint64_t>(n[i])) >> 63];
             front[i] = foundation::binary_cast<double>(pi + shift);
             back[i] = foundation::binary_cast<double>(pi - shift);
         }
@@ -162,7 +163,7 @@ inline void adaptive_offset(
     foundation::Vector3d&       back,
     const IntersectionFunction& intersect)
 {
-    const foundation::int64 InitialMag = 8;
+    const std::int64_t InitialMag = 8;
 
     n = foundation::normalize(n);
 
@@ -174,10 +175,10 @@ template <typename IntersectionFunction>
 inline foundation::Vector3d adaptive_offset_point(
     const foundation::Vector3d& p,
     const foundation::Vector3d& n,
-    const foundation::int64     initial_mag,
+    const std::int64_t          initial_mag,
     const IntersectionFunction& intersect)
 {
-    foundation::int64 mag = initial_mag;
+    std::int64_t mag = initial_mag;
     foundation::Vector3d result = p;
 
     for (std::size_t i = 0; i < 64; ++i)
@@ -196,10 +197,10 @@ inline foundation::Vector3d adaptive_offset_point(
 inline foundation::Vector3d adaptive_offset_point_step(
     const foundation::Vector3d& p,
     const foundation::Vector3d& n,
-    const foundation::int64     mag)
+    const std::int64_t          mag)
 {
     const double Threshold = 1.0e-25;
-    const foundation::int64 eps_lut[2] = { mag, -mag };
+    const std::int64_t eps_lut[2] = { mag, -mag };
 
     foundation::Vector3d result;
 
@@ -209,9 +210,9 @@ inline foundation::Vector3d adaptive_offset_point_step(
             result[i] = p[i] + n[i] * Threshold;
         else
         {
-            const auto pi = foundation::binary_cast<foundation::uint64>(p[i]);
-            const foundation::int64 eps_lut_index =
-                (pi ^ foundation::binary_cast<foundation::uint64>(n[i])) >> 63;
+            const auto pi = foundation::binary_cast<std::uint64_t>(p[i]);
+            const std::int64_t eps_lut_index =
+                (pi ^ foundation::binary_cast<std::uint64_t>(n[i])) >> 63;
             result[i] = foundation::binary_cast<double>(pi + eps_lut[eps_lut_index]);
         }
     }

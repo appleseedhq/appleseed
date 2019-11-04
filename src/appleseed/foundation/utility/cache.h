@@ -32,7 +32,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/iterators.h"
 #include "foundation/utility/statistics.h"
@@ -43,6 +42,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <list>
 #include <memory>
@@ -77,20 +77,20 @@ namespace cache_impl
         }
 
         // Return the number of cache hits.
-        uint64 get_hit_count() const
+        std::uint64_t get_hit_count() const
         {
             return m_hit_count;
         }
 
         // Return the number of cache misses.
-        uint64 get_miss_count() const
+        std::uint64_t get_miss_count() const
         {
             return m_miss_count;
         }
 
       protected:
-        uint64  m_hit_count;
-        uint64  m_miss_count;
+        std::uint64_t   m_hit_count;
+        std::uint64_t   m_miss_count;
     };
 
 
@@ -592,12 +592,12 @@ class DualStageCache
     void clear_statistics();
 
     // Return the number of cache hits/misses in stage-0.
-    uint64 get_stage0_hit_count() const;
-    uint64 get_stage0_miss_count() const;
+    std::uint64_t get_stage0_hit_count() const;
+    std::uint64_t get_stage0_miss_count() const;
 
     // Return the number of cache hits/misses in stage-1.
-    uint64 get_stage1_hit_count() const;
-    uint64 get_stage1_miss_count() const;
+    std::uint64_t get_stage1_hit_count() const;
+    std::uint64_t get_stage1_miss_count() const;
 
     // Check the integrity of the cache. For debug purposes only.
     template <typename IntegrityChecker>
@@ -1053,25 +1053,25 @@ clear_statistics()
     m_s1_cache.clear_statistics();
 }
 
-FOUNDATION_DSCACHE_TEMPLATE_DEF(inline uint64)
+FOUNDATION_DSCACHE_TEMPLATE_DEF(inline std::uint64_t)
 get_stage0_hit_count() const
 {
     return m_s0_cache.get_hit_count();
 }
 
-FOUNDATION_DSCACHE_TEMPLATE_DEF(inline uint64)
+FOUNDATION_DSCACHE_TEMPLATE_DEF(inline std::uint64_t)
 get_stage0_miss_count() const
 {
     return m_s0_cache.get_miss_count();
 }
 
-FOUNDATION_DSCACHE_TEMPLATE_DEF(inline uint64)
+FOUNDATION_DSCACHE_TEMPLATE_DEF(inline std::uint64_t)
 get_stage1_hit_count() const
 {
     return m_s1_cache.get_hit_count();
 }
 
-FOUNDATION_DSCACHE_TEMPLATE_DEF(inline uint64)
+FOUNDATION_DSCACHE_TEMPLATE_DEF(inline std::uint64_t)
 get_stage1_miss_count() const
 {
     return m_s1_cache.get_miss_count();
@@ -1096,13 +1096,13 @@ namespace cache_impl
     struct CacheStatisticsEntry
       : public Statistics::Entry
     {
-        uint64  m_hit_count;
-        uint64  m_miss_count;
+        std::uint64_t   m_hit_count;
+        std::uint64_t   m_miss_count;
 
         CacheStatisticsEntry(
-            const std::string&  name,
-            const uint64        hit_count,
-            const uint64        miss_count);
+            const std::string&      name,
+            const std::uint64_t     hit_count,
+            const std::uint64_t     miss_count);
 
         std::unique_ptr<Entry> clone() const override;
         void merge(const Entry* other) override;

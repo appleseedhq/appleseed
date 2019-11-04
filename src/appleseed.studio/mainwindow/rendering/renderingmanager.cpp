@@ -52,7 +52,6 @@
 // appleseed.foundation headers.
 #include "foundation/image/analysis.h"
 #include "foundation/image/image.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/string.h"

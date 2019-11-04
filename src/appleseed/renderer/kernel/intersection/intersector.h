@@ -44,10 +44,10 @@
 #include "foundation/math/bvh.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 // Forward declarations.
 namespace foundation    { class StatisticsVector; }
@@ -135,8 +135,8 @@ class Intersector
     mutable EmbreeSceneAccessCache                  m_embree_scene_cache;
 #endif
     // Intersection statistics.
-    mutable foundation::uint64                      m_shading_ray_count;
-    mutable foundation::uint64                      m_probe_ray_count;
+    mutable std::uint64_t                           m_shading_ray_count;
+    mutable std::uint64_t                           m_probe_ray_count;
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
     mutable foundation::bvh::TraversalStatistics    m_assembly_tree_traversal_stats;
     mutable foundation::bvh::TraversalStatistics    m_triangle_tree_traversal_stats;

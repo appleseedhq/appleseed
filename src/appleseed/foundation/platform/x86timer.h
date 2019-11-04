@@ -31,10 +31,12 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/platform/types.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstdint>
 
 namespace foundation
 {
@@ -50,22 +52,22 @@ class APPLESEED_DLLSYMBOL X86Timer
 {
   public:
     // Constructor.
-    explicit X86Timer(const uint32 calibration_time_ms = 10);
+    explicit X86Timer(const std::uint32_t calibration_time_ms = 10);
 
     // Get the timer frequency, in Hz.
-    uint64 frequency();
+    std::uint64_t frequency();
 
     // Read the timer value.
-    uint64 read() { return read_start(); }
+    std::uint64_t read() { return read_start(); }
 
     // For benchmarking, read the timer value before the benchmark starts.
-    uint64 read_start();
+    std::uint64_t read_start();
 
     // For benchmarking, read the timer value after the benchmark ends.
-    uint64 read_end();
+    std::uint64_t read_end();
 
   private:
-    const uint64 m_frequency;
+    const std::uint64_t m_frequency;
 };
 
 }   // namespace foundation

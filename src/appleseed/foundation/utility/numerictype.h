@@ -29,12 +29,10 @@
 
 #pragma once
 
-// appleseed.foundation headers.
-#include "foundation/platform/types.h"
-
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 
 namespace foundation
 {
@@ -86,16 +84,16 @@ class NumericType
 //
 
 // Return the ID of the type T.
-template <> inline NumericTypeID NumericType::id<int8>()        { return NumericTypeInt8;   }
-template <> inline NumericTypeID NumericType::id<int16>()       { return NumericTypeInt16;  }
-template <> inline NumericTypeID NumericType::id<int32>()       { return NumericTypeInt32;  }
-template <> inline NumericTypeID NumericType::id<int64>()       { return NumericTypeInt64;  }
-template <> inline NumericTypeID NumericType::id<uint8>()       { return NumericTypeUInt8;  }
-template <> inline NumericTypeID NumericType::id<uint16>()      { return NumericTypeUInt16; }
-template <> inline NumericTypeID NumericType::id<uint32>()      { return NumericTypeUInt32; }
-template <> inline NumericTypeID NumericType::id<uint64>()      { return NumericTypeUInt64; }
-template <> inline NumericTypeID NumericType::id<float>()       { return NumericTypeFloat;  }
-template <> inline NumericTypeID NumericType::id<double>()      { return NumericTypeDouble; }
+template <> inline NumericTypeID NumericType::id<std::int8_t>()     { return NumericTypeInt8;   }
+template <> inline NumericTypeID NumericType::id<std::int16_t>()    { return NumericTypeInt16;  }
+template <> inline NumericTypeID NumericType::id<std::int32_t>()    { return NumericTypeInt32;  }
+template <> inline NumericTypeID NumericType::id<std::int64_t>()    { return NumericTypeInt64;  }
+template <> inline NumericTypeID NumericType::id<std::uint8_t>()    { return NumericTypeUInt8;  }
+template <> inline NumericTypeID NumericType::id<std::uint16_t>()   { return NumericTypeUInt16; }
+template <> inline NumericTypeID NumericType::id<std::uint32_t>()   { return NumericTypeUInt32; }
+template <> inline NumericTypeID NumericType::id<std::uint64_t>()   { return NumericTypeUInt64; }
+template <> inline NumericTypeID NumericType::id<float>()           { return NumericTypeFloat;  }
+template <> inline NumericTypeID NumericType::id<double>()          { return NumericTypeDouble; }
 
 // Return the size in byte of a numeric type.
 inline size_t NumericType::size(const NumericTypeID id)
@@ -125,7 +123,7 @@ inline const char* NumericType::name(const NumericTypeID id)
     {
       case NumericTypeInt8:    return "int8";
       case NumericTypeInt16:   return "int16";
-      case NumericTypeInt32:   return "int32";
+      case NumericTypeInt32:   return "int32_t";
       case NumericTypeInt64:   return "int64";
       case NumericTypeUInt8:   return "uint8";
       case NumericTypeUInt16:  return "uint16";

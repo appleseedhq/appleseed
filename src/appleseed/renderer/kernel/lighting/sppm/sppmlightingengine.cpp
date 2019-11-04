@@ -55,7 +55,6 @@
 #include "foundation/math/population.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/statistics.h"
 
@@ -63,6 +62,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 
 // Forward declarations.
 namespace renderer  { class PixelContext; }
@@ -212,8 +212,8 @@ namespace
         const SPPMPassCallback&         m_pass_callback;
         const ForwardLightSampler&      m_forward_light_sampler;
         const BackwardLightSampler&     m_backward_light_sampler;
-        uint64                          m_path_count;
-        Population<uint64>              m_path_length;
+        std::uint64_t                   m_path_count;
+        Population<std::uint64_t>       m_path_length;
         knn::Answer<float>              m_answer;
 
         struct PathVisitor

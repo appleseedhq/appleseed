@@ -134,7 +134,7 @@ void GlobalSampleAccumulationBuffer::develop_to_frame(
     }
 }
 
-void GlobalSampleAccumulationBuffer::increment_sample_count(const uint64 delta_sample_count)
+void GlobalSampleAccumulationBuffer::increment_sample_count(const std::uint64_t delta_sample_count)
 {
     m_sample_count += delta_sample_count;
 }

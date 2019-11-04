@@ -98,14 +98,14 @@ namespace
         return i;
     }
 
-    inline uint32 func1(uint32 x)
+    inline std::uint32_t func1(std::uint32_t x)
     {
-        return (x ^ (x >> 27)) * (uint32)1664525UL;
+        return (x ^ (x >> 27)) * (std::uint32_t)1664525UL;
     }
 
-    inline uint32 func2(uint32 x)
+    inline std::uint32_t func2(std::uint32_t x)
     {
-        return (x ^ (x >> 27)) * (uint32)1566083941UL;
+        return (x ^ (x >> 27)) * (std::uint32_t)1566083941UL;
     }
 
     inline void mm_recursion(
@@ -137,19 +137,19 @@ const SimdMersenneTwister::w128 SimdMersenneTwister::m_sse2_param_mask =
      SFMT_MSK4
 }};
 
-SimdMersenneTwister::SimdMersenneTwister(const uint32 seed)
+SimdMersenneTwister::SimdMersenneTwister(const std::uint32_t seed)
 {
     init_state(seed);
 }
 
-SimdMersenneTwister::SimdMersenneTwister(const uint32 init_key[], const int key_length)
+SimdMersenneTwister::SimdMersenneTwister(const std::uint32_t init_key[], const int key_length)
 {
     init_array_state(init_key, key_length);
 }
 
-void SimdMersenneTwister::init_state(const uint32 seed)
+void SimdMersenneTwister::init_state(const std::uint32_t seed)
 {
-    uint32 *psfmt32 = &mt[0].u[0];
+    std::uint32_t *psfmt32 = &mt[0].u[0];
 
     psfmt32[idxof(0)] = seed;
     for (int i = 1; i < N32; i++)
@@ -162,7 +162,7 @@ void SimdMersenneTwister::init_state(const uint32 seed)
     period_certification();
 }
 
-void SimdMersenneTwister::init_array_state(const uint32 init_key[], const int key_length)
+void SimdMersenneTwister::init_array_state(const std::uint32_t init_key[], const int key_length)
 {
     int lag;
     const int size = N * 4;
@@ -177,7 +177,7 @@ void SimdMersenneTwister::init_array_state(const uint32 init_key[], const int ke
         lag = 3;
 
     int mid = (size - lag) / 2;
-    uint32 *psfmt32 = &mt[0].u[0];
+    std::uint32_t *psfmt32 = &mt[0].u[0];
     memset(&mt[0], 0x8b, sizeof(w128) * N + sizeof(int));
 
     int count;
@@ -186,7 +186,7 @@ void SimdMersenneTwister::init_array_state(const uint32 init_key[], const int ke
     else
         count = N32;
 
-    uint32 r =
+    std::uint32_t r =
         func1(psfmt32[idxof(0)] ^ psfmt32[idxof(mid)] ^ psfmt32[idxof(N32 - 1)]);
 
     psfmt32[idxof(mid)] += r;
@@ -257,7 +257,7 @@ void SimdMersenneTwister::update_state()
 
 void SimdMersenneTwister::period_certification()
 {
-    const uint32 parity[4] =
+    const std::uint32_t parity[4] =
     {
         SFMT_PARITY1,
         SFMT_PARITY2,
@@ -266,7 +266,7 @@ void SimdMersenneTwister::period_certification()
     };
 
     int inner = 0;
-    uint32 *psfmt32 = &mt[0].u[0];
+    std::uint32_t *psfmt32 = &mt[0].u[0];
 
     for (int i = 0; i < 4; i++)
         inner ^= psfmt32[idxof(i)] & parity[i];

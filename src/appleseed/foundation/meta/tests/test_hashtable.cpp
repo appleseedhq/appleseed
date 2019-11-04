@@ -30,12 +30,12 @@
 #include "foundation/math/hash.h"
 #include "foundation/math/rng/distribution.h"
 #include "foundation/math/rng/xoroshiro128plus.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/containers/hashtable.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 using namespace foundation;
 
@@ -48,7 +48,7 @@ TEST_SUITE(Foundation_Utility_Containers_HashTable)
             return
                 static_cast<size_t>(
                     hash_uint64(
-                        static_cast<uint64>(key)));
+                        static_cast<std::uint64_t>(key)));
         }
     };
 

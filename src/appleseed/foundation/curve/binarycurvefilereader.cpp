@@ -34,10 +34,10 @@
 #include "foundation/curve/icurvebuilder.h"
 #include "foundation/image/color.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/bufferedfile.h"
 
 // Standard headers.
+#include <cstdint>
 #include <cstring>
 #include <memory>
 
@@ -65,7 +65,7 @@ void BinaryCurveFileReader::read(ICurveBuilder& builder)
 
     read_and_check_signature(file);
 
-    uint16 version;
+    std::uint16_t version;
     checked_read(file, version);
 
     std::unique_ptr<ReaderAdapter> reader;
@@ -109,7 +109,7 @@ void BinaryCurveFileReader::read_curves(ReaderAdapter& reader, ICurveBuilder& bu
         {
             // Read the basis and curve count.
             unsigned char curve_basis;
-            uint32 curve_count;
+            std::uint32_t curve_count;
             try
             {
                 checked_read(reader, curve_basis);
@@ -126,7 +126,7 @@ void BinaryCurveFileReader::read_curves(ReaderAdapter& reader, ICurveBuilder& bu
 
             builder.begin_curve_object(static_cast<CurveBasis>(curve_basis), curve_count);
 
-            for (uint32 i = 0; i < curve_count; ++i)
+            for (std::uint32_t i = 0; i < curve_count; ++i)
             {
                 builder.begin_curve();
                 read_curve(reader, builder);
@@ -145,31 +145,31 @@ void BinaryCurveFileReader::read_curves(ReaderAdapter& reader, ICurveBuilder& bu
 
 void BinaryCurveFileReader::read_curve(ReaderAdapter &reader, ICurveBuilder &builder)
 {
-    uint32 vertex_count;
+    std::uint32_t vertex_count;
     checked_read(reader, vertex_count);
 
-    for (uint32 i = 0; i < vertex_count; ++i)
+    for (std::uint32_t i = 0; i < vertex_count; ++i)
     {
         Vector3f v;
         checked_read(reader, v);
         builder.push_vertex(v);
     }
 
-    for (uint32 i = 0; i < vertex_count; ++i)
+    for (std::uint32_t i = 0; i < vertex_count; ++i)
     {
         float v;
         checked_read(reader, v);
         builder.push_vertex_width(v);
     }
 
-    for (uint32 i = 0; i < vertex_count; ++i)
+    for (std::uint32_t i = 0; i < vertex_count; ++i)
     {
         float v;
         checked_read(reader, v);
         builder.push_vertex_opacity(v);
     }
 
-    for (uint32 i = 0; i < vertex_count; ++i)
+    for (std::uint32_t i = 0; i < vertex_count; ++i)
     {
         Color3f v;
         checked_read(reader, v);

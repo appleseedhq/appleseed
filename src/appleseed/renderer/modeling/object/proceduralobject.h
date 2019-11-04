@@ -34,10 +34,12 @@
 // appleseed.foundation headers.
 #include "foundation/math/ray.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstdint>
 
 // Forward declarations.
 namespace renderer  { class ParamArray; }
@@ -61,7 +63,7 @@ class APPLESEED_DLLSYMBOL ProceduralObject
         foundation::Vector3d        m_geometric_normal;
         foundation::Vector3d        m_shading_normal;
         foundation::Vector2f        m_uv;
-        foundation::uint32          m_material_slot;
+        std::uint32_t               m_material_slot;
     };
 
     // Compute the intersection between a ray expressed in object space and

@@ -31,11 +31,11 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 
 namespace foundation {
 namespace bvh {
@@ -97,12 +97,12 @@ class APPLESEED_ALIGN(64) Node
     typedef typename AABBType::ValueType ValueType;
     static const size_t Dimension = AABBType::Dimension;
 
-    uint32                          m_item_count;
-    uint32                          m_index;
-    uint32                          m_left_bbox_index;
-    uint32                          m_left_bbox_count;
-    uint32                          m_right_bbox_index;
-    uint32                          m_right_bbox_count;
+    std::uint32_t                   m_item_count;
+    std::uint32_t                   m_index;
+    std::uint32_t                   m_left_bbox_index;
+    std::uint32_t                   m_left_bbox_count;
+    std::uint32_t                   m_right_bbox_index;
+    std::uint32_t                   m_right_bbox_count;
 
     APPLESEED_SIMD4_ALIGN ValueType m_bbox_data[4 * Dimension];
 };
@@ -115,26 +115,26 @@ class APPLESEED_ALIGN(64) Node
 template <typename AABB>
 inline void Node<AABB>::make_interior()
 {
-    m_item_count = ~uint32(0);
+    m_item_count = ~std::uint32_t(0);
 }
 
 template <typename AABB>
 inline void Node<AABB>::make_leaf()
 {
-    if (m_item_count == ~uint32(0))
+    if (m_item_count == ~std::uint32_t(0))
         m_item_count = 0;
 }
 
 template <typename AABB>
 inline bool Node<AABB>::is_interior() const
 {
-    return m_item_count == ~uint32(0);
+    return m_item_count == ~std::uint32_t(0);
 }
 
 template <typename AABB>
 inline bool Node<AABB>::is_leaf() const
 {
-    return m_item_count != ~uint32(0);
+    return m_item_count != ~std::uint32_t(0);
 }
 
 template <typename AABB>
@@ -198,7 +198,7 @@ inline void Node<AABB>::set_left_bbox_index(const size_t index)
 {
     assert(is_interior());
     assert(index <= 0xFFFFFFFFu);
-    m_left_bbox_index = static_cast<uint32>(index);
+    m_left_bbox_index = static_cast<std::uint32_t>(index);
 }
 
 template <typename AABB>
@@ -206,7 +206,7 @@ inline void Node<AABB>::set_left_bbox_count(const size_t count)
 {
     assert(is_interior());
     assert(count <= 0xFFFFFFFFu);
-    m_left_bbox_count = static_cast<uint32>(count);
+    m_left_bbox_count = static_cast<std::uint32_t>(count);
 }
 
 template <typename AABB>
@@ -214,7 +214,7 @@ inline void Node<AABB>::set_right_bbox_index(const size_t index)
 {
     assert(is_interior());
     assert(index <= 0xFFFFFFFFu);
-    m_right_bbox_index = static_cast<uint32>(index);
+    m_right_bbox_index = static_cast<std::uint32_t>(index);
 }
 
 template <typename AABB>
@@ -222,35 +222,35 @@ inline void Node<AABB>::set_right_bbox_count(const size_t count)
 {
     assert(is_interior());
     assert(count <= 0xFFFFFFFFu);
-    m_right_bbox_count = static_cast<uint32>(count);
+    m_right_bbox_count = static_cast<std::uint32_t>(count);
 }
 
 template <typename AABB>
 inline size_t Node<AABB>::get_left_bbox_index() const
 {
     assert(is_interior());
-    return static_cast<uint32>(m_left_bbox_index);
+    return static_cast<std::uint32_t>(m_left_bbox_index);
 }
 
 template <typename AABB>
 inline size_t Node<AABB>::get_left_bbox_count() const
 {
     assert(is_interior());
-    return static_cast<uint32>(m_left_bbox_count);
+    return static_cast<std::uint32_t>(m_left_bbox_count);
 }
 
 template <typename AABB>
 inline size_t Node<AABB>::get_right_bbox_index() const
 {
     assert(is_interior());
-    return static_cast<uint32>(m_right_bbox_index);
+    return static_cast<std::uint32_t>(m_right_bbox_index);
 }
 
 template <typename AABB>
 inline size_t Node<AABB>::get_right_bbox_count() const
 {
     assert(is_interior());
-    return static_cast<uint32>(m_right_bbox_count);
+    return static_cast<std::uint32_t>(m_right_bbox_count);
 }
 
 #define MAX_USER_DATA_SIZE (4 * Node<AABB>::Dimension * sizeof(typename AABB::ValueType))
@@ -291,7 +291,7 @@ inline void Node<AABB>::set_child_node_index(const size_t index)
 {
     assert(is_interior());
     assert(index <= 0xFFFFFFFFu);
-    m_index = static_cast<uint32>(index);
+    m_index = static_cast<std::uint32_t>(index);
 }
 
 template <typename AABB>
@@ -306,7 +306,7 @@ inline void Node<AABB>::set_item_index(const size_t index)
 {
     assert(is_leaf());
     assert(index <= 0xFFFFFFFFu);
-    m_index = static_cast<uint32>(index);
+    m_index = static_cast<std::uint32_t>(index);
 }
 
 template <typename AABB>
@@ -321,7 +321,7 @@ inline void Node<AABB>::set_item_count(const size_t count)
 {
     assert(is_leaf());
     assert(count < 0xFFFFFFFFu);
-    m_item_count = static_cast<uint32>(count);
+    m_item_count = static_cast<std::uint32_t>(count);
 }
 
 template <typename AABB>

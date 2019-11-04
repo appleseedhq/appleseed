@@ -41,6 +41,9 @@
 #include "foundation/math/intersection/raytrianglemt.h"
 #include "foundation/math/sampling/mappings.h"
 
+// Standard headers.
+#include <cstdint>
+
 using namespace foundation;
 
 namespace renderer
@@ -224,7 +227,7 @@ EmittingShape::EmittingShape(
 {
     m_assembly_instance_and_type.set(
         assembly_instance,
-        static_cast<foundation::uint16>(shape_type));
+        static_cast<std::uint16_t>(shape_type));
 
     m_object_instance_index = object_instance_index;
     m_primitive_index = primitive_index;

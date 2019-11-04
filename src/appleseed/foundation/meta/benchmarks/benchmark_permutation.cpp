@@ -30,11 +30,11 @@
 // appleseed.foundation headers.
 #include "foundation/math/permutation.h"
 #include "foundation/math/rng/mersennetwister.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/benchmark.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 
 using namespace foundation;
@@ -48,7 +48,7 @@ BENCHMARK_SUITE(Foundation_Math_Permutation)
 
         struct Item
         {
-            uint32 data[ItemSize];
+            std::uint32_t data[ItemSize];
         };
 
         size_t  m_ordering1[ItemCount];

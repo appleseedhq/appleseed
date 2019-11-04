@@ -38,11 +38,11 @@
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/statistics.h"
 
 // Standard headers.
 #include <cassert>
+#include <cstdint>
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
@@ -72,11 +72,11 @@ namespace
         }
 
         void render_tile(
-            const Frame&    frame,
-            const size_t    tile_x,
-            const size_t    tile_y,
-            const uint32    pass_hash,
-            IAbortSwitch&   abort_switch) override
+            const Frame&            frame,
+            const size_t            tile_x,
+            const size_t            tile_y,
+            const std::uint32_t     pass_hash,
+            IAbortSwitch&           abort_switch) override
         {
             Image& image = frame.image();
 

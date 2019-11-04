@@ -287,10 +287,10 @@ void CurveTree::reorder_curve_keys_in_leaf_nodes()
 
         // Store count and start offset in the leaf node's user data.
         LeafUserData& user_data = m_nodes[i].get_user_data<LeafUserData>();
-        user_data.m_curve1_offset = curve1_keys.empty() ? 0 : static_cast<uint32>(curve1_keys[0].get_curve_index_tree());
-        user_data.m_curve1_count = static_cast<uint32>(curve1_keys.size());
-        user_data.m_curve3_offset = curve3_keys.empty() ? 0 : static_cast<uint32>(curve3_keys[0].get_curve_index_tree());
-        user_data.m_curve3_count = static_cast<uint32>(curve3_keys.size());
+        user_data.m_curve1_offset = curve1_keys.empty() ? 0 : static_cast<std::uint32_t>(curve1_keys[0].get_curve_index_tree());
+        user_data.m_curve1_count = static_cast<std::uint32_t>(curve1_keys.size());
+        user_data.m_curve3_offset = curve3_keys.empty() ? 0 : static_cast<std::uint32_t>(curve3_keys[0].get_curve_index_tree());
+        user_data.m_curve3_count = static_cast<std::uint32_t>(curve3_keys.size());
 
         // Reorder the curve keys in the original list.
         size_t output_index = item_index;

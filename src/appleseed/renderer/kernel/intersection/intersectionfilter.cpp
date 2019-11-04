@@ -137,7 +137,7 @@ void IntersectionFilter::do_update(
     const EntityType&               entity,
     TextureCache&                   texture_cache,
     IntersectionFilter::AlphaMask*& mask,
-    uint64&                         signature)
+    std::uint64_t&                  signature)
 {
     // Use the uncached version of get_alpha_map() since at this point
     // on_frame_begin() hasn't been called on the materials, when
@@ -152,7 +152,7 @@ void IntersectionFilter::do_update(
     }
 
     // Don't do anything if there is already an alpha mask and it is up-to-date.
-    const uint64 alpha_map_sig = alpha_map->compute_signature();
+    const std::uint64_t alpha_map_sig = alpha_map->compute_signature();
     if (mask != nullptr && alpha_map_sig == signature)
         return;
 

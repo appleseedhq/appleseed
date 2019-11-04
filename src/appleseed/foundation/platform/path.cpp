@@ -32,11 +32,11 @@
 
 // appleseed.foundation headers.
 #ifdef __APPLE__
-#include "foundation/platform/types.h"
 #endif
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 
 // Platform headers.
@@ -77,7 +77,7 @@ const char* get_executable_path()
 // macOS.
 #elif defined __APPLE__
 
-        uint32 path_len = MAXPATHLEN;
+        std::uint32_t path_len = MAXPATHLEN;
         const int result = _NSGetExecutablePath(path, &path_len);
         assert(result == 0);
 

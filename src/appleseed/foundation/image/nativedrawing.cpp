@@ -46,12 +46,12 @@ namespace foundation
 //
 
 void NativeDrawing::clear(
-    uint8*          dest,
-    const size_t    dest_width,
-    const size_t    dest_height,
-    const size_t    dest_stride,
-    const uint8*    pixel,
-    const size_t    pixel_size)
+    std::uint8_t*           dest,
+    const size_t            dest_width,
+    const size_t            dest_height,
+    const size_t            dest_stride,
+    const std::uint8_t*     pixel,
+    const size_t            pixel_size)
 {
     assert(dest);
     assert(pixel);
@@ -67,16 +67,16 @@ void NativeDrawing::clear(
 }
 
 void NativeDrawing::draw_hline(
-    uint8*          dest,
-    const int       span,
-    const uint8*    pixel,
-    const size_t    pixel_size)
+    std::uint8_t*           dest,
+    const int               span,
+    const std::uint8_t*     pixel,
+    const size_t            pixel_size)
 {
     assert(dest);
     assert(pixel);
     assert(pixel_size > 0);
 
-    const uint8* end = dest + span * pixel_size;
+    const std::uint8_t* end = dest + span * pixel_size;
     const int step = span < 0 ? -static_cast<int>(pixel_size) : static_cast<int>(pixel_size);
 
     while (dest != end)
@@ -87,17 +87,17 @@ void NativeDrawing::draw_hline(
 }
 
 void NativeDrawing::draw_vline(
-    uint8*          dest,
-    const size_t    dest_stride,
-    const int       span,
-    const uint8*    pixel,
-    const size_t    pixel_size)
+    std::uint8_t*           dest,
+    const size_t            dest_stride,
+    const int               span,
+    const std::uint8_t*     pixel,
+    const size_t            pixel_size)
 {
     assert(dest);
     assert(pixel);
     assert(pixel_size > 0);
 
-    const uint8* end = dest + span * dest_stride;
+    const std::uint8_t* end = dest + span * dest_stride;
     const int step = span < 0 ? -static_cast<int>(dest_stride) : static_cast<int>(dest_stride);
 
     while (dest != end)
@@ -108,9 +108,9 @@ void NativeDrawing::draw_vline(
 }
 
 void NativeDrawing::blit(
-    uint8*          dest,
-    const size_t    dest_stride,
-    const Tile&     tile)
+    std::uint8_t*           dest,
+    const size_t            dest_stride,
+    const Tile&             tile)
 {
     assert(dest);
 
@@ -124,7 +124,7 @@ void NativeDrawing::blit(
     const size_t src_row_size = tile_width * pixel_size;
 
     // Retrieve pointer to the pixel data of the tile.
-    const uint8* src = tile.pixel(0, 0);
+    const std::uint8_t* src = tile.pixel(0, 0);
 
     // Copy the tile into the image.
     for (size_t i = 0; i < tile_height; ++i)

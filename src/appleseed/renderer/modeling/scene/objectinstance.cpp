@@ -177,7 +177,7 @@ ObjectInstance::ObjectInstance(
     m_vis_flags = VisibilityFlags::parse(params.child("visibility"), context);
 
     // Retrieve medium priority.
-    m_medium_priority = params.get_optional<int8>("medium_priority", 0);
+    m_medium_priority = params.get_optional<std::int8_t>("medium_priority", 0);
 
     // Retrieve SSS set ID.
     impl->m_sss_set_identifier = params.get_optional<std::string>("sss_set_id", "");
@@ -199,7 +199,7 @@ void ObjectInstance::release()
     delete this;
 }
 
-uint64 ObjectInstance::compute_signature() const
+std::uint64_t ObjectInstance::compute_signature() const
 {
     return
         m_object

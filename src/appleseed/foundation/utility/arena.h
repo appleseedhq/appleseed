@@ -32,12 +32,12 @@
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/memory.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 
 namespace foundation
 {
@@ -58,14 +58,14 @@ class Arena
     template <typename T> T* allocate();
     template <typename T> T* allocate_noinit();
 
-    const uint8* get_storage() const;
+    const std::uint8_t* get_storage() const;
 
   private:
     enum { ArenaSize = 384 * 1024 };    // bytes
 
-    APPLESEED_SIMD4_ALIGN uint8 m_storage[ArenaSize];
-    const uint8*                m_end;
-    uint8*                      m_current;
+    APPLESEED_SIMD4_ALIGN std::uint8_t  m_storage[ArenaSize];
+    const std::uint8_t*                 m_end;
+    std::uint8_t*                       m_current;
 };
 
 
@@ -113,7 +113,7 @@ inline T* Arena::allocate_noinit()
     return static_cast<T*>(allocate(sizeof(T)));
 }
 
-inline const uint8* Arena::get_storage() const
+inline const std::uint8_t* Arena::get_storage() const
 {
     return m_storage;
 }

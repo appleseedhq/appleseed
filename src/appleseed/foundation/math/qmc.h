@@ -33,11 +33,11 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/arch.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 
 namespace foundation
 {
@@ -71,12 +71,12 @@ T radical_inverse_base2(
 // Radical inverse in base 2, 32-bit version.
 template <typename T>
 T radical_inverse_base2_32(
-    uint32              value);         // input digits
+    std::uint32_t       value);         // input digits
 
 // Radical inverse in base 2, 64-bit version.
 template <typename T>
 T radical_inverse_base2_64(
-    uint64              value);         // input digits
+    std::uint64_t       value);         // input digits
 
 // Folded radical inverse in base 2.
 template <typename T>
@@ -217,7 +217,7 @@ inline T radical_inverse_base2(
 
 template <typename T>
 inline T radical_inverse_base2_32(
-    uint32              value)
+    std::uint32_t       value)
 {
     value = (value >> 16) | (value << 16);                                                      // 16-bit swap
     value = ((value & 0xFF00FF00u) >> 8) | ((value & 0x00FF00FFu) << 8);                        // 8-bit swap
@@ -235,7 +235,7 @@ inline T radical_inverse_base2_32(
 
 template <typename T>
 inline T radical_inverse_base2_64(
-    uint64              value)
+    std::uint64_t       value)
 {
     value = (value >> 32) | (value << 32);                                                      // 32-bit swap
     value = ((value & 0xFFFF0000FFFF0000ull) >> 16) | ((value & 0x0000FFFF0000FFFFull) << 16);  // 16-bit swap

@@ -32,12 +32,12 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/bvh/bvh_bboxsortpredicate.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <vector>
 
 namespace foundation {
@@ -66,7 +66,7 @@ class PartitionerBase
 
     // Return the items ordering.
     const std::vector<size_t>& get_item_ordering(
-        const size_t  dimension = 0) const;
+        const size_t            dimension = 0) const;
 
   protected:
     static const size_t Dimension = AABBType::Dimension;
@@ -82,7 +82,7 @@ class PartitionerBase
 
   private:
     std::vector<size_t>         m_tmp;
-    std::vector<uint8>          m_tags;
+    std::vector<std::uint8_t>   m_tags;
 };
 
 

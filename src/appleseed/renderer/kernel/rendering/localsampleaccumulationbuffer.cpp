@@ -46,6 +46,7 @@
 #include "foundation/math/scalar.h"
 #include "foundation/platform/atomic.h"
 #include "foundation/platform/timers.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/stopwatch.h"
 
@@ -77,7 +78,7 @@ namespace renderer
 //   samples, it becomes the new active level.
 //
 
-//#define PRINT_DETAILED_PERF_REPORTS
+// #define PRINT_DETAILED_PERF_REPORTS
 
 LocalSampleAccumulationBuffer::LocalSampleAccumulationBuffer(
     const size_t        width,
@@ -103,7 +104,7 @@ LocalSampleAccumulationBuffer::LocalSampleAccumulationBuffer(
         level_height = std::max(level_height / 2, MinSize);
     }
 
-    m_remaining_pixels = new boost::atomic<int32>[m_levels.size()];
+    m_remaining_pixels = new boost::atomic<std::int32_t>[m_levels.size()];
 
     clear();
 }
@@ -138,10 +139,10 @@ void LocalSampleAccumulationBuffer::clear()
         m_levels[i]->clear();
 
         m_remaining_pixels[i] =
-            static_cast<int32>(m_levels[i]->get_pixel_count());
+            static_cast<std::int32_t>(m_levels[i]->get_pixel_count());
     }
 
-    m_active_level = static_cast<uint32>(m_levels.size() - 1);
+    m_active_level = static_cast<std::uint32_t>(m_levels.size() - 1);
 }
 
 void LocalSampleAccumulationBuffer::store_samples(
@@ -170,7 +171,7 @@ void LocalSampleAccumulationBuffer::store_samples(
 
         // Store samples at every level, starting with the highest resolution level up to the active level.
         size_t counter = 0;
-        for (uint32 i = 0, e = m_active_level; i <= e; ++i)
+        for (std::uint32_t i = 0, e = m_active_level; i <= e; ++i)
         {
             AccumulatorTile* level = m_levels[i];
             const Vector2f& level_scale = m_level_scales[i];
@@ -206,14 +207,14 @@ void LocalSampleAccumulationBuffer::store_samples(
     if (m_active_level > 0)
     {
         // Update pixel counters for all levels up to the active level.
-        const int32 n = static_cast<int32>(sample_count);
-        for (uint32 i = 0, e = m_active_level; i <= e; ++i)
+        const std::int32_t n = static_cast<std::int32_t>(sample_count);
+        for (std::uint32_t i = 0, e = m_active_level; i <= e; ++i)
             m_remaining_pixels[i].fetch_sub(n);
 
         // Find the new active level.
-        uint32 cur_active_level = m_active_level;
-        uint32 new_active_level = cur_active_level;
-        for (uint32 i = 0, e = cur_active_level; i < e; ++i)
+        std::uint32_t cur_active_level = m_active_level;
+        std::uint32_t new_active_level = cur_active_level;
+        for (std::uint32_t i = 0, e = cur_active_level; i < e; ++i)
         {
             if (m_remaining_pixels[i] <= 0)
             {

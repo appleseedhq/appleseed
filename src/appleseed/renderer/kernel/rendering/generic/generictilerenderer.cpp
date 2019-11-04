@@ -54,7 +54,6 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/arch.h"
 #include "foundation/platform/debugger.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/job.h"
@@ -64,6 +63,7 @@
 // Standard headers.
 #include <cassert>
 #include <cmath>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -115,11 +115,11 @@ namespace
         }
 
         void render_tile(
-            const Frame&    frame,
-            const size_t    tile_x,
-            const size_t    tile_y,
-            const uint32    pass_hash,
-            IAbortSwitch&   abort_switch) override
+            const Frame&                        frame,
+            const size_t                        tile_x,
+            const size_t                        tile_y,
+            const std::uint32_t                 pass_hash,
+            IAbortSwitch&                       abort_switch) override
         {
             // Retrieve frame properties.
             const CanvasProperties& frame_properties = frame.image().properties();
@@ -230,10 +230,10 @@ namespace
         }
 
       protected:
-        auto_release_ptr<IPixelRenderer>    m_pixel_renderer;
-        AOVAccumulatorContainer             m_aov_accumulators;
-        IShadingResultFrameBufferFactory*   m_framebuffer_factory;
-        std::vector<Vector<int16, 2>>       m_pixel_ordering;
+        auto_release_ptr<IPixelRenderer>        m_pixel_renderer;
+        AOVAccumulatorContainer                 m_aov_accumulators;
+        IShadingResultFrameBufferFactory*       m_framebuffer_factory;
+        std::vector<Vector<std::int16_t, 2>>    m_pixel_ordering;
 
         void compute_pixel_ordering(const Frame& frame)
         {
@@ -257,8 +257,8 @@ namespace
                 const size_t y = ordering[i] / tile_width;
                 assert(x < tile_width);
                 assert(y < tile_height);
-                m_pixel_ordering[i].x = static_cast<int16>(x);
-                m_pixel_ordering[i].y = static_cast<int16>(y);
+                m_pixel_ordering[i].x = static_cast<std::int16_t>(x);
+                m_pixel_ordering[i].y = static_cast<std::int16_t>(y);
             }
         }
     };

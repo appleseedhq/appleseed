@@ -34,13 +34,13 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/cache.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/uid.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 // Forward declarations.
 namespace foundation    { class Tile; }
@@ -68,8 +68,8 @@ class TextureCache
 
     // Retrieve performance statistics.
     foundation::StatisticsVector get_statistics() const;
-    foundation::uint64 get_hit_count() const;
-    foundation::uint64 get_miss_count() const;
+    std::uint64_t get_hit_count() const;
+    std::uint64_t get_miss_count() const;
 
   private:
     typedef TextureStore::TileKey TileKey;
@@ -137,12 +137,12 @@ inline foundation::StatisticsVector TextureCache::get_statistics() const
             foundation::make_single_stage_cache_stats(m_tile_cache));
 }
 
-inline foundation::uint64 TextureCache::get_hit_count() const
+inline std::uint64_t TextureCache::get_hit_count() const
 {
     return m_tile_cache.get_hit_count();
 }
 
-inline foundation::uint64 TextureCache::get_miss_count() const
+inline std::uint64_t TextureCache::get_miss_count() const
 {
     return m_tile_cache.get_miss_count();
 }

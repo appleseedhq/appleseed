@@ -34,7 +34,6 @@
 #include "foundation/math/rng/xorshift32.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/timers.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/benchmark.h"
 #include "foundation/utility/bufferedfile.h"
@@ -45,6 +44,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -106,8 +106,8 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
             if (!file.is_open())
                 return false;
 
-            uint32 point_count;
-            if (file.read(point_count) != sizeof(uint32))
+            std::uint32_t point_count;
+            if (file.read(point_count) != sizeof(std::uint32_t))
                 return false;
 
             if (point_count > 0)
@@ -217,7 +217,7 @@ BENCHMARK_SUITE(Foundation_Math_Knn_Query)
             knn::Answer<float> answer(4);
             knn::Query3f query(m_tree, answer);
 
-            const int32 point_count = static_cast<int32>(m_points.size());
+            const auto point_count = static_cast<std::int32_t>(m_points.size());
             MersenneTwister rng;
 
             m_query_points.reserve(QueryCount);

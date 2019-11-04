@@ -32,6 +32,7 @@
 #include "foundation/utility/test.h"
 
 // Standard headers.
+#include <cstdint>
 #include <utility>
 
 using namespace foundation;
@@ -74,7 +75,7 @@ TEST_SUITE(Foundation_Array_KeyframedArray)
     {
         KeyFramedArray k(UInt32Type);
 
-        const uint32 items[] = {1, 5, 7, 11, 17, 21, 23};
+        const std::uint32_t items[] = {1, 5, 7, 11, 17, 21, 23};
         set_keyframes(7, items, items + countof(items), k);
 
         KeyFramedArray kcopy(k);
@@ -96,7 +97,7 @@ TEST_SUITE(Foundation_Array_KeyframedArray)
     {
         KeyFramedArray k(UInt32Type);
 
-        const uint32 items[] = {1, 5, 7, 11, 17};
+        const std::uint32_t items[] = {1, 5, 7, 11, 17};
         set_keyframes(5, items, items + countof(items), k);
 
         EXPECT_TRUE(k.check_consistency());

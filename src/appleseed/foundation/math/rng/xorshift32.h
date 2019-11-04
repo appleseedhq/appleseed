@@ -30,10 +30,10 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cassert>
+#include <cstdint>
 
 namespace foundation
 {
@@ -61,13 +61,13 @@ class Xorshift32
   public:
     // Constructor, seeds the generator.
     // The seed must not be zero.
-    explicit Xorshift32(const uint32 seed = 2463534242UL);
+    explicit Xorshift32(const std::uint32_t seed = 2463534242UL);
 
     // Generate a 32-bit random number.
-    uint32 rand_uint32();
+    std::uint32_t rand_uint32();
 
   private:
-    uint32 m_s;
+    std::uint32_t m_s;
 };
 
 
@@ -75,13 +75,13 @@ class Xorshift32
 // Xorshift32 class implementation.
 //
 
-inline Xorshift32::Xorshift32(const uint32 seed)
+inline Xorshift32::Xorshift32(const std::uint32_t seed)
   : m_s(seed)
 {
     assert(seed != 0);  // if the seed is 0, all output values will be 0
 }
 
-inline uint32 Xorshift32::rand_uint32()
+inline std::uint32_t Xorshift32::rand_uint32()
 {
     m_s ^= m_s << 13;
     m_s ^= m_s >> 17;

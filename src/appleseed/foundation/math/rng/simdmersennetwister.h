@@ -1,4 +1,5 @@
 
+
 //
 // This source file is part of appleseed.
 // Visit https://appleseedhq.net/ for additional information and resources.
@@ -30,13 +31,13 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/sse.h"
-#include "foundation/platform/types.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 namespace foundation
 {
@@ -49,11 +50,11 @@ class APPLESEED_DLLSYMBOL SimdMersenneTwister
 {
   public:
     // Constructors, seed the generator.
-    explicit SimdMersenneTwister(const uint32 seed = 5489UL);
-    SimdMersenneTwister(const uint32 init_key[], const int key_length);
+    explicit SimdMersenneTwister(const std::uint32_t seed = 5489UL);
+    SimdMersenneTwister(const std::uint32_t init_key[], const int key_length);
 
     // Generate a 32-bit random number.
-    uint32 rand_uint32();
+    std::uint32_t rand_uint32();
 
   private:
     // Parameters.
@@ -67,8 +68,8 @@ class APPLESEED_DLLSYMBOL SimdMersenneTwister
 
     union w128
     {
-        uint32  u[4];
-        uint64  u64[2];
+        std::uint32_t  u[4];
+        std::uint64_t  u64[2];
         __m128i si;
     };
 
@@ -78,8 +79,8 @@ class APPLESEED_DLLSYMBOL SimdMersenneTwister
     static const w128 m_sse2_param_mask;
 
     // Initialize the state vector with a seed.
-    void init_state(uint32 seed);
-    void init_array_state(const uint32 init_key[], const int key_length);
+    void init_state(std::uint32_t seed);
+    void init_array_state(const std::uint32_t init_key[], const int key_length);
 
     // Update the state vector.
     void update_state();
@@ -92,9 +93,9 @@ class APPLESEED_DLLSYMBOL SimdMersenneTwister
 // SimdMersenneTwister class implementation.
 //
 
-inline uint32 SimdMersenneTwister::rand_uint32()
+inline std::uint32_t SimdMersenneTwister::rand_uint32()
 {
-    const uint32* psfmt32 = &mt[0].u[0];
+    const std::uint32_t* psfmt32 = &mt[0].u[0];
 
     if (mti >= N32)
     {

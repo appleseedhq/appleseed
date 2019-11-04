@@ -35,7 +35,6 @@
 // appleseed.foundation headers.
 #include "foundation/math/ray.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"

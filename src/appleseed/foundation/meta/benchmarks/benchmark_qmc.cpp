@@ -32,10 +32,12 @@
 #include "foundation/math/primes.h"
 #include "foundation/math/qmc.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/benchmark.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 using namespace foundation;
 
@@ -52,7 +54,7 @@ BENCHMARK_SUITE(Foundation_Math_QMC)
         }
     };
 
-    BENCHMARK_CASE_F(UnsignedDivisionsByPrimeConstants, DivisionFixture<uint32>)
+    BENCHMARK_CASE_F(UnsignedDivisionsByPrimeConstants, DivisionFixture<std::uint32_t>)
     {
         for (size_t i = 0; i < 128; ++i)
         {
@@ -65,7 +67,7 @@ BENCHMARK_SUITE(Foundation_Math_QMC)
         }
     }
 
-    BENCHMARK_CASE_F(SignedDivisionsByPrimeConstants, DivisionFixture<int32>)
+    BENCHMARK_CASE_F(SignedDivisionsByPrimeConstants, DivisionFixture<std::int32_t>)
     {
         for (size_t i = 0; i < 128; ++i)
         {
@@ -78,7 +80,7 @@ BENCHMARK_SUITE(Foundation_Math_QMC)
         }
     }
 
-    BENCHMARK_CASE_F(UnsignedModulosByPrimeConstants, DivisionFixture<uint32>)
+    BENCHMARK_CASE_F(UnsignedModulosByPrimeConstants, DivisionFixture<std::uint32_t>)
     {
         for (size_t i = 0; i < 128; ++i)
         {
@@ -91,7 +93,7 @@ BENCHMARK_SUITE(Foundation_Math_QMC)
         }
     }
 
-    BENCHMARK_CASE_F(SignedModulosByPrimeConstants, DivisionFixture<int32>)
+    BENCHMARK_CASE_F(SignedModulosByPrimeConstants, DivisionFixture<std::int32_t>)
     {
         for (size_t i = 0; i < 128; ++i)
         {

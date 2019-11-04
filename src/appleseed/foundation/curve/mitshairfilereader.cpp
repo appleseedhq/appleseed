@@ -36,12 +36,12 @@
 #include "foundation/image/color.h"
 #include "foundation/math/fp.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/bufferedfile.h"
 #include "foundation/utility/memory.h"
 #include "foundation/utility/otherwise.h"
 
 // Standard headers.
+#include <cstdint>
 #include <cstring>
 #include <memory>
 
@@ -92,7 +92,7 @@ void MitsHairFileReader::read_curves(ReaderAdapter& reader, ICurveBuilder& build
     try
     {
         // Read the basis and curve count
-        uint32 vertex_count;
+        std::uint32_t vertex_count;
         try
         {
             checked_read(reader, vertex_count);
@@ -107,7 +107,7 @@ void MitsHairFileReader::read_curves(ReaderAdapter& reader, ICurveBuilder& build
 
         std::vector<Vector3f> vertices, new_vertices;
 
-        for (uint32 c = 0; c < vertex_count; ++c)
+        for (std::uint32_t c = 0; c < vertex_count; ++c)
         {
             float x;
             checked_read(reader, x);

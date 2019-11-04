@@ -62,6 +62,7 @@
 #include "foundation/math/scalar.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/path.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/iostreamop.h"
@@ -116,7 +117,7 @@ struct Frame::Impl
     float                                m_filter_radius;
     AABB2u                               m_crop_window;
     bool                                 m_enable_dithering;
-    uint32                               m_noise_seed;
+    std::uint32_t                        m_noise_seed;
     DenoisingMode                        m_denoising_mode;
     bool                                 m_checkpoint_create;
     std::string                          m_checkpoint_create_path;
@@ -395,7 +396,7 @@ const AABB2u& Frame::get_crop_window() const
     return impl->m_crop_window;
 }
 
-uint32 Frame::get_noise_seed() const
+std::uint32_t Frame::get_noise_seed() const
 {
     return impl->m_noise_seed;
 }
@@ -1015,10 +1016,10 @@ namespace
     //
     // OpenEXR   .exr          4-channel   16-bit (half)                            Linear
     // RGBE      .hdr          3-channel   32-bit (8-bit RGB + shared exponent)     Linear
-    // TIFF      .tiff/.tif    4-channel   16-bit (uint16)                          Linear
-    // BMP       .bmp          4-channel    8-bit (uint8)                             sRGB
-    // PNG       .png          4-channel    8-bit (uint8)                             sRGB
-    // JPEG      .jpg/.jpe/    3-channel    8-bit (uint8)                             sRGB
+    // TIFF      .tiff/.tif    4-channel   16-bit (std::uint16_t)                   Linear
+    // BMP       .bmp          4-channel    8-bit (std::uint8_t)                    sRGB
+    // PNG       .png          4-channel    8-bit (std::uint8_t)                    sRGB
+    // JPEG      .jpg/.jpe/    3-channel    8-bit (std::uint8_t)                    sRGB
     //           .jpeg/.jif/
     //           .jfif/.jfi
     //
@@ -1394,7 +1395,7 @@ void Frame::extract_parameters()
     impl->m_enable_dithering = m_params.get_optional<bool>("enable_dithering", true);
 
     // Retrieve noise seed.
-    impl->m_noise_seed = m_params.get_optional<uint32>("noise_seed", 0);
+    impl->m_noise_seed = m_params.get_optional<std::uint32_t>("noise_seed", 0);
 
     // Retrieve denoiser parameters.
     {

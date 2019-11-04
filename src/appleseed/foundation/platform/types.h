@@ -41,27 +41,13 @@ namespace foundation
 {
 
 //
-// Define fixed-size integral types.
-//
-
-using int8   = std::int8_t;
-using int16  = std::int16_t;
-using int32  = std::int32_t;
-using int64  = std::int64_t;
-using uint8  = std::uint8_t;
-using uint16 = std::uint16_t;
-using uint32 = std::uint32_t;
-using uint64 = std::uint64_t;
-
-
-//
 // Define a signed counterpart to std::size_t, i.e. a synonym for the non-standard ssize_t type.
 //
 
 #if defined APPLESEED_ARCH32
-    typedef int32 isize_t;
+    typedef std::int32_t isize_t;
 #elif defined APPLESEED_ARCH64
-    typedef int64 isize_t;
+    typedef std::int64_t isize_t;
 #else
     #error Cannot determine machine architecture.
 #endif

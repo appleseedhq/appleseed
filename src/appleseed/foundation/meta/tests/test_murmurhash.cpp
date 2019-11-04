@@ -27,7 +27,6 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/platform/types.h"
 #include "foundation/utility/murmurhash.h"
 #include "foundation/utility/test.h"
 

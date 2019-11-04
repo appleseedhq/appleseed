@@ -29,11 +29,9 @@
 
 #pragma once
 
-// appleseed.foundation headers.
-#include "foundation/platform/types.h"
-
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 namespace renderer
 {
@@ -62,9 +60,9 @@ class TriangleKey
     size_t get_triangle_pa() const;
 
   private:
-    foundation::uint32  m_object_instance_index;
-    foundation::uint16  m_triangle_pa;
-    foundation::uint32  m_triangle_index;
+    std::uint32_t       m_object_instance_index;
+    std::uint16_t       m_triangle_pa;       // todo: there is a 2-byte hole after this member
+    std::uint32_t       m_triangle_index;
 };
 
 
@@ -80,9 +78,9 @@ inline TriangleKey::TriangleKey(
     const size_t        object_instance_index,
     const size_t        triangle_index,
     const size_t        triangle_pa)
-  : m_object_instance_index(static_cast<foundation::uint32>(object_instance_index))
-  , m_triangle_pa(static_cast<foundation::uint16>(triangle_pa))
-  , m_triangle_index(static_cast<foundation::uint32>(triangle_index))
+  : m_object_instance_index(static_cast<std::uint32_t>(object_instance_index))
+  , m_triangle_pa(static_cast<std::uint16_t>(triangle_pa))
+  , m_triangle_index(static_cast<std::uint32_t>(triangle_index))
 {
 }
 

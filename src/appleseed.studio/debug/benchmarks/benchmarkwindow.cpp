@@ -37,7 +37,6 @@
 #include "application/application.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/types.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/countof.h"
 #include "foundation/utility/foreach.h"
@@ -59,6 +58,7 @@
 #include <QVariant>
 
 // Standard headers.
+#include <cstdint>
 #include <string>
 #include <utility>
 
@@ -193,7 +193,7 @@ namespace
     {
         QString format(const Vector2d& point) const override
         {
-            const uint64 date_microseconds = static_cast<uint64>(point.x);
+            const std::uint64_t date_microseconds = static_cast<std::uint64_t>(point.x);
             const posix_time::ptime date =
                 BenchmarkDataPoint::microseconds_to_ptime(date_microseconds);
             const std::string date_string = posix_time::to_simple_string(date);

@@ -50,7 +50,6 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/platform/thread.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/job.h"
@@ -60,6 +59,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -361,7 +361,7 @@ namespace
                         tile_callback->on_tiled_frame_begin(&m_frame);
 
                     // Create tile jobs.
-                    const uint32 pass_hash = mix_uint32(m_frame.get_noise_seed(), static_cast<uint32>(pass));
+                    const std::uint32_t pass_hash = mix_uint32(m_frame.get_noise_seed(), static_cast<std::uint32_t>(pass));
                     TileJobFactory::TileJobVector tile_jobs;
                     m_tile_job_factory.create(
                         m_frame,

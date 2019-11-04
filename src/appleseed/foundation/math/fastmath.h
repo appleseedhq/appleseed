@@ -34,13 +34,13 @@
 #ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
-#include "foundation/platform/types.h"
 #include "foundation/utility/casts.h"
 #include "foundation/utility/memory.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 
 namespace foundation
 {
@@ -223,9 +223,9 @@ inline float fast_pow2(const float p)
     const float clipp = p < -126.0f ? -126.0f : p;
     const int w = static_cast<int>(clipp);
     const float z = clipp - w + offset;
-    const union { uint32 i; float f; } v =
+    const union { std::uint32_t i; float f; } v =
     {
-        static_cast<uint32>((1 << 23) * (clipp + 121.2740575f + 27.7280233f / (4.84252568f - z) - 1.49012907f * z))
+        static_cast<std::uint32_t>((1 << 23) * (clipp + 121.2740575f + 27.7280233f / (4.84252568f - z) - 1.49012907f * z))
     };
 
     return v.f;
@@ -235,9 +235,9 @@ inline float faster_pow2(const float p)
 {
     // Underflow of exponential is common practice in numerical routines, so handle it here.
     const float clipp = p < -126.0f ? -126.0f : p;
-    const union { uint32 i; float f; } v =
+    const union { std::uint32_t i; float f; } v =
     {
-        static_cast<uint32>((1 << 23) * (clipp + 126.94269504f))
+        static_cast<std::uint32_t>((1 << 23) * (clipp + 126.94269504f))
     };
 
     return v.f;
@@ -247,8 +247,8 @@ inline float fast_log2(const float x)
 {
     assert(x >= 0.0f);
 
-    const union { float f; uint32 i; } vx = { x };
-    const union { uint32 i; float f; } mx = { (vx.i & 0x007FFFFF) | 0x3f000000 };
+    const union { float f; std::uint32_t i; } vx = { x };
+    const union { std::uint32_t i; float f; } mx = { (vx.i & 0x007FFFFF) | 0x3f000000 };
     const float y = static_cast<float>(vx.i) * 1.1920928955078125e-7f;
 
     return y - 124.22551499f
@@ -260,7 +260,7 @@ inline float faster_log2(const float x)
 {
     assert(x >= 0.0f);
 
-    const union { float f; uint32 i; } vx = { x };
+    const union { float f; std::uint32_t i; } vx = { x };
     const float y = static_cast<float>(vx.i) * 1.1920928955078125e-7f;
 
     return y - 126.94269504f;
@@ -287,7 +287,7 @@ inline float faster_log(const float x)
 
     assert(x >= 0.0f);
 
-    const union { float f; uint32 i; } vx = { x };
+    const union { float f; std::uint32_t i; } vx = { x };
     const float y = static_cast<float>(vx.i) * 8.2629582881927490e-8f;
 
     return y - 87.989971088f;
@@ -307,10 +307,10 @@ inline float fast_sin(const float x)
 {
     static const float Q = 0.77633023248007499f;
 
-    union { float f; uint32 i; } p = { 0.22308510060189463f };
-    union { float f; uint32 i; } vx = { x };
+    union { float f; std::uint32_t i; } p = { 0.22308510060189463f };
+    union { float f; std::uint32_t i; } vx = { x };
 
-    const uint32 sign = vx.i & 0x80000000;
+    const std::uint32_t sign = vx.i & 0x80000000;
     vx.i &= 0x7FFFFFFF;
     p.i |= sign;
 
@@ -337,7 +337,7 @@ inline float fast_cos(const float x)
 {
     static const float P = 0.54641335845679634f;
 
-    union { float f; uint32 i; } vx = { x };
+    union { float f; std::uint32_t i; } vx = { x };
     vx.i &= 0x7FFFFFFF;
 
     const float qpprox = 1.0f - TwoOverPi<float>() * vx.f;
@@ -374,7 +374,7 @@ inline float fast_acos(const float x)
 inline float fast_sqrt(const float x)
 {
     assert(x >= 0.0f);
-    int32 i = binary_cast<int32>(x);
+    std::int32_t i = binary_cast<std::int32_t>(x);
     i -= 1 << 23;                               // remove last bit to not let it go to mantissa
     i = i >> 1;                                 // divide by 2
     i += 1 << 29;                               // add 64 to exponent
@@ -416,7 +416,7 @@ inline float fast_rcp_sqrt(const float x)
 {
     assert(x >= 0.0f);
     const float xhalf = 0.5f * x;
-    int32 i = binary_cast<int32>(x);
+    std::int32_t i = binary_cast<std::int32_t>(x);
     i = 0x5F375A86L - (i >> 1);                 // initial guess
     float z = binary_cast<float>(i);
     z = z * (1.5f - xhalf * z * z);             // Newton step, repeating increases accuracy
@@ -427,7 +427,7 @@ inline double fast_rcp_sqrt(const double x)
 {
     assert(x >= 0.0);
     const double xhalf = 0.5 * x;
-    int64 i = binary_cast<int64>(x);
+    std::int64_t i = binary_cast<std::int64_t>(x);
     i = 0x5FE6EC85E7DE30DALL - (i >> 1);        // initial guess
     double z = binary_cast<double>(i);
     z = z * (1.5 - xhalf * z * z);              // Newton step, repeating increases accuracy

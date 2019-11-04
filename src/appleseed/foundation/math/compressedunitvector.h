@@ -32,10 +32,10 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cmath>
+#include <cstdint>
 
 namespace foundation
 {
@@ -69,11 +69,11 @@ class CompressedUnitVector
 
   private:
     static float sign_not_zero(const float v);
-    static int16 round16(const float f);
-    static int16 floor16(const float f);
-    static Vector3f oct_decode(const int16 bits[2]);
+    static std::int16_t round16(const float f);
+    static std::int16_t floor16(const float f);
+    static Vector3f oct_decode(const std::int16_t bits[2]);
 
-    int16 m_bits[2];
+    std::int16_t m_bits[2];
 };
 
 
@@ -83,7 +83,7 @@ class CompressedUnitVector
 
 inline CompressedUnitVector::CompressedUnitVector(const Vector3f& vec)
 {
-    int16 projected[2];
+    std::int16_t projected[2];
 
     const float inv_l1_norm = 1.0f / (std::abs(vec[0]) + std::abs(vec[1]) + std::abs(vec[2]));
 
@@ -98,7 +98,7 @@ inline CompressedUnitVector::CompressedUnitVector(const Vector3f& vec)
         projected[1] = floor16(vec[1] * inv_l1_norm);
     }
 
-    int16 best_projected[2] = {0, 0};
+    std::int16_t best_projected[2] = {0, 0};
     float error = 0.0f;
 
     unsigned int bits_x = static_cast<unsigned int>(projected[0]);
@@ -108,8 +108,8 @@ inline CompressedUnitVector::CompressedUnitVector(const Vector3f& vec)
     {
         for (unsigned int j = 0; j < 2; ++j)
         {
-            projected[0] = static_cast<foundation::int16>(bits_x + i);
-            projected[1] = static_cast<foundation::int16>(bits_y + j);
+            projected[0] = static_cast<std::int16_t>(bits_x + i);
+            projected[1] = static_cast<std::int16_t>(bits_y + j);
 
             const Vector3f decoded = oct_decode(projected);
 
@@ -147,17 +147,17 @@ inline float CompressedUnitVector::sign_not_zero(const float v)
     return v < 0.0f ? -1.0f : 1.0f;
 }
 
-inline int16 CompressedUnitVector::round16(const float f)
+inline std::int16_t CompressedUnitVector::round16(const float f)
 {
-    return round<int16>(clamp(f, -1.0f, 1.0f) * 32767.0f);
+    return round<std::int16_t>(clamp(f, -1.0f, 1.0f) * 32767.0f);
 }
 
-inline int16 CompressedUnitVector::floor16(const float f)
+inline std::int16_t CompressedUnitVector::floor16(const float f)
 {
-    return static_cast<int16>(std::floor(clamp(f, -1.0f, 1.0f) * 32767.0f));
+    return static_cast<std::int16_t>(std::floor(clamp(f, -1.0f, 1.0f) * 32767.0f));
 }
 
-inline Vector3f CompressedUnitVector::oct_decode(const int16 bits[2])
+inline Vector3f CompressedUnitVector::oct_decode(const std::int16_t bits[2])
 {
     Vector3f vec;
 

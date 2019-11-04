@@ -28,8 +28,8 @@
 
 #pragma once
 
-// appleseed.foundation headers.
-#include "foundation/platform/types.h"
+// Standard headers.
+#include <cstdint>
 
 namespace foundation
 {
@@ -47,15 +47,15 @@ class PCG
   public:
     // Constructor, seeds the generator.
     PCG(
-        const uint64 init_state = 0x853C49E6748FEA9Bull,
-        const uint64 init_seq = 0xDA3E39CB94B95BDBull);
+        const std::uint64_t init_state = 0x853C49E6748FEA9Bull,
+        const std::uint64_t init_seq = 0xDA3E39CB94B95BDBull);
 
     // Generate a 32-bit random number.
-    uint32 rand_uint32();
+    std::uint32_t rand_uint32();
 
   private:
-    uint64  m_state;    // current state of the generator
-    uint64  m_inc;      // controls which RNG sequence (stream) is selected -- must *always* be odd
+    std::uint64_t   m_state;    // current state of the generator
+    std::uint64_t   m_inc;      // controls which RNG sequence (stream) is selected -- must *always* be odd
 };
 
 
@@ -63,7 +63,7 @@ class PCG
 // PCG class implementation.
 //
 
-inline PCG::PCG(const uint64 init_state, const uint64 init_seq)
+inline PCG::PCG(const std::uint64_t init_state, const std::uint64_t init_seq)
 {
     m_state = 0;
     m_inc = (init_seq << 1) | 1;
@@ -76,13 +76,13 @@ inline PCG::PCG(const uint64 init_state, const uint64 init_seq)
 #pragma warning (push)
 #pragma warning (disable : 4146)    // unary minus operator applied to unsigned type, result still unsigned
 
-inline uint32 PCG::rand_uint32()
+inline std::uint32_t PCG::rand_uint32()
 {
-    const uint64 old_state = m_state;
+    const std::uint64_t old_state = m_state;
     m_state = old_state * 6364136223846793005ull + m_inc;
 
-    const uint32 xorshifted = static_cast<uint32>(((old_state >> 18) ^ old_state) >> 27);
-    const uint32 rot = static_cast<uint32>(old_state >> 59);
+    const std::uint32_t xorshifted = static_cast<std::uint32_t>(((old_state >> 18) ^ old_state) >> 27);
+    const std::uint32_t rot = static_cast<std::uint32_t>(old_state >> 59);
     return (xorshifted >> rot) | (xorshifted << ((-rot) & 31));
 }
 

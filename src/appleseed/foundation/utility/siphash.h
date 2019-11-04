@@ -28,14 +28,12 @@
 
 #pragma once
 
-// appleseed.foundation headers.
-#include "foundation/platform/types.h"
-
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 namespace foundation
 {
@@ -50,34 +48,34 @@ namespace foundation
 //   https://131002.net/siphash/siphash.pdf
 //
 
-uint64 APPLESEED_DLLSYMBOL siphash24(
-    const void*     bytes,
-    const size_t    size,
-    const uint64    k0,
-    const uint64    k1);
+std::uint64_t APPLESEED_DLLSYMBOL siphash24(
+    const void*             bytes,
+    const size_t            size,
+    const std::uint64_t     k0,
+    const std::uint64_t     k1);
 
-inline uint64 siphash24(
-    const void*     bytes,
-    const size_t    size,
-    const void*     key)
+inline std::uint64_t siphash24(
+    const void*             bytes,
+    const size_t            size,
+    const void*             key)
 {
     return
         siphash24(
             bytes,
             size,
-            *(static_cast<const uint64*>(key) + 0),
-            *(static_cast<const uint64*>(key) + 1));
+            *(static_cast<const std::uint64_t*>(key) + 0),
+            *(static_cast<const std::uint64_t*>(key) + 1));
 }
 
-inline uint64 siphash24(
-    const void*     bytes,
-    const size_t    size)
+inline std::uint64_t siphash24(
+    const void*             bytes,
+    const size_t            size)
 {
     return siphash24(bytes, size, 0, 0);
 }
 
 template <typename T>
-inline uint64 siphash24(const T& object)
+inline std::uint64_t siphash24(const T& object)
 {
     return siphash24(&object, sizeof(T));
 }
@@ -87,9 +85,9 @@ inline uint64 siphash24(const T& object)
 // Helper function to combine two hashes.
 //
 
-inline uint64 siphash24(const uint64 a, const uint64 b)
+inline std::uint64_t siphash24(const std::uint64_t a, const std::uint64_t b)
 {
-    const uint64 pair[2] = { a, b };
+    const std::uint64_t pair[2] = { a, b };
     return siphash24(&pair, sizeof(pair));
 }
 

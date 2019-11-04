@@ -37,7 +37,6 @@
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
 #include "foundation/platform/python.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstddef>

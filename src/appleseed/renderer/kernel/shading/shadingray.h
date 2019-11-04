@@ -38,12 +38,12 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/poison.h"
 
 // Standard headers.
 #include <array>
 #include <cassert>
+#include <cstdint>
 
 // Forward declarations.
 namespace renderer  { class Material; }
@@ -65,7 +65,7 @@ class ShadingRay
     typedef foundation::Vector3d    VectorType;
     typedef foundation::Ray3d       RayType;
     typedef foundation::RayInfo3d   RayInfoType;
-    typedef foundation::uint16      DepthType;
+    typedef std::uint16_t           DepthType;
 
     class Time
     {
@@ -104,7 +104,7 @@ class ShadingRay
     Medium                          m_media[MaxMediumCount];        // always sorted from highest to lowest priority
     VisibilityFlags::Type           m_flags;
     DepthType                       m_depth;
-    foundation::uint8               m_medium_count;
+    std::uint8_t                    m_medium_count;
     bool                            m_has_differentials;
     float                           m_min_roughness;
 

@@ -30,7 +30,7 @@
 #include "half.h"
 
 // Standard headers.
-#include <cmath>
+#include <cstdint>
 
 namespace foundation
 {
@@ -75,7 +75,7 @@ namespace foundation
 //   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 //
 
-const uint32 Half::s_h2f_table[65536] =
+const std::uint32_t Half::s_h2f_table[65536] =
 {
     0x00000000,    0x33800000,    0x34000000,    0x34400000,    0x34800000,    0x34a00000,    0x34c00000,    0x34e00000,
     0x35000000,    0x35100000,    0x35200000,    0x35300000,    0x35400000,    0x35500000,    0x35600000,    0x35700000,
@@ -8271,7 +8271,7 @@ const uint32 Half::s_h2f_table[65536] =
     0xffff0000,    0xffff2000,    0xffff4000,    0xffff6000,    0xffff8000,    0xffffa000,    0xffffc000,    0xffffe000
 };
 
-const uint16 Half::s_f2h_table[512] =
+const std::uint16_t Half::s_f2h_table[512] =
 {
     0x0000,    0x0000,    0x0000,    0x0000,    0x0000,    0x0000,    0x0000,    0x0000,
     0x0000,    0x0000,    0x0000,    0x0000,    0x0000,    0x0000,    0x0000,    0x0000,
@@ -8339,30 +8339,30 @@ const uint16 Half::s_f2h_table[512] =
     0x0000,    0x0000,    0x0000,    0x0000,    0x0000,    0x0000,    0x0000,    0x0000
 };
 
-uint16 Half::float_to_half_except(const uint32 i)
+std::uint16_t Half::float_to_half_except(const std::uint32_t i)
 {
-    const uint32 s = ((i >> 16) & 0x8000);
-    const int32 e = ((i >> 13) & 0x3fc00) - 0x1c000;
+    const std::uint32_t s = ((i >> 16) & 0x8000);
+    const std::int32_t e = ((i >> 13) & 0x3fc00) - 0x1c000;
 
     if (e <= 0)
     {
         // Denormalized.
-        union { uint32 i; float f; } u;
+        union { std::uint32_t i; float f; } u;
         u.i = i;
 
-        return static_cast<uint16>(
+        return static_cast<std::uint16_t>(
             s | static_cast<int>(std::abs(u.f) * 1.6777216e7 + 0.5));
     }
 
     if (e == 0x23c00)
     {
         // Inf/NaN: preserve msb bits of m for NaN code.
-        return static_cast<uint16>(s | 0x7c00 | ((i & 0x7fffff) >> 13));
+        return static_cast<std::uint16_t>(s | 0x7c00 | ((i & 0x7fffff) >> 13));
     }
     else
     {
         // Overflow: convert to Inf.
-        return static_cast<uint16>(s | 0x7c00);
+        return static_cast<std::uint16_t>(s | 0x7c00);
     }
 }
 

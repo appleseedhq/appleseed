@@ -30,13 +30,13 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/lazy.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <map>
 #include <utility>
 
@@ -56,9 +56,9 @@ class TreeRepository
 
     ~TreeRepository();
 
-    void insert(const foundation::uint64 key, LazyTreeType* tree);
+    void insert(const std::uint64_t key, LazyTreeType* tree);
 
-    LazyTreeType* acquire(const foundation::uint64 key);
+    LazyTreeType* acquire(const std::uint64_t key);
     void release(LazyTreeType* tree);
 
     template <typename Func>
@@ -71,8 +71,8 @@ class TreeRepository
         size_t          m_ref;
     };
 
-    typedef std::map<foundation::uint64, TreeInfo> TreeContainer;
-    typedef std::map<LazyTreeType*, foundation::uint64> TreeIndex;
+    typedef std::map<std::uint64_t, TreeInfo> TreeContainer;
+    typedef std::map<LazyTreeType*, std::uint64_t> TreeIndex;
 
     TreeContainer       m_trees;
     TreeIndex           m_index;
@@ -91,7 +91,7 @@ TreeRepository<TreeType>::~TreeRepository()
 }
 
 template <typename TreeType>
-void TreeRepository<TreeType>::insert(const foundation::uint64 key, LazyTreeType* tree)
+void TreeRepository<TreeType>::insert(const std::uint64_t key, LazyTreeType* tree)
 {
     assert(m_trees.find(key) == m_trees.end());
 
@@ -104,7 +104,7 @@ void TreeRepository<TreeType>::insert(const foundation::uint64 key, LazyTreeType
 }
 
 template <typename TreeType>
-typename TreeRepository<TreeType>::LazyTreeType* TreeRepository<TreeType>::acquire(const foundation::uint64 key)
+typename TreeRepository<TreeType>::LazyTreeType* TreeRepository<TreeType>::acquire(const std::uint64_t key)
 {
     const typename TreeContainer::iterator i = m_trees.find(key);
 

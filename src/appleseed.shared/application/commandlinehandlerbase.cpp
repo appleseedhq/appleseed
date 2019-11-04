@@ -38,6 +38,7 @@
 #include "foundation/core/thirdparties.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/system.h"
+#include "foundation/platform/types.h"
 #ifdef WIN32
 #include "foundation/platform/windows.h"
 #endif

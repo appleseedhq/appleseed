@@ -39,7 +39,7 @@ using namespace foundation;
 namespace renderer
 {
 
-SampleCounter::SampleCounter(const uint64 max_sample_count)
+SampleCounter::SampleCounter(const std::uint64_t max_sample_count)
   : m_max_sample_count(max_sample_count)
   , m_sample_count(0)
 {
@@ -50,19 +50,19 @@ void SampleCounter::clear()
     m_sample_count = 0;
 }
 
-uint64 SampleCounter::read() const
+std::uint64_t SampleCounter::read() const
 {
     return m_sample_count;
 }
 
-uint64 SampleCounter::reserve(const uint64 n)
+std::uint64_t SampleCounter::reserve(const std::uint64_t n)
 {
     while (true)
     {
-        uint64 current = m_sample_count;
+        std::uint64_t current = m_sample_count;
         assert(current <= m_max_sample_count);
 
-        const uint64 reserved = std::min(n, m_max_sample_count - current);
+        const std::uint64_t reserved = std::min(n, m_max_sample_count - current);
         if (m_sample_count.compare_exchange_weak(current, current + reserved))
             return reserved;
     }

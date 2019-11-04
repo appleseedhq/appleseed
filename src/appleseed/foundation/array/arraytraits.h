@@ -32,10 +32,12 @@
 #include "foundation/image/color.h"
 #include "foundation/math/compressedunitvector.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstdint>
 
 namespace foundation
 {
@@ -69,9 +71,9 @@ struct ArrayTraits
         static ArrayType array_type() {return type_enum;} \
     }
 
-APPLESEED_ARRAY_TYPE_TRAITS_SPECIALIZATION(UInt8Type, uint8);
-APPLESEED_ARRAY_TYPE_TRAITS_SPECIALIZATION(UInt16Type, uint16);
-APPLESEED_ARRAY_TYPE_TRAITS_SPECIALIZATION(UInt32Type, uint32);
+APPLESEED_ARRAY_TYPE_TRAITS_SPECIALIZATION(UInt8Type, std::uint8_t);
+APPLESEED_ARRAY_TYPE_TRAITS_SPECIALIZATION(UInt16Type, std::uint16_t);
+APPLESEED_ARRAY_TYPE_TRAITS_SPECIALIZATION(UInt32Type, std::uint32_t);
 APPLESEED_ARRAY_TYPE_TRAITS_SPECIALIZATION(FloatType, float);
 APPLESEED_ARRAY_TYPE_TRAITS_SPECIALIZATION(Vector2fType, Vector2f);
 APPLESEED_ARRAY_TYPE_TRAITS_SPECIALIZATION(Vector3fType, Vector3f);

@@ -50,7 +50,6 @@
 #ifdef _WIN32
 
 // appleseed.foundation headers.
-#include "foundation/platform/types.h"
 #include "foundation/platform/win32stackwalker.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/memory.h"
@@ -62,6 +61,7 @@
 // Standard headers.
 #include <algorithm>
 #include <cassert>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
 #include <ctime>
@@ -128,11 +128,11 @@ namespace
     bool g_tracking_enabled = false;
 
     // Statistics.
-    uint64 g_allocation_count = 0;          // total number of memory allocations
-    uint64 g_allocated_bytes = 0;           // number of bytes currently allocated
-    uint64 g_peak_allocated_bytes = 0;      // peak number of bytes ever allocated
-    uint64 g_total_allocated_bytes = 0;     // total number of bytes ever allocated
-    uint64 g_largest_allocation_bytes = 0;  // size in bytes of the largest allocation
+    std::uint64_t g_allocation_count = 0;           // total number of memory allocations
+    std::uint64_t g_allocated_bytes = 0;            // number of bytes currently allocated
+    std::uint64_t g_peak_allocated_bytes = 0;       // peak number of bytes ever allocated
+    std::uint64_t g_total_allocated_bytes = 0;      // total number of bytes ever allocated
+    std::uint64_t g_largest_allocation_bytes = 0;   // size in bytes of the largest allocation
 
     // File to which memory operations and leaks are logged.
     std::FILE* g_log_file = 0;
@@ -268,12 +268,12 @@ namespace
 #endif
     }
 
-    uint64 compute_leaked_memory_size()
+    std::uint64_t compute_leaked_memory_size()
     {
-        uint64 total_size = 0;
+        std::uint64_t total_size = 0;
 
         for (const_each<MemoryBlockMap> i = g_allocated_mem_blocks; i; ++i)
-            total_size += static_cast<uint64>(i->second);
+            total_size += static_cast<std::uint64_t>(i->second);
 
         return total_size;
     }
@@ -323,7 +323,7 @@ namespace
         else
         {
             const size_t leak_count = g_allocated_mem_blocks.size();
-            const uint64 leak_bytes = compute_leaked_memory_size();
+            const std::uint64_t leak_bytes = compute_leaked_memory_size();
 
             std::fprintf(
                 g_log_file,
@@ -370,7 +370,7 @@ void log_allocation(const void* ptr, const size_t size)
     g_allocated_bytes += size;
     g_peak_allocated_bytes = std::max(g_peak_allocated_bytes, g_allocated_bytes);
     g_total_allocated_bytes += size;
-    g_largest_allocation_bytes = std::max<uint64>(g_largest_allocation_bytes, size);
+    g_largest_allocation_bytes = std::max<std::uint64_t>(g_largest_allocation_bytes, size);
 
     g_allocated_mem_blocks[ptr] = size;
 

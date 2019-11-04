@@ -129,14 +129,13 @@ class EmbreeSceneFactory
 {
   public:
     // Constructor.
-    explicit EmbreeSceneFactory(
-        const EmbreeScene::Arguments&  arguments);
+    explicit EmbreeSceneFactory(const EmbreeScene::Arguments& arguments);
 
     // Create the embree scene.
     std::unique_ptr<EmbreeScene> create() override;
 
   private:
-    const EmbreeScene::Arguments        m_arguments;
+    const EmbreeScene::Arguments m_arguments;
 };
 
 }   // namespace renderer

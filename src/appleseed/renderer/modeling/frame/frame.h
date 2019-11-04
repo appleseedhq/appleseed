@@ -39,7 +39,6 @@
 #include "foundation/image/colorspace.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
 
@@ -49,6 +48,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
@@ -129,7 +129,7 @@ class APPLESEED_DLLSYMBOL Frame
     const foundation::AABB2u& get_crop_window() const;
 
     // Get the noise seed.
-    foundation::uint32 get_noise_seed() const;
+    std::uint32_t get_noise_seed() const;
 
     // Expose asset file paths referenced by this entity to the outside.
     void collect_asset_paths(foundation::StringArray& paths) const override;

@@ -54,13 +54,13 @@
 #include "foundation/math/population.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/statistics.h"
 
 // Standard headers.
 #include <cmath>
+#include <cstdint>
 
 using namespace foundation;
 
@@ -122,7 +122,7 @@ namespace
             Tile&                       tile,
             TileStack&                  aov_tiles,
             const AABB2i&               tile_bbox,
-            const uint32                pass_hash,
+            const std::uint32_t         pass_hash,
             const Vector2i&             pi,
             const Vector2i&             pt,
             AOVAccumulatorContainer&    aov_accumulators,
@@ -135,7 +135,7 @@ namespace
             // Create a sampling context.
             const size_t frame_width = frame.image().properties().m_canvas_width;
             const size_t pixel_index = pi.y * frame_width + pi.x;
-            const size_t instance = hash_uint32(static_cast<uint32>(pass_hash + pixel_index));
+            const size_t instance = hash_uint32(static_cast<std::uint32_t>(pass_hash + pixel_index));
             SamplingContext::RNGType rng(pass_hash, instance);
             SamplingContext sampling_context(
                 rng,
@@ -221,7 +221,7 @@ namespace
         const Parameters                    m_params;
         auto_release_ptr<ISampleRenderer>   m_sample_renderer;
         const size_t                        m_sample_count;
-        Population<uint64>                  m_total_sampling_dim;
+        Population<std::uint64_t>           m_total_sampling_dim;
     };
 }
 

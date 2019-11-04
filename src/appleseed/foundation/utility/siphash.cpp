@@ -49,17 +49,17 @@ namespace foundation
 #define cROUNDS 2
 #define dROUNDS 4
 
-#define ROTL(x,b) (uint64)( ((x) << (b)) | ( (x) >> (64 - (b))) )
+#define ROTL(x,b) (std::uint64_t)( ((x) << (b)) | ( (x) >> (64 - (b))) )
 
 #define U8TO64_LE(p)            \
-    (((uint64)((p)[0])      ) | \
-     ((uint64)((p)[1]) <<  8) | \
-     ((uint64)((p)[2]) << 16) | \
-     ((uint64)((p)[3]) << 24) | \
-     ((uint64)((p)[4]) << 32) | \
-     ((uint64)((p)[5]) << 40) | \
-     ((uint64)((p)[6]) << 48) | \
-     ((uint64)((p)[7]) << 56))
+    (((std::uint64_t)((p)[0])      ) | \
+     ((std::uint64_t)((p)[1]) <<  8) | \
+     ((std::uint64_t)((p)[2]) << 16) | \
+     ((std::uint64_t)((p)[3]) << 24) | \
+     ((std::uint64_t)((p)[4]) << 32) | \
+     ((std::uint64_t)((p)[5]) << 40) | \
+     ((std::uint64_t)((p)[6]) << 48) | \
+     ((std::uint64_t)((p)[7]) << 56))
 
 #define SIPROUND                                            \
     do {                                                    \
@@ -69,24 +69,24 @@ namespace foundation
         v2 += v1; v1=ROTL(v1,17); v1 ^= v2; v2=ROTL(v2,32); \
     } while(0)
 
-uint64 siphash24(
+std::uint64_t siphash24(
     const void*     bytes,
     const size_t    size,
-    const uint64    k0,
-    const uint64    k1)
+    const std::uint64_t    k0,
+    const std::uint64_t    k1)
 {
     /* "somepseudorandomlygeneratedbytes" */
-    uint64 v0 = 0x736f6d6570736575ULL;
-    uint64 v1 = 0x646f72616e646f6dULL;
-    uint64 v2 = 0x6c7967656e657261ULL;
-    uint64 v3 = 0x7465646279746573ULL;
-    uint64 b;
-    uint64 m;
+    std::uint64_t v0 = 0x736f6d6570736575ULL;
+    std::uint64_t v1 = 0x646f72616e646f6dULL;
+    std::uint64_t v2 = 0x6c7967656e657261ULL;
+    std::uint64_t v3 = 0x7465646279746573ULL;
+    std::uint64_t b;
+    std::uint64_t m;
     int i;
-    const uint8* in = reinterpret_cast<const uint8*>(bytes);
-    const uint8* end = in + size - ( size % sizeof( uint64 ) );
+    const std::uint8_t* in = reinterpret_cast<const std::uint8_t*>(bytes);
+    const std::uint8_t* end = in + size - ( size % sizeof( std::uint64_t ) );
     const int left = size & 7;
-    b = ( ( uint64 )size ) << 56;
+    b = ( ( std::uint64_t )size ) << 56;
     v3 ^= k1;
     v2 ^= k0;
     v1 ^= k1;
@@ -105,13 +105,13 @@ uint64 siphash24(
 
     switch( left )
     {
-      case 7: b |= ( ( uint64 )in[ 6] )  << 48;
-      case 6: b |= ( ( uint64 )in[ 5] )  << 40;
-      case 5: b |= ( ( uint64 )in[ 4] )  << 32;
-      case 4: b |= ( ( uint64 )in[ 3] )  << 24;
-      case 3: b |= ( ( uint64 )in[ 2] )  << 16;
-      case 2: b |= ( ( uint64 )in[ 1] )  <<  8;
-      case 1: b |= ( ( uint64 )in[ 0] ); break;
+      case 7: b |= ( ( std::uint64_t )in[ 6] )  << 48;
+      case 6: b |= ( ( std::uint64_t )in[ 5] )  << 40;
+      case 5: b |= ( ( std::uint64_t )in[ 4] )  << 32;
+      case 4: b |= ( ( std::uint64_t )in[ 3] )  << 24;
+      case 3: b |= ( ( std::uint64_t )in[ 2] )  << 16;
+      case 2: b |= ( ( std::uint64_t )in[ 1] )  <<  8;
+      case 1: b |= ( ( std::uint64_t )in[ 0] ); break;
       case 0: break;
     }
 

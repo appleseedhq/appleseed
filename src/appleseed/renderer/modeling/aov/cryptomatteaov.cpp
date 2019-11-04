@@ -49,7 +49,6 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/defaulttimers.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
@@ -74,6 +73,7 @@
 // Standard headers.
 #include <algorithm>
 #include <cmath>
+#include <cstdint>
 #include <cstring>
 #include <map>
 #include <memory>
@@ -278,18 +278,18 @@ namespace
       public:
         struct Entry
         {
-            uint32 key;
-            float value;
+            std::uint32_t   m_key;
+            float           m_value;
 
             Entry()
-              : key(0)
-              , value(0.0f)
+              : m_key(0)
+              , m_value(0.0f)
             {
             }
         };
 
         explicit WeightMap(const size_t size)
-          : m_size(static_cast<uint32>(size))
+          : m_size(static_cast<std::uint32_t>(size))
           , m_index(0)
         {
             assert(size > 0);
@@ -326,35 +326,35 @@ namespace
             delete[] m_map;
         }
 
-        void insert(const uint32 key, const float value)
+        void insert(const std::uint32_t key, const float value)
         {
             assert(m_map);
 
             for (size_t i = 0; i < m_index; ++i)
             {
-                if (m_map[i].key == key)
+                if (m_map[i].m_key == key)
                 {
-                    m_map[i].value = value;
+                    m_map[i].m_value = value;
                     return;
                 }
             }
 
             if (m_index < m_size)
             {
-                m_map[m_index].key = key;
-                m_map[m_index].value = value;
+                m_map[m_index].m_key = key;
+                m_map[m_index].m_value = value;
                 ++m_index;
             }
         }
 
-        float get(const uint32 key) const
+        float get(const std::uint32_t key) const
         {
             assert(m_map);
 
             for (size_t i = 0; i < m_index; ++i)
             {
-                if (m_map[i].key == key)
-                    return m_map[i].value;
+                if (m_map[i].m_key == key)
+                    return m_map[i].m_value;
             }
 
             return 0.0f;
@@ -381,17 +381,17 @@ namespace
         }
 
       private:
-        uint32  m_size;
-        uint32  m_index;
-        Entry*  m_map;
+        std::uint32_t   m_size;
+        std::uint32_t   m_index;
+        Entry*          m_map;
     };
 
     // Code taken from Cryptomatte specification.
-    float hash_to_float(uint32 hash)
+    float hash_to_float(std::uint32_t hash)
     {
         // if all exponent bits are 0 (subnormals, +zero, -zero) set exponent to 1
         // if all exponent bits are 1 (NaNs, +inf, -inf) set exponent to 254
-        const uint32 exponent = hash >> 23 & 255; // extract exponent (8 bits)
+        const std::uint32_t exponent = hash >> 23 & 255; // extract exponent (8 bits)
         if (exponent == 0 || exponent == 255)
             hash ^= 1 << 23; // toggle bit
         float f;
@@ -405,7 +405,7 @@ namespace renderer
 
 namespace
 {
-    typedef std::map<uint32, std::string> NameMap;
+    typedef std::map<std::uint32_t, std::string> NameMap;
 
 
     //
@@ -466,9 +466,9 @@ namespace
             const size_t                tile_x,
             const size_t                tile_y) override
         {
-            std::vector<std::pair<float, uint32>> ranked_vector;
+            std::vector<std::pair<float, std::uint32_t>> ranked_vector;
             std::vector<float> pixel_values;
-            constexpr float uint32_max_rcp = 1.0f / std::numeric_limits<uint32>::max();
+            constexpr float uint32_max_rcp = 1.0f / std::numeric_limits<std::uint32_t>::max();
 
             for (size_t ry = m_tile_origin_y; ry <= m_tile_end_y; ++ry)
             {
@@ -483,21 +483,21 @@ namespace
 
                         float total_weight = 0.0f;
                         for (const auto& item : weight_map)
-                            total_weight += item.value;
+                            total_weight += item.m_value;
 
                         if (total_weight == 0.0f)
                             total_weight = 1.0f;
 
                         for (const auto& item : weight_map)
-                            ranked_vector.push_back(std::make_pair(item.value, item.key));
+                            ranked_vector.push_back(std::make_pair(item.m_value, item.m_key));
 
                         sort(ranked_vector.begin(), ranked_vector.end(),
-                            [](std::pair<float, uint32> const& a, std::pair<float, uint32> const& b)
+                            [](std::pair<float, std::uint32_t> const& a, std::pair<float, std::uint32_t> const& b)
                             {
                                 return a.first > b.first;
                             });
 
-                        const uint32 m3hash_preview = ranked_vector[0].second;
+                        const std::uint32_t m3hash_preview = ranked_vector[0].second;
 
                         // Preview channels (deprecated in recent Cryptomatte specification).
                         float r(0.0f), g(0.0f), b(0.0f);
@@ -519,7 +519,7 @@ namespace
                         // Ranked channels.
                         for (size_t i = ranked_vector_start, e = std::min(ranked_vector.size(), m_num_layers); i < e; ++i)
                         {
-                            const uint32 m3hash = ranked_vector[i].second;
+                            const std::uint32_t m3hash = ranked_vector[i].second;
                             float rank(0.0f), coverage(0.0f);
                             if (m3hash != 0)
                             {
@@ -569,7 +569,7 @@ namespace
             const AOVComponents&        aov_components,
             ShadingResult&              shading_result) override
         {
-            uint32      m3hash = 0;
+            std::uint32_t m3hash = 0;
             std::string obj_name;
 
             if (shading_point.hit_surface())
@@ -858,7 +858,7 @@ bool CryptomatteAOV::write_images(
       assert_otherwise;
     }
 
-    uint32 type_name_hash = 0;
+    std::uint32_t type_name_hash = 0;
     MurmurHash3_x86_32(reinterpret_cast<const unsigned char*>(layer_name.c_str()), static_cast<int>(layer_name.size()), 0, &type_name_hash);
 
     char type_name_hex[9];

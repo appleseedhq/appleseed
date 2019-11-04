@@ -27,12 +27,12 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/platform/types.h"
 #include "foundation/utility/siphash.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 
 using namespace foundation;
@@ -66,7 +66,7 @@ TEST_SUITE(Foundation_Utility_SipHash)
            ...
            in = 00 01 02 ... 3e (63 bytes)
          */
-        static const uint8 vectors[64][8] =
+        static const std::uint8_t vectors[64][8] =
         {
             { 0x31, 0x0e, 0x0e, 0xdd, 0x47, 0xdb, 0x6f, 0x72, },
             { 0xfd, 0x67, 0xdc, 0x93, 0xc5, 0x39, 0xf8, 0x74, },
@@ -134,18 +134,18 @@ TEST_SUITE(Foundation_Utility_SipHash)
             { 0x72, 0x45, 0x06, 0xeb, 0x4c, 0x32, 0x8a, 0x95, }
         };
 
-        uint8 k[16];
+        std::uint8_t k[16];
         for (size_t i = 0; i < 16; ++i)
-            k[i] = static_cast<uint8>(i);
+            k[i] = static_cast<std::uint8_t>(i);
 
         const size_t MaxLen = 64;
-        uint8 in[MaxLen];
+        std::uint8_t in[MaxLen];
 
         for (size_t i = 0; i < MaxLen; ++i)
         {
-            in[i] = static_cast<uint8>(i);
+            in[i] = static_cast<std::uint8_t>(i);
 
-            const uint64 h = siphash24(in, i, k);
+            const std::uint64_t h = siphash24(in, i, k);
 
             EXPECT_EQ(0, memcmp(&h, vectors[i], 8));
         }

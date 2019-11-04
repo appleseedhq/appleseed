@@ -31,11 +31,11 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <limits>
 
 namespace foundation
@@ -55,10 +55,10 @@ namespace foundation
 //
 
 // Return a random number in the integer interval [0, 0x7FFFFFFF].
-template <typename RNG> int32 rand_int31(RNG& rng);
+template <typename RNG> std::int32_t rand_int31(RNG& rng);
 
 // Return a random number in the integer interval [min, max].
-template <typename RNG> int32 rand_int1(RNG& rng, const int32 min, const int32 max);
+template <typename RNG> std::int32_t rand_int1(RNG& rng, const std::int32_t min, const std::int32_t max);
 
 // Return a random number in the real interval [0,1].
 template <typename RNG> float rand_float1(RNG& rng);
@@ -119,9 +119,9 @@ VectorType rand_vector3(RNG& rng);
 //
 
 template <typename RNG>
-inline int32 rand_int31(RNG& rng)
+inline std::int32_t rand_int31(RNG& rng)
 {
-    const int32 result = static_cast<int32>(rng.rand_uint32() >> 1);
+    const std::int32_t result = static_cast<std::int32_t>(rng.rand_uint32() >> 1);
 
     assert(result >= 0);
     assert(result <= 0x7FFFFFFFu);
@@ -130,7 +130,7 @@ inline int32 rand_int31(RNG& rng)
 }
 
 template <typename RNG>
-inline int32 rand_int1(RNG& rng, const int32 min, const int32 max)
+inline std::int32_t rand_int1(RNG& rng, const std::int32_t min, const std::int32_t max)
 {
     assert(min <= max);
 
@@ -140,7 +140,7 @@ inline int32 rand_int1(RNG& rng, const int32 min, const int32 max)
             static_cast<double>(min),
             static_cast<double>(max) + 1);
 
-    const int32 result = truncate<int32>(x);
+    const std::int32_t result = truncate<std::int32_t>(x);
 
     assert(result >= min);
     assert(result <= max);
@@ -397,8 +397,8 @@ inline double rand3(RNG& rng, const double min, const double max)
 template <typename RNG>
 inline double rand_double2_res53(RNG& rng)
 {
-    const uint32 a = rng.rand_uint32() >> 5;
-    const uint32 b = rng.rand_uint32() >> 6;
+    const std::uint32_t a = rng.rand_uint32() >> 5;
+    const std::uint32_t b = rng.rand_uint32() >> 6;
 
     const double result = (a * 67108864.0 + b) * (1.0 / 9007199254740992.0);
 

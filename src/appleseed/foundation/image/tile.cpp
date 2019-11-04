@@ -42,7 +42,7 @@ Tile::Tile(
     const size_t        height,
     const size_t        channel_count,
     const PixelFormat   pixel_format,
-    uint8*              storage)
+    std::uint8_t*       storage)
   : m_width(width)
   , m_height(height)
   , m_channel_count(channel_count)
@@ -63,7 +63,7 @@ Tile::Tile(
     }
     else
     {
-        m_pixel_array = new uint8[m_array_size];
+        m_pixel_array = new std::uint8_t[m_array_size];
         m_own_storage = true;
     }
 }
@@ -71,7 +71,7 @@ Tile::Tile(
 Tile::Tile(
     const Tile&         tile,
     const PixelFormat   pixel_format,
-    uint8*              storage)
+    std::uint8_t*       storage)
   : m_width(tile.m_width)
   , m_height(tile.m_height)
   , m_channel_count(tile.m_channel_count)
@@ -88,7 +88,7 @@ Tile::Tile(
     }
     else
     {
-        m_pixel_array = new uint8[m_array_size];
+        m_pixel_array = new std::uint8_t[m_array_size];
         m_own_storage = true;
     }
 
@@ -99,7 +99,7 @@ Tile::Tile(
     const Tile&         tile,
     const PixelFormat   pixel_format,
     const size_t*       shuffle_table,
-    uint8*              storage)
+    std::uint8_t*       storage)
   : m_width(tile.m_width)
   , m_height(tile.m_height)
   , m_channel_count(Pixel::get_dest_channel_count(tile.m_channel_count, shuffle_table))
@@ -116,7 +116,7 @@ Tile::Tile(
     }
     else
     {
-        m_pixel_array = new uint8[m_array_size];
+        m_pixel_array = new std::uint8_t[m_array_size];
         m_own_storage = true;
     }
 
@@ -140,7 +140,7 @@ Tile::Tile(const Tile& rhs)
   , m_channel_size(rhs.m_channel_size)
   , m_pixel_size(rhs.m_pixel_size)
   , m_array_size(rhs.m_array_size)
-  , m_pixel_array(new uint8[rhs.m_array_size])
+  , m_pixel_array(new std::uint8_t[rhs.m_array_size])
   , m_own_storage(true)
 {
     memcpy(
