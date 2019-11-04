@@ -29,14 +29,12 @@
 #ifndef APPLESEED_FOUNDATION_RESOURCES_FONTS_UBUNTU_M_TTF_H
 #define APPLESEED_FOUNDATION_RESOURCES_FONTS_UBUNTU_M_TTF_H
 
-// appleseed.foundation headers.
-#include "foundation/platform/types.h"
-
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 namespace foundation
 {
@@ -47,7 +45,7 @@ namespace foundation
 
 const size_t Ubuntu_M_ttf_length = 341324;
 
-APPLESEED_DLLSYMBOL extern const uint8 Ubuntu_M_ttf[];
+APPLESEED_DLLSYMBOL extern const std::uint8_t Ubuntu_M_ttf[];
 
 }       // namespace foundation
 

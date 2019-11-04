@@ -30,10 +30,12 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/platform/types.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstdint>
 
 namespace foundation
 {
@@ -46,21 +48,21 @@ class APPLESEED_DLLSYMBOL SerialMersenneTwister
 {
   public:
     // Constructors, seed the generator.
-    explicit SerialMersenneTwister(const uint32 seed = 5489u);
-    SerialMersenneTwister(const uint32 init_key[], const int key_length);
+    explicit SerialMersenneTwister(const std::uint32_t seed = 5489u);
+    SerialMersenneTwister(const std::uint32_t init_key[], const int key_length);
 
     // Generate a 32-bit random number.
-    uint32 rand_uint32();
+    std::uint32_t rand_uint32();
 
   private:
     // Period parameters.
     enum { N = 624, M = 397 };
 
-    uint32  mt[N];  // state vector
-    int     mti;    // current index in state vector
+    std::uint32_t   mt[N];  // state vector
+    int             mti;    // current index in state vector
 
     // Initialize the state vector with a seed.
-    void init_state(uint32 seed);
+    void init_state(std::uint32_t seed);
 
     // Update the state vector.
     void update_state();
@@ -71,7 +73,7 @@ class APPLESEED_DLLSYMBOL SerialMersenneTwister
 // SerialMersenneTwister class implementation.
 //
 
-inline uint32 SerialMersenneTwister::rand_uint32()
+inline std::uint32_t SerialMersenneTwister::rand_uint32()
 {
     if (mti >= N)
     {
@@ -79,7 +81,7 @@ inline uint32 SerialMersenneTwister::rand_uint32()
         mti = 0;
     }
 
-    uint32 y = mt[mti++];
+    std::uint32_t y = mt[mti++];
 
     // Tempering.
     y ^= (y >> 11);

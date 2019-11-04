@@ -57,7 +57,6 @@
 #include "foundation/math/mis.h"
 #include "foundation/math/population.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
@@ -66,6 +65,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <limits>
 #include <string>
 
@@ -334,8 +334,8 @@ namespace
         const BackwardLightSampler&     m_light_sampler;
         LightPathStream*                m_light_path_stream;
 
-        uint64                          m_path_count;
-        Population<uint64>              m_path_length;
+        std::uint64_t                   m_path_count;
+        Population<std::uint64_t>       m_path_length;
 
         size_t                          m_inf_volume_ray_warnings;
         static const size_t             MaxInfVolumeRayWarnings = 5;

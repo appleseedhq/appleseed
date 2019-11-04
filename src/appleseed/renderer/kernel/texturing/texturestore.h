@@ -37,13 +37,13 @@
 #include "foundation/math/hash.h"
 #include "foundation/platform/atomic.h"
 #include "foundation/platform/thread.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/cache.h"
 #include "foundation/utility/uid.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <map>
 
 // Forward declarations.
@@ -69,7 +69,7 @@ class TextureStore
     {
         foundation::UniqueID    m_assembly_uid;
         foundation::UniqueID    m_texture_uid;
-        foundation::uint32      m_tile_xy;
+        std::uint32_t           m_tile_xy;
 
         TileKey();
 
@@ -82,7 +82,7 @@ class TextureStore
         TileKey(
             const foundation::UniqueID  assembly_uid,
             const foundation::UniqueID  texture_uid,
-            const foundation::uint32    tile_xy);
+            const std::uint32_t         tile_xy);
 
         TileKey(const TileKey& rhs);
 
@@ -105,8 +105,8 @@ class TextureStore
 
     struct TileRecord
     {
-        foundation::Tile*           m_tile;
-        volatile foundation::uint32 m_owners;
+        foundation::Tile*       m_tile;
+        volatile std::uint32_t  m_owners;
     };
 
     // Return parameters metadata.
@@ -226,7 +226,7 @@ inline TextureStore::TileKey::TileKey(
     const size_t                tile_y)
   : m_assembly_uid(assembly_uid)
   , m_texture_uid(texture_uid)
-  , m_tile_xy(static_cast<foundation::uint32>((tile_y << 16) | tile_x))
+  , m_tile_xy(static_cast<std::uint32_t>((tile_y << 16) | tile_x))
 {
     assert(tile_x < (1UL << 16));
     assert(tile_y < (1UL << 16));
@@ -235,7 +235,7 @@ inline TextureStore::TileKey::TileKey(
 inline TextureStore::TileKey::TileKey(
     const foundation::UniqueID  assembly_uid,
     const foundation::UniqueID  texture_uid,
-    const foundation::uint32    tile_xy)
+    const std::uint32_t         tile_xy)
   : m_assembly_uid(assembly_uid)
   , m_texture_uid(texture_uid)
   , m_tile_xy(tile_xy)
@@ -265,7 +265,7 @@ inline TextureStore::TileKey TextureStore::TileKey::invalid()
         TileKey(
             ~foundation::UniqueID(0),   // assembly unique ID
             ~foundation::UniqueID(0),   // texture unique ID
-            ~foundation::uint32(0));    // tile X and Y coordinates
+            ~std::uint32_t(0));         // tile X and Y coordinates
 }
 
 inline bool TextureStore::TileKey::operator==(const TileKey& rhs) const
@@ -300,9 +300,9 @@ inline size_t TextureStore::TileKeyHasher::operator()(const TileKey& key) const
 {
     return
         foundation::mix_uint32(
-            static_cast<foundation::uint32>(key.m_assembly_uid),
-            static_cast<foundation::uint32>(key.m_texture_uid),
-            static_cast<foundation::uint32>(key.m_tile_xy));
+            static_cast<std::uint32_t>(key.m_assembly_uid),
+            static_cast<std::uint32_t>(key.m_texture_uid),
+            static_cast<std::uint32_t>(key.m_tile_xy));
 }
 
 

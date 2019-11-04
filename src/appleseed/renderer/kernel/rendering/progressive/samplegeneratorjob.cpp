@@ -41,6 +41,7 @@
 #include "foundation/image/image.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/defaulttimers.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/stopwatch.h"
 
 // Standard headers.
@@ -76,15 +77,15 @@ namespace
 {
     // Duration of the interruptible phase.
     // The higher this value, the more refined is the image but the lower is the interactivity.
-    const uint64 SamplesInUninterruptiblePhase = 32 * 32 * 2;
+    const std::uint64_t SamplesInUninterruptiblePhase = 32 * 32 * 2;
 
     // Duration of the linear phase.
-    const uint64 SamplesInLinearPhase = 500 * 1000;
+    const std::uint64_t SamplesInLinearPhase = 500 * 1000;
 
     // Refinement rates of the image in the different phases.
     // The higher the refinement rates, the lower the parallelism / CPU efficiency.
-    const uint64 SamplesPerJobInLinearPhase = 250;
-    const uint64 MaxSamplesPerJobInExponentialPhase = 250 * 1000;
+    const std::uint64_t SamplesPerJobInLinearPhase = 250;
+    const std::uint64_t MaxSamplesPerJobInExponentialPhase = 250 * 1000;
 
     // Shape of the curve in the exponential phase.
     const double CurveExponentInExponentialPhase = 2.0;
@@ -95,13 +96,13 @@ namespace
         "In renderer::SampleGeneratorJob, the uninterruptible phase must have at least as many samples as the linear phase");
 }
 
-uint64 SampleGeneratorJob::samples_to_samples_per_job(const uint64 samples)
+std::uint64_t SampleGeneratorJob::samples_to_samples_per_job(const std::uint64_t samples)
 {
     if (samples < SamplesInLinearPhase)
         return SamplesPerJobInLinearPhase;
 
     const double x = (samples - SamplesInLinearPhase) * 0.001;
-    const uint64 y = SamplesPerJobInLinearPhase + truncate<uint64>(std::pow(x, CurveExponentInExponentialPhase));
+    const std::uint64_t y = SamplesPerJobInLinearPhase + truncate<std::uint64_t>(std::pow(x, CurveExponentInExponentialPhase));
 
     return std::min(y, MaxSamplesPerJobInExponentialPhase);
 }
@@ -119,10 +120,10 @@ void SampleGeneratorJob::execute(const size_t thread_index)
 
     // We will base the number of samples to be rendered by this job on
     // the number of samples already reserved (not necessarily rendered).
-    const uint64 current_sample_count = m_sample_counter.read();
+    const std::uint64_t current_sample_count = m_sample_counter.read();
 
     // Reserve a number of samples to be rendered by this job.
-    const uint64 acquired_sample_count =
+    const std::uint64_t acquired_sample_count =
         m_sample_counter.reserve(
             samples_to_samples_per_job(current_sample_count));
 

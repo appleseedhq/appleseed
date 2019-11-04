@@ -169,7 +169,7 @@ void export_mesh_blender79(
     // Tie uv coordinates to mesh faces.
     if (export_uvs)
     {
-        uint32 uv_vertex_index = 0;
+        std::uint32_t uv_vertex_index = 0;
         blender_mesh->reserve_tex_coords(bl_vert_count);
         for (size_t face_index = 0; face_index < bl_faces_count; ++face_index)
         {

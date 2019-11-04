@@ -44,6 +44,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <ios>
 #include <string>
 #include <vector>
@@ -196,7 +197,7 @@ namespace
                 "  %s: %s %s %s",
                 benchmark_case.get_name(),
                 timing_result.m_ticks >= 1000.0
-                    ? pretty_uint(static_cast<uint64>(timing_result.m_ticks)).c_str()
+                    ? pretty_uint(static_cast<std::uint64_t>(timing_result.m_ticks)).c_str()
                     : pretty_scalar(timing_result.m_ticks).c_str(),
                 plural(timing_result.m_ticks, "tick").c_str(),
                 callrate_string.c_str());

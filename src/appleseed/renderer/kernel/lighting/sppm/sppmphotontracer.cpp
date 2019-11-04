@@ -80,7 +80,6 @@
 // Standard headers.
 #include <algorithm>
 #include <cassert>
-#include <cstddef>
 
 using namespace foundation;
 
@@ -163,8 +162,8 @@ namespace
                 {
                     // Choose a wavelength at random.
                     vertex.m_sampling_context.split_in_place(1, 1);
-                    const uint32 wavelength =
-                        truncate<uint32>(
+                    const std::uint32_t wavelength =
+                        truncate<std::uint32_t>(
                             vertex.m_sampling_context.next2<double>() * Spectrum::size());
 
                     // Create and store a new photon.
@@ -239,7 +238,7 @@ namespace
             SPPMPhotonVector&               global_photons,
             const size_t                    photon_begin,
             const size_t                    photon_end,
-            const uint32                    pass_hash,
+            const std::uint32_t             pass_hash,
             IAbortSwitch&                   abort_switch)
           : m_scene(scene)
           , m_photon_targets(photon_targets)
@@ -281,7 +280,7 @@ namespace
                 m_arena,
                 thread_index);
 
-            const size_t instance = hash_uint32(static_cast<uint32>(m_pass_hash + m_photon_begin));
+            const size_t instance = hash_uint32(static_cast<std::uint32_t>(m_pass_hash + m_photon_begin));
             SamplingContext::RNGType rng(m_pass_hash, instance);
             SamplingContext sampling_context(
                 rng,
@@ -319,7 +318,7 @@ namespace
         SPPMPhotonVector&           m_global_photons;
         const size_t                m_photon_begin;
         const size_t                m_photon_end;
-        const uint32                m_pass_hash;
+        const std::uint32_t         m_pass_hash;
         IAbortSwitch&               m_abort_switch;
         SPPMPhotonVector            m_local_photons;
         float                       m_shutter_open_begin_time;
@@ -534,7 +533,7 @@ namespace
             SPPMPhotonVector&           global_photons,
             const size_t                photon_begin,
             const size_t                photon_end,
-            const uint32                pass_hash,
+            const std::uint32_t         pass_hash,
             IAbortSwitch&               abort_switch)
           : m_scene(scene)
           , m_photon_targets(photon_targets)
@@ -581,7 +580,7 @@ namespace
                 m_arena,
                 thread_index);
 
-            const size_t instance = hash_uint32(static_cast<uint32>(m_pass_hash + m_photon_begin));
+            const size_t instance = hash_uint32(static_cast<std::uint32_t>(m_pass_hash + m_photon_begin));
             SamplingContext::RNGType rng(m_pass_hash, instance);
             SamplingContext sampling_context(
                 rng,
@@ -619,7 +618,7 @@ namespace
         SPPMPhotonVector&           m_global_photons;
         const size_t                m_photon_begin;
         const size_t                m_photon_end;
-        const uint32                m_pass_hash;
+        const std::uint32_t         m_pass_hash;
         IAbortSwitch&               m_abort_switch;
         SPPMPhotonVector            m_local_photons;
         float                       m_shutter_open_begin_time;
@@ -808,7 +807,7 @@ namespace
 
 void SPPMPhotonTracer::trace_photons(
     SPPMPhotonVector&       photons,
-    const uint32            pass_hash,
+    const std::uint32_t     pass_hash,
     JobQueue&               job_queue,
     IAbortSwitch&           abort_switch)
 {
@@ -875,7 +874,7 @@ void SPPMPhotonTracer::trace_photons(
 void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
     const LightTargetArray& photon_targets,
     SPPMPhotonVector&       photons,
-    const uint32            pass_hash,
+    const std::uint32_t     pass_hash,
     JobQueue&               job_queue,
     size_t&                 job_count,
     size_t&                 emitted_photon_count,
@@ -915,7 +914,7 @@ void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
 void SPPMPhotonTracer::schedule_environment_photon_tracing_jobs(
     const LightTargetArray& photon_targets,
     SPPMPhotonVector&       photons,
-    const uint32            pass_hash,
+    const std::uint32_t     pass_hash,
     JobQueue&               job_queue,
     size_t&                 job_count,
     size_t&                 emitted_photon_count,

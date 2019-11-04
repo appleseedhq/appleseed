@@ -72,12 +72,12 @@ namespace foundation
    Real versions are due to Isaku Wada, 2002/01/09 added.
 */
 
-SerialMersenneTwister::SerialMersenneTwister(const uint32 seed)
+SerialMersenneTwister::SerialMersenneTwister(const std::uint32_t seed)
 {
     init_state(seed);
 }
 
-SerialMersenneTwister::SerialMersenneTwister(const uint32 init_key[], const int key_length)
+SerialMersenneTwister::SerialMersenneTwister(const std::uint32_t init_key[], const int key_length)
 {
     /* initialize by an array with array-length */
     /* init_key is the array for initializing keys */
@@ -106,7 +106,7 @@ SerialMersenneTwister::SerialMersenneTwister(const uint32 init_key[], const int 
     mt[0] = 0x80000000UL; /* MSB is 1; assuring non-zero initial array */
 }
 
-void SerialMersenneTwister::init_state(const uint32 seed)
+void SerialMersenneTwister::init_state(const std::uint32_t seed)
 {
     /* initializes mt[N] with a seed */
     mt[0]= seed & 0xffffffffUL;
@@ -124,9 +124,9 @@ void SerialMersenneTwister::init_state(const uint32 seed)
 
 namespace
 {
-    const uint32 MATRIX_A   = 0x9908b0dfUL;     // constant vector a
-    const uint32 UPPER_MASK = 0x80000000UL;     // most significant w-r bits
-    const uint32 LOWER_MASK = 0x7fffffffUL;     // least significant r bits
+    const std::uint32_t MATRIX_A   = 0x9908b0dfUL;  // constant vector a
+    const std::uint32_t UPPER_MASK = 0x80000000UL;  // most significant w-r bits
+    const std::uint32_t LOWER_MASK = 0x7fffffffUL;  // least significant r bits
 }
 
 void SerialMersenneTwister::update_state()

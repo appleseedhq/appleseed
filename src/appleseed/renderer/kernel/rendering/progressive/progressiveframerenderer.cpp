@@ -55,7 +55,6 @@
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/thread.h"
 #include "foundation/platform/timers.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
@@ -73,6 +72,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <limits>
 #include <memory>
 #include <string>
@@ -104,7 +104,7 @@ namespace
           : m_project(project)
           , m_params(params)
           , m_sample_counter(
-                m_params.m_max_average_spp < std::numeric_limits<uint64>::max()
+                m_params.m_max_average_spp < std::numeric_limits<std::uint64_t>::max()
                     ? m_params.m_max_average_spp * project.get_frame()->get_crop_window().volume()
                     : m_params.m_max_average_spp)
           , m_ref_image_avg_lum(0.0)
@@ -205,7 +205,7 @@ namespace
                 get_spectrum_mode_name(m_params.m_spectrum_mode).c_str(),
                 get_sampling_context_mode_name(m_params.m_sampling_mode).c_str(),
                 pretty_uint(m_params.m_thread_count).c_str(),
-                m_params.m_max_average_spp == std::numeric_limits<uint64>::max()
+                m_params.m_max_average_spp == std::numeric_limits<std::uint64_t>::max()
                     ? "unlimited"
                     : pretty_uint(m_params.m_max_average_spp).c_str(),
                 m_params.m_time_limit == std::numeric_limits<double>::max()
@@ -375,7 +375,7 @@ namespace
             const Spectrum::Mode        m_spectrum_mode;
             const SamplingContext::Mode m_sampling_mode;
             const size_t                m_thread_count;       // number of rendering threads
-            const uint64                m_max_average_spp;    // maximum average number of samples to compute per pixel
+            const std::uint64_t         m_max_average_spp;    // maximum average number of samples to compute per pixel
             const double                m_time_limit;         // maximum rendering time in seconds
             const double                m_max_fps;            // maximum display frequency in frames/second
             const bool                  m_perf_stats;         // collect and print performance statistics?
@@ -385,7 +385,7 @@ namespace
               : m_spectrum_mode(get_spectrum_mode(params))
               , m_sampling_mode(get_sampling_context_mode(params))
               , m_thread_count(get_rendering_thread_count(params))
-              , m_max_average_spp(params.get_optional<uint64>("max_average_spp", std::numeric_limits<uint64>::max()))
+              , m_max_average_spp(params.get_optional<std::uint64_t>("max_average_spp", std::numeric_limits<std::uint64_t>::max()))
               , m_time_limit(params.get_optional<double>("time_limit", std::numeric_limits<double>::max()))
               , m_max_fps(params.get_optional<double>("max_fps", 30.0))
               , m_perf_stats(params.get_optional<bool>("performance_statistics", false))
@@ -411,7 +411,7 @@ namespace
               : m_frame(frame)
               , m_buffer(buffer)
               , m_tile_callback(tile_callback)
-              , m_min_sample_count(min<uint64>(frame.get_crop_window().volume(), 32 * 32 * 2))
+              , m_min_sample_count(min<std::uint64_t>(frame.get_crop_window().volume(), 32 * 32 * 2))
               , m_target_elapsed(1.0 / max_fps)
               , m_abort_switch(abort_switch)
             {
@@ -433,7 +433,7 @@ namespace
 
                 DefaultWallclockTimer timer;
                 const double rcp_timer_freq = 1.0 / timer.frequency();
-                uint64 last_time = timer.read();
+                std::uint64_t last_time = timer.read();
 
 #ifdef PRINT_DISPLAY_THREAD_PERFS
                 m_stopwatch.start();
@@ -455,7 +455,7 @@ namespace
                     }
 
                     // Compute time elapsed since last call to display().
-                    const uint64 time = timer.read();
+                    const std::uint64_t time = timer.read();
                     const double elapsed = (time - last_time) * rcp_timer_freq;
                     last_time = time;
 
@@ -463,7 +463,7 @@ namespace
                     if (elapsed < m_target_elapsed)
                     {
                         const double ms = std::ceil(1000.0 * (m_target_elapsed - elapsed));
-                        sleep(truncate<uint32>(ms), m_abort_switch);
+                        sleep(truncate<std::uint32_t>(ms), m_abort_switch);
                     }
                 }
             }
@@ -510,7 +510,7 @@ namespace
             Frame&                              m_frame;
             SampleAccumulationBuffer&           m_buffer;
             ITileCallback*                      m_tile_callback;
-            const uint64                        m_min_sample_count;
+            const std::uint64_t                 m_min_sample_count;
             const double                        m_target_elapsed;
             IAbortSwitch&                       m_abort_switch;
             ThreadFlag                          m_pause_flag;
@@ -624,7 +624,7 @@ namespace
 
             DefaultWallclockTimer           m_timer;
             double                          m_rcp_timer_frequency;
-            uint64                          m_timer_start_value;
+            std::uint64_t                   m_timer_start_value;
 
             double                          m_rcp_pixel_count;
             SampleCountHistory<128>         m_sample_count_history;
@@ -633,11 +633,11 @@ namespace
 
             void record_and_print_perf_stats(const double time)
             {
-                const uint64 samples = m_buffer.get_sample_count();
+                const std::uint64_t samples = m_buffer.get_sample_count();
                 m_sample_count_history.insert(time, samples);
 
                 const double samples_per_pixel = samples * m_rcp_pixel_count;
-                const uint64 samples_per_second = truncate<uint64>(m_sample_count_history.get_samples_per_second());
+                const std::uint64_t samples_per_second = truncate<std::uint64_t>(m_sample_count_history.get_samples_per_second());
 
                 RENDERER_LOG_INFO(
                     "%s samples, %s samples/pixel, %s samples/second",

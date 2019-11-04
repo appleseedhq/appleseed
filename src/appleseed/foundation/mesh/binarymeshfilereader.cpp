@@ -34,11 +34,11 @@
 #include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/math/vector.h"
 #include "foundation/mesh/imeshbuilder.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/bufferedfile.h"
 #include "foundation/utility/memory.h"
 
 // Standard headers.
+#include <cstdint>
 #include <cstring>
 #include <memory>
 
@@ -66,7 +66,7 @@ void BinaryMeshFileReader::read(IMeshBuilder& builder)
 
     read_and_check_signature(file);
 
-    uint16 version;
+    std::uint16_t version;
     checked_read(file, version);
 
     switch (version)
@@ -120,7 +120,7 @@ void BinaryMeshFileReader::read_and_check_signature(BufferedFile& file)
 
 std::string BinaryMeshFileReader::read_string(ReaderAdapter& reader)
 {
-    uint16 length;
+    std::uint16_t length;
     checked_read(reader, length);
 
     std::string s;
@@ -169,10 +169,10 @@ void BinaryMeshFileReader::read_meshes(ReaderAdapter& reader, IMeshBuilder& buil
 template <typename T>
 void BinaryMeshFileReader::read_vertices(ReaderAdapter& reader, IMeshBuilder& builder)
 {
-    uint32 count;
+    std::uint32_t count;
     checked_read(reader, count);
 
-    for (uint32 i = 0; i < count; ++i)
+    for (std::uint32_t i = 0; i < count; ++i)
     {
         Vector<T, 3> v;
         checked_read(reader, v);
@@ -183,10 +183,10 @@ void BinaryMeshFileReader::read_vertices(ReaderAdapter& reader, IMeshBuilder& bu
 template <typename T>
 void BinaryMeshFileReader::read_vertex_normals(ReaderAdapter& reader, IMeshBuilder& builder)
 {
-    uint32 count;
+    std::uint32_t count;
     checked_read(reader, count);
 
-    for (uint32 i = 0; i < count; ++i)
+    for (std::uint32_t i = 0; i < count; ++i)
     {
         Vector<T, 3> v;
         checked_read(reader, v);
@@ -197,10 +197,10 @@ void BinaryMeshFileReader::read_vertex_normals(ReaderAdapter& reader, IMeshBuild
 template <typename T>
 void BinaryMeshFileReader::read_texture_coordinates(ReaderAdapter& reader, IMeshBuilder& builder)
 {
-    uint32 count;
+    std::uint32_t count;
     checked_read(reader, count);
 
-    for (uint32 i = 0; i < count; ++i)
+    for (std::uint32_t i = 0; i < count; ++i)
     {
         Vector<T, 2> v;
         checked_read(reader, v);
@@ -210,10 +210,10 @@ void BinaryMeshFileReader::read_texture_coordinates(ReaderAdapter& reader, IMesh
 
 void BinaryMeshFileReader::read_material_slots(ReaderAdapter& reader, IMeshBuilder& builder)
 {
-    uint16 count;
+    std::uint16_t count;
     checked_read(reader, count);
 
-    for (uint16 i = 0; i < count; ++i)
+    for (std::uint16_t i = 0; i < count; ++i)
     {
         const std::string material_slot = read_string(reader);
         builder.push_material_slot(material_slot.c_str());
@@ -222,38 +222,38 @@ void BinaryMeshFileReader::read_material_slots(ReaderAdapter& reader, IMeshBuild
 
 void BinaryMeshFileReader::read_faces(ReaderAdapter& reader, IMeshBuilder& builder)
 {
-    uint32 count;
+    std::uint32_t count;
     checked_read(reader, count);
 
-    for (uint32 i = 0; i < count; ++i)
+    for (std::uint32_t i = 0; i < count; ++i)
         read_face(reader, builder);
 }
 
 void BinaryMeshFileReader::read_face(ReaderAdapter& reader, IMeshBuilder& builder)
 {
-    uint16 count;
+    std::uint16_t count;
     checked_read(reader, count);
 
     ensure_minimum_size(m_vertices, count);
     ensure_minimum_size(m_vertex_normals, count);
     ensure_minimum_size(m_tex_coords, count);
 
-    for (uint16 i = 0; i < count; ++i)
+    for (std::uint16_t i = 0; i < count; ++i)
     {
-        uint32 face_vertex;
+        std::uint32_t face_vertex;
         checked_read(reader, face_vertex);
         m_vertices[i] = face_vertex;
 
-        uint32 face_vertex_normal;
+        std::uint32_t face_vertex_normal;
         checked_read(reader, face_vertex_normal);
         m_vertex_normals[i] = face_vertex_normal;
 
-        uint32 face_tex_coords;
+        std::uint32_t face_tex_coords;
         checked_read(reader, face_tex_coords);
         m_tex_coords[i] = face_tex_coords;
     }
 
-    uint16 material;
+    std::uint16_t material;
     checked_read(reader, material);
 
     builder.begin_face(count);

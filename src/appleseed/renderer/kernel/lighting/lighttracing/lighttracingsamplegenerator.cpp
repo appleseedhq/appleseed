@@ -75,7 +75,6 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/arena.h"
 #include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/statistics.h"
@@ -84,6 +83,7 @@
 // Standard headers.
 #include <cassert>
 #include <cmath>
+#include <cstdint>
 #include <string>
 
 // Forward declarations.
@@ -549,10 +549,10 @@ namespace
 
         SamplingContext::RNGType        m_rng;
 
-        uint64                          m_light_sample_count;
+        std::uint64_t                   m_light_sample_count;
 
-        uint64                          m_path_count;
-        Population<uint64>              m_path_length;
+        std::uint64_t                   m_path_count;
+        Population<std::uint64_t>       m_path_length;
 
         float                           m_shutter_open_begin_time;
         float                           m_shutter_close_end_time;
@@ -564,7 +564,7 @@ namespace
             m_arena.clear();
 
             // Create a sampling context.
-            const size_t instance = mix_uint32(m_frame.get_noise_seed(), static_cast<uint32>(sequence_index));
+            const size_t instance = mix_uint32(m_frame.get_noise_seed(), static_cast<std::uint32_t>(sequence_index));
             SamplingContext sampling_context(
                 m_rng,
                 m_params.m_sampling_mode,

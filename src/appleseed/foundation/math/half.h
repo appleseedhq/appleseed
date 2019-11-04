@@ -33,13 +33,13 @@
 #ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
-#include "foundation/platform/types.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cmath>
+#include <cstdint>
 
 namespace foundation
 {
@@ -72,10 +72,10 @@ class Half
     Half(const float rhs);                  // allow implicit float-to-half conversion
 
     // Construct a half by directly specifying its bits.
-    static Half from_bits(const uint16 bits);
+    static Half from_bits(const std::uint16_t bits);
 
     // Get underlying bits.
-    uint16 bits() const;
+    std::uint16_t bits() const;
 
     // Implicit float-to-half conversion via assignment.
     Half& operator=(const float rhs);
@@ -84,14 +84,14 @@ class Half
     operator float() const;
 
   private:
-    APPLESEED_DLLSYMBOL static const uint32 s_h2f_table[65536];
-    APPLESEED_DLLSYMBOL static const uint16 s_f2h_table[512];
-    APPLESEED_DLLSYMBOL static uint16 float_to_half_except(const uint32 i);
+    APPLESEED_DLLSYMBOL static const std::uint32_t s_h2f_table[65536];
+    APPLESEED_DLLSYMBOL static const std::uint16_t s_f2h_table[512];
+    APPLESEED_DLLSYMBOL static std::uint16_t float_to_half_except(const std::uint32_t i);
 
     friend Half float_to_half(const float f);
     friend float half_to_float(const Half h);
 
-    uint16 m_bits;
+    std::uint16_t m_bits;
 };
 
 static_assert(sizeof(Half) == 2, "The size of foundation::Half must be exactly 2 bytes");
@@ -198,14 +198,14 @@ inline Half::Half(const float rhs)
 {
 }
 
-inline Half Half::from_bits(const uint16 bits)
+inline Half Half::from_bits(const std::uint16_t bits)
 {
     Half h;
     h.m_bits = bits;
     return h;
 }
 
-inline uint16 Half::bits() const
+inline std::uint16_t Half::bits() const
 {
     return m_bits;
 }
@@ -241,13 +241,13 @@ inline Half float_to_half(const float f)
     if (f == 0.0f)
         return Half::from_bits(0);
 
-    union { uint32 i; float f; } u;
+    union { std::uint32_t i; float f; } u;
     u.f = f;
 
-    const uint16 e = Half::s_f2h_table[(u.i >> 23) & 0x1ff];
+    const std::uint16_t e = Half::s_f2h_table[(u.i >> 23) & 0x1ff];
 
     return e != 0
-        ? Half::from_bits(static_cast<uint16>(e + (((u.i & 0x7fffff) + 0x1000) >> 13)))
+        ? Half::from_bits(static_cast<std::uint16_t>(e + (((u.i & 0x7fffff) + 0x1000) >> 13)))
         : Half::from_bits(Half::float_to_half_except(u.i));
 
 #endif
@@ -255,7 +255,7 @@ inline Half float_to_half(const float f)
 
 inline Half float_to_half_alt(const float fl)
 {
-    union FP32 { uint32 u; float f; };
+    union FP32 { std::uint32_t u; float f; };
 
     static const FP32 f32infty = { 255 << 23 };
     static const FP32 f16infty = { 31 << 23 };
@@ -263,7 +263,7 @@ inline Half float_to_half_alt(const float fl)
     const unsigned int sign_mask = 0x80000000u;
     const unsigned int round_mask = ~0xfffu;
 
-    uint16 o = 0;
+    std::uint16_t o = 0;
 
     FP32 f;
     f.f = fl;
@@ -296,7 +296,7 @@ inline Half float_to_half_alt(const float fl)
 
 inline Half fast_float_to_half(const float fl)
 {
-    union FP32 { uint32 u; float f; };
+    union FP32 { std::uint32_t u; float f; };
 
     static const FP32 f32infty = { 255 << 23 };
     static const FP32 f16max = { (127 + 16) << 23 };
@@ -304,7 +304,7 @@ inline Half fast_float_to_half(const float fl)
     static const FP32 expinf = { (255 ^ 31) << 23 };
     const unsigned int sign_mask = 0x80000000u;
 
-    uint16 o = 0;
+    std::uint16_t o = 0;
 
     FP32 f;
     f.f = fl;
@@ -338,7 +338,7 @@ inline float half_to_float(const Half h)
 
 #else
 
-    union { uint32 i; float f; } u;
+    union { std::uint32_t i; float f; } u;
     u.i = Half::s_h2f_table[h.m_bits];
     return u.f;
 
@@ -347,7 +347,7 @@ inline float half_to_float(const Half h)
 
 inline float half_to_float_alt(const Half h)
 {
-    union FP32 { uint32 u; float f; };
+    union FP32 { std::uint32_t u; float f; };
 
     static const FP32 magic = { (254 - 15) << 23 };
     static const FP32 was_infnan = { (127 + 16) << 23 };

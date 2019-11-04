@@ -39,10 +39,9 @@ namespace foundation
 // In the following example, the variables f, g and i all have the exact same
 // binary representation in memory:
 //
-//   using foundation::uint32;
-//   const float  f = 1.0f;
-//   const uint32 i = binary_cast<uint32>(f);   // i == 0x3F800000L
-//   const float  g = binary_cast<float>(i);    // f == g
+//   const float f = 1.0f;
+//   const std::uint32_t i = binary_cast<std::uint32_t>(f);     // i == 0x3F800000L
+//   const float g = binary_cast<float>(i);                     // f == g
 //
 
 template <typename Target, typename Source>

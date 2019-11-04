@@ -31,7 +31,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
-#include "foundation/platform/types.h"
+
+// Standard headers.
+#include <cstdint>
 
 namespace foundation
 {
@@ -72,16 +74,16 @@ namespace foundation
 //
 
 // Hash a 32-bit integer into a 32-bit integer (Pixar version).
-uint32 hash_uint32(uint32 value);
+std::uint32_t hash_uint32(std::uint32_t value);
 
 // Hash a 32-bit integer into a 32-bit integer (Thomas Wang version).
-uint32 hash_uint32_wang(uint32 value);
+std::uint32_t hash_uint32_wang(std::uint32_t value);
 
 // Hash a 64-bit integer into a 64-bit integer (Thomas Wang).
-uint64 hash_uint64(uint64 value);
+std::uint64_t hash_uint64(std::uint64_t value);
 
 // Hash a 64-bit integer into a 32-bit integer (Thomas Wang).
-uint32 hash_uint64_to_uint32(uint64 value);
+std::uint32_t hash_uint64_to_uint32(std::uint64_t value);
 
 
 //
@@ -89,32 +91,32 @@ uint32 hash_uint64_to_uint32(uint64 value);
 //
 
 // Mix multiple 32-bit integers into one 32-bit integer.
-uint32 mix_uint32(
-    const uint32    a,
-    const uint32    b);
-uint32 mix_uint32(
-    const uint32    a,
-    const uint32    b,
-    const uint32    c);
-uint32 mix_uint32(
-    const uint32    a,
-    const uint32    b,
-    const uint32    c,
-    const uint32    d);
+std::uint32_t mix_uint32(
+    const std::uint32_t     a,
+    const std::uint32_t     b);
+std::uint32_t mix_uint32(
+    const std::uint32_t     a,
+    const std::uint32_t     b,
+    const std::uint32_t     c);
+std::uint32_t mix_uint32(
+    const std::uint32_t     a,
+    const std::uint32_t     b,
+    const std::uint32_t     c,
+    const std::uint32_t     d);
 
 // Mix multiple 64-bit integers into one 64-bit integer.
-uint64 mix_uint64(
-    const uint64    a,
-    const uint64    b);
-uint64 mix_uint64(
-    const uint64    a,
-    const uint64    b,
-    const uint64    c);
-uint64 mix_uint64(
-    const uint64    a,
-    const uint64    b,
-    const uint64    c,
-    const uint64    d);
+std::uint64_t mix_uint64(
+    const std::uint64_t     a,
+    const std::uint64_t     b);
+std::uint64_t mix_uint64(
+    const std::uint64_t     a,
+    const std::uint64_t     b,
+    const std::uint64_t     c);
+std::uint64_t mix_uint64(
+    const std::uint64_t     a,
+    const std::uint64_t     b,
+    const std::uint64_t     c,
+    const std::uint64_t     d);
 
 
 //
@@ -122,21 +124,21 @@ uint64 mix_uint64(
 //
 
 // Combine two 32-bit hashes.
-uint32 combine_hashes(
-    const uint32    h1,
-    const uint32    h2);
+std::uint32_t combine_hashes(
+    const std::uint32_t     h1,
+    const std::uint32_t     h2);
 
 // Combine two 64-bit hashes.
-uint64 combine_hashes(
-    const uint64    h1,
-    const uint64    h2);
+std::uint64_t combine_hashes(
+    const std::uint64_t     h1,
+    const std::uint64_t     h2);
 
 
 //
 // Integer hash functions implementation.
 //
 
-inline uint32 hash_uint32(uint32 value)
+inline std::uint32_t hash_uint32(std::uint32_t value)
 {
     value ^= value >> 17;
     value ^= value >> 10;
@@ -149,7 +151,7 @@ inline uint32 hash_uint32(uint32 value)
     return value;
 }
 
-inline uint32 hash_uint32_wang(uint32 value)
+inline std::uint32_t hash_uint32_wang(std::uint32_t value)
 {
     value = (value ^ 61) ^ (value >> 16);
     value += value << 3;                                // value *= 9
@@ -159,7 +161,7 @@ inline uint32 hash_uint32_wang(uint32 value)
     return value;
 }
 
-inline uint64 hash_uint64(uint64 value)
+inline std::uint64_t hash_uint64(std::uint64_t value)
 {
     value = (~value) + (value << 21);                   // value = (value << 21) - value - 1;
     value = value ^ (value >> 24);
@@ -171,7 +173,7 @@ inline uint64 hash_uint64(uint64 value)
     return value;
 }
 
-inline uint32 hash_uint64_to_uint32(uint64 value)
+inline std::uint32_t hash_uint64_to_uint32(std::uint64_t value)
 {
     value = (~value) + (value << 18);                   // value = (value << 18) - value - 1;
     value = value ^ (value >> 31);
@@ -179,7 +181,7 @@ inline uint32 hash_uint64_to_uint32(uint64 value)
     value = value ^ (value >> 11);
     value = value + (value << 6);
     value = value ^ (value >> 22);
-    return static_cast<uint32>(value);
+    return static_cast<std::uint32_t>(value);
 }
 
 
@@ -187,69 +189,69 @@ inline uint32 hash_uint64_to_uint32(uint64 value)
 // Integer mixing functions implementation.
 //
 
-inline uint32 mix_uint32(
-    const uint32    a,
-    const uint32    b)
+inline std::uint32_t mix_uint32(
+    const std::uint32_t     a,
+    const std::uint32_t     b)
 {
-    const uint32 h0 = hash_uint32(     a);              // h0 =    h( a )
-    const uint32 h1 = hash_uint32(h0 + b);              // h1 = h( h( a ) + b )
+    const std::uint32_t h0 = hash_uint32(     a);       // h0 =    h( a )
+    const std::uint32_t h1 = hash_uint32(h0 + b);       // h1 = h( h( a ) + b )
     return h1;
 }
 
-inline uint32 mix_uint32(
-    const uint32    a,
-    const uint32    b,
-    const uint32    c)
+inline std::uint32_t mix_uint32(
+    const std::uint32_t     a,
+    const std::uint32_t     b,
+    const std::uint32_t     c)
 {
-    const uint32 h0 = hash_uint32(     a);              // h0 =       h( a )
-    const uint32 h1 = hash_uint32(h0 + b);              // h1 =    h( h( a ) + b )
-    const uint32 h2 = hash_uint32(h1 + c);              // h2 = h( h( h( a ) + b ) + c )
+    const std::uint32_t h0 = hash_uint32(     a);       // h0 =       h( a )
+    const std::uint32_t h1 = hash_uint32(h0 + b);       // h1 =    h( h( a ) + b )
+    const std::uint32_t h2 = hash_uint32(h1 + c);       // h2 = h( h( h( a ) + b ) + c )
     return h2;
 }
 
-inline uint32 mix_uint32(
-    const uint32    a,
-    const uint32    b,
-    const uint32    c,
-    const uint32    d)
+inline std::uint32_t mix_uint32(
+    const std::uint32_t     a,
+    const std::uint32_t     b,
+    const std::uint32_t     c,
+    const std::uint32_t     d)
 {
-    const uint32 h0 = hash_uint32(     a);              // h0 =          h( a )
-    const uint32 h1 = hash_uint32(h0 + b);              // h1 =       h( h( a ) + b )
-    const uint32 h2 = hash_uint32(h1 + c);              // h2 =    h( h( h( a ) + b ) + c )
-    const uint32 h3 = hash_uint32(h2 + d);              // h3 = h( h( h( h( a ) + b ) + c ) + d )
+    const std::uint32_t h0 = hash_uint32(     a);       // h0 =          h( a )
+    const std::uint32_t h1 = hash_uint32(h0 + b);       // h1 =       h( h( a ) + b )
+    const std::uint32_t h2 = hash_uint32(h1 + c);       // h2 =    h( h( h( a ) + b ) + c )
+    const std::uint32_t h3 = hash_uint32(h2 + d);       // h3 = h( h( h( h( a ) + b ) + c ) + d )
     return h3;
 }
 
-inline uint64 mix_uint64(
-    const uint64    a,
-    const uint64    b)
+inline std::uint64_t mix_uint64(
+    const std::uint64_t     a,
+    const std::uint64_t     b)
 {
-    const uint64 h0 = hash_uint64(     a);              // h0 =    h( a )
-    const uint64 h1 = hash_uint64(h0 + b);              // h1 = h( h( a ) + b )
+    const std::uint64_t h0 = hash_uint64(     a);       // h0 =    h( a )
+    const std::uint64_t h1 = hash_uint64(h0 + b);       // h1 = h( h( a ) + b )
     return h1;
 }
 
-inline uint64 mix_uint64(
-    const uint64    a,
-    const uint64    b,
-    const uint64    c)
+inline std::uint64_t mix_uint64(
+    const std::uint64_t     a,
+    const std::uint64_t     b,
+    const std::uint64_t     c)
 {
-    const uint64 h0 = hash_uint64(     a);              // h0 =       h( a )
-    const uint64 h1 = hash_uint64(h0 + b);              // h1 =    h( h( a ) + b )
-    const uint64 h2 = hash_uint64(h1 + c);              // h2 = h( h( h( a ) + b ) + c )
+    const std::uint64_t h0 = hash_uint64(     a);       // h0 =       h( a )
+    const std::uint64_t h1 = hash_uint64(h0 + b);       // h1 =    h( h( a ) + b )
+    const std::uint64_t h2 = hash_uint64(h1 + c);       // h2 = h( h( h( a ) + b ) + c )
     return h2;
 }
 
-inline uint64 mix_uint64(
-    const uint64    a,
-    const uint64    b,
-    const uint64    c,
-    const uint64    d)
+inline std::uint64_t mix_uint64(
+    const std::uint64_t     a,
+    const std::uint64_t     b,
+    const std::uint64_t     c,
+    const std::uint64_t     d)
 {
-    const uint64 h0 = hash_uint64(     a);              // h0 =          h( a )
-    const uint64 h1 = hash_uint64(h0 + b);              // h1 =       h( h( a ) + b )
-    const uint64 h2 = hash_uint64(h1 + c);              // h2 =    h( h( h( a ) + b ) + c )
-    const uint64 h3 = hash_uint64(h2 + d);              // h3 = h( h( h( h( a ) + b ) + c ) + d )
+    const std::uint64_t h0 = hash_uint64(     a);       // h0 =          h( a )
+    const std::uint64_t h1 = hash_uint64(h0 + b);       // h1 =       h( h( a ) + b )
+    const std::uint64_t h2 = hash_uint64(h1 + c);       // h2 =    h( h( h( a ) + b ) + c )
+    const std::uint64_t h3 = hash_uint64(h2 + d);       // h3 = h( h( h( h( a ) + b ) + c ) + d )
     return h3;
 }
 
@@ -319,21 +321,21 @@ inline uint64 mix_uint64(
 //   0xB504F333F9DE6109
 //
 
-inline uint32 combine_hashes(
-    const uint32    h1,
-    const uint32    h2)
+inline std::uint32_t combine_hashes(
+    const std::uint32_t     h1,
+    const std::uint32_t     h2)
 {
-    const uint32 k1 = 0x517CC1B7ul * h1;
-    const uint32 k2 = 0x9E3779B9ul * h2;
+    const std::uint32_t k1 = 0x517CC1B7ul * h1;
+    const std::uint32_t k2 = 0x9E3779B9ul * h2;
     return k1 + k2 + rotl32(k1, 17) + rotr32(k2, 13) + 0xB504F333ul;
 }
 
-inline uint64 combine_hashes(
-    const uint64    h1,
-    const uint64    h2)
+inline std::uint64_t combine_hashes(
+    const std::uint64_t     h1,
+    const std::uint64_t     h2)
 {
-    const uint64 k1 = 0x517CC1B727220B7Bull * h1;
-    const uint64 k2 = 0x9E3779B97F4A7A97ull * h2;
+    const std::uint64_t k1 = 0x517CC1B727220B7Bull * h1;
+    const std::uint64_t k2 = 0x9E3779B97F4A7A97ull * h2;
     return k1 + k2 + rotl64(k1, 17) + rotr64(k2, 13) + 0xB504F333F9DE6109ull;
 }
 

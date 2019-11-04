@@ -20,9 +20,6 @@
 #ifndef APPLESEED_FOUNDATION_UTILITY_STAMPEDPTR_H
 #define APPLESEED_FOUNDATION_UTILITY_STAMPEDPTR_H
 
-// appleseed.foundation headers.
-#include "foundation/platform/types.h"
-
 // Standard headers
 #include <cassert>
 #include <cstdint>
@@ -31,7 +28,7 @@ namespace foundation
 {
 
 //
-// stamped_ptr packs both a pointer to T and a uint16 into a 64-bit value,
+// stamped_ptr packs both a pointer to T and a std::uint16_t into a 64-bit value,
 // exploiting the fact that current addresses are limited to 48 bits on
 // all current x86-64 and ARM64 processors.
 //
@@ -73,7 +70,7 @@ class stamped_ptr
     }
 
     // Constructor.
-    stamped_ptr(T* ptr, const uint16 stamp = 0)
+    stamped_ptr(T* ptr, const std::uint16_t stamp = 0)
     {
         m_raw = pack(ptr, stamp);
     }
@@ -88,45 +85,45 @@ class stamped_ptr
         m_raw = pack(ptr, unpack_stamp(m_raw));
     }
 
-    uint16 get_stamp() const
+    std::uint16_t get_stamp() const
     {
         return unpack_stamp(m_raw);
     }
 
-    void set_stamp(const uint16 stamp)
+    void set_stamp(const std::uint16_t stamp)
     {
         m_raw = pack(unpack_ptr(m_raw), stamp);
     }
 
-    void set(T* ptr, const uint16 stamp)
+    void set(T* ptr, const std::uint16_t stamp)
     {
         m_raw = pack(ptr, stamp);
     }
 
   private:
-    uint64 m_raw;
+    std::uint64_t m_raw;
 
-    static T* unpack_ptr(const uint64 raw)
+    static T* unpack_ptr(const std::uint64_t raw)
     {
         // Canonical form means we need to extend bit 47 of the pointer to
         // bits 48..63 (unless the operating system never hands those pointers
         // to us, which is difficult to prove).  Signed right-shift of a
         // negative number is implementation-defined in C++ (not undefined!),
         // but actually does the right thing on all the platforms I can find.
-        auto extended = static_cast<int64>(raw) >> 16;
+        auto extended = static_cast<std::int64_t>(raw) >> 16;
         return reinterpret_cast<T*>(static_cast<intptr_t>(extended));
     }
 
-    static uint16 unpack_stamp(const uint64 raw)
+    static std::uint16_t unpack_stamp(const std::uint64_t raw)
     {
-        return static_cast<uint16>(raw);
+        return static_cast<std::uint16_t>(raw);
     }
 
-    static uint64 pack(T* ptr, const uint16 stamp)
+    static std::uint64_t pack(T* ptr, const std::uint16_t stamp)
     {
         auto shifted =
-            static_cast<uint64>(reinterpret_cast<uintptr_t>(ptr)) << 16;
-        uint64 raw = shifted | stamp;
+            static_cast<std::uint64_t>(reinterpret_cast<uintptr_t>(ptr)) << 16;
+        std::uint64_t raw = shifted | stamp;
 
         assert(unpack_ptr(raw) == ptr);
         assert(unpack_stamp(raw) == stamp);
@@ -136,7 +133,7 @@ class stamped_ptr
 };
 
 template <typename T>
-stamped_ptr<T> make_stamped_ptr(T* ptr, const uint16 stamp)
+stamped_ptr<T> make_stamped_ptr(T* ptr, const std::uint16_t stamp)
 {
     return stamped_ptr<T>(ptr, stamp);
 }

@@ -28,9 +28,11 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/timers.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/test.h"
+
+// Standard headers.
+#include <cstdint>
 
 using namespace foundation;
 
@@ -38,29 +40,29 @@ TEST_SUITE(Foundation_Utility_Stopwatch)
 {
     struct FakeTimer
     {
-        uint64 m_time;
+        std::uint64_t m_time;
 
         FakeTimer()
           : m_time(0)
         {
         }
 
-        uint64 frequency() const
+        std::uint64_t frequency() const
         {
             return 1;
         }
 
-        uint64 read() const
+        std::uint64_t read() const
         {
             return m_time;
         }
 
-        uint64 read_start() const
+        std::uint64_t read_start() const
         {
             return read();
         }
 
-        uint64 read_end() const
+        std::uint64_t read_end() const
         {
             return read();
         }

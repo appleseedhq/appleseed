@@ -54,7 +54,7 @@ namespace foundation
 // DefaultProcessorTimer class implementation.
 //
 
-uint64 DefaultProcessorTimer::frequency()
+std::uint64_t DefaultProcessorTimer::frequency()
 {
 // Windows.
 #if defined _WIN32
@@ -63,7 +63,7 @@ uint64 DefaultProcessorTimer::frequency()
     // https://docs.microsoft.com/en-us/windows/desktop/sysinfo/acquiring-high-resolution-time-stamps#faq-about-programming-with-qpc-and-tsc
     LARGE_INTEGER frequency;
     QueryPerformanceFrequency(&frequency);
-    return static_cast<uint64>(frequency.QuadPart);
+    return static_cast<std::uint64_t>(frequency.QuadPart);
 
 // Linux and FreeBSD.
 #elif defined __linux__ || defined __FreeBSD__
@@ -73,19 +73,19 @@ uint64 DefaultProcessorTimer::frequency()
 // Other platforms.
 #else
 
-    return static_cast<uint64>(CLOCKS_PER_SEC);
+    return static_cast<std::uint64_t>(CLOCKS_PER_SEC);
 
 #endif
 }
 
-uint64 DefaultProcessorTimer::read()
+std::uint64_t DefaultProcessorTimer::read()
 {
 // Windows.
 #if defined _WIN32
 
     LARGE_INTEGER count;
     QueryPerformanceCounter(&count);
-    return static_cast<uint64>(count.QuadPart);
+    return static_cast<std::uint64_t>(count.QuadPart);
 
 // Linux and FreeBSD.
 #elif defined __linux__ || defined __FreeBSD__
@@ -93,13 +93,13 @@ uint64 DefaultProcessorTimer::read()
     struct timespec ts;
     return
         clock_gettime(CLOCK_MONOTONIC, &ts) == 0
-            ? static_cast<uint64>(ts.tv_sec) * 1000000000ULL + static_cast<uint64>(ts.tv_nsec)
+            ? static_cast<std::uint64_t>(ts.tv_sec) * 1000000000ULL + static_cast<std::uint64_t>(ts.tv_nsec)
             : 0;
 
 // Other platforms.
 #else
 
-    return static_cast<uint64>(clock());
+    return static_cast<std::uint64_t>(clock());
 
 #endif
 }
@@ -109,7 +109,7 @@ uint64 DefaultProcessorTimer::read()
 // DefaultWallclockTimer class implementation.
 //
 
-uint64 DefaultWallclockTimer::frequency()
+std::uint64_t DefaultWallclockTimer::frequency()
 {
 // POSIX platforms.
 #if defined __GNUC__
@@ -129,27 +129,27 @@ uint64 DefaultWallclockTimer::frequency()
 #endif
 }
 
-uint64 DefaultWallclockTimer::read()
+std::uint64_t DefaultWallclockTimer::read()
 {
 // POSIX platforms.
 #if defined __GNUC__
 
     timeval tv;
     gettimeofday(&tv, nullptr);
-    return static_cast<uint64>(tv.tv_sec) * 1000000 + static_cast<uint64>(tv.tv_usec);
+    return static_cast<std::uint64_t>(tv.tv_sec) * 1000000 + static_cast<std::uint64_t>(tv.tv_usec);
 
 // Windows.
 #elif defined _WIN32
 
     __timeb64 tb;
     _ftime64(&tb);
-    return static_cast<uint64>(tb.time) * 1000 + static_cast<uint64>(tb.millitm);
+    return static_cast<std::uint64_t>(tb.time) * 1000 + static_cast<std::uint64_t>(tb.millitm);
 
 // Other platforms.
 #else
 
     const time_t seconds = time(0);
-    return static_cast<uint64>(seconds);
+    return static_cast<std::uint64_t>(seconds);
 
 #endif
 }

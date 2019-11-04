@@ -29,14 +29,12 @@
 
 #pragma once
 
-// appleseed.foundation headers.
-#include "foundation/platform/types.h"
-
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 // Forward declarations.
 namespace foundation    { class Tile; }
@@ -63,36 +61,36 @@ class APPLESEED_DLLSYMBOL NativeDrawing
     // Clear an image buffer with a given pixel color.
     // dest must point to the first destination pixel.
     static void clear(
-        uint8*          dest,
-        const size_t    dest_width,
-        const size_t    dest_height,
-        const size_t    dest_stride,
-        const uint8*    pixel,
-        const size_t    pixel_size);
+        std::uint8_t*           dest,
+        const size_t            dest_width,
+        const size_t            dest_height,
+        const size_t            dest_stride,
+        const std::uint8_t*     pixel,
+        const size_t            pixel_size);
 
     // Draw an horizontal line segment into an image buffer.
     // dest must point to the first destination pixel.
     static void draw_hline(
-        uint8*          dest,
-        const int       span,
-        const uint8*    pixel,
-        const size_t    pixel_size);
+        std::uint8_t*           dest,
+        const int               span,
+        const std::uint8_t*     pixel,
+        const size_t            pixel_size);
 
     // Draw a vertical line segment into an image buffer.
     // dest must point to the first destination pixel.
     static void draw_vline(
-        uint8*          dest,
-        const size_t    dest_stride,
-        const int       span,
-        const uint8*    pixel,
-        const size_t    pixel_size);
+        std::uint8_t*           dest,
+        const size_t            dest_stride,
+        const int               span,
+        const std::uint8_t*     pixel,
+        const size_t            pixel_size);
 
     // Blit a tile to an image buffer.
     // dest must point to the first destination pixel.
     static void blit(
-        uint8*          dest,
-        const size_t    dest_stride,
-        const Tile&     tile);
+        std::uint8_t*           dest,
+        const size_t            dest_stride,
+        const Tile&             tile);
 };
 
 }   // namespace foundation

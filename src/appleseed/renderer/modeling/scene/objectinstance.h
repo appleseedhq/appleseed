@@ -37,7 +37,6 @@
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/api/apiarray.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
@@ -48,6 +47,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
@@ -91,7 +91,7 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     void release() override;
 
     // Compute and return the unique signature of this instance.
-    foundation::uint64 compute_signature() const override;
+    std::uint64_t compute_signature() const override;
 
     // Return the name of the instantiated object.
     const char* get_object_name() const;
@@ -103,11 +103,11 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     bool must_flip_normals() const;
 
     // Return or set visibility flags of this instance.
-    foundation::uint32 get_vis_flags() const;
-    void set_vis_flags(const foundation::uint32 flags);
+    std::uint32_t get_vis_flags() const;
+    void set_vis_flags(const std::uint32_t flags);
 
     // Return the medium priority of this instance.
-    foundation::int8 get_medium_priority() const;
+    std::int8_t get_medium_priority() const;
 
     // Check if this object instance is in the same SSS set as another.
     bool is_in_same_sss_set(const ObjectInstance& other) const;
@@ -204,8 +204,8 @@ class APPLESEED_DLLSYMBOL ObjectInstance
 
     RenderData          m_render_data;
 
-    foundation::uint32  m_vis_flags;
-    foundation::int8    m_medium_priority;
+    std::uint32_t       m_vis_flags;
+    std::int8_t         m_medium_priority;
     bool                m_flip_normals;
 
     Object*             m_object;
@@ -257,17 +257,17 @@ inline bool ObjectInstance::must_flip_normals() const
     return m_flip_normals;
 }
 
-inline foundation::uint32 ObjectInstance::get_vis_flags() const
+inline std::uint32_t ObjectInstance::get_vis_flags() const
 {
     return m_vis_flags;
 }
 
-inline void ObjectInstance::set_vis_flags(const foundation::uint32 flags)
+inline void ObjectInstance::set_vis_flags(const std::uint32_t flags)
 {
     m_vis_flags = flags;
 }
 
-inline foundation::int8 ObjectInstance::get_medium_priority() const
+inline std::int8_t ObjectInstance::get_medium_priority() const
 {
     return m_medium_priority;
 }

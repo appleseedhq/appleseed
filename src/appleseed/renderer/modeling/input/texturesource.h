@@ -42,11 +42,11 @@
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/uid.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 // Forward declarations.
 namespace renderer      { class TextureCache; }
@@ -71,7 +71,7 @@ class TextureSource
     const TextureInstance& get_texture_instance() const;
 
     // Compute a signature unique to this source.
-    foundation::uint64 compute_signature() const override;
+    std::uint64_t compute_signature() const override;
 
     // Return hints allowing to treat this source as one of another type.
     Hints get_hints() const override;

@@ -92,6 +92,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cmath>
+#include <cstdint>
 #include <cstring>
 #include <limits>
 #include <string>
@@ -2108,18 +2109,18 @@ namespace
 
                     if (pfr.strings().exist("max_samples"))
                     {
-                        const uint64 max_samples = pfr.strings().get<uint64>("max_samples");
+                        const std::uint64_t max_samples = pfr.strings().get<std::uint64_t>("max_samples");
                         pfr.strings().remove("max_samples");
 
-                        if (max_samples < std::numeric_limits<uint64>::max())
+                        if (max_samples < std::numeric_limits<std::uint64_t>::max())
                         {
                             Frame* frame = m_project.get_frame();
                             if (frame)
                             {
                                 // If max samples was previously set then preserve the nearest max average spp count.
-                                const uint64 pixel_count = frame->get_crop_window().volume();
-                                const uint64 max_average_spp =
-                                    static_cast<uint64>(
+                                const std::uint64_t pixel_count = frame->get_crop_window().volume();
+                                const std::uint64_t max_average_spp =
+                                    static_cast<std::uint64_t>(
                                         std::ceil(
                                             static_cast<double>(max_samples) / pixel_count));
                                 pfr.strings().insert("max_average_spp", max_average_spp);

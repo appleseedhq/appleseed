@@ -28,14 +28,12 @@
 
 #pragma once
 
-// appleseed.foundation headers.
-#include "foundation/platform/types.h"
-
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 #include <iomanip>
 #include <sstream>
 #include <string>
@@ -71,16 +69,16 @@ class APPLESEED_DLLSYMBOL MurmurHash
 
     MurmurHash& append(const std::string& str);
 
-    uint64 h1() const;
-    uint64 h2() const;
+    std::uint64_t h1() const;
+    std::uint64_t h2() const;
 
     std::string to_string() const;
 
   private:
     void append(const void* data, const size_t bytes);
 
-    uint64 m_h1;
-    uint64 m_h2;
+    std::uint64_t m_h1;
+    std::uint64_t m_h2;
 };
 
 std::ostream& operator<<(std::ostream& o, const MurmurHash& hash);
@@ -103,12 +101,12 @@ inline MurmurHash& MurmurHash::append(const std::string& str)
     return *this;
 }
 
-inline uint64 MurmurHash::h1() const
+inline std::uint64_t MurmurHash::h1() const
 {
     return m_h1;
 }
 
-inline uint64 MurmurHash::h2() const
+inline std::uint64_t MurmurHash::h2() const
 {
     return m_h2;
 }

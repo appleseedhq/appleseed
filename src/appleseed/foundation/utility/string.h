@@ -32,7 +32,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/math/scalar.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/countof.h"
 #include "foundation/utility/typetraits.h"
 
@@ -44,6 +43,7 @@
 #include <cassert>
 #include <cctype>
 #include <cstddef>
+#include <cstdint>
 #include <ctime>
 #include <iomanip>
 #include <ios>
@@ -303,10 +303,10 @@ std::string plural(
     const std::string&      unit_plural);
 
 // Pretty-print an unsigned integer value.
-std::string pretty_uint(const uint64 value);
+std::string pretty_uint(const std::uint64_t value);
 
 // Pretty-print a signed integer value.
-std::string pretty_int(const int64 value);
+std::string pretty_int(const std::int64_t value);
 
 // Pretty-print a floating-point value.
 std::string pretty_scalar(
@@ -340,7 +340,7 @@ std::string pretty_time(
 
 // Pretty-print a size, given in bytes.
 std::string pretty_size(
-    const uint64            bytes,
+    const std::uint64_t     bytes,
     const std::streamsize   precision = 1);
 
 
@@ -405,12 +405,12 @@ inline std::string to_string<bool>(const bool& value)
 
 // Handle 8-bit integers as integers, not as characters.
 template <>
-inline std::string to_string<int8>(const int8& value)
+inline std::string to_string<std::int8_t>(const std::int8_t& value)
 {
     return to_string(static_cast<int>(value));
 }
 template <>
-inline std::string to_string<uint8>(const uint8& value)
+inline std::string to_string<std::uint8_t>(const std::uint8_t& value)
 {
     return to_string(static_cast<unsigned int>(value));
 }
@@ -496,7 +496,7 @@ inline bool from_string(const std::string& s)
 }
 
 template <>
-inline int8 from_string(const std::string& s)
+inline std::int8_t from_string(const std::string& s)
 {
     std::istringstream istr(s);
 
@@ -506,11 +506,11 @@ inline int8 from_string(const std::string& s)
     if (!istr || !istr.eof())
         throw ExceptionStringConversionError();
 
-    return static_cast<int8>(val);
+    return static_cast<std::int8_t>(val);
 }
 
 template <>
-inline uint8 from_string(const std::string& s)
+inline std::uint8_t from_string(const std::string& s)
 {
     std::istringstream istr(s);
 
@@ -520,7 +520,7 @@ inline uint8 from_string(const std::string& s)
     if (!istr || !istr.eof())
         throw ExceptionStringConversionError();
 
-    return static_cast<uint8>(val);
+    return static_cast<std::uint8_t>(val);
 }
 
 
@@ -986,7 +986,7 @@ std::string plural(
     return value > T(1) ? unit_plural : unit_singular;
 }
 
-inline std::string pretty_uint(const uint64 value)
+inline std::string pretty_uint(const std::uint64_t value)
 {
     const std::string s = to_string(value);
     std::string result;
@@ -1009,7 +1009,7 @@ inline std::string pretty_uint(const uint64 value)
     return result;
 }
 
-inline std::string pretty_int(const int64 value)
+inline std::string pretty_int(const std::int64_t value)
 {
     const std::string result = pretty_uint(std::abs(value));
     return value < 0 ? '-' + result : result;
@@ -1141,16 +1141,16 @@ inline std::string pretty_time(
 }
 
 inline std::string pretty_size(
-    const uint64            bytes,
+    const std::uint64_t     bytes,
     const std::streamsize   precision)
 {
     assert(precision >= 0);
 
     // Number of bytes in 1 kilobyte, 1 megabyte, 1 gigabyte and 1 terabyte.
-    const uint64 KB = 1024;
-    const uint64 MB = 1024 * KB;
-    const uint64 GB = 1024 * MB;
-    const uint64 TB = 1024 * GB;
+    const std::uint64_t KB = 1024;
+    const std::uint64_t MB = 1024 * KB;
+    const std::uint64_t GB = 1024 * MB;
+    const std::uint64_t TB = 1024 * GB;
 
     // Pretty-print.
     if (bytes == 0)

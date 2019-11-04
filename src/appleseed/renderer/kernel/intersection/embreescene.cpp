@@ -52,6 +52,9 @@
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/stopwatch.h"
 
+// Standard headers.
+#include <cstdint>
+
 using namespace foundation;
 using namespace renderer;
 
@@ -68,13 +71,13 @@ class EmbreeGeometryData
     unsigned int            m_vertices_stride;
 
     // Primitive data.
-    uint32*                 m_primitives;
+    std::uint32_t*          m_primitives;
     size_t                  m_primitives_count;
     size_t                  m_primitives_stride;
 
     // Instance data.
     size_t                  m_object_instance_idx;
-    uint32                  m_vis_flags;
+    std::uint32_t           m_vis_flags;
     unsigned int            m_motion_steps_count;
 
     RTCGeometryType         m_geometry_type;
@@ -84,7 +87,8 @@ class EmbreeGeometryData
       : m_vertices(nullptr)
       , m_primitives(nullptr)
       , m_geometry_handle(nullptr)
-    {}
+    {
+    }
 
     ~EmbreeGeometryData()
     {
@@ -145,8 +149,8 @@ namespace
         //
         const size_t primitives_count = tess.m_primitives.size();
 
-        geometry_data.m_primitives = new uint32[primitives_count * 3];
-        geometry_data.m_primitives_stride = sizeof(uint32) * 3;
+        geometry_data.m_primitives = new std::uint32_t[primitives_count * 3];
+        geometry_data.m_primitives_stride = sizeof(std::uint32_t) * 3;
         geometry_data.m_primitives_count = primitives_count;
 
         for (size_t i = 0; i < primitives_count; ++i)
@@ -182,7 +186,7 @@ namespace
     float get_tnear_offset(const RTCRay& ray)
     {
         float max_dir_component = max(std::abs(ray.dir_x), std::abs(ray.dir_y), std::abs(ray.dir_z));
-        uint32 max_origin_exp = max(
+        std::uint32_t max_origin_exp = max(
             FP<float>::exponent(ray.org_x),
             FP<float>::exponent(ray.org_y),
             FP<float>::exponent(ray.org_z));
@@ -198,7 +202,7 @@ namespace
 
         const float offset = FP<float>::construct(
             0,
-            std::max(static_cast<int32>(max_origin_exp - 23 + 11), 0),
+            std::max(static_cast<std::int32_t>(max_origin_exp - 23 + 11), 0),
             2047UL << (23 - 11));
 
         // Divide by max_dir_component to compensate inverse operation
@@ -436,19 +440,19 @@ void EmbreeScene::intersect(ShadingPoint& shading_point) const
         shading_point.m_primitive_type = ShadingPoint::PrimitiveTriangle;
         shading_point.m_ray.m_tmax = rayhit.ray.tfar;
 
-        const uint32 v0_idx = geometry_data->m_primitives[rayhit.hit.primID * 3];
-        const uint32 v1_idx = geometry_data->m_primitives[rayhit.hit.primID * 3 + 1];
-        const uint32 v2_idx = geometry_data->m_primitives[rayhit.hit.primID * 3 + 2];
+        const std::uint32_t v0_idx = geometry_data->m_primitives[rayhit.hit.primID * 3];
+        const std::uint32_t v1_idx = geometry_data->m_primitives[rayhit.hit.primID * 3 + 1];
+        const std::uint32_t v2_idx = geometry_data->m_primitives[rayhit.hit.primID * 3 + 2];
 
         if (geometry_data->m_motion_steps_count > 1)
         {
-            const uint32 last_motion_step_idx = geometry_data->m_motion_steps_count - 1;
+            const std::uint32_t last_motion_step_idx = geometry_data->m_motion_steps_count - 1;
 
-            const uint32 motion_step_begin_idx = static_cast<uint32>(rayhit.ray.time * last_motion_step_idx);
-            const uint32 motion_step_end_idx = motion_step_begin_idx + 1;
+            const std::uint32_t motion_step_begin_idx = static_cast<std::uint32_t>(rayhit.ray.time * last_motion_step_idx);
+            const std::uint32_t motion_step_end_idx = motion_step_begin_idx + 1;
 
-            const uint32 motion_step_begin_offset = motion_step_begin_idx * geometry_data->m_vertices_count;
-            const uint32 motion_step_end_offset = motion_step_end_idx * geometry_data->m_vertices_count;
+            const std::uint32_t motion_step_begin_offset = motion_step_begin_idx * geometry_data->m_vertices_count;
+            const std::uint32_t motion_step_end_offset = motion_step_end_idx * geometry_data->m_vertices_count;
 
             const float motion_step_begin_time = static_cast<float>(motion_step_begin_idx) / last_motion_step_idx;
 

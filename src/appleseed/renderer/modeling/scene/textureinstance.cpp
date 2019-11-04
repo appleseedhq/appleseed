@@ -130,7 +130,7 @@ void TextureInstance::release()
     delete this;
 }
 
-uint64 TextureInstance::compute_signature() const
+std::uint64_t TextureInstance::compute_signature() const
 {
     return
         m_texture

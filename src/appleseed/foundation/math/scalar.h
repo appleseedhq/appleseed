@@ -34,13 +34,13 @@
 #ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #ifdef _MSC_VER
 #include <cstdlib>
 #include <intrin.h>
@@ -197,8 +197,8 @@ T pow_int(const T x, size_t p);
 
 // Return the smallest power of 2 larger than a given integer x (x > 0).
 template <typename T> T next_pow2(T x);
-template <> int64 next_pow2<int64>(int64 x);
-template <> uint64 next_pow2<uint64>(uint64 x);
+template <> std::int64_t next_pow2<std::int64_t>(std::int64_t x);
+template <> std::uint64_t next_pow2<std::uint64_t>(std::uint64_t x);
 
 // Return true if a given integer x is a power of 2.
 template <typename T>
@@ -283,10 +283,10 @@ T mod(const T a, const T n);
 
 // Rotate an unsigned integer left or right by a given number of bits.
 // Reference: https://stackoverflow.com/a/776523/393756
-uint32 rotl32(const uint32 n, unsigned int shift);
-uint64 rotl64(const uint64 n, unsigned int shift);
-uint32 rotr32(const uint32 n, unsigned int shift);
-uint64 rotr64(const uint64 n, unsigned int shift);
+std::uint32_t rotl32(const std::uint32_t n, unsigned int shift);
+std::uint64_t rotl64(const std::uint64_t n, unsigned int shift);
+std::uint32_t rotr32(const std::uint32_t n, unsigned int shift);
+std::uint64_t rotr64(const std::uint64_t n, unsigned int shift);
 
 // linearstep() returns 0 for x < a, 1 for x > b, and generates
 // a linear transition from 0 to 1 between x = a and x = b.
@@ -515,7 +515,7 @@ inline T next_pow2(T x)
 }
 
 template <>
-inline int64 next_pow2<int64>(int64 x)
+inline std::int64_t next_pow2<std::int64_t>(std::int64_t x)
 {
     assert(x > 0);
     --x;
@@ -529,7 +529,7 @@ inline int64 next_pow2<int64>(int64 x)
 }
 
 template <>
-inline uint64 next_pow2<uint64>(uint64 x)
+inline std::uint64_t next_pow2<std::uint64_t>(std::uint64_t x)
 {
     assert(x > 0);
     --x;
@@ -565,27 +565,27 @@ inline T log2_int(T x)
 #if defined _MSC_VER
 
 template <>
-inline uint32 log2_int(const uint32 x)
+inline std::uint32_t log2_int(const std::uint32_t x)
 {
     assert(x > 0);
 
     unsigned long index;
     _BitScanReverse(&index, x);
 
-    return static_cast<uint32>(index);
+    return static_cast<std::uint32_t>(index);
 }
 
 #ifdef APPLESEED_ARCH64
 
 template <>
-inline uint64 log2_int(const uint64 x)
+inline std::uint64_t log2_int(const std::uint64_t x)
 {
     assert(x > 0);
 
     unsigned long index;
     _BitScanReverse64(&index, x);
 
-    return static_cast<uint64>(index);
+    return static_cast<std::uint64_t>(index);
 }
 
 #endif
@@ -698,51 +698,51 @@ inline Int truncate(const T x)
 #ifdef APPLESEED_USE_SSE
 
 template <>
-inline int8 truncate<int8>(const float x)
+inline std::int8_t truncate<std::int8_t>(const float x)
 {
-    return static_cast<int8>(_mm_cvttss_si32(_mm_load_ss(&x)));
+    return static_cast<std::int8_t>(_mm_cvttss_si32(_mm_load_ss(&x)));
 }
 
 template <>
-inline int16 truncate<int16>(const float x)
+inline std::int16_t truncate<std::int16_t>(const float x)
 {
-    return static_cast<int16>(_mm_cvttss_si32(_mm_load_ss(&x)));
+    return static_cast<std::int16_t>(_mm_cvttss_si32(_mm_load_ss(&x)));
 }
 
 template <>
-inline int32 truncate<int32>(const float x)
+inline std::int32_t truncate<std::int32_t>(const float x)
 {
-    return static_cast<int32>(_mm_cvttss_si32(_mm_load_ss(&x)));
+    return static_cast<std::int32_t>(_mm_cvttss_si32(_mm_load_ss(&x)));
 }
 
 template <>
-inline int64 truncate<int64>(const float x)
+inline std::int64_t truncate<std::int64_t>(const float x)
 {
-    return static_cast<int64>(_mm_cvttss_si32(_mm_load_ss(&x)));
+    return static_cast<std::int64_t>(_mm_cvttss_si32(_mm_load_ss(&x)));
 }
 
 template <>
-inline int8 truncate<int8>(const double x)
+inline std::int8_t truncate<std::int8_t>(const double x)
 {
-    return static_cast<int8>(_mm_cvttsd_si32(_mm_load_sd(&x)));
+    return static_cast<std::int8_t>(_mm_cvttsd_si32(_mm_load_sd(&x)));
 }
 
 template <>
-inline int16 truncate<int16>(const double x)
+inline std::int16_t truncate<std::int16_t>(const double x)
 {
-    return static_cast<int16>(_mm_cvttsd_si32(_mm_load_sd(&x)));
+    return static_cast<std::int16_t>(_mm_cvttsd_si32(_mm_load_sd(&x)));
 }
 
 template <>
-inline int32 truncate<int32>(const double x)
+inline std::int32_t truncate<std::int32_t>(const double x)
 {
-    return static_cast<int32>(_mm_cvttsd_si32(_mm_load_sd(&x)));
+    return static_cast<std::int32_t>(_mm_cvttsd_si32(_mm_load_sd(&x)));
 }
 
 template <>
-inline int64 truncate<int64>(const double x)
+inline std::int64_t truncate<std::int64_t>(const double x)
 {
-    return static_cast<int64>(_mm_cvttsd_si32(_mm_load_sd(&x)));
+    return static_cast<std::int64_t>(_mm_cvttsd_si32(_mm_load_sd(&x)));
 }
 
 #endif
@@ -847,7 +847,7 @@ inline double mod(const double a, const double n)
 #pragma warning (push)
 #pragma warning (disable : 4146)    // unary minus operator applied to unsigned type, result still unsigned
 
-inline uint32 rotl32(const uint32 n, unsigned int shift)
+inline std::uint32_t rotl32(const std::uint32_t n, unsigned int shift)
 {
     const unsigned int Mask = 8 * sizeof(n) - 1;
     assert(shift <= Mask);
@@ -860,7 +860,7 @@ inline uint32 rotl32(const uint32 n, unsigned int shift)
 #endif
 }
 
-inline uint64 rotl64(const uint64 n, unsigned int shift)
+inline std::uint64_t rotl64(const std::uint64_t n, unsigned int shift)
 {
     const unsigned int Mask = 8 * sizeof(n) - 1;
     assert(shift <= Mask);
@@ -873,7 +873,7 @@ inline uint64 rotl64(const uint64 n, unsigned int shift)
 #endif
 }
 
-inline uint32 rotr32(const uint32 n, unsigned int shift)
+inline std::uint32_t rotr32(const std::uint32_t n, unsigned int shift)
 {
     const unsigned int Mask = 8 * sizeof(n) - 1;
     assert(shift <= Mask);
@@ -886,7 +886,7 @@ inline uint32 rotr32(const uint32 n, unsigned int shift)
 #endif
 }
 
-inline uint64 rotr64(const uint64 n, unsigned int shift)
+inline std::uint64_t rotr64(const std::uint64_t n, unsigned int shift)
 {
     const unsigned int Mask = 8 * sizeof(n) - 1;
     assert(shift <= Mask);

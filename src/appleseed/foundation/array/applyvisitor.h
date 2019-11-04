@@ -35,10 +35,10 @@
 #include "foundation/image/color.h"
 #include "foundation/math/compressedunitvector.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/otherwise.h"
 
 // Standard headers.
+#include <cstdint>
 #include <utility>
 
 namespace foundation
@@ -71,9 +71,9 @@ void apply_visitor(Array& array, Visitor&& v)
 {
     switch (array.type())
     {
-      APPLESEED_ARRAY_APPLY_VISITOR_CASE(UInt8Type, uint8)
-      APPLESEED_ARRAY_APPLY_VISITOR_CASE(UInt16Type, uint16)
-      APPLESEED_ARRAY_APPLY_VISITOR_CASE(UInt32Type, uint32)
+      APPLESEED_ARRAY_APPLY_VISITOR_CASE(UInt8Type, std::uint8_t)
+      APPLESEED_ARRAY_APPLY_VISITOR_CASE(UInt16Type, std::uint16_t)
+      APPLESEED_ARRAY_APPLY_VISITOR_CASE(UInt32Type, std::uint32_t)
       APPLESEED_ARRAY_APPLY_VISITOR_CASE(FloatType, float)
       APPLESEED_ARRAY_APPLY_VISITOR_CASE(Vector2fType, foundation::Vector2f)
       APPLESEED_ARRAY_APPLY_VISITOR_CASE(Vector3fType, foundation::Vector3f)
@@ -89,9 +89,9 @@ void apply_visitor(const Array& array, Visitor&& v)
 {
     switch (array.type())
     {
-      APPLESEED_ARRAY_APPLY_VISITOR_CASE(UInt8Type, uint8)
-      APPLESEED_ARRAY_APPLY_VISITOR_CASE(UInt16Type, uint16)
-      APPLESEED_ARRAY_APPLY_VISITOR_CASE(UInt32Type, uint32)
+      APPLESEED_ARRAY_APPLY_VISITOR_CASE(UInt8Type, std::uint8_t)
+      APPLESEED_ARRAY_APPLY_VISITOR_CASE(UInt16Type, std::uint16_t)
+      APPLESEED_ARRAY_APPLY_VISITOR_CASE(UInt32Type, std::uint32_t)
       APPLESEED_ARRAY_APPLY_VISITOR_CASE(FloatType, float)
       APPLESEED_ARRAY_APPLY_VISITOR_CASE(Vector2fType, foundation::Vector2f)
       APPLESEED_ARRAY_APPLY_VISITOR_CASE(Vector3fType, foundation::Vector3f)

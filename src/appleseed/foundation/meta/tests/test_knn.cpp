@@ -43,6 +43,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <functional>
 #include <vector>
 
@@ -457,7 +458,7 @@ TEST_SUITE(Foundation_Math_Knn_Query)
         std::vector<Vector3d> points;
         generate_random_points(rng, points, PointCount);
 
-        auto make_query_point = [&rng, &points]() { return points[rand_int1(rng, 0, static_cast<int32>(points.size()) - 1)]; };
+        auto make_query_point = [&rng, &points]() { return points[rand_int1(rng, 0, static_cast<std::int32_t>(points.size()) - 1)]; };
         EXPECT_TRUE(do_results_match_naive_algorithm(points, AnswerSize, QueryCount, make_query_point));
     }
 }

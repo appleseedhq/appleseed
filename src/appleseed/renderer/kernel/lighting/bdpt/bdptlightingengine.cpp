@@ -46,6 +46,9 @@
 #include "foundation/utility/arena.h"
 #include "foundation/utility/statistics.h"
 
+// Standard headers.
+#include <cstdint>
+
 using namespace foundation;
 
 namespace renderer
@@ -670,8 +673,8 @@ namespace
         float                       m_shutter_open_begin_time;
         float                       m_shutter_close_end_time;
 
-        Population<uint64>          m_light_path_length;
-        Population<uint64>          m_camera_path_length;
+        Population<std::uint64_t>   m_light_path_length;
+        Population<std::uint64_t>   m_camera_path_length;
 
         size_t                      m_num_max_vertices;
 

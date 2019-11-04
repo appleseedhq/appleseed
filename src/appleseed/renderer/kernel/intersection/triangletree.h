@@ -42,7 +42,6 @@
 #include "foundation/math/aabb.h"
 #include "foundation/math/bvh.h"
 #include "foundation/math/ray.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/alignedvector.h"
 #include "foundation/utility/lazy.h"
 #include "foundation/utility/poolallocator.h"
@@ -50,6 +49,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <vector>
@@ -65,7 +65,7 @@ namespace renderer      { class ShadingPoint; }
 namespace renderer
 {
 
-typedef std::map<foundation::uint64, IntersectionFilter*> IntersectionFilterRepository;
+typedef std::map<std::uint64_t, IntersectionFilter*> IntersectionFilterRepository;
 
 
 //
@@ -122,7 +122,7 @@ class TriangleTree
     size_t                                      m_moving_triangle_count;
 
     std::vector<TriangleKey>                    m_triangle_keys;
-    std::vector<foundation::uint8>              m_leaf_data;
+    std::vector<std::uint8_t>                   m_leaf_data;
 
     IntersectionFilterRepository                m_intersection_filters_repository;
     std::vector<const IntersectionFilter*>      m_intersection_filters;

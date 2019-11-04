@@ -48,6 +48,7 @@
 #include "foundation/utility/arena.h"
 
 // Standard headers.
+#include <cstdint>
 #include <limits>
 
 using namespace foundation;
@@ -71,7 +72,7 @@ namespace
         {
         }
 
-        uint64 compute_signature() const override
+        std::uint64_t compute_signature() const override
         {
             return 0;
         }

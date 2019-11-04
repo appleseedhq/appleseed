@@ -32,7 +32,6 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/pixel.h"
-#include "foundation/platform/types.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -40,6 +39,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 
 namespace foundation
@@ -54,25 +54,25 @@ class APPLESEED_DLLSYMBOL Tile
   public:
     // Construct a new tile. The content of the tile is left undefined.
     Tile(
-        const size_t        width,              // tile width, in pixels
-        const size_t        height,             // tile height, in pixels
-        const size_t        channel_count,      // number of channels
-        const PixelFormat   pixel_format,       // pixel format
-        uint8*              storage = nullptr); // if provided, use this memory for pixel storage
+        const size_t        width,                  // tile width, in pixels
+        const size_t        height,                 // tile height, in pixels
+        const size_t        channel_count,          // number of channels
+        const PixelFormat   pixel_format,           // pixel format
+        std::uint8_t*       storage = nullptr);     // if provided, use this memory for pixel storage
 
     // Construct a tile by converting an existing tile to a given pixel format.
     Tile(
-        const Tile&         tile,               // source tile
-        const PixelFormat   pixel_format,       // new pixel format
-        uint8*              storage = nullptr); // if provided, use this memory for pixel storage
+        const Tile&         tile,                   // source tile
+        const PixelFormat   pixel_format,           // new pixel format
+        std::uint8_t*       storage = nullptr);     // if provided, use this memory for pixel storage
 
     // Construct a tile by converting an existing tile to a given pixel format,
     // and allowing reordering, replication and deletion of channels.
     Tile(
-        const Tile&         tile,               // source tile
-        const PixelFormat   pixel_format,       // new pixel format
-        const size_t*       shuffle_table,      // channel shuffling table
-        uint8*              storage = nullptr); // if provided, use this memory for pixel storage
+        const Tile&         tile,                   // source tile
+        const PixelFormat   pixel_format,           // new pixel format
+        const size_t*       shuffle_table,          // channel shuffling table
+        std::uint8_t*       storage = nullptr);     // if provided, use this memory for pixel storage
 
     // Copy constructor.
     Tile(const Tile& rhs);
@@ -90,25 +90,25 @@ class APPLESEED_DLLSYMBOL Tile
     PixelFormat get_pixel_format() const;
     size_t get_width() const;
     size_t get_height() const;
-    size_t get_channel_count() const;           // number of channels in one pixel
-    size_t get_pixel_count() const;             // number of pixels
-    size_t get_size() const;                    // size in bytes of the pixel array
+    size_t get_channel_count() const;               // number of channels in one pixel
+    size_t get_pixel_count() const;                 // number of pixels
+    size_t get_size() const;                        // size in bytes of the pixel array
 
     // Return a pointer to the tile' storage.
-    uint8* get_storage() const;
+    std::uint8_t* get_storage() const;
 
     // Direct access to a given pixel.
-    uint8* pixel(
+    std::uint8_t* pixel(
         const size_t        i) const;
-    uint8* pixel(
+    std::uint8_t* pixel(
         const size_t        x,
         const size_t        y) const;
 
     // Direct access to a given component of a given pixel.
-    uint8* component(
+    std::uint8_t* component(
         const size_t        i,
         const size_t        c) const;
-    uint8* component(
+    std::uint8_t* component(
         const size_t        x,
         const size_t        y,
         const size_t        c) const;
@@ -191,16 +191,16 @@ class APPLESEED_DLLSYMBOL Tile
     void copy_from(const Tile& source);
 
   protected:
-    const size_t            m_width;            // tile width, in pixels
-    const size_t            m_height;           // tile height, in pixels
-    const size_t            m_channel_count;    // number of channels per pixel
-    const PixelFormat       m_pixel_format;     // pixel format
-    const size_t            m_pixel_count;      // total number of pixels
-    const size_t            m_channel_size;     // size in bytes of one channel
-    const size_t            m_pixel_size;       // size in bytes of one pixel
-    const size_t            m_array_size;       // size in bytes of the pixel array
-    uint8*                  m_pixel_array;      // pixel array
-    bool                    m_own_storage;      // does the tile own the memory used for pixel storage?
+    const size_t            m_width;                // tile width, in pixels
+    const size_t            m_height;               // tile height, in pixels
+    const size_t            m_channel_count;        // number of channels per pixel
+    const PixelFormat       m_pixel_format;         // pixel format
+    const size_t            m_pixel_count;          // total number of pixels
+    const size_t            m_channel_size;         // size in bytes of one channel
+    const size_t            m_pixel_size;           // size in bytes of one pixel
+    const size_t            m_array_size;           // size in bytes of the pixel array
+    std::uint8_t*           m_pixel_array;          // pixel array
+    bool                    m_own_storage;          // does the tile own the memory used for pixel storage?
 };
 
 
@@ -238,12 +238,12 @@ inline size_t Tile::get_size() const
     return m_array_size;
 }
 
-inline uint8* Tile::get_storage() const
+inline std::uint8_t* Tile::get_storage() const
 {
     return m_pixel_array;
 }
 
-inline uint8* Tile::pixel(
+inline std::uint8_t* Tile::pixel(
     const size_t        i) const
 {
     assert(i < m_pixel_count);
@@ -254,7 +254,7 @@ inline uint8* Tile::pixel(
     return m_pixel_array + index;
 }
 
-inline uint8* Tile::pixel(
+inline std::uint8_t* Tile::pixel(
     const size_t        x,
     const size_t        y) const
 {
@@ -264,14 +264,14 @@ inline uint8* Tile::pixel(
     return pixel(y * m_width + x);
 }
 
-inline uint8* Tile::component(
+inline std::uint8_t* Tile::component(
     const size_t        i,
     const size_t        c) const
 {
     return pixel(i) + c * m_channel_size;
 }
 
-inline uint8* Tile::component(
+inline std::uint8_t* Tile::component(
     const size_t        x,
     const size_t        y,
     const size_t        c) const
@@ -375,8 +375,8 @@ inline void Tile::get_pixel(
 {
     assert(component_count <= m_channel_count);
 
-    const uint8* src_begin = pixel(i);
-    const uint8* src_end = src_begin + component_count * m_channel_size;
+    const std::uint8_t* src_begin = pixel(i);
+    const std::uint8_t* src_end = src_begin + component_count * m_channel_size;
 
     Pixel::convert_from_format(
         m_pixel_format,                 // source format
@@ -408,8 +408,8 @@ inline void Tile::get_pixel(
 {
     assert(N <= m_channel_count);
 
-    const uint8* src_begin = pixel(i);
-    const uint8* src_end = src_begin + N * m_channel_size;
+    const std::uint8_t* src_begin = pixel(i);
+    const std::uint8_t* src_end = src_begin + N * m_channel_size;
 
     Pixel::convert_from_format(
         m_pixel_format,                 // source format
@@ -438,7 +438,7 @@ inline T Tile::get_component(
     const size_t        i,
     const size_t        c) const
 {
-    const uint8* src = component(i, c);
+    const std::uint8_t* src = component(i, c);
 
     T value;
     Pixel::convert_from_format(
@@ -470,7 +470,7 @@ inline void Tile::clear(const Color& color)
     assert(sizeof(Color) == m_channel_count * sizeof(color[0]));
 
     // Set first pixel of first row.
-    uint8* base = pixel(0, 0);
+    std::uint8_t* base = pixel(0, 0);
     Pixel::convert_to_format(
         &color[0],                      // source begin
         &color[0] + m_channel_count,    // source end
@@ -480,7 +480,7 @@ inline void Tile::clear(const Color& color)
         1);                             // destination stride
 
     // Set remaining pixels of first row.
-    uint8* dest = base + m_pixel_size;
+    std::uint8_t* dest = base + m_pixel_size;
     for (size_t i = 1; i < m_width; ++i)
     {
         std::memcpy(dest, base, m_pixel_size);

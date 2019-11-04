@@ -32,11 +32,11 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/singleton.h"
 #include "foundation/platform/thread.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <limits>
 #include <memory>
 
@@ -104,8 +104,8 @@ namespace impl
 
         union Node
         {
-            uint8   m_item[ItemSize];   // the actual storage for one item
-            Node*   m_next;             // pointer to the next free node
+            std::uint8_t    m_item[ItemSize];   // the actual storage for one item
+            Node*           m_next;             // pointer to the next free node
         };
 
         Spinlock    m_spinlock;

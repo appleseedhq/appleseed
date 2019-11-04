@@ -33,7 +33,6 @@
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/types.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -41,6 +40,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <cstdio>
 #include <string>
 #include <vector>
@@ -173,18 +173,18 @@ class APPLESEED_DLLSYMBOL BufferedFile
     // The file must be binary, and open in read or write mode.
     // Return true on success, false on error.
     bool seek(
-        const int64         offset,
+        const std::int64_t  offset,
         const SeekOrigin    origin);
 
     // Return the current position of the file pointer.
     // The file must be binary, and open in read or write mode.
-    int64 tell() const;
+    std::int64_t tell() const;
 
   private:
     std::FILE*              m_file;
     FileMode                m_file_mode;
-    int64                   m_file_index;       // index in the file of the first byte of the I/O buffer
-    uint8*                  m_buffer;           // I/O buffer
+    std::int64_t            m_file_index;       // index in the file of the first byte of the I/O buffer
+    std::uint8_t*           m_buffer;           // I/O buffer
     size_t                  m_buffer_size;      // size of the I/O buffer
     size_t                  m_buffer_end;       // one past the index of the last byte in the I/O buffer
     size_t                  m_buffer_index;     // index of the next byte in the I/O buffer
@@ -300,20 +300,20 @@ class CompressedWriterAdapter
 {
   public:
     CompressedWriterAdapter(
-        BufferedFile&       file,
-        const size_t        buffer_size = 64 * 1024);   // compression buffer size, in bytes
+        BufferedFile&           file,
+        const size_t            buffer_size = 64 * 1024);   // compression buffer size, in bytes
 
     ~CompressedWriterAdapter() override;
 
     size_t write(
-        const void*         inbuf,
-        const size_t        size) override;
+        const void*             inbuf,
+        const size_t            size) override;
 
   protected:
-    BufferedFile&           m_file;
-    const size_t            m_buffer_size;
-    size_t                  m_buffer_index;
-    std::vector<uint8>      m_buffer;
+    BufferedFile&               m_file;
+    const size_t                m_buffer_size;
+    size_t                      m_buffer_index;
+    std::vector<std::uint8_t>   m_buffer;
 
     virtual void flush_buffer() = 0;
 };
@@ -325,14 +325,14 @@ class CompressedReaderAdapter
     explicit CompressedReaderAdapter(BufferedFile& file);
 
     size_t read(
-        void*               outbuf,
-        const size_t        size) override;
+        void*                   outbuf,
+        const size_t            size) override;
 
   protected:
-    BufferedFile&           m_file;
-    size_t                  m_buffer_index;
-    size_t                  m_buffer_end;
-    std::vector<uint8>      m_buffer;
+    BufferedFile&               m_file;
+    size_t                      m_buffer_index;
+    size_t                      m_buffer_end;
+    std::vector<std::uint8_t>   m_buffer;
 
     virtual bool fill_buffer() = 0;
 };
@@ -349,13 +349,13 @@ class LZ4CompressedWriterAdapter
     explicit LZ4CompressedWriterAdapter(BufferedFile& file);
 
     LZ4CompressedWriterAdapter(
-        BufferedFile&       file,
-        const size_t        buffer_size);               // compression buffer size, in bytes
+        BufferedFile&           file,
+        const size_t            buffer_size);               // compression buffer size, in bytes
 
     ~LZ4CompressedWriterAdapter() override;
 
   private:
-    std::vector<uint8>      m_compressed_buffer;
+    std::vector<std::uint8_t>   m_compressed_buffer;
 
     void flush_buffer() override;
 };
@@ -367,7 +367,7 @@ class LZ4CompressedReaderAdapter
     explicit LZ4CompressedReaderAdapter(BufferedFile& file);
 
   private:
-    std::vector<uint8>      m_compressed_buffer;
+    std::vector<std::uint8_t>   m_compressed_buffer;
 
     bool fill_buffer() override;
 };
@@ -396,7 +396,7 @@ inline size_t BufferedFile::read(void* outbuf)
     }
 
     // Copy one byte from the I/O buffer to the output buffer.
-    reinterpret_cast<uint8*>(outbuf)[0] = m_buffer[m_buffer_index++];
+    reinterpret_cast<std::uint8_t*>(outbuf)[0] = m_buffer[m_buffer_index++];
 
     // Return the number of bytes successfully read.
     return 1;
@@ -430,7 +430,7 @@ inline size_t BufferedFile::write(const void* inbuf)
     }
 
     // Copy one byte from the input buffer to the I/O buffer.
-    m_buffer[m_buffer_index++] = reinterpret_cast<const uint8*>(inbuf)[0];
+    m_buffer[m_buffer_index++] = reinterpret_cast<const std::uint8_t*>(inbuf)[0];
 
     // Return the number of bytes successfully written.
     return 1;
@@ -460,12 +460,12 @@ inline size_t BufferedFile::write_unbuf(const std::string& s)
     return write_unbuf(s.c_str(), s.size());
 }
 
-inline int64 BufferedFile::tell() const
+inline std::int64_t BufferedFile::tell() const
 {
     assert(m_file);
     assert(m_buffer);
 
-    return m_file_index + static_cast<int64>(m_buffer_index);
+    return m_file_index + static_cast<std::int64_t>(m_buffer_index);
 }
 
 inline void BufferedFile::invalidate_buffer()

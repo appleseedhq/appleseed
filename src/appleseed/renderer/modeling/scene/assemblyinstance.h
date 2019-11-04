@@ -37,7 +37,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
 
@@ -46,6 +45,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <cstdint>
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
@@ -80,7 +80,7 @@ class APPLESEED_DLLSYMBOL AssemblyInstance
     const TransformSequence& transform_sequence() const;
 
     // Return the visibility flags of this instance.
-    foundation::uint32 get_vis_flags() const;
+    std::uint32_t get_vis_flags() const;
 
     // Find the assembly bound to this instance.
     Assembly* find_assembly() const;
@@ -108,7 +108,7 @@ class APPLESEED_DLLSYMBOL AssemblyInstance
     struct Impl;
     Impl* impl;
 
-    foundation::uint32  m_vis_flags;
+    std::uint32_t       m_vis_flags;
     Assembly*           m_assembly;
     TransformSequence   m_transform_sequence;
 
@@ -142,7 +142,7 @@ class APPLESEED_DLLSYMBOL AssemblyInstanceFactory
 // AssemblyInstance class implementation.
 //
 
-inline foundation::uint32 AssemblyInstance::get_vis_flags() const
+inline std::uint32_t AssemblyInstance::get_vis_flags() const
 {
     return m_vis_flags;
 }

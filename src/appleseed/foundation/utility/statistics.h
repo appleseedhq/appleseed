@@ -33,12 +33,12 @@
 #include "foundation/core/exceptions/stringexception.h"
 #include "foundation/math/population.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <iomanip>
 #include <ios>
 #include <map>
@@ -93,12 +93,12 @@ class Statistics
     struct IntegerEntry
       : public Entry
     {
-        int64 m_value;
+        std::int64_t m_value;
 
         IntegerEntry(
             const std::string&          name,
             const std::string&          unit,
-            const int64                 value);
+            const std::int64_t          value);
 
         std::unique_ptr<Entry> clone() const override;
         void merge(const Entry* other) override;
@@ -108,12 +108,12 @@ class Statistics
     struct UnsignedIntegerEntry
       : public Entry
     {
-        uint64 m_value;
+        std::uint64_t m_value;
 
         UnsignedIntegerEntry(
             const std::string&          name,
             const std::string&          unit,
-            const uint64                value);
+            const std::uint64_t         value);
 
         std::unique_ptr<Entry> clone() const override;
         void merge(const Entry* other) override;
@@ -225,7 +225,7 @@ class Statistics
 
     void insert_size(
         const std::string&              name,
-        const uint64                    bytes,
+        const std::uint64_t             bytes,
         const std::streamsize           precision = 1);
 
     void insert_time(
@@ -438,7 +438,7 @@ inline void Statistics::insert(
 
 inline void Statistics::insert_size(
     const std::string&                  name,
-    const uint64                        bytes,
+    const std::uint64_t                 bytes,
     const std::streamsize               precision)
 {
     insert(name, pretty_size(bytes, precision));

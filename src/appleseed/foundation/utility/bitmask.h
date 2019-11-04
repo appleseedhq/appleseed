@@ -29,12 +29,10 @@
 
 #pragma once
 
-// appleseed.foundation headers.
-#include "foundation/platform/types.h"
-
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
 
 namespace foundation
@@ -87,11 +85,11 @@ class BitMask2
     size_t get_memory_size() const;
 
   private:
-    size_t  m_width;
-    size_t  m_height;
-    size_t  m_block_width;
-    size_t  m_size;
-    uint8*  m_bits;
+    size_t              m_width;
+    size_t              m_height;
+    size_t              m_block_width;
+    size_t              m_size;
+    std::uint8_t*       m_bits;
 };
 
 
@@ -106,7 +104,7 @@ inline BitMask2::BitMask2(
   , m_height(height)
   , m_block_width((width + 7) / 8)
   , m_size(m_block_width * m_height)
-  , m_bits(new uint8[m_size])
+  , m_bits(new std::uint8_t[m_size])
 {
 }
 

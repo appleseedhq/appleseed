@@ -35,8 +35,10 @@
 #include "renderer/kernel/intersection/trianglevertexinfo.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/types.h"
 #include "foundation/utility/memory.h"
+
+// Standard headers.
+#include <cstdint>
 
 using namespace foundation;
 
@@ -44,10 +46,10 @@ namespace renderer
 {
 
 size_t TriangleEncoder::compute_size(
-    const std::vector<TriangleVertexInfo>&   triangle_vertex_infos,
-    const std::vector<size_t>&               triangle_indices,
-    const size_t                             item_begin,
-    const size_t                             item_count)
+    const std::vector<TriangleVertexInfo>&  triangle_vertex_infos,
+    const std::vector<size_t>&              triangle_indices,
+    const size_t                            item_begin,
+    const size_t                            item_count)
 {
     size_t size = 0;
 
@@ -56,8 +58,8 @@ size_t TriangleEncoder::compute_size(
         const size_t triangle_index = triangle_indices[item_begin + i];
         const TriangleVertexInfo& vertex_info = triangle_vertex_infos[triangle_index];
 
-        size += sizeof(uint32);         // visibility flags
-        size += sizeof(uint32);         // motion segment count
+        size += sizeof(std::uint32_t);      // visibility flags
+        size += sizeof(std::uint32_t);      // motion segment count
 
         if (vertex_info.m_motion_segment_count == 0)
             size += sizeof(GTriangleType);
@@ -68,12 +70,12 @@ size_t TriangleEncoder::compute_size(
 }
 
 void TriangleEncoder::encode(
-    const std::vector<TriangleVertexInfo>&   triangle_vertex_infos,
-    const std::vector<GVector3>&             triangle_vertices,
-    const std::vector<size_t>&               triangle_indices,
-    const size_t                             item_begin,
-    const size_t                             item_count,
-    MemoryWriter&                            writer)
+    const std::vector<TriangleVertexInfo>&  triangle_vertex_infos,
+    const std::vector<GVector3>&            triangle_vertices,
+    const std::vector<size_t>&              triangle_indices,
+    const size_t                            item_begin,
+    const size_t                            item_count,
+    MemoryWriter&                           writer)
 {
     for (size_t i = 0; i < item_count; ++i)
     {
@@ -81,7 +83,7 @@ void TriangleEncoder::encode(
         const TriangleVertexInfo& vertex_info = triangle_vertex_infos[triangle_index];
 
         writer.write(vertex_info.m_vis_flags);
-        writer.write(static_cast<uint32>(vertex_info.m_motion_segment_count));
+        writer.write(static_cast<std::uint32_t>(vertex_info.m_motion_segment_count));
 
         if (vertex_info.m_motion_segment_count == 0)
         {

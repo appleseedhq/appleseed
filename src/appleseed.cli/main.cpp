@@ -68,6 +68,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 #include <cstdlib>
 #include <memory>
 #include <string>
@@ -327,7 +328,7 @@ namespace
 
         if (g_cl.m_noise_seed.is_set())
         {
-            const uint32 noise_seed = static_cast<uint32>(g_cl.m_noise_seed.value());
+            const std::uint32_t noise_seed = static_cast<std::uint32_t>(g_cl.m_noise_seed.value());
             new_params.insert("noise_seed", noise_seed);
         }
 

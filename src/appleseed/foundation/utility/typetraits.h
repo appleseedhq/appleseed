@@ -29,11 +29,9 @@
 
 #pragma once
 
-// appleseed.foundation headers.
-#include "foundation/platform/types.h"
-
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 namespace foundation
 {
@@ -50,16 +48,16 @@ namespace impl
     template <>
     struct TypeConv<4>
     {
-        typedef int32 Int;
-        typedef uint32 UInt;
+        typedef std::int32_t Int;
+        typedef std::uint32_t UInt;
         typedef float Scalar;
     };
 
     template <>
     struct TypeConv<8>
     {
-        typedef int64 Int;
-        typedef uint64 UInt;
+        typedef std::int64_t Int;
+        typedef std::uint64_t UInt;
         typedef double Scalar;
     };
 }

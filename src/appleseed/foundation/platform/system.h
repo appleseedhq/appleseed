@@ -31,13 +31,13 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/platform/types.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 // Forward declarations.
 namespace foundation    { class Logger; }
@@ -158,20 +158,20 @@ class APPLESEED_DLLSYMBOL System
     //
 
     // Return the total size in bytes of the physical memory.
-    static uint64 get_total_physical_memory_size();
+    static std::uint64_t get_total_physical_memory_size();
 
     //
     // Virtual memory.
     //
 
     // Return the total size in bytes of the virtual memory.
-    static uint64 get_total_virtual_memory_size();
+    static std::uint64_t get_total_virtual_memory_size();
 
     // Return the amount in bytes of virtual memory used by the current process.
-    static uint64 get_process_virtual_memory_size();
+    static std::uint64_t get_process_virtual_memory_size();
 
     // Return the peak amount in bytes of virtual memory used by the current process.
-    static uint64 get_peak_process_virtual_memory_size();
+    static std::uint64_t get_peak_process_virtual_memory_size();
 };
 
 }   // namespace foundation

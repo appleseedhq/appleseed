@@ -72,6 +72,7 @@
 // Standard headers.
 #include <cassert>
 #include <cmath>
+#include <cstdint>
 #include <deque>
 #include <memory>
 #include <string>
@@ -288,7 +289,7 @@ namespace
             const Frame&                        frame,
             const size_t                        tile_x,
             const size_t                        tile_y,
-            const uint32                        pass_hash,
+            const std::uint32_t                 pass_hash,
             IAbortSwitch&                       abort_switch) override
         {
             // Retrieve frame properties.
@@ -645,7 +646,7 @@ namespace
         auto_release_ptr<ISampleRenderer>       m_sample_renderer;
 
         // Members used for statistics.
-        Population<uint64>                      m_spp;
+        Population<std::uint64_t>               m_spp;
         size_t                                  m_total_pixel_count;
         size_t                                  m_total_converged_pixel_count;
 
@@ -764,7 +765,7 @@ namespace
             const Frame&                        frame,
             const size_t                        frame_width,
             const size_t                        frame_height,
-            const uint32                        pass_hash,
+            const std::uint32_t                 pass_hash,
             const size_t                        aov_count)
         {
             // Loop over the block's pixels.
@@ -796,7 +797,7 @@ namespace
                     const size_t pixel_index = pi.y * frame_width + pi.x;
                     const size_t instance =
                         hash_uint32(
-                            static_cast<uint32>(
+                            static_cast<std::uint32_t>(
                                 pass_hash + pixel_index + (pb.m_spp * frame_width * frame_height)));
 
                     // Render this pixel.
@@ -822,7 +823,7 @@ namespace
             const Vector2i&                     pt,
             ShadingResultFrameBuffer*           framebuffer,
             ShadingResultFrameBuffer*           second_framebuffer,
-            const uint32                        pass_hash,
+            const std::uint32_t                 pass_hash,
             const size_t                        instance,
             const size_t                        batch_size,
             const size_t                        aov_count)

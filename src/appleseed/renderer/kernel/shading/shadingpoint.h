@@ -50,7 +50,6 @@
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/poison.h"
 
 // OSL headers.
@@ -62,6 +61,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 
 // Forward declarations.
 namespace renderer  { class Object; }
@@ -322,13 +322,13 @@ class ShadingPoint
         HasScreenSpaceDerivatives       = 1UL << 15,
         HasOSLShaderGlobals             = 1UL << 16
     };
-    mutable foundation::uint32          m_members;
+    mutable std::uint32_t               m_members;
 
     // Source geometry (derived from primary intersection results).
     mutable const Assembly*             m_assembly;                     // hit assembly
     mutable ObjectInstance*             m_object_instance;              // hit object instance
     mutable Object*                     m_object;                       // hit object
-    mutable foundation::uint32          m_primitive_pa;                 // hit primitive attribute index
+    mutable std::uint32_t               m_primitive_pa;                 // hit primitive attribute index
     mutable GVector2                    m_v0_uv, m_v1_uv, m_v2_uv;      // texture coordinates from UV set #0 at triangle vertices
     mutable GVector3                    m_v0, m_v1, m_v2;               // object instance space triangle vertices
     mutable GVector3                    m_n0, m_n1, m_n2;               // object instance space triangle vertex normals

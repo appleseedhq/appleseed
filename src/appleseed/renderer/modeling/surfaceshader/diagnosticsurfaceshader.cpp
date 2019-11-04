@@ -59,7 +59,6 @@
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/otherwise.h"
@@ -68,6 +67,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <cmath>
 #include <string>
 
@@ -612,10 +612,10 @@ void DiagnosticSurfaceShader::evaluate(
 
       case Primitives:
         {
-            const uint32 h =
+            const std::uint32_t h =
                 mix_uint32(
-                    static_cast<uint32>(shading_point.get_object_instance().get_uid()),
-                    static_cast<uint32>(shading_point.get_primitive_index()));
+                    static_cast<std::uint32_t>(shading_point.get_object_instance().get_uid()),
+                    static_cast<std::uint32_t>(shading_point.get_primitive_index()));
             set_shading_result(shading_result, integer_to_color3<float>(h));
         }
         break;

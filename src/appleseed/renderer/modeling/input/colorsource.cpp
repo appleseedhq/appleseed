@@ -74,7 +74,7 @@ ColorSource::ColorSource(const ColorEntity& color_entity)
     m_alpha[0] = alpha.size() >= 1 ? alpha[0] : 0.0f;
 }
 
-uint64 ColorSource::compute_signature() const
+std::uint64_t ColorSource::compute_signature() const
 {
     return m_color_entity.compute_signature();
 }

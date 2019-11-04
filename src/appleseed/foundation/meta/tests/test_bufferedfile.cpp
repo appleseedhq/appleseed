@@ -28,12 +28,12 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/platform/types.h"
 #include "foundation/utility/bufferedfile.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 #include <string>
 
 using namespace foundation;
@@ -146,7 +146,7 @@ TEST_SUITE(Foundation_Utility_BufferedFile)
             BufferedFile::WriteMode,
             BufferSize);
 
-        const uint32 Value = 0xDEADBEEFu;
+        const std::uint32_t Value = 0xDEADBEEFu;
         EXPECT_EQ(4, file.write(Value));
         EXPECT_EQ(4, file.tell());
 
@@ -158,7 +158,7 @@ TEST_SUITE(Foundation_Utility_BufferedFile)
             BufferedFile::ReadMode,
             BufferSize);
 
-        uint32 value;
+        std::uint32_t value;
         EXPECT_EQ(4, file.read(value));
         EXPECT_EQ(Value, value);
         EXPECT_EQ(4, file.tell());
@@ -255,12 +255,12 @@ TEST_SUITE(Foundation_Utility_BufferedFile)
             BufferedFile::WriteMode,
             BufferSize);
 
-        const uint32 Value1 = 0xDEADBEEFu;
+        const std::uint32_t Value1 = 0xDEADBEEFu;
         file.write(Value1);
 
         EXPECT_TRUE(file.seek(-4, BufferedFile::SeekFromCurrent));
 
-        const uint32 Value2 = 0xFADEBABEu;
+        const std::uint32_t Value2 = 0xFADEBABEu;
         file.write(Value2);
 
         file.close();
@@ -271,7 +271,7 @@ TEST_SUITE(Foundation_Utility_BufferedFile)
             BufferedFile::ReadMode,
             BufferSize);
 
-        uint32 value;
+        std::uint32_t value;
 
         EXPECT_EQ(4, file.read(value));
         EXPECT_EQ(Value2, value);
@@ -285,15 +285,15 @@ TEST_SUITE(Foundation_Utility_BufferedFile)
             BufferedFile::WriteMode,
             BufferSize);
 
-        const uint32 Value1 = 0xDEADBEEFu;
+        const std::uint32_t Value1 = 0xDEADBEEFu;
         file.write(Value1);
 
-        const uint32 Value2 = 0xFADEBABEu;
+        const std::uint32_t Value2 = 0xFADEBABEu;
         file.write(Value2);
 
         EXPECT_TRUE(file.seek(0, BufferedFile::SeekFromBeginning));
 
-        const uint32 Value3 = 0x12345678u;
+        const std::uint32_t Value3 = 0x12345678u;
         file.write(Value3);
 
         file.close();
@@ -304,7 +304,7 @@ TEST_SUITE(Foundation_Utility_BufferedFile)
             BufferedFile::ReadMode,
             BufferSize);
 
-        uint32 value;
+        std::uint32_t value;
 
         EXPECT_EQ(4, file.read(value));
         EXPECT_EQ(Value3, value);

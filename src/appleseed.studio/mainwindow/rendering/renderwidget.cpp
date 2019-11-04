@@ -39,7 +39,6 @@
 #include "foundation/image/nativedrawing.h"
 #include "foundation/image/tile.h"
 #include "foundation/math/scalar.h"
-#include "foundation/platform/types.h"
 
 // Qt headers.
 #include <QColor>
@@ -53,6 +52,7 @@
 // Standard headers.
 #include <algorithm>
 #include <cassert>
+#include <cstdint>
 
 using namespace foundation;
 using namespace renderer;
@@ -121,17 +121,17 @@ void RenderWidget::clear()
 
 namespace
 {
-    inline uint8* get_image_pointer(QImage& image)
+    inline std::uint8_t* get_image_pointer(QImage& image)
     {
-        return static_cast<uint8*>(image.scanLine(0));
+        return static_cast<std::uint8_t*>(image.scanLine(0));
     }
 
-    inline uint8* get_image_pointer(
+    inline std::uint8_t* get_image_pointer(
         QImage&         image,
         const size_t    x,
         const size_t    y)
     {
-        uint8* scanline = static_cast<uint8*>(image.scanLine(static_cast<int>(y)));
+        std::uint8_t* scanline = static_cast<std::uint8_t*>(image.scanLine(static_cast<int>(y)));
         return scanline + x * image.depth() / 8;
     }
 }
@@ -153,27 +153,27 @@ void RenderWidget::multiply(const float multiplier)
     const size_t image_height = static_cast<size_t>(m_image.height());
     const size_t dest_stride = static_cast<size_t>(m_image.bytesPerLine());
 
-    uint8* dest = get_image_pointer(m_image);
+    std::uint8_t* dest = get_image_pointer(m_image);
 
     for (size_t y = 0; y < image_height; ++y)
     {
-        uint8* row = dest + y * dest_stride;
+        std::uint8_t* row = dest + y * dest_stride;
 
         for (size_t x = 0; x < image_width * 3; ++x)
-            row[x] = truncate<uint8>(row[x] * multiplier);
+            row[x] = truncate<std::uint8_t>(row[x] * multiplier);
     }
 }
 
 namespace
 {
     void draw_bracket(
-        uint8*          dest,
-        const size_t    dest_width,
-        const size_t    dest_height,
-        const size_t    dest_stride,
-        const size_t    bracket_extent,
-        const uint8*    pixel,
-        const size_t    pixel_size)
+        std::uint8_t*           dest,
+        const size_t            dest_width,
+        const size_t            dest_height,
+        const size_t            dest_stride,
+        const size_t            bracket_extent,
+        const std::uint8_t*     pixel,
+        const size_t            pixel_size)
     {
         const int w = static_cast<int>(std::min(bracket_extent, dest_width));
         const int h = static_cast<int>(std::min(bracket_extent, dest_height));
@@ -227,11 +227,11 @@ void RenderWidget::highlight_tile(
     assert(y + height <= image_height);
 
     // Get a pointer to the first destination pixel.
-    uint8* dest = get_image_pointer(m_image, x, y);
+    std::uint8_t* dest = get_image_pointer(m_image, x, y);
 
     // Draw a bracket around the tile.
     const size_t BracketExtent = 5;
-    const uint8 BracketColor[3] = { 255, 255, 255 };
+    const std::uint8_t BracketColor[3] = { 255, 255, 255 };
     draw_bracket(
         dest,
         width,
@@ -412,7 +412,7 @@ void RenderWidget::update_tile_no_lock(const size_t tile_x, const size_t tile_y)
     assert(y + src_tile.get_height() <= image_height);
 
     // Get a pointer to the first destination pixel.
-    uint8* dest = get_image_pointer(m_image, x, y);
+    std::uint8_t* dest = get_image_pointer(m_image, x, y);
 
     // Blit the tile to the destination image.
     NativeDrawing::blit(dest, dest_stride, uint8_rgb_tile);

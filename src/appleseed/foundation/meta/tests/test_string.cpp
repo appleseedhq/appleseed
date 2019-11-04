@@ -32,7 +32,6 @@
 #include "foundation/math/rng/mersennetwister.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/arch.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/string.h"
@@ -41,6 +40,7 @@
 // Standard headers.
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <string>
@@ -64,54 +64,54 @@ TEST_SUITE(Foundation_Utility_String)
 
     TEST_CASE(ToString_GivenInt8Values_ReturnsCorrespondingStrings)
     {
-        EXPECT_EQ("0", to_string<int8>(0));
-        EXPECT_EQ("42", to_string<int8>(42));
-        EXPECT_EQ("-1", to_string<int8>(-1));
+        EXPECT_EQ("0", to_string<std::int8_t>(0));
+        EXPECT_EQ("42", to_string<std::int8_t>(42));
+        EXPECT_EQ("-1", to_string<std::int8_t>(-1));
     }
 
     TEST_CASE(ToString_GivenInt16Values_ReturnsCorrespondingStrings)
     {
-        EXPECT_EQ("0", to_string<int16>(0));
-        EXPECT_EQ("42", to_string<int16>(42));
-        EXPECT_EQ("-1", to_string<int16>(-1));
+        EXPECT_EQ("0", to_string<std::int16_t>(0));
+        EXPECT_EQ("42", to_string<std::int16_t>(42));
+        EXPECT_EQ("-1", to_string<std::int16_t>(-1));
     }
 
     TEST_CASE(ToString_GivenInt32Values_ReturnsCorrespondingStrings)
     {
-        EXPECT_EQ("0", to_string<int32>(0));
-        EXPECT_EQ("42", to_string<int32>(42));
-        EXPECT_EQ("-1", to_string<int32>(-1));
+        EXPECT_EQ("0", to_string<std::int32_t>(0));
+        EXPECT_EQ("42", to_string<std::int32_t>(42));
+        EXPECT_EQ("-1", to_string<std::int32_t>(-1));
     }
 
     TEST_CASE(ToString_GivenInt64Values_ReturnsCorrespondingStrings)
     {
-        EXPECT_EQ("0", to_string<int64>(0));
-        EXPECT_EQ("42", to_string<int64>(42));
-        EXPECT_EQ("-1", to_string<int64>(-1));
+        EXPECT_EQ("0", to_string<std::int64_t>(0));
+        EXPECT_EQ("42", to_string<std::int64_t>(42));
+        EXPECT_EQ("-1", to_string<std::int64_t>(-1));
     }
 
     TEST_CASE(ToString_GivenUInt8Values_ReturnsCorrespondingStrings)
     {
-        EXPECT_EQ("0", to_string<uint8>(0));
-        EXPECT_EQ("42", to_string<uint8>(42));
+        EXPECT_EQ("0", to_string<std::uint8_t>(0));
+        EXPECT_EQ("42", to_string<std::uint8_t>(42));
     }
 
     TEST_CASE(ToString_GivenUInt16Values_ReturnsCorrespondingStrings)
     {
-        EXPECT_EQ("0", to_string<uint16>(0));
-        EXPECT_EQ("42", to_string<uint16>(42));
+        EXPECT_EQ("0", to_string<std::uint16_t>(0));
+        EXPECT_EQ("42", to_string<std::uint16_t>(42));
     }
 
     TEST_CASE(ToString_GivenUInt32Values_ReturnsCorrespondingStrings)
     {
-        EXPECT_EQ("0", to_string<uint32>(0));
-        EXPECT_EQ("42", to_string<uint32>(42));
+        EXPECT_EQ("0", to_string<std::uint32_t>(0));
+        EXPECT_EQ("42", to_string<std::uint32_t>(42));
     }
 
     TEST_CASE(ToString_GivenUInt64Values_ReturnsCorrespondingStrings)
     {
-        EXPECT_EQ("0", to_string<uint64>(0));
-        EXPECT_EQ("42", to_string<uint64>(42));
+        EXPECT_EQ("0", to_string<std::uint64_t>(0));
+        EXPECT_EQ("42", to_string<std::uint64_t>(42));
     }
 
 #if defined APPLESEED_ARCH32
@@ -246,54 +246,54 @@ TEST_SUITE(Foundation_Utility_String)
 
     TEST_CASE(FromString_GivenStrings_ReturnsCorrespondingInt8Values)
     {
-        EXPECT_EQ(0, from_string<int8>("0"));
-        EXPECT_EQ(42, from_string<int8>("42"));
-        EXPECT_EQ(-1, from_string<int8>("-1"));
+        EXPECT_EQ(0, from_string<std::int8_t>("0"));
+        EXPECT_EQ(42, from_string<std::int8_t>("42"));
+        EXPECT_EQ(-1, from_string<std::int8_t>("-1"));
     }
 
     TEST_CASE(FromString_GivenStrings_ReturnsCorrespondingInt16Values)
     {
-        EXPECT_EQ(0, from_string<int16>("0"));
-        EXPECT_EQ(42, from_string<int16>("42"));
-        EXPECT_EQ(-1, from_string<int16>("-1"));
+        EXPECT_EQ(0, from_string<std::int16_t>("0"));
+        EXPECT_EQ(42, from_string<std::int16_t>("42"));
+        EXPECT_EQ(-1, from_string<std::int16_t>("-1"));
     }
 
     TEST_CASE(FromString_GivenStrings_ReturnsCorrespondingInt32Values)
     {
-        EXPECT_EQ(0, from_string<int32>("0"));
-        EXPECT_EQ(42, from_string<int32>("42"));
-        EXPECT_EQ(-1, from_string<int32>("-1"));
+        EXPECT_EQ(0, from_string<std::int32_t>("0"));
+        EXPECT_EQ(42, from_string<std::int32_t>("42"));
+        EXPECT_EQ(-1, from_string<std::int32_t>("-1"));
     }
 
     TEST_CASE(FromString_GivenStrings_ReturnsCorrespondingInt64Values)
     {
-        EXPECT_EQ(0, from_string<int64>("0"));
-        EXPECT_EQ(42, from_string<int64>("42"));
-        EXPECT_EQ(-1, from_string<int64>("-1"));
+        EXPECT_EQ(0, from_string<std::int64_t>("0"));
+        EXPECT_EQ(42, from_string<std::int64_t>("42"));
+        EXPECT_EQ(-1, from_string<std::int64_t>("-1"));
     }
 
     TEST_CASE(FromString_GivenStrings_ReturnsCorrespondingUInt8Values)
     {
-        EXPECT_EQ(0, from_string<uint8>("0"));
-        EXPECT_EQ(42, from_string<uint8>("42"));
+        EXPECT_EQ(0, from_string<std::uint8_t>("0"));
+        EXPECT_EQ(42, from_string<std::uint8_t>("42"));
     }
 
     TEST_CASE(FromString_GivenStrings_ReturnsCorrespondingUInt16Values)
     {
-        EXPECT_EQ(0, from_string<uint16>("0"));
-        EXPECT_EQ(42, from_string<uint16>("42"));
+        EXPECT_EQ(0, from_string<std::uint16_t>("0"));
+        EXPECT_EQ(42, from_string<std::uint16_t>("42"));
     }
 
     TEST_CASE(FromString_GivenStrings_ReturnsCorrespondingUInt32Values)
     {
-        EXPECT_EQ(0, from_string<uint32>("0"));
-        EXPECT_EQ(42, from_string<uint32>("42"));
+        EXPECT_EQ(0, from_string<std::uint32_t>("0"));
+        EXPECT_EQ(42, from_string<std::uint32_t>("42"));
     }
 
     TEST_CASE(FromString_GivenStrings_ReturnsCorrespondingUInt64Values)
     {
-        EXPECT_EQ(0, from_string<uint64>("0"));
-        EXPECT_EQ(42, from_string<uint64>("42"));
+        EXPECT_EQ(0, from_string<std::uint64_t>("0"));
+        EXPECT_EQ(42, from_string<std::uint64_t>("42"));
     }
 
     TEST_CASE(FromString_GivenIntegerPrecededBySpace_IgnoresSpaceAndReturnsIntegerValue)

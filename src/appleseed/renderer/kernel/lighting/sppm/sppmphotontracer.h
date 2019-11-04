@@ -34,10 +34,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
@@ -69,7 +69,7 @@ class SPPMPhotonTracer
 
     void trace_photons(
         SPPMPhotonVector&           photons,
-        const foundation::uint32    pass_hash,
+        const std::uint32_t         pass_hash,
         foundation::JobQueue&       job_queue,
         foundation::IAbortSwitch&   abort_switch);
 
@@ -87,7 +87,7 @@ class SPPMPhotonTracer
     void schedule_light_photon_tracing_jobs(
         const LightTargetArray&     photon_targets,
         SPPMPhotonVector&           photons,
-        const foundation::uint32    pass_hash,
+        const std::uint32_t         pass_hash,
         foundation::JobQueue&       job_queue,
         size_t&                     job_count,
         size_t&                     emitted_photon_count,
@@ -96,7 +96,7 @@ class SPPMPhotonTracer
     void schedule_environment_photon_tracing_jobs(
         const LightTargetArray&     photon_targets,
         SPPMPhotonVector&           photons,
-        const foundation::uint32    pass_hash,
+        const std::uint32_t         pass_hash,
         foundation::JobQueue&       job_queue,
         size_t&                     job_count,
         size_t&                     emitted_photon_count,

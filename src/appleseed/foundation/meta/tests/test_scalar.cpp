@@ -29,11 +29,11 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 #include <limits>
 
 using namespace foundation;
@@ -126,50 +126,50 @@ TEST_SUITE(Foundation_Math_Scalar)
 
     TEST_CASE(NextPow2_Large)
     {
-        const int32 TwoPower29 = 512 * 1024 * 1024;
-        const int32 TwoPower30 = 512 * 1024 * 1024 * 2;
+        const std::int32_t TwoPower29 = 512 * 1024 * 1024;
+        const std::int32_t TwoPower30 = 512 * 1024 * 1024 * 2;
         EXPECT_EQ(TwoPower30, next_pow2(TwoPower29 + 1));
     }
 
     TEST_CASE(NextPow2_Int64)
     {
-        EXPECT_EQ(1,   next_pow2<int64>(1));
-        EXPECT_EQ(2,   next_pow2<int64>(2));
-        EXPECT_EQ(4,   next_pow2<int64>(3));
-        EXPECT_EQ(4,   next_pow2<int64>(4));
-        EXPECT_EQ(8,   next_pow2<int64>(5));
-        EXPECT_EQ(8,   next_pow2<int64>(6));
-        EXPECT_EQ(8,   next_pow2<int64>(7));
-        EXPECT_EQ(8,   next_pow2<int64>(8));
-        EXPECT_EQ(16,  next_pow2<int64>(9));
-        EXPECT_EQ(256, next_pow2<int64>(256));
+        EXPECT_EQ(1,   next_pow2<std::int64_t>(1));
+        EXPECT_EQ(2,   next_pow2<std::int64_t>(2));
+        EXPECT_EQ(4,   next_pow2<std::int64_t>(3));
+        EXPECT_EQ(4,   next_pow2<std::int64_t>(4));
+        EXPECT_EQ(8,   next_pow2<std::int64_t>(5));
+        EXPECT_EQ(8,   next_pow2<std::int64_t>(6));
+        EXPECT_EQ(8,   next_pow2<std::int64_t>(7));
+        EXPECT_EQ(8,   next_pow2<std::int64_t>(8));
+        EXPECT_EQ(16,  next_pow2<std::int64_t>(9));
+        EXPECT_EQ(256, next_pow2<std::int64_t>(256));
     }
 
     TEST_CASE(NextPow2_Int64_Large)
     {
-        const int64 TwoPower34 = 17179869184LL;
-        const int64 TwoPower35 = 17179869184LL * 2;
+        const std::int64_t TwoPower34 = 17179869184LL;
+        const std::int64_t TwoPower35 = 17179869184LL * 2;
         EXPECT_EQ(TwoPower35, next_pow2(TwoPower34 + 1));
     }
 
     TEST_CASE(NextPow2_UInt64)
     {
-        EXPECT_EQ(1,   next_pow2<uint64>(1));
-        EXPECT_EQ(2,   next_pow2<uint64>(2));
-        EXPECT_EQ(4,   next_pow2<uint64>(3));
-        EXPECT_EQ(4,   next_pow2<uint64>(4));
-        EXPECT_EQ(8,   next_pow2<uint64>(5));
-        EXPECT_EQ(8,   next_pow2<uint64>(6));
-        EXPECT_EQ(8,   next_pow2<uint64>(7));
-        EXPECT_EQ(8,   next_pow2<uint64>(8));
-        EXPECT_EQ(16,  next_pow2<uint64>(9));
-        EXPECT_EQ(256, next_pow2<uint64>(256));
+        EXPECT_EQ(1,   next_pow2<std::uint64_t>(1));
+        EXPECT_EQ(2,   next_pow2<std::uint64_t>(2));
+        EXPECT_EQ(4,   next_pow2<std::uint64_t>(3));
+        EXPECT_EQ(4,   next_pow2<std::uint64_t>(4));
+        EXPECT_EQ(8,   next_pow2<std::uint64_t>(5));
+        EXPECT_EQ(8,   next_pow2<std::uint64_t>(6));
+        EXPECT_EQ(8,   next_pow2<std::uint64_t>(7));
+        EXPECT_EQ(8,   next_pow2<std::uint64_t>(8));
+        EXPECT_EQ(16,  next_pow2<std::uint64_t>(9));
+        EXPECT_EQ(256, next_pow2<std::uint64_t>(256));
     }
 
     TEST_CASE(NextPow2_UInt64_Large)
     {
-        const uint64 TwoPower34 = 17179869184ull;
-        const uint64 TwoPower35 = 17179869184ull * 2;
+        const std::uint64_t TwoPower34 = 17179869184ull;
+        const std::uint64_t TwoPower35 = 17179869184ull * 2;
         EXPECT_EQ(TwoPower35, next_pow2(TwoPower34 + 1));
     }
 
@@ -199,12 +199,12 @@ TEST_SUITE(Foundation_Math_Scalar)
         EXPECT_EQ(1,  log2_int(2));
         EXPECT_EQ(1,  log2_int(3));
         EXPECT_EQ(2,  log2_int(4));
-        EXPECT_EQ(5,  log2_int<int16>(1UL << 5));
-        EXPECT_EQ(5,  log2_int<int32>(1UL << 5));
-        EXPECT_EQ(5,  log2_int<int64>(1UL << 5));
-        EXPECT_EQ(5,  log2_int<uint16>(1UL << 5));
-        EXPECT_EQ(5,  log2_int<uint32>(1UL << 5));
-        EXPECT_EQ(5,  log2_int<uint64>(1UL << 5));
+        EXPECT_EQ(5,  log2_int<std::int16_t>(1UL << 5));
+        EXPECT_EQ(5,  log2_int<std::int32_t>(1UL << 5));
+        EXPECT_EQ(5,  log2_int<std::int64_t>(1UL << 5));
+        EXPECT_EQ(5,  log2_int<std::uint16_t>(1UL << 5));
+        EXPECT_EQ(5,  log2_int<std::uint32_t>(1UL << 5));
+        EXPECT_EQ(5,  log2_int<std::uint64_t>(1UL << 5));
         EXPECT_EQ(16, log2_int(1UL << 16));
         EXPECT_EQ(31, log2_int(1UL << 31));
     }
@@ -295,12 +295,12 @@ TEST_SUITE(Foundation_Math_Scalar)
 
     TEST_CASE(Truncate_FloatToUnsignedInteger)
     {
-        EXPECT_EQ(3221225472UL, truncate<uint32>(3221225472.0f));
+        EXPECT_EQ(3221225472UL, truncate<std::uint32_t>(3221225472.0f));
     }
 
     TEST_CASE(Truncate_DoubleToUnsignedInteger)
     {
-        EXPECT_EQ(3221225472UL, truncate<uint32>(3221225472.0));
+        EXPECT_EQ(3221225472UL, truncate<std::uint32_t>(3221225472.0));
     }
 
     TEST_CASE(Round_FloatToSignedInteger)

@@ -141,24 +141,24 @@ namespace foundation
 
 #endif
 
-void sleep(const uint32 ms)
+void sleep(const std::uint32_t ms)
 {
     this_thread::sleep_for(chrono::milliseconds(ms));
 }
 
-void sleep(const uint32 ms, IAbortSwitch& abort_switch)
+void sleep(const std::uint32_t ms, IAbortSwitch& abort_switch)
 {
     const chrono::milliseconds one_ms(1);
 
     DefaultWallclockTimer timer;
 
-    const uint64 freq = timer.frequency();
-    const uint64 start_time = timer.read_start();
+    const std::uint64_t freq = timer.frequency();
+    const std::uint64_t start_time = timer.read_start();
 
     while (!abort_switch.is_aborted())
     {
-        const uint64 elapsed_ticks = timer.read_end() - start_time;
-        const uint64 elapsed_ms = (1000 * elapsed_ticks) / freq;
+        const std::uint64_t elapsed_ticks = timer.read_end() - start_time;
+        const std::uint64_t elapsed_ms = (1000 * elapsed_ticks) / freq;
 
         if (elapsed_ms >= ms)
             break;
@@ -355,7 +355,7 @@ void yield()
     {
         ProcessPriorityContext  m_process_priority_context;
         ThreadPriorityContext   m_thread_priority_context;
-        uint64                  m_thread_affinity_mask;
+        std::uint64_t           m_thread_affinity_mask;
 
         explicit Impl(Logger* logger)
           : m_process_priority_context(ProcessPriorityHighest, logger)

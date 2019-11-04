@@ -33,10 +33,10 @@
 #include "application/commandlinehandlerbase.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/types.h"
 #include "foundation/utility/commandlineparser.h"
 
 // Standard headers.
+#include <cstdint>
 #include <string>
 
 // Forward declarations.
@@ -64,7 +64,7 @@ class CommandLineHandler
     foundation::ValueOptionHandler<std::string>         m_threads;  // std::string because we need to handle 'auto'
     foundation::ValueOptionHandler<int>                 m_resolution;
     foundation::ValueOptionHandler<int>                 m_window;
-    foundation::ValueOptionHandler<foundation::uint32>  m_noise_seed;
+    foundation::ValueOptionHandler<std::uint32_t>       m_noise_seed;
     foundation::ValueOptionHandler<int>                 m_samples;
     foundation::ValueOptionHandler<int>                 m_passes;
     foundation::ValueOptionHandler<std::string>         m_override_shading;

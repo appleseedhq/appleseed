@@ -29,8 +29,8 @@
 
 #pragma once
 
-// appleseed.foundation headers.
-#include "foundation/platform/types.h"
+// Standard headers.
+#include <cstdint>
 
 namespace foundation
 {
@@ -59,13 +59,13 @@ class LCG
 {
   public:
     // Constructor, seeds the generator.
-    explicit LCG(const uint32 seed = 0);
+    explicit LCG(const std::uint32_t seed = 0);
 
     // Generate a 32-bit random number.
-    uint32 rand_uint32();
+    std::uint32_t rand_uint32();
 
   private:
-    uint32 m_s;
+    std::uint32_t m_s;
 };
 
 
@@ -73,12 +73,12 @@ class LCG
 // LCG class implementation.
 //
 
-inline LCG::LCG(const uint32 seed)
+inline LCG::LCG(const std::uint32_t seed)
   : m_s(seed)
 {
 }
 
-inline uint32 LCG::rand_uint32()
+inline std::uint32_t LCG::rand_uint32()
 {
     m_s = 2147001325u * m_s + 715136305u;
     return m_s;

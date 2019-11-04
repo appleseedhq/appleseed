@@ -28,32 +28,34 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/platform/types.h"
 #include "foundation/utility/casts.h"
 #include "foundation/utility/test.h"
+
+// Standard headers.
+#include <cstdint>
 
 using namespace foundation;
 
 TEST_SUITE(Foundation_Utility_Casts)
 {
-    const uint32 OnePattern = 0x3F800000u;
+    const std::uint32_t OnePattern = 0x3F800000u;
 
     TEST_CASE(TestBinaryCastFloatToUInt32)
     {
         float f = 1.0f;
-        EXPECT_EQ(OnePattern, binary_cast<uint32>(f));
+        EXPECT_EQ(OnePattern, binary_cast<std::uint32_t>(f));
     }
 
     TEST_CASE(TestBinaryCastConstFloatToUInt32)
     {
         const float f = 1.0f;
-        EXPECT_EQ(OnePattern, binary_cast<uint32>(f));
+        EXPECT_EQ(OnePattern, binary_cast<std::uint32_t>(f));
     }
 
     TEST_CASE(TestBinaryCastConstFloatRefToUInt32)
     {
         float f = 1.0f;
         const float& ref = f;
-        EXPECT_EQ(OnePattern, binary_cast<uint32>(ref));
+        EXPECT_EQ(OnePattern, binary_cast<std::uint32_t>(ref));
     }
 }

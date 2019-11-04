@@ -49,6 +49,7 @@
 // Standard headers.
 #include <cassert>
 #include <cmath>
+#include <cstdint>
 #include <memory>
 #include <string>
 
@@ -358,13 +359,13 @@ namespace
     struct RayCountStatisticsEntry
       : public Statistics::Entry
     {
-        uint64  m_ray_count;
-        uint64  m_total_ray_count;
+        std::uint64_t   m_ray_count;
+        std::uint64_t   m_total_ray_count;
 
         RayCountStatisticsEntry(
             const std::string&   name,
-            const uint64         ray_count,
-            const uint64         total_ray_count)
+            const std::uint64_t  ray_count,
+            const std::uint64_t  total_ray_count)
           : Entry(name)
           , m_ray_count(ray_count)
           , m_total_ray_count(total_ray_count)
@@ -394,7 +395,7 @@ namespace
 
 StatisticsVector Intersector::get_statistics() const
 {
-    const uint64 total_ray_count = m_shading_ray_count + m_probe_ray_count;
+    const std::uint64_t total_ray_count = m_shading_ray_count + m_probe_ray_count;
 
     Statistics intersection_stats;
     intersection_stats.insert("total rays", total_ray_count);

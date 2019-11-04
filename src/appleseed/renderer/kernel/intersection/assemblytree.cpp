@@ -53,7 +53,6 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/system.h"
 #include "foundation/platform/timers.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/alignedallocator.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/lazy.h"
@@ -64,6 +63,7 @@
 // Standard headers.
 #include <algorithm>
 #include <cassert>
+#include <cstdint>
 #include <cstring>
 #include <set>
 #include <utility>
@@ -347,9 +347,9 @@ namespace
         return false;
     }
 
-    uint64 hash_assembly_geometry(const Assembly& assembly, const char* model)
+    std::uint64_t hash_assembly_geometry(const Assembly& assembly, const char* model)
     {
-        uint64 hash = 0;
+        std::uint64_t hash = 0;
 
         for (const_each<ObjectInstanceContainer> i = assembly.object_instances(); i; ++i)
         {
@@ -357,7 +357,7 @@ namespace
 
             if (strcmp(object.get_model(), model) == 0)
             {
-                uint64 values[2 + 16];
+                std::uint64_t values[2 + 16];
                 values[0] = hash;
                 values[1] = object.get_uid();
                 memcpy(&values[2], &i->get_transform().get_local_to_parent()[0], 16 * 8);
@@ -393,7 +393,7 @@ void AssemblyTree::create_child_trees(const Assembly& assembly)
 
 void AssemblyTree::create_triangle_tree(const Assembly& assembly)
 {
-    const uint64 hash = hash_assembly_geometry(assembly, MeshObjectFactory().get_model());
+    const std::uint64_t hash = hash_assembly_geometry(assembly, MeshObjectFactory().get_model());
     Lazy<TriangleTree>* tree = m_triangle_tree_repository.acquire(hash);
 
     if (tree == nullptr)
@@ -421,7 +421,7 @@ void AssemblyTree::create_triangle_tree(const Assembly& assembly)
 
 void AssemblyTree::create_curve_tree(const Assembly& assembly)
 {
-    const uint64 hash = hash_assembly_geometry(assembly, CurveObjectFactory().get_model());
+    const std::uint64_t hash = hash_assembly_geometry(assembly, CurveObjectFactory().get_model());
     Lazy<CurveTree>* tree = m_curve_tree_repository.acquire(hash);
 
     if (tree == nullptr)
@@ -465,7 +465,7 @@ void AssemblyTree::set_use_embree(const bool value)
 
 void AssemblyTree::create_embree_scene(const Assembly& assembly)
 {
-    const uint64 hash = hash_assembly_geometry(assembly, MeshObjectFactory().get_model());
+    const std::uint64_t hash = hash_assembly_geometry(assembly, MeshObjectFactory().get_model());
     Lazy<EmbreeScene>* scene = m_embree_scene_repository.acquire(hash);
 
     if (scene == nullptr)

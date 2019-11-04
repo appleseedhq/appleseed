@@ -35,12 +35,12 @@
 #include "foundation/math/bvh/bvh_bboxsortpredicate.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/split.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <limits>
 #include <vector>
 
@@ -153,7 +153,7 @@ class SBVHPartitioner
     ValueType                       m_root_bbox_rcp_sa;
     std::vector<AABBType>           m_left_bboxes;
     std::vector<Bin>                m_bins;
-    std::vector<uint8>              m_tags;
+    std::vector<std::uint8_t>       m_tags;
     std::vector<size_t>             m_final_indices;
 
     size_t                          m_spatial_split_count;

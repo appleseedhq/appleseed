@@ -30,13 +30,13 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/platform/types.h"
 #include "foundation/utility/casts.h"
 #include "foundation/utility/typetraits.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 
 namespace foundation {
 namespace bsp {
@@ -98,8 +98,8 @@ class Node
     // and 2^31 = 2,147,483,648 items.
     //
 
-    ValueType   m_abscissa;
-    uint32      m_info;
+    ValueType       m_abscissa;
+    std::uint32_t   m_info;
 };
 
 
@@ -137,7 +137,7 @@ inline void Node<T>::set_child_node_index(const size_t index)
     assert(is_interior());
     assert(index < (1u << 29));
     m_info &= 0x80000003u;
-    m_info |= static_cast<uint32>(index) << 2;
+    m_info |= static_cast<std::uint32_t>(index) << 2;
 }
 
 template <typename T>
@@ -153,7 +153,7 @@ inline void Node<T>::set_split_dim(const size_t dim)
     assert(is_interior());
     assert(dim < 4);
     m_info &= 0xFFFFFFFCu;
-    m_info |= static_cast<uint32>(dim);
+    m_info |= static_cast<std::uint32_t>(dim);
 }
 
 template <typename T>
@@ -183,7 +183,7 @@ inline void Node<T>::set_leaf_index(const size_t index)
     assert(is_leaf());
     assert(index < (1u << 31));
     m_info &= 0x80000000u;
-    m_info |= static_cast<uint32>(index);
+    m_info |= static_cast<std::uint32_t>(index);
 }
 
 template <typename T>

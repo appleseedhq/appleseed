@@ -27,11 +27,11 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/platform/types.h"
 #include "foundation/utility/stampedptr.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
+#include <cstdint>
 #include <memory>
 
 using namespace foundation;
@@ -41,7 +41,7 @@ TEST_SUITE(Foundation_Utility_StampedPtr)
     TEST_CASE(TestWithStackPointer)
     {
         const int value = 11;
-        const uint16 stamp = 7;
+        const std::uint16_t stamp = 7;
 
         stamped_ptr<const int> x(&value, stamp);
 
@@ -53,7 +53,7 @@ TEST_SUITE(Foundation_Utility_StampedPtr)
     TEST_CASE(TestWithHeapPointer)
     {
         const std::unique_ptr<int> ptr(new int(11));
-        const uint16 stamp = 7;
+        const std::uint16_t stamp = 7;
 
         stamped_ptr<const int> x(ptr.get(), stamp);
 
@@ -64,7 +64,7 @@ TEST_SUITE(Foundation_Utility_StampedPtr)
 
     TEST_CASE(TestWithNullPtr)
     {
-        const uint16 stamp = 7;
+        const std::uint16_t stamp = 7;
         stamped_ptr<const int> x(nullptr, stamp);
 
         EXPECT_EQ(nullptr, x.get_ptr());

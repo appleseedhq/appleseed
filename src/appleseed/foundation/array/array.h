@@ -204,4 +204,4 @@ class APPLESEED_DLLSYMBOL Array
     Concept* m_self;
 };
 
-}       // namespace foundation
+}   // namespace foundation

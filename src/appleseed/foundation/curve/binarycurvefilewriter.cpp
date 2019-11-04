@@ -77,7 +77,7 @@ void BinaryCurveFileWriter::write_signature()
 
 void BinaryCurveFileWriter::write_version()
 {
-    const uint16 Version = 2;
+    const std::uint16_t Version = 2;
     checked_write(m_file, Version);
 }
 
@@ -86,9 +86,9 @@ void BinaryCurveFileWriter::write_curves(const ICurveWalker& walker)
     write_basis(walker);
     write_curve_count(walker);
 
-    uint32 vertex_count = 0;
+    std::uint32_t vertex_count = 0;
 
-    for (uint32 i = 0; i < walker.get_curve_count(); ++i)
+    for (std::uint32_t i = 0; i < walker.get_curve_count(); ++i)
         write_curve(walker, i, vertex_count);
 }
 
@@ -100,25 +100,25 @@ void BinaryCurveFileWriter::write_basis(const ICurveWalker& walker)
 
 void BinaryCurveFileWriter::write_curve_count(const ICurveWalker& walker)
 {
-    const uint32 curve_count = static_cast<uint32>(walker.get_curve_count());
+    const std::uint32_t curve_count = static_cast<std::uint32_t>(walker.get_curve_count());
     checked_write(m_writer, curve_count);
 }
 
-void BinaryCurveFileWriter::write_curve(const ICurveWalker& walker, const uint32 curve_id, uint32& vertex_count)
+void BinaryCurveFileWriter::write_curve(const ICurveWalker& walker, const std::uint32_t curve_id, std::uint32_t& vertex_count)
 {
-    const uint32 count = static_cast<uint32>(walker.get_vertex_count(curve_id));
+    const std::uint32_t count = static_cast<std::uint32_t>(walker.get_vertex_count(curve_id));
     checked_write(m_writer, count);
 
-    for (uint32 i = 0; i < count; ++i)
+    for (std::uint32_t i = 0; i < count; ++i)
         checked_write(m_writer, walker.get_vertex(i + vertex_count));
 
-    for (uint32 i = 0; i < count; ++i)
+    for (std::uint32_t i = 0; i < count; ++i)
         checked_write(m_writer, walker.get_vertex_width(i + vertex_count));
 
-    for (uint32 i = 0; i < count; ++i)
+    for (std::uint32_t i = 0; i < count; ++i)
         checked_write(m_writer, walker.get_vertex_opacity(i + vertex_count));
 
-    for (uint32 i = 0; i < count; ++i)
+    for (std::uint32_t i = 0; i < count; ++i)
         checked_write(m_writer, walker.get_vertex_color(i + vertex_count));
 
     vertex_count += count;

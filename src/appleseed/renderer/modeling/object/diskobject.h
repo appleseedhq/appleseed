@@ -35,7 +35,6 @@
 // appleseed.foundation headers.
 #include "foundation/math/ray.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.

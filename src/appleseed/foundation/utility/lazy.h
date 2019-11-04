@@ -33,7 +33,6 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/platform/thread.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/cache.h"
 #include "foundation/utility/typetraits.h"
 #include "foundation/utility/uid.h"
@@ -41,6 +40,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 
 namespace foundation
@@ -189,12 +189,12 @@ class AccessCache
     void clear_statistics();
 
     // Return the number of cache hits/misses in stage-0.
-    uint64 get_stage0_hit_count() const;
-    uint64 get_stage0_miss_count() const;
+    std::uint64_t get_stage0_hit_count() const;
+    std::uint64_t get_stage0_miss_count() const;
 
     // Return the number of cache hits/misses in stage-1.
-    uint64 get_stage1_hit_count() const;
-    uint64 get_stage1_miss_count() const;
+    std::uint64_t get_stage1_hit_count() const;
+    std::uint64_t get_stage1_miss_count() const;
 
   private:
     // Key hasher.
@@ -278,12 +278,12 @@ class AccessCacheMap
     void clear_statistics();
 
     // Return the number of cache hits/misses in stage-0.
-    uint64 get_stage0_hit_count() const;
-    uint64 get_stage0_miss_count() const;
+    std::uint64_t get_stage0_hit_count() const;
+    std::uint64_t get_stage0_miss_count() const;
 
     // Return the number of cache hits/misses in stage-1.
-    uint64 get_stage1_hit_count() const;
-    uint64 get_stage1_miss_count() const;
+    std::uint64_t get_stage1_hit_count() const;
+    std::uint64_t get_stage1_miss_count() const;
 
   private:
     // Key hasher.
@@ -502,25 +502,25 @@ void AccessCache<Object, Lines, Ways, Allocator>::clear_statistics()
 }
 
 template <typename Object, size_t Lines, size_t Ways, typename Allocator>
-inline uint64 AccessCache<Object, Lines, Ways, Allocator>::get_stage0_hit_count() const
+inline std::uint64_t AccessCache<Object, Lines, Ways, Allocator>::get_stage0_hit_count() const
 {
     return m_cache.get_stage0_hit_count();
 }
 
 template <typename Object, size_t Lines, size_t Ways, typename Allocator>
-inline uint64 AccessCache<Object, Lines, Ways, Allocator>::get_stage0_miss_count() const
+inline std::uint64_t AccessCache<Object, Lines, Ways, Allocator>::get_stage0_miss_count() const
 {
     return m_cache.get_stage0_miss_count();
 }
 
 template <typename Object, size_t Lines, size_t Ways, typename Allocator>
-inline uint64 AccessCache<Object, Lines, Ways, Allocator>::get_stage1_hit_count() const
+inline std::uint64_t AccessCache<Object, Lines, Ways, Allocator>::get_stage1_hit_count() const
 {
     return m_cache.get_stage1_hit_count();
 }
 
 template <typename Object, size_t Lines, size_t Ways, typename Allocator>
-inline uint64 AccessCache<Object, Lines, Ways, Allocator>::get_stage1_miss_count() const
+inline std::uint64_t AccessCache<Object, Lines, Ways, Allocator>::get_stage1_miss_count() const
 {
     return m_cache.get_stage1_miss_count();
 }
@@ -598,25 +598,25 @@ void AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::clear_statistics()
 }
 
 template <typename ObjectMap, size_t Lines, size_t Ways, typename Allocator>
-inline uint64 AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::get_stage0_hit_count() const
+inline std::uint64_t AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::get_stage0_hit_count() const
 {
     return m_cache.get_stage0_hit_count();
 }
 
 template <typename ObjectMap, size_t Lines, size_t Ways, typename Allocator>
-inline uint64 AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::get_stage0_miss_count() const
+inline std::uint64_t AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::get_stage0_miss_count() const
 {
     return m_cache.get_stage0_miss_count();
 }
 
 template <typename ObjectMap, size_t Lines, size_t Ways, typename Allocator>
-inline uint64 AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::get_stage1_hit_count() const
+inline std::uint64_t AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::get_stage1_hit_count() const
 {
     return m_cache.get_stage1_hit_count();
 }
 
 template <typename ObjectMap, size_t Lines, size_t Ways, typename Allocator>
-inline uint64 AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::get_stage1_miss_count() const
+inline std::uint64_t AccessCacheMap<ObjectMap, Lines, Ways, Allocator>::get_stage1_miss_count() const
 {
     return m_cache.get_stage1_miss_count();
 }

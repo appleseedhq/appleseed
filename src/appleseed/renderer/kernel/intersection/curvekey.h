@@ -28,11 +28,9 @@
 
 #pragma once
 
-// appleseed.foundation.headers.
-#include "foundation/platform/types.h"
-
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 namespace renderer
 {
@@ -70,11 +68,11 @@ class CurveKey
     size_t get_curve_degree() const;
 
   private:
-    foundation::uint32  m_object_instance_index;
-    foundation::uint32  m_curve_index_object;
-    foundation::uint32  m_curve_index_tree;
-    foundation::uint16  m_curve_pa;
-    foundation::uint16  m_curve_degree;
+    std::uint32_t       m_object_instance_index;
+    std::uint32_t       m_curve_index_object;
+    std::uint32_t       m_curve_index_tree;
+    std::uint16_t       m_curve_pa;
+    std::uint16_t       m_curve_degree;
 };
 
 
@@ -92,11 +90,11 @@ inline CurveKey::CurveKey(
     const size_t        curve_index_tree,
     const size_t        curve_pa,
     const size_t        curve_degree)
-  : m_object_instance_index(static_cast<foundation::uint32>(object_instance_index))
-  , m_curve_index_object(static_cast<foundation::uint32>(curve_index_object))
-  , m_curve_index_tree(static_cast<foundation::uint32>(curve_index_tree))
-  , m_curve_pa(static_cast<foundation::uint16>(curve_pa))
-  , m_curve_degree(static_cast<foundation::uint16>(curve_degree))
+  : m_object_instance_index(static_cast<std::uint32_t>(object_instance_index))
+  , m_curve_index_object(static_cast<std::uint32_t>(curve_index_object))
+  , m_curve_index_tree(static_cast<std::uint32_t>(curve_index_tree))
+  , m_curve_pa(static_cast<std::uint16_t>(curve_pa))
+  , m_curve_degree(static_cast<std::uint16_t>(curve_degree))
 {
 }
 
@@ -112,7 +110,7 @@ inline size_t CurveKey::get_curve_index_object() const
 
 inline void CurveKey::set_curve_index_tree(const size_t curve_index_tree)
 {
-    m_curve_index_tree = static_cast<foundation::uint32>(curve_index_tree);
+    m_curve_index_tree = static_cast<std::uint32_t>(curve_index_tree);
 }
 
 inline size_t CurveKey::get_curve_index_tree() const

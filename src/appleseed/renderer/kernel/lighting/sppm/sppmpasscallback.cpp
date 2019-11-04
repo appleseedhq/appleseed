@@ -40,12 +40,12 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/hash.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>
+#include <cstdint>
 #include <cmath>
 #include <string>
 
@@ -108,7 +108,7 @@ void SPPMPassCallback::on_pass_begin(
     m_stopwatch.start();
 
     // Create a new set of photons.
-    const uint32 pass_hash = mix_uint32(frame.get_noise_seed(), static_cast<uint32>(m_pass_number));
+    const std::uint32_t pass_hash = mix_uint32(frame.get_noise_seed(), static_cast<std::uint32_t>(m_pass_number));
     m_photons.clear_keep_memory();
     m_photon_tracer.trace_photons(
         m_photons,

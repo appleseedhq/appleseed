@@ -32,10 +32,10 @@
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <algorithm>
+#include <cstdint>
 
 namespace foundation
 {
@@ -80,7 +80,7 @@ void Drawing::draw_dot(
     const Vector2d&     position,
     const Color4f&      color)
 {
-    static const uint8 DotAlphaMask[16] =
+    static const std::uint8_t DotAlphaMask[16] =
     {
          24, 171, 178,  48,
         159, 255, 255, 207,
@@ -149,7 +149,7 @@ void Drawing::blit_bitmap(
 
             if (ix >= 0 && iy >= 0 && ix < image_width && iy < image_height)
             {
-                const uint8* pixel = static_cast<const uint8*>(bitmap) + (y * bitmap_width + x) * pixel_size;
+                const std::uint8_t* pixel = static_cast<const std::uint8_t*>(bitmap) + (y * bitmap_width + x) * pixel_size;
 
                 Color4f color_premult(0.0f);
                 Pixel::convert_from_format<float>(

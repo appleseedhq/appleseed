@@ -29,7 +29,6 @@
 // appleseed.foundation headers.
 #include "foundation/math/fresnel.h"
 #include "foundation/platform/python.h"
-#include "foundation/platform/types.h"
 
 namespace bpy = boost::python;
 using namespace foundation;

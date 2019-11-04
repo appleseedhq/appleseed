@@ -34,9 +34,9 @@
 #include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/math/vector.h"
 #include "foundation/mesh/imeshwalker.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
+#include <cstdint>
 #include <cstring>
 
 namespace foundation
@@ -49,7 +49,7 @@ namespace foundation
 namespace
 {
     // Version of the BinaryMesh file format being written by this code.
-    const uint16 Version = 4;
+    const std::uint16_t Version = 4;
 }
 
 BinaryMeshFileWriter::BinaryMeshFileWriter(const std::string& filename)
@@ -90,7 +90,7 @@ void BinaryMeshFileWriter::write_version()
 
 void BinaryMeshFileWriter::write_string(const char* s)
 {
-    const uint16 length = static_cast<uint16>(strlen(s));
+    const std::uint16_t length = static_cast<std::uint16_t>(strlen(s));
 
     checked_write(m_writer, length);
     checked_write(m_writer, s, length);
@@ -108,62 +108,62 @@ void BinaryMeshFileWriter::write_mesh(const IMeshWalker& walker)
 
 void BinaryMeshFileWriter::write_vertices(const IMeshWalker& walker)
 {
-    const uint32 count = static_cast<uint32>(walker.get_vertex_count());
+    const std::uint32_t count = static_cast<std::uint32_t>(walker.get_vertex_count());
     checked_write(m_writer, count);
 
-    for (uint32 i = 0; i < count; ++i)
+    for (std::uint32_t i = 0; i < count; ++i)
         checked_write(m_writer, Vector3f(walker.get_vertex(i)));
 }
 
 void BinaryMeshFileWriter::write_vertex_normals(const IMeshWalker& walker)
 {
-    const uint32 count = static_cast<uint32>(walker.get_vertex_normal_count());
+    const std::uint32_t count = static_cast<std::uint32_t>(walker.get_vertex_normal_count());
     checked_write(m_writer, count);
 
-    for (uint32 i = 0; i < count; ++i)
+    for (std::uint32_t i = 0; i < count; ++i)
         checked_write(m_writer, Vector3f(walker.get_vertex_normal(i)));
 }
 
 void BinaryMeshFileWriter::write_texture_coordinates(const IMeshWalker& walker)
 {
-    const uint32 count = static_cast<uint32>(walker.get_tex_coords_count());
+    const std::uint32_t count = static_cast<std::uint32_t>(walker.get_tex_coords_count());
     checked_write(m_writer, count);
 
-    for (uint32 i = 0; i < count; ++i)
+    for (std::uint32_t i = 0; i < count; ++i)
         checked_write(m_writer, Vector2f(walker.get_tex_coords(i)));
 }
 
 void BinaryMeshFileWriter::write_material_slots(const IMeshWalker& walker)
 {
-    const uint16 count = static_cast<uint16>(walker.get_material_slot_count());
+    const std::uint16_t count = static_cast<std::uint16_t>(walker.get_material_slot_count());
     checked_write(m_writer, count);
 
-    for (uint16 i = 0; i < count; ++i)
+    for (std::uint16_t i = 0; i < count; ++i)
         write_string(walker.get_material_slot(i));
 }
 
 void BinaryMeshFileWriter::write_faces(const IMeshWalker& walker)
 {
-    const uint32 count = static_cast<uint32>(walker.get_face_count());
+    const std::uint32_t count = static_cast<std::uint32_t>(walker.get_face_count());
     checked_write(m_writer, count);
 
-    for (uint32 i = 0; i < count; ++i)
+    for (std::uint32_t i = 0; i < count; ++i)
         write_face(walker, i);
 }
 
 void BinaryMeshFileWriter::write_face(const IMeshWalker& walker, const size_t face_index)
 {
-    const uint16 count = static_cast<uint16>(walker.get_face_vertex_count(face_index));
+    const std::uint16_t count = static_cast<std::uint16_t>(walker.get_face_vertex_count(face_index));
     checked_write(m_writer, count);
 
-    for (uint16 i = 0; i < count; ++i)
+    for (std::uint16_t i = 0; i < count; ++i)
     {
-        checked_write(m_writer, static_cast<uint32>(walker.get_face_vertex(face_index, i)));
-        checked_write(m_writer, static_cast<uint32>(walker.get_face_vertex_normal(face_index, i)));
-        checked_write(m_writer, static_cast<uint32>(walker.get_face_tex_coords(face_index, i)));
+        checked_write(m_writer, static_cast<std::uint32_t>(walker.get_face_vertex(face_index, i)));
+        checked_write(m_writer, static_cast<std::uint32_t>(walker.get_face_vertex_normal(face_index, i)));
+        checked_write(m_writer, static_cast<std::uint32_t>(walker.get_face_tex_coords(face_index, i)));
     }
 
-    checked_write(m_writer, static_cast<uint16>(walker.get_face_material(face_index)));
+    checked_write(m_writer, static_cast<std::uint16_t>(walker.get_face_material(face_index)));
 }
 
 }   // namespace foundation

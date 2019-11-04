@@ -32,6 +32,7 @@
 #include "foundation/mesh/meshbuilderbase.h"
 #include "foundation/mesh/objmeshfilereader.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.

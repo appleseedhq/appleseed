@@ -29,11 +29,9 @@
 
 #pragma once
 
-// appleseed.foundation headers.
-#include "foundation/platform/types.h"
-
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 namespace renderer
 {
@@ -52,15 +50,16 @@ class Triangle
     // limited to 65535 (one value is used to indicate an absent feature).
 
     // Special index value used to indicate that a feature is not present.
-    static const foundation::uint32 None = ~foundation::uint32(0);
+    static const std::uint32_t None = ~std::uint32_t(0);
 
     // Public members.
-    foundation::uint32  m_v0, m_v1, m_v2;   // vertex indices
-    foundation::uint32  m_n0, m_n1, m_n2;   // vertex normal indices
-    foundation::uint32  m_a0, m_a1, m_a2;   // vertex attribute indices
-    foundation::uint32  m_pa;               // primitive attribute index
+    std::uint32_t  m_v0, m_v1, m_v2;    // vertex indices
+    std::uint32_t  m_n0, m_n1, m_n2;    // vertex normal indices
+    std::uint32_t  m_a0, m_a1, m_a2;    // vertex attribute indices
+    std::uint32_t  m_pa;                // primitive attribute index
+
     // Constructors.
-    Triangle();                             // leave all fields uninitialized
+    Triangle();                         // leave all fields uninitialized
     Triangle(
         const size_t v0,
         const size_t v1,
@@ -107,9 +106,9 @@ inline Triangle::Triangle(
     const size_t    v0,
     const size_t    v1,
     const size_t    v2)
-  : m_v0(static_cast<foundation::uint32>(v0))
-  , m_v1(static_cast<foundation::uint32>(v1))
-  , m_v2(static_cast<foundation::uint32>(v2))
+  : m_v0(static_cast<std::uint32_t>(v0))
+  , m_v1(static_cast<std::uint32_t>(v1))
+  , m_v2(static_cast<std::uint32_t>(v2))
   , m_n0(None)
   , m_n1(None)
   , m_n2(None)
@@ -125,16 +124,16 @@ inline Triangle::Triangle(
     const size_t    v1,
     const size_t    v2,
     const size_t    pa)
-  : m_v0(static_cast<foundation::uint32>(v0))
-  , m_v1(static_cast<foundation::uint32>(v1))
-  , m_v2(static_cast<foundation::uint32>(v2))
+  : m_v0(static_cast<std::uint32_t>(v0))
+  , m_v1(static_cast<std::uint32_t>(v1))
+  , m_v2(static_cast<std::uint32_t>(v2))
   , m_n0(None)
   , m_n1(None)
   , m_n2(None)
   , m_a0(None)
   , m_a1(None)
   , m_a2(None)
-  , m_pa(static_cast<foundation::uint32>(pa))
+  , m_pa(static_cast<std::uint32_t>(pa))
 {
 }
 
@@ -146,16 +145,16 @@ inline Triangle::Triangle(
     const size_t    n1,
     const size_t    n2,
     const size_t    pa)
-  : m_v0(static_cast<foundation::uint32>(v0))
-  , m_v1(static_cast<foundation::uint32>(v1))
-  , m_v2(static_cast<foundation::uint32>(v2))
-  , m_n0(static_cast<foundation::uint32>(n0))
-  , m_n1(static_cast<foundation::uint32>(n1))
-  , m_n2(static_cast<foundation::uint32>(n2))
+  : m_v0(static_cast<std::uint32_t>(v0))
+  , m_v1(static_cast<std::uint32_t>(v1))
+  , m_v2(static_cast<std::uint32_t>(v2))
+  , m_n0(static_cast<std::uint32_t>(n0))
+  , m_n1(static_cast<std::uint32_t>(n1))
+  , m_n2(static_cast<std::uint32_t>(n2))
   , m_a0(None)
   , m_a1(None)
   , m_a2(None)
-  , m_pa(static_cast<foundation::uint32>(pa))
+  , m_pa(static_cast<std::uint32_t>(pa))
 {
 }
 
@@ -170,16 +169,16 @@ inline Triangle::Triangle(
     const size_t    a1,
     const size_t    a2,
     const size_t    pa)
-  : m_v0(static_cast<foundation::uint32>(v0))
-  , m_v1(static_cast<foundation::uint32>(v1))
-  , m_v2(static_cast<foundation::uint32>(v2))
-  , m_n0(static_cast<foundation::uint32>(n0))
-  , m_n1(static_cast<foundation::uint32>(n1))
-  , m_n2(static_cast<foundation::uint32>(n2))
-  , m_a0(static_cast<foundation::uint32>(a0))
-  , m_a1(static_cast<foundation::uint32>(a1))
-  , m_a2(static_cast<foundation::uint32>(a2))
-  , m_pa(static_cast<foundation::uint32>(pa))
+  : m_v0(static_cast<std::uint32_t>(v0))
+  , m_v1(static_cast<std::uint32_t>(v1))
+  , m_v2(static_cast<std::uint32_t>(v2))
+  , m_n0(static_cast<std::uint32_t>(n0))
+  , m_n1(static_cast<std::uint32_t>(n1))
+  , m_n2(static_cast<std::uint32_t>(n2))
+  , m_a0(static_cast<std::uint32_t>(a0))
+  , m_a1(static_cast<std::uint32_t>(a1))
+  , m_a2(static_cast<std::uint32_t>(a2))
+  , m_pa(static_cast<std::uint32_t>(pa))
 {
 }
 
