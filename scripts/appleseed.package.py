@@ -688,13 +688,7 @@ class MacPackageBuilder(PackageBuilder):
 
     SYSTEM_LIBS_PREFIXES = [
         "/System/Library/",
-        "/usr/lib/libcurl",
-        "/usr/lib/libc++",
-        "/usr/lib/libbz2",
-        "/usr/lib/libSystem",
-        "/usr/lib/libz",
-        "/usr/lib/libncurses",
-        "/usr/lib/libobjc.A.dylib"
+        "/usr/lib"
     ]
 
     QT_FRAMEWORKS = [
