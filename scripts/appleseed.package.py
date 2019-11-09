@@ -837,6 +837,7 @@ class MacPackageBuilder(PackageBuilder):
                 self.__change_library_path(bin_path, lib_path, "@loader_path/{0}/{1}".format(path_to_appleseed_lib, lib_name))
 
         self.__change_python_library_path(bin_path)
+        self.__delete_rpaths(bin_path)
 
     # Can be used on executables and dynamic libraries.
     def __change_qt_framework_paths_in_binary(self, bin_path):
@@ -845,6 +846,7 @@ class MacPackageBuilder(PackageBuilder):
             self.__change_library_path(bin_path, fwk_path, "@executable_path/../lib/{0}.framework/Versions/5/{0}".format(fwk_name))
 
         self.__change_python_library_path(bin_path)
+        self.__delete_rpaths(bin_path)
 
     def __change_qt_framework_paths_in_qt_frameworks(self):
         for framework in self.QT_FRAMEWORKS:
@@ -857,10 +859,14 @@ class MacPackageBuilder(PackageBuilder):
         make_writable(target)
         self.run('install_name_tool -id "{0}" {1}'.format(name, target))
 
+    def __delete_rpaths(self, target):
+        for path in self.__get_lib_search_paths(target, use_env=False):
+            self.run('install_name_tool -delete_rpath "{0}" "{1}"'.format(path, target))
+
     def __change_library_path(self, target, old, new):
         self.run('install_name_tool -change "{0}" "{1}" {2}'.format(old, new, target))
 
-    def __get_lib_search_paths(self, filepath):
+    def __get_lib_search_paths(self, filepath, use_env=True):
         returncode, out, err = self.run_subprocess(["otool", "-l", filepath])
         if returncode != 0:
             fatal("Failed to invoke otool(1) to get rpath for {0}: {1}".format(filepath, err))
@@ -882,22 +888,24 @@ class MacPackageBuilder(PackageBuilder):
             if line == "cmd LC_RPATH":
                 lc_path_found = True
 
-        DYLD_LIBRARY_PATH = os.environ.get("DYLD_LIBRARY_PATH", "").split(":")
-        DYLD_FALLBACK_LIBRARY_PATH = os.environ.get("DYLD_FALLBACK_LIBRARY_PATH", "").split(":")
-
         search_paths = []
-        # DYLD_LIBRARY_PATH overides rpaths
-        for path in DYLD_LIBRARY_PATH:
-            if os.path.exists(path):
-                search_paths.append(path)
+        if use_env:
+            DYLD_LIBRARY_PATH = os.environ.get("DYLD_LIBRARY_PATH", "").split(":")
+            DYLD_FALLBACK_LIBRARY_PATH = os.environ.get("DYLD_FALLBACK_LIBRARY_PATH", "").split(":")
+
+            # DYLD_LIBRARY_PATH overides rpaths
+            for path in DYLD_LIBRARY_PATH:
+                if os.path.exists(path):
+                    search_paths.append(path)
 
         for path in rpaths:
             if os.path.exists(path):
                 search_paths.append(path)
 
-        for path in DYLD_FALLBACK_LIBRARY_PATH:
-            if os.path.exists(path):
-                search_paths.append(path)
+        if use_env:
+            for path in DYLD_FALLBACK_LIBRARY_PATH:
+                if os.path.exists(path):
+                    search_paths.append(path)
 
         return search_paths
 
