@@ -35,6 +35,7 @@ import argparse
 import colorama
 import fnmatch
 import glob
+import json
 import os
 import platform
 import re
@@ -190,6 +191,103 @@ def merge_tree(src, dst, symlinks=False, ignore=None):
         raise Error(errors)
 
 
+def create_mac_icon(image, icon_path):
+    icon_set = "appleseed.iconset"
+    safe_make_directory(icon_set)
+
+    for size in (16, 32, 64, 128, 256, 1024, 2048):
+        if size < 1024:
+            name = "icon_{0}x{0}.png".format(size)
+            cmd = ['sips', '-z', str(size), str(size), image, '--out', os.path.join(icon_set, name)]
+            # pipe stderr to stdout to silence verbosity
+            subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+        if size > 16:
+            name = "icon_{0}x{0}@2x.png".format(size/2)
+            cmd = ['sips', '-z', str(size), str(size), image, '--out', os.path.join(icon_set, name)]
+            # pipe stderr to stdout to silence verbosity
+            subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+
+    subprocess.check_call(['iconutil', '--convert', 'icns', icon_set, '-o', icon_path])
+    safe_delete_directory(icon_set)
+
+def create_mac_app(staging_dir, app_path, icon_path):
+
+    # cleanup old app
+    safe_delete_directory(app_path)
+
+    contents = os.path.join(app_path, "Contents")
+
+    shutil.move(staging_dir, contents)
+    # shutil.copytree(staging_dir, contents, symlinks=True)
+
+    resources = os.path.join(contents,"Resources")
+    safe_make_directory(resources)
+
+    macos =  os.path.join(contents,"MacOS")
+    safe_make_directory(macos)
+
+    # relative symlink for executable
+    os.symlink('../bin/appleseed-studio', os.path.join(macos, 'appleseed'))
+
+    icon = os.path.join(resources, "appleseed.icns")
+    create_mac_icon(icon_path, icon)
+
+    with open(os.path.join(contents, "Info.plist"), 'wb') as f:
+        f.write(b'<?xml version="1.0" encoding="UTF-8"?>\n')
+        f.write(b'<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n')
+        f.write(b'<plist version="1.0">\n')
+        f.write(b'<dict>\n')
+        f.write(b'  <key>NSPrincipalClass</key>\n')
+        f.write(b'  <string>NSApplication</string>\n')
+        f.write(b'  <key>CFBundlePackageType</key>\n')
+        f.write(b'  <string>APPL</string>\n')
+        f.write(b'  <key>CFBundleExecutable</key>\n')
+        f.write(b'  <string>appleseed</string>\n')
+        f.write(b'  <key>CFBundleIconFile</key>\n')
+        f.write(b'  <string>appleseed.icns</string>\n')
+        f.write(b'  <key>CFBundleIdentifier</key>\n')
+        f.write(b'  <string>net.appleseedhq.appleseed</string>\n')
+        f.write(b'  <key>CFBundleShortVersionString</key>\n')
+        f.write(b'  <string>2.1.0</string>\n')
+        f.write(b'</dict>\n')
+        f.write(b'</plist>\n')
+
+def create_mac_dmg(app_path, dmg_path, background_path, drive_icon_path):
+
+    drive_icon = 'appleseed-drive.icns'
+    create_mac_icon(drive_icon_path, drive_icon)
+
+    settings = {
+        "title": "appleseed",
+        "background":  background_path,
+        "icon": drive_icon,
+        "format": "UDZO",
+        "compression-level": 9,
+        "window": { "position": { "x": 100, "y": 100 },
+                    "size": { "width": 640, "height": 280 } },
+        "contents": [
+            { "x": 140, "y": 120, "type": "file", "path": app_path},
+            { "x": 500, "y": 120, "type": "link", "path": "/Applications" },
+        ]
+    }
+
+    settings_file = "settings.json"
+    with open(settings_file, 'wb') as f:
+        json.dump(settings, f)
+
+    output_dir = os.path.dirname(dmg_path)
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    # use dmgbuild to create disk image
+    # https://github.com/al45tair/dmgbuild
+    cmd = ['dmgbuild', '-s', settings_file , 'appleseed', dmg_path]
+    subprocess.check_call(cmd)
+
+    # cleanup
+    safe_delete_file(drive_icon)
+    safe_delete_file(settings_file)
+
 # -------------------------------------------------------------------------------------------------
 # Settings.
 # -------------------------------------------------------------------------------------------------
@@ -241,8 +339,9 @@ class Settings:
 
 class PackageInfo:
 
-    def __init__(self, settings, no_zip):
+    def __init__(self, settings, no_zip, no_app=True):
         self.no_zip = no_zip
+        self.no_app = no_app
         self.settings = settings
 
     def load(self):
@@ -259,7 +358,11 @@ class PackageInfo:
         if os.name == 'nt':
             ext = "zip"
         else:
-            ext = "tar.gz"
+            if not self.no_app:
+                ext = 'dmg'
+            else:
+                ext = "tar.gz"
+
         package_dir = "appleseed-{0}".format(self.version)
         package_name = "appleseed-{0}-{1}.{2}".format(self.version, self.settings.platform, ext)
         self.package_path = os.path.join(self.settings.package_output_path, package_dir, package_name)
@@ -309,7 +412,7 @@ class PackageBuilder:
         if self.package_info.no_zip:
             self.deploy_stage_to_package_directory()
         else:
-            self.build_final_zip_file()
+            self.build_final_archive_file()
         self.remove_stage()
 
     def remove_leftovers(self):
@@ -489,19 +592,27 @@ class PackageBuilder:
         progress("Removing existing package directory")
         safe_delete_directory(package_directory)
         progress("Deploying staging directory to package directory")
-        shutil.copytree("appleseed", package_directory)
+        if self.package_info.no_app:
+            shutil.copytree("appleseed", package_directory, symlinks=True)
+        else:
+            shutil.copytree("appleseed.app", package_directory + ".app", symlinks=True)
 
-    def build_final_zip_file(self):
-        progress("Building final zip file from staging directory")
+    def build_final_archive_file(self):
+        progress("Building final archive file from staging directory")
         package_base_path = os.path.splitext(self.package_info.package_path)[0]
-        if os.name == "nt":
+        if os.name == 'nt':
             archive_util.make_zipfile(package_base_path, "appleseed")
+        elif not self.package_info.no_app:
+            background_path = os.path.join(self.settings.appleseed_path, "resources/logo/appleseed-drive-background.png")
+            drive_icon_path = os.path.join(self.settings.appleseed_path, "resources/logo/appleseed-drive.png")
+            create_mac_dmg('appleseed.app', self.package_info.package_path, background_path, drive_icon_path)
         else:
             archive_util.make_tarball(package_base_path, "appleseed")
 
     def remove_stage(self):
         progress("Deleting staging directory")
-        #  safe_delete_directory("appleseed")
+        safe_delete_directory("appleseed")
+        safe_delete_directory("appleseed.app")
 
     def run(self, cmdline):
         trace("  Running command line: {0}".format(cmdline))
@@ -602,6 +713,9 @@ class MacPackageBuilder(PackageBuilder):
         self.__add_python_to_stage()
         self.__fixup_binaries()
         os.rename("appleseed/bin/appleseed.studio", "appleseed/bin/appleseed-studio")
+        if not self.package_info.no_app:
+            icon_path = os.path.join(self.settings.appleseed_path, "resources/logo/appleseed-seeds-2048.png")
+            create_mac_app('appleseed', "appleseed.app", icon_path)
 
     def __add_dependencies_to_stage(self):
         progress("Mac-specific: Adding dependencies to staging directory")
@@ -1063,10 +1177,14 @@ def main():
     parser = argparse.ArgumentParser(description="build an appleseed package from sources")
 
     parser.add_argument("--nozip", help="do not build a final zip file. Files will be copied to staging directory only", action="store_true")
+    parser.add_argument("--noapp", help="do not build a MacOS app. Files will be stored in directory format only", action="store_true")
 
     args = parser.parse_args()
 
     no_zip = args.nozip
+    no_app = True
+    if sys.platform == 'darwin':
+        no_app = args.noapp
 
     print("appleseed.package version {0}".format(VERSION))
     print("")
@@ -1082,7 +1200,7 @@ def main():
     settings.load()
     settings.print_summary()
 
-    package_info = PackageInfo(settings, no_zip)
+    package_info = PackageInfo(settings, no_zip,  no_app)
     package_info.load()
     package_info.print_summary()
 
