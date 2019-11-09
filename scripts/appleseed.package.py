@@ -723,9 +723,12 @@ class MacPackageBuilder(PackageBuilder):
         safe_make_directory("appleseed/bin/platforms")
         qt_platform_plugins_path = os.path.join(self.settings.qt_runtime_path, "plugins", "platforms")
         shutil.copy(os.path.join(qt_platform_plugins_path, "libqcocoa.dylib"), "appleseed/bin/platforms")
-        shutil.copy(os.path.join(qt_platform_plugins_path, "libqminimal.dylib"), "appleseed/bin/platforms")
-        shutil.copy(os.path.join(qt_platform_plugins_path, "libqoffscreen.dylib"), "appleseed/bin/platforms")
-        shutil.copy(os.path.join(qt_platform_plugins_path, "libqwebgl.dylib"), "appleseed/bin/platforms")
+
+        # Add other platform plugins only if they exists
+        for platform_plugin in ["libqminimal.dylib", "libqoffscreen.dylib", "libqwebgl.dylib"]:
+            platform_plugin_path = os.path.join(qt_platform_plugins_path, platform_plugin)
+            if os.path.exists(platform_plugin_path):
+                shutil.copy(platform_plugin_path, "appleseed/bin/platforms")
 
         self.add_unix_dependencies_to_stage(self.get_paths_to_binaries())
 
