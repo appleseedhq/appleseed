@@ -338,6 +338,14 @@ int main(int argc, char* argv[])
     default_format.setProfile(QSurfaceFormat::CoreProfile);
     QSurfaceFormat::setDefaultFormat(default_format);
 
+#ifdef __APPLE__
+    // Add bin path to Qt LibraryPath so Qt can find local platforms/libqcocoa.dylib plugin
+    // https://doc.qt.io/archives/qt-5.11/osx-deployment.html#application-dependencies
+
+    bf::path platform_path =  bf::path(Application::get_root_path()) / "bin";
+    QCoreApplication::addLibraryPath(QString::fromStdString(platform_path.make_preferred().string()));
+#endif
+
     // Construct the Qt application.
     QApplication application(argc, argv);
     QApplication::setOrganizationName("appleseedhq");
