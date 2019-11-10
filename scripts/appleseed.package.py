@@ -744,6 +744,14 @@ class MacPackageBuilder(PackageBuilder):
         # just copy everything
         merge_tree(self.settings.python_path, python_dir, symlinks=True)
 
+        # Homebrew will create a symlink for site-packages.
+        # Replace it with a empty directory if found
+        python_home = os.path.join(python_dir, "Frameworks/Python.framework/Versions/2.7")
+        site_packages_path = os.path.join(python_home, "lib/python2.7/site-packages")
+        if os.path.islink(site_packages_path):
+            os.remove(site_packages_path)
+            safe_make_directory(site_packages_path)
+
     def __copy_qt_framework(self, framework_name):
         framework_dir = framework_name + ".framework"
         src_filepath = os.path.join(self.settings.qt_runtime_path, "lib", framework_dir, "Versions", "5", framework_name)
