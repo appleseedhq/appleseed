@@ -1204,6 +1204,8 @@ def main():
     print("  - Make sure there are no obsolete binaries in sandbox/bin/ and sandbox/lib/")
     print("  - You may need to run this tool with sudo on Linux and macOS")
     print("  - On Linux, you may need to set $LD_LIBRARY_PATH to allow ldd(1) to find third party shared libraries")
+    print("  - On MacOS, you may need to set $DYLD_LIBRARY_PATH to allow script to find third party shared libraries")
+    print("  - You need to have dmgbuild installed and in $PATH on MacOS to build .dmg file: pip install dmgbuild")
     print("")
 
     settings = Settings()
