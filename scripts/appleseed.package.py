@@ -766,12 +766,13 @@ class MacPackageBuilder(PackageBuilder):
         self.__change_qt_framework_paths_in_qt_frameworks()
 
     def set_libraries_ids(self):
-        for dirpath, dirnames, filenames in os.walk("appleseed/lib"):
-            for filename in filenames:
-                ext = os.path.splitext(filename)[1]
-                if ext == ".dylib" or ext == ".so":
-                    lib_path = os.path.join(dirpath, filename)
-                    self.__set_library_id(lib_path, filename)
+        for lib_dir in ("appleseed/lib", 'appleseed/python27', 'appleseed/bin/platforms'):
+            for dirpath, dirnames, filenames in os.walk(lib_dir):
+                for filename in filenames:
+                    ext = os.path.splitext(filename)[1]
+                    if ext == ".dylib" or ext == ".so":
+                        lib_path = os.path.join(dirpath, filename)
+                        self.__set_library_id(lib_path, filename)
 
     def set_qt_framework_ids(self):
         for framework in self.QT_FRAMEWORKS:
@@ -963,6 +964,10 @@ class MacPackageBuilder(PackageBuilder):
 
             # Ignore Python framework.
             if re.search(r"Python\.framework", lib):
+                continue
+
+            # Ignore self-references (why do these happen?).
+            if os.path.basename(lib) == os.path.basename(filepath):
                 continue
 
             if fix_paths:
