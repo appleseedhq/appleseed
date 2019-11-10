@@ -418,6 +418,7 @@ class PackageBuilder:
     def remove_leftovers(self):
         progress("Removing leftovers from previous invocations")
         safe_delete_directory("appleseed")
+        safe_delete_directory("appleseed.app")
         safe_delete_file("sandbox.zip")
         safe_delete_file(self.package_info.package_path)
 
