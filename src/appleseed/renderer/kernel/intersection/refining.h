@@ -204,7 +204,7 @@ inline foundation::Vector3d adaptive_offset_point_step(
 
     for (std::size_t i = 0; i < 3; ++i)
     {
-        if (abs(p[i]) < Threshold)
+        if (std::abs(p[i]) < Threshold)
             result[i] = p[i] + n[i] * Threshold;
         else
         {
