@@ -34,6 +34,7 @@
 #include "foundation/platform/types.h"
 
 // Standard headers.
+#include <cmath>
 #include <cstddef>
 
 namespace renderer
