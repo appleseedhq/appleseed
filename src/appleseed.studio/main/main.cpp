@@ -138,9 +138,11 @@ namespace
         {
             // PYTHONHOME not set or empty: use the Python installation bundled with appleseed.studio.
 
-#if defined _WIN32 || __APPLE__
-            // On Windows and macOS, Python's standard libraries are located in python27/Lib/.
+#if defined _WIN32
+            // On Windows, Python's standard libraries are located in python27/Lib/.
             bf::path python_path = bf::path(Application::get_root_path()) / "python27";
+#elif defined __APPLE__
+            bf::path python_path = bf::path(Application::get_root_path()) / "python27/Frameworks/Python.framework/Versions/2.7";
 #else
             // On Linux, Python's standard libraries are located in lib/python2.7/.
             bf::path python_path = bf::path(Application::get_root_path());
