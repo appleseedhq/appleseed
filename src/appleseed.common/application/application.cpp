@@ -147,7 +147,11 @@ namespace
 
         // Remove the end of the path until /bin is reached.
         bf::path path = executable_path;
+#ifdef __APPLE__
+        while (path.has_parent_path() && path.filename() != "bin" && path.filename() != "MacOS")
+#else
         while (path.has_parent_path() && path.filename() != "bin")
+#endif
             path = path.parent_path();
 
         if (!path.has_root_path())
