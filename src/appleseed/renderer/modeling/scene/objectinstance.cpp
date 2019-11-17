@@ -525,6 +525,22 @@ DictionaryArray ObjectInstanceFactory::get_input_metadata()
 
     metadata.push_back(
         Dictionary()
+            .insert("name", "shadow_terminator_correction")
+            .insert("label", "Shadow Terminator Fix")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "0.5")
+                    .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "0.0"));
+
+    metadata.push_back(
+        Dictionary()
             .insert("name", "medium_priority")
             .insert("label", "Medium Priority")
             .insert("type", "integer")
@@ -541,11 +557,11 @@ DictionaryArray ObjectInstanceFactory::get_input_metadata()
 
     metadata.push_back(
         Dictionary()
-        .insert("name", "sss_set_id")
-        .insert("label", "SSS Set Identifier")
-        .insert("type", "text")
-        .insert("use", "optional")
-        .insert("default", ""));
+            .insert("name", "sss_set_id")
+            .insert("label", "SSS Set Identifier")
+            .insert("type", "text")
+            .insert("use", "optional")
+            .insert("default", ""));
 
     return metadata;
 }
