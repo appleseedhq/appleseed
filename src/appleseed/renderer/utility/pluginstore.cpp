@@ -165,7 +165,7 @@ struct PluginStore::Impl
         // Only consider directories.
         if (!bf::exists(path) || !bf::is_directory(path))
         {
-            RENDERER_LOG_WARNING("not scanning %s for plugins since it doesn't exist or it isn't a directory.",
+            RENDERER_LOG_DEBUG("not scanning %s for plugins since it doesn't exist or it isn't a directory.",
                 path.string().c_str());
             return;
         }
