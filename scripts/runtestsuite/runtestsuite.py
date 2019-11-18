@@ -493,6 +493,10 @@ def main():
     script_directory = os.path.dirname(os.path.realpath(__file__))
 
     appleseed_args = APPLESEED_BASE_ARGS
+
+    if not os.path.isfile(args.tool_path):
+        sys.exit("Error: The given path to the appleseed cli does not exist.")
+
     if args.args:
         appleseed_args += " {0}".format(" ".join(args.args))
 
