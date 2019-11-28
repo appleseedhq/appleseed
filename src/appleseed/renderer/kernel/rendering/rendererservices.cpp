@@ -317,27 +317,25 @@ bool RendererServices::get_inverse_matrix(
 
 namespace
 {
+    bool can_transform(const OSL::TypeDesc::VECSEMANTICS vectype)
+    {
+        // We only transform points and vectors for now.
+        return
+            vectype == OSL::TypeDesc::POINT ||
+            vectype == OSL::TypeDesc::VECTOR;
+    }
 
-bool can_transform(const OSL::TypeDesc::VECSEMANTICS vectype)
-{
-    // We only transform points and vectors for now.
-    return
-        vectype == OSL::TypeDesc::POINT ||
-        vectype == OSL::TypeDesc::VECTOR;
-}
-
-void transform(
-    const OSL::Vec3&                  Pin,
-    const OSL::Matrix44&              m,
-    const OSL::TypeDesc::VECSEMANTICS vectype,
-    OSL::Vec3&                        Pout)
-{
-    if (vectype == OSL::TypeDesc::POINT)
-        Pout = Pin * m;
-    else if (vectype == OSL::TypeDesc::VECTOR)
-        m.multDirMatrix(Pin, Pout);
-}
-
+    void transform(
+        const OSL::Vec3&                  Pin,
+        const OSL::Matrix44&              m,
+        const OSL::TypeDesc::VECSEMANTICS vectype,
+        OSL::Vec3&                        Pout)
+    {
+        if (vectype == OSL::TypeDesc::POINT)
+            Pout = Pin * m;
+        else if (vectype == OSL::TypeDesc::VECTOR)
+            m.multDirMatrix(Pin, Pout);
+    }
 }
 
 bool RendererServices::transform_points(

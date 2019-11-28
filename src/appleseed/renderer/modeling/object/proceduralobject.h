@@ -56,12 +56,12 @@ class APPLESEED_DLLSYMBOL ProceduralObject
   public:
     struct IntersectionResult
     {
-        bool                    m_hit;
-        double                  m_distance;
-        foundation::Vector3d    m_geometric_normal;
-        foundation::Vector3d    m_shading_normal;
-        foundation::Vector2f    m_uv;
-        foundation::uint32      m_material_slot;
+        bool                        m_hit;
+        double                      m_distance;
+        foundation::Vector3d        m_geometric_normal;
+        foundation::Vector3d        m_shading_normal;
+        foundation::Vector2f        m_uv;
+        foundation::uint32          m_material_slot;
     };
 
     // Compute the intersection between a ray expressed in object space and
