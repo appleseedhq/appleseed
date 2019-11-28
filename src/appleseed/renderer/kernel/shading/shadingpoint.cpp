@@ -388,8 +388,7 @@ void ShadingPoint::refine_and_offset() const
                     refine_space_ray.m_dir,
                     intersection_handling);
 
-            // Compute the geometric normal to the hit triangle in assembly instance space.
-            // Note that it doesn't need to be normalized at this point.
+            // Compute the geometric normal to the hit triangle in assembly instance space (non unit-length).
             m_refine_space_geo_normal = Vector3d(compute_triangle_normal(m_v0, m_v1, m_v2));
             m_refine_space_geo_normal = m_object_instance->get_transform().normal_to_parent(m_refine_space_geo_normal);
             m_refine_space_geo_normal = faceforward(m_refine_space_geo_normal, refine_space_ray.m_dir);
@@ -774,11 +773,12 @@ void ShadingPoint::compute_shading_basis() const
 {
     const Material* material = get_material();
 
-    // Compute the global direction of the first tangent.
+    // Compute the first tangent.
     Vector3d tangent;
     const Transformd& object_instance_transform = m_object_instance->get_transform();
     if ((m_members & HasTriangleVertexTangents) != 0)
     {
+        // Explicit per-vertex tangents.
         tangent =
             m_assembly_instance_transform.vector_to_parent(
                 object_instance_transform.vector_to_parent(
@@ -789,6 +789,7 @@ void ShadingPoint::compute_shading_basis() const
     else if (material == nullptr ||
              material->get_render_data().m_default_tangent_mode == Material::RenderData::DefaultTangentMode::Radial)
     {
+        // Radial default tangent mode.
         tangent =
             get_point() -
             m_assembly_instance_transform.point_to_parent(
@@ -796,6 +797,7 @@ void ShadingPoint::compute_shading_basis() const
     }
     else
     {
+        // X+/Y+/Z+ default tangent modes.
         switch (material->get_render_data().m_default_tangent_mode)
         {
           case Material::RenderData::DefaultTangentMode::LocalX:

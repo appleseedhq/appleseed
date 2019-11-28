@@ -357,7 +357,7 @@ class ShadingPoint
     mutable foundation::Color3f         m_color;                        // per-vertex interpolated color at intersection point
 
     // Data required to avoid self-intersections.
-    mutable foundation::Vector3d        m_refine_space_geo_normal;       // primitive-specific space geometric normal to hit primitive
+    mutable foundation::Vector3d        m_refine_space_geo_normal;       // primitive-specific space geometric normal to hit primitive (non unit-length)
     mutable foundation::Vector3d        m_refine_space_front_point;      // hit point refined to front, in primitive specific space
     mutable foundation::Vector3d        m_refine_space_back_point;       // hit point refined to back, in primitive specific space
 
