@@ -256,7 +256,7 @@ IRendererController::Status CPURenderDevice::render_frame(
     // Start rendering the frame.
     frame_renderer.start_rendering();
 
-    // Wait until the the frame is completed or rendering is aborted.
+    // Wait until the frame is completed or rendering is aborted.
     const IRendererController::Status status =
         wait_for_event(frame_renderer, renderer_controller);
 
