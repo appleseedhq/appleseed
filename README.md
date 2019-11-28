@@ -29,6 +29,10 @@ appleseed is available as a portable C++ library with C++ and Python APIs, as a 
 * [Detailed projects ideas](https://github.com/appleseedhq/appleseed/wiki/List-of-Project-ideas-for-GSoC-2019)
 * [Developer and contributor wiki](https://github.com/appleseedhq/appleseed/wiki)
 
+## Citing
+
+appleseed releases have [DOIs](https://en.wikipedia.org/wiki/Digital_object_identifier) for scientific citation: https://zenodo.org/record/3456967.
+
 ## Related Projects
 
 * [appleseed for Autodesk® Maya®](https://github.com/appleseedhq/appleseed-maya)
