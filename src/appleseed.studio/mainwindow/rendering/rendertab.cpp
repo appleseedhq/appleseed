@@ -483,26 +483,19 @@ void RenderTab::recreate_handlers()
     // Clipboard handler.
     m_clipboard_handler.reset(new RenderClipboardHandler(m_render_widget, m_render_widget));
 
-    // Set initial state.
-    m_pixel_inspector_handler->set_enabled(false);
-    m_camera_controller->set_enabled(false);
-    m_scene_picking_handler->set_enabled(true);     // todo: should be true by default
-
     // Material drop handler.
     m_material_drop_handler.reset(
         new MaterialDropHandler(
             m_project,
             m_rendering_manager));
-
     connect(
-        m_render_widget,
-        SIGNAL(signal_material_dropped(
-            const foundation::Vector2d&,
-            const QString&)),
-        m_material_drop_handler.get(),
-        SLOT(slot_material_dropped(
-            const foundation::Vector2d&,
-            const QString&)));
+        m_render_widget, SIGNAL(signal_material_dropped(const foundation::Vector2d&, const QString&)),
+        m_material_drop_handler.get(), SLOT(slot_material_dropped(const foundation::Vector2d&, const QString&)));
+
+    // Set initial state.
+    m_pixel_inspector_handler->set_enabled(false);
+    m_camera_controller->set_enabled(false);
+    m_scene_picking_handler->set_enabled(true);     // todo: should be true by default
 }
 
 }   // namespace studio

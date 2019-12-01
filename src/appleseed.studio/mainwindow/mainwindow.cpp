@@ -41,7 +41,6 @@
 #include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/pythonconsole/pythonconsolewidget.h"
 #include "mainwindow/rendering/lightpathstab.h"
-#include "mainwindow/rendering/materialdrophandler.h"
 #include "mainwindow/rendering/renderwidget.h"
 #include "utility/interop.h"
 #include "utility/miscellaneous.h"
@@ -385,9 +384,10 @@ void MainWindow::build_menus()
     m_ui->menu_view->addAction(m_ui->attribute_editor->toggleViewAction());
     m_ui->menu_view->addAction(m_ui->log->toggleViewAction());
     m_ui->menu_view->addAction(m_ui->python_console->toggleViewAction());
+
     m_ui->menu_view->addSeparator();
 
-    m_action_fullscreen = m_ui->menu_view->addAction("Fullscreen");
+    m_action_fullscreen = m_ui->menu_view->addAction("&Full Screen");
     m_action_fullscreen->setCheckable(true);
     m_action_fullscreen->setShortcut(Qt::Key_F11);
 
@@ -863,10 +863,6 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const Rend
     const bool allow_start = is_enabled && is_project_open && rendering_mode == NotRendering;
     const bool allow_stop = is_enabled && is_project_open && rendering_mode != NotRendering;
 
-    // Rendering -> Rendering Settings.
-    m_ui->action_rendering_rendering_settings->setEnabled(allow_start);
-    m_action_rendering_settings->setEnabled(allow_start);
-
     // Rendering -> Start Interactive Rendering.
     m_ui->action_rendering_start_interactive_rendering->setEnabled(allow_start);
     m_action_start_interactive_rendering->setEnabled(allow_start);
@@ -883,8 +879,9 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const Rend
     m_ui->action_rendering_stop_rendering->setEnabled(allow_stop);
     m_action_stop_rendering->setEnabled(allow_stop);
 
-    // Rendering -> Render Settings.
+    // Rendering -> Rendering Settings.
     m_ui->action_rendering_rendering_settings->setEnabled(allow_start);
+    m_action_rendering_settings->setEnabled(allow_start);
 
     // Render tab buttons.
     const int current_tab_index = m_ui->tab_render_channels->currentIndex();

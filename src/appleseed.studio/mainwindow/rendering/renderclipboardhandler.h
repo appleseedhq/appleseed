@@ -43,6 +43,8 @@ namespace studio {
 class ICapturableWidget
 {
   public:
+    virtual ~ICapturableWidget() = default;
+
     virtual QImage capture() = 0;
 };
 
