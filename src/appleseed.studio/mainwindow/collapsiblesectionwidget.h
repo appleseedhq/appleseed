@@ -52,6 +52,7 @@ class CollapsibleSectionWidget
     explicit CollapsibleSectionWidget(
         const QString&  title = "",
         QWidget*        parent = nullptr);
+
     void set_content_layout(QLayout* content_layout);
 
   private:
@@ -65,5 +66,5 @@ class CollapsibleSectionWidget
     void slot_on_click(const bool);
 };
 
-} // namespace studio
-} // namespace appleseed
+}   // namespace studio
+}   // namespace appleseed

@@ -33,7 +33,7 @@ namespace appleseed {
 namespace studio {
 
 //
-// Collapsing section implementation.
+// CollapsibleSectionWidget class implementation.
 //
 
 CollapsibleSectionWidget::CollapsibleSectionWidget(const QString& title, QWidget* parent)
@@ -60,6 +60,7 @@ CollapsibleSectionWidget::CollapsibleSectionWidget(const QString& title, QWidget
     m_main_layout.addWidget(&m_content_area, 1, 0, 1, -1);
 
     setLayout(&m_main_layout);
+
     connect(&m_toggle_button, SIGNAL(toggled(bool)), SLOT(slot_on_click(const bool)));
 }
 
@@ -77,5 +78,5 @@ void CollapsibleSectionWidget::slot_on_click(const bool checked)
     m_content_area.setFixedHeight(checked ? m_content_height : 0);
 }
 
-} // namespace studio
-} // namespace appleseed
+}   // namespace studio
+}   // namespace appleseed

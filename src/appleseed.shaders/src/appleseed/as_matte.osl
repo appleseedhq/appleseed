@@ -74,7 +74,7 @@ shader as_matte
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
-    color in_matte_opacity_color = color(1,0.5,0)
+    color in_matte_opacity_color = color(1, 0.5, 0)
     [[
         string as_maya_attribute_name = "matteOpacityColor",
         string as_maya_attribute_short_name = "mac",

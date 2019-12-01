@@ -398,6 +398,7 @@ int main(int argc, char* argv[])
         }
     }
 
+    // Show the application's main window.
     window.show();
 
     return application.exec();
