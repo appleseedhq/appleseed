@@ -31,7 +31,9 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/itembase.h"
-#include "utility/treewidget.h"
+
+// appleseed.qtcommon headers.
+#include "widgets/treewidget.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
@@ -146,7 +148,7 @@ ItemBase* CollectionItemBase<Entity>::add_item(Entity* entity)
 {
     assert(entity);
 
-    return add_item(find_sorted_position(this, entity->get_name()), entity);
+    return add_item(qtcommon::find_sorted_position(this, entity->get_name()), entity);
 }
 
 template <typename Entity>

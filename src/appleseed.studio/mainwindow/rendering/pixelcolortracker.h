@@ -35,7 +35,7 @@
 #include <QObject>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class MouseCoordinatesTracker; } }
+namespace appleseed { namespace qtcommon { class MouseCoordinatesTracker; } }
 namespace renderer  { class Project; }
 class QEvent;
 class QLabel;
@@ -52,27 +52,27 @@ class PixelColorTracker
 
   public:
     PixelColorTracker(
-        QWidget*                            widget,
-        QLabel*                             r_label,
-        QLabel*                             g_label,
-        QLabel*                             b_label,
-        QLabel*                             a_label,
-        const MouseCoordinatesTracker&      mouse_tracker,
-        const renderer::Project&            project);
+        QWidget*                                    widget,
+        QLabel*                                     r_label,
+        QLabel*                                     g_label,
+        QLabel*                                     b_label,
+        QLabel*                                     a_label,
+        const qtcommon::MouseCoordinatesTracker&    mouse_tracker,
+        const renderer::Project&                    project);
 
     ~PixelColorTracker() override;
 
     void set_enabled(const bool enabled);
 
   private:
-    QWidget*                                m_widget;
-    QLabel*                                 m_r_label;
-    QLabel*                                 m_g_label;
-    QLabel*                                 m_b_label;
-    QLabel*                                 m_a_label;
-    const MouseCoordinatesTracker&          m_mouse_tracker;
-    const renderer::Project&                m_project;
-    bool                                    m_enabled;
+    QWidget*                                        m_widget;
+    QLabel*                                         m_r_label;
+    QLabel*                                         m_g_label;
+    QLabel*                                         m_b_label;
+    QLabel*                                         m_a_label;
+    const qtcommon::MouseCoordinatesTracker&        m_mouse_tracker;
+    const renderer::Project&                        m_project;
+    bool                                            m_enabled;
 
     bool eventFilter(QObject* object, QEvent* event) override;
 

@@ -34,11 +34,13 @@
 #include "mainwindow/project/entitybrowserwindow.h"
 #include "mainwindow/project/entityinputwidget.h"
 #include "mainwindow/project/tools.h"
-#include "utility/doubleslider.h"
-#include "utility/interop.h"
-#include "utility/miscellaneous.h"
-#include "utility/mousewheelfocuseventfilter.h"
 #include "utility/settingskeys.h"
+
+// appleseed.qtcommon headers.
+#include "widgets/doubleslider.h"
+#include "widgets/interop.h"
+#include "widgets/miscellaneous.h"
+#include "widgets/mousewheelfocuseventfilter.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/project.h"
@@ -84,6 +86,7 @@
 #include <sstream>
 #include <utility>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 namespace bf = boost::filesystem;

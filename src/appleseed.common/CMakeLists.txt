@@ -32,15 +32,6 @@
 # Source files.
 #--------------------------------------------------------------------------------------------------
 
-set (application_meta_tests_sources
-)
-list (APPEND appleseed.common_sources
-    ${application_meta_tests_sources}
-)
-source_group ("application\\meta\\tests" FILES
-    ${application_meta_tests_sources}
-)
-
 set (application_sources
     application/application.cpp
     application/application.h

@@ -41,8 +41,10 @@
 #include "mainwindow/project/materialitem.h"
 #include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/project/tools.h"
-#include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
+
+// appleseed.qtcommon headers.
+#include "widgets/miscellaneous.h"
 
 // appleseed.common headers.
 #include "application/application.h"
@@ -69,6 +71,7 @@
 #include <utility>
 
 using namespace appleseed::common;
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 namespace bf = boost::filesystem;

@@ -32,9 +32,9 @@
 // UI definition headers.
 #include "ui_searchpathswindow.h"
 
-// appleseed.studio headers.
-#include "mainwindow/project/projectmanager.h"
-#include "utility/miscellaneous.h"
+// appleseed.qtcommon headers.
+#include "project/projectmanager.h"
+#include "widgets/miscellaneous.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/project.h"
@@ -57,6 +57,7 @@
 // Standard headers.
 #include <cstddef>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 

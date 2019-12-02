@@ -33,8 +33,8 @@
 // UI definition header.
 #include "ui_entityeditorwindow.h"
 
-// appleseed.studio headers.
-#include "utility/miscellaneous.h"
+// appleseed.qtcommon headers.
+#include "widgets/miscellaneous.h"
 
 // Qt headers.
 #include <QDialogButtonBox>
@@ -45,6 +45,7 @@
 // Standard headers.
 #include <utility>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 

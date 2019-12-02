@@ -36,12 +36,14 @@
 // appleseed.studio headers.
 #include "mainwindow/collapsiblesectionwidget.h"
 #include "mainwindow/configurationmanagerwindow.h"
-#include "mainwindow/project/projectmanager.h"
-#include "utility/foldablepanelwidget.h"
 #include "utility/inputwidgetproxies.h"
-#include "utility/miscellaneous.h"
-#include "utility/mousewheelfocuseventfilter.h"
 #include "utility/settingskeys.h"
+
+// appleseed.qtcommon headers.
+#include "project/projectmanager.h"
+#include "widgets/foldablepanelwidget.h"
+#include "widgets/miscellaneous.h"
+#include "widgets/mousewheelfocuseventfilter.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/project.h"
@@ -80,6 +82,7 @@
 #include <cassert>
 #include <cstddef>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 

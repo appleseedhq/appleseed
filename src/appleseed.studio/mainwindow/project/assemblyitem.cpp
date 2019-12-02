@@ -46,7 +46,9 @@
 #include "mainwindow/project/texturecollectionitem.h"
 #include "mainwindow/project/tools.h"
 #include "mainwindow/rendering/renderingmanager.h"
-#include "utility/miscellaneous.h"
+
+// appleseed.qtcommon headers.
+#include "widgets/miscellaneous.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
@@ -76,6 +78,7 @@
 #include <string>
 #include <vector>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 

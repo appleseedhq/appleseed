@@ -34,8 +34,10 @@
 #include "mainwindow/pythonconsole/outputredirector.h"
 #include "mainwindow/pythonconsole/pythoneditor.h"
 #include "mainwindow/pythonconsole/pythonoutput.h"
-#include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
+
+// appleseed.qtcommon headers.
+#include "widgets/miscellaneous.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/utility.h"
@@ -53,6 +55,7 @@
 // Standard headers.
 #include <fstream>
 
+using namespace appleseed::qtcommon;
 using namespace renderer;
 
 namespace appleseed {

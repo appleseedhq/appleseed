@@ -32,11 +32,13 @@
 // appleseed.studio headers.
 #include "mainwindow/project/expressioneditorwindow.h"
 #include "mainwindow/project/tools.h"
-#include "utility/doubleslider.h"
-#include "utility/interop.h"
-#include "utility/miscellaneous.h"
-#include "utility/mousewheelfocuseventfilter.h"
 #include "utility/settingskeys.h"
+
+// appleseed.qtcommon headers.
+#include "widgets/doubleslider.h"
+#include "widgets/interop.h"
+#include "widgets/miscellaneous.h"
+#include "widgets/mousewheelfocuseventfilter.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/material.h"
@@ -71,6 +73,7 @@
 #include <cstddef>
 #include <utility>
 
+using namespace appleseed::qtcommon;
 using namespace boost;
 using namespace foundation;
 using namespace renderer;

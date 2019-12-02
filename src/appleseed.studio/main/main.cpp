@@ -31,7 +31,9 @@
 #include "commandlinehandler.h"
 #include "mainwindow/mainwindow.h"
 #include "python/pythoninterpreter.h"
-#include "utility/miscellaneous.h"
+
+// appleseed.qtcommon headers.
+#include "widgets/miscellaneous.h"
 
 // appleseed.common headers.
 #include "application/application.h"
@@ -73,6 +75,7 @@
 
 using namespace appleseed::studio;
 using namespace appleseed::common;
+using namespace appleseed::qtcommon;
 using namespace foundation;
 namespace bf = boost::filesystem;
 
@@ -355,6 +358,10 @@ int main(int argc, char* argv[])
     // from changing it again (as it happens only on the very first `read()`).
     // Issue reported and tracked on GitHub under reference #1435.
     QImageReader(make_app_path("icons/icon.png")).read();   // any image
+
+    // Force linking of resources provided by appleseed.qtcommon into the final binary.
+    // See https://doc.qt.io/qt-5/resources.html#using-resources-in-a-library for details.
+    Q_INIT_RESOURCE(qtcommonresources);
 
     // Make sure this build can run on this host.
     check_compatibility();
