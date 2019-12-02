@@ -37,7 +37,7 @@
 #include "mainwindow/rendering/renderwidget.h"
 #include "mainwindow/statusbar.h"
 
-// appleseed.shared headers.
+// appleseed.common headers.
 #include "application/application.h"
 #include "application/progresstilecallback.h"
 
@@ -65,7 +65,7 @@
 // Standard headers.
 #include <cassert>
 
-using namespace appleseed::shared;
+using namespace appleseed::common;
 using namespace foundation;
 using namespace renderer;
 namespace bf = boost::filesystem;

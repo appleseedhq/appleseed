@@ -33,7 +33,7 @@
 // appleseed.studio headers.
 #include "debug/tests/qttestlistener.h"
 
-// appleseed.shared headers.
+// appleseed.common headers.
 #include "application/application.h"
 
 // appleseed.renderer headers.
@@ -47,7 +47,7 @@
 #include "boost/filesystem/operations.hpp"
 #include "boost/filesystem/path.hpp"
 
-using namespace appleseed::shared;
+using namespace appleseed::common;
 using namespace foundation;
 using namespace renderer;
 namespace bf = boost::filesystem;

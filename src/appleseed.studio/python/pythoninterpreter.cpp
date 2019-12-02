@@ -33,7 +33,7 @@
 #include "mainwindow/mainwindow.h"
 #include "mainwindow/pythonconsole/outputredirector.h"
 
-// appleseed.shared headers.
+// appleseed.common headers.
 #include "application/application.h"
 
 // appleseed.renderer headers.
@@ -47,7 +47,7 @@
 // Boost headers.
 #include "boost/filesystem.hpp"
 
-using namespace appleseed::shared;
+using namespace appleseed::common;
 using namespace foundation;
 namespace bpy = boost::python;
 namespace bf = boost::filesystem;

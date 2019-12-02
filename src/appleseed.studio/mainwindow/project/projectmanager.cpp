@@ -30,7 +30,7 @@
 // Interface header.
 #include "projectmanager.h"
 
-// appleseed.shared headers.
+// appleseed.common headers.
 #include "application/application.h"
 
 // appleseed.renderer headers.
@@ -50,7 +50,7 @@
 #include <exception>
 #include <new>
 
-using namespace appleseed::shared;
+using namespace appleseed::common;
 using namespace foundation;
 using namespace renderer;
 namespace bf = boost::filesystem;

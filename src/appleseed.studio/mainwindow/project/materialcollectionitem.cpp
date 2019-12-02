@@ -44,7 +44,7 @@
 #include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
 
-// appleseed.shared headers.
+// appleseed.common headers.
 #include "application/application.h"
 
 // appleseed.renderer headers.
@@ -68,7 +68,7 @@
 #include <string>
 #include <utility>
 
-using namespace appleseed::shared;
+using namespace appleseed::common;
 using namespace foundation;
 using namespace renderer;
 namespace bf = boost::filesystem;

@@ -29,46 +29,37 @@
 
 #pragma once
 
-// appleseed.shared headers.
-#include "dllsymbol.h"
+// appleseed.renderer headers.
+#include "renderer/api/rendering.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/log.h"
+// Standard headers.
+#include <cstddef>
 
 // Forward declarations.
-namespace foundation { class Dictionary; }
+namespace foundation { class Logger; }
 
 namespace appleseed {
-namespace shared {
+namespace common {
 
-class SHAREDDLL SuperLogger
-  : public foundation::Logger
+class ProgressTileCallbackFactory
+  : public renderer::ITileCallbackFactory
 {
   public:
-    // Constructor.
-    SuperLogger();
+    ProgressTileCallbackFactory(foundation::Logger& logger, const size_t pass_count);
 
     // Destructor.
-    ~SuperLogger() override;
+    ~ProgressTileCallbackFactory() override;
 
-    // Retrieve the current log target.
-    foundation::ILogTarget& get_log_target() const;
+    // Delete this instance.
+    void release() override;
 
-    // Replace the current log target.
-    void set_log_target(foundation::ILogTarget* log_target);
-
-    // Replace the current log target by one that supports message coloring.
-    void enable_message_coloring();
-
-    // Set the verbosity level.
-    void set_verbosity_level_from_string(const char* level_name, const bool warn_if_invalid = true);
-
-    // Apply a collection of settings to this logger.
-    void configure_from_settings(const foundation::Dictionary& settings);
+    // Return a new tile callback instance.
+    renderer::ITileCallback* create() override;
 
   private:
-    foundation::ILogTarget* m_log_target;
+    struct Impl;
+    Impl* impl;
 };
 
-}   // namespace shared
+}   // namespace common
 }   // namespace appleseed

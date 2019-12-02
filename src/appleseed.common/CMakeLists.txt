@@ -34,7 +34,7 @@
 
 set (application_meta_tests_sources
 )
-list (APPEND appleseed.shared_sources
+list (APPEND appleseed.common_sources
     ${application_meta_tests_sources}
 )
 source_group ("application\\meta\\tests" FILES
@@ -46,13 +46,12 @@ set (application_sources
     application/application.h
     application/commandlinehandlerbase.cpp
     application/commandlinehandlerbase.h
-    application/dllsymbol.h
     application/progresstilecallback.cpp
     application/progresstilecallback.h
     application/superlogger.cpp
     application/superlogger.h
 )
-list (APPEND appleseed.shared_sources
+list (APPEND appleseed.common_sources
     ${application_sources}
 )
 source_group ("application" FILES
@@ -64,11 +63,11 @@ source_group ("application" FILES
 # Target.
 #--------------------------------------------------------------------------------------------------
 
-add_library (appleseed.shared SHARED
-    ${appleseed.shared_sources}
+add_library (appleseed.common STATIC
+    ${appleseed.common_sources}
 )
 
-set_target_properties (appleseed.shared PROPERTIES FOLDER "Core")
+set_target_properties (appleseed.common PROPERTIES FOLDER "Core")
 
 
 #--------------------------------------------------------------------------------------------------
@@ -84,42 +83,13 @@ include_directories (
 # Preprocessor definitions.
 #--------------------------------------------------------------------------------------------------
 
-apply_preprocessor_definitions (appleseed.shared)
-
-
-#--------------------------------------------------------------------------------------------------
-# Static libraries.
-#--------------------------------------------------------------------------------------------------
-
-target_link_libraries (appleseed.shared
-    appleseed
-    ${Boost_LIBRARIES}
-)
-
-
-#--------------------------------------------------------------------------------------------------
-# Post-build commands.
-#--------------------------------------------------------------------------------------------------
-
-add_copy_target_lib_to_sandbox_command (appleseed.shared)
+apply_preprocessor_definitions (appleseed.common)
 
 
 #--------------------------------------------------------------------------------------------------
 # Installation.
 #--------------------------------------------------------------------------------------------------
 
-if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    install (TARGETS appleseed.shared
-        RUNTIME
-        DESTINATION bin
-    )
-
-    install (TARGETS appleseed.shared
-        ARCHIVE
-        DESTINATION lib
-    )
-else ()
-    install (TARGETS appleseed.shared
-        DESTINATION lib
-    )
-endif ()
+install (TARGETS appleseed.common
+    DESTINATION lib
+)

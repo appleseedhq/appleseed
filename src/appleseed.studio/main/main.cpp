@@ -33,7 +33,7 @@
 #include "python/pythoninterpreter.h"
 #include "utility/miscellaneous.h"
 
-// appleseed.shared headers.
+// appleseed.common headers.
 #include "application/application.h"
 #include "application/superlogger.h"
 
@@ -72,7 +72,7 @@
 #include <QImageReader>
 
 using namespace appleseed::studio;
-using namespace appleseed::shared;
+using namespace appleseed::common;
 using namespace foundation;
 namespace bf = boost::filesystem;
 
