@@ -26,13 +26,14 @@
 // THE SOFTWARE.
 //
 
+#include "appleseed/math/as_math_helpers.h"
 #include "appleseed/transform/as_transform_helpers.h"
 
 shader as_switch_surface
 [[
     string help = "Material variation utility shader.",
     string icon = "asSwitchSurface.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_switch_surface.html#label-as-switch-surface",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_switch_surface.html",
 
     string as_node_name = "asSwitchSurface",
     string as_category = "utility",
@@ -276,7 +277,7 @@ shader as_switch_surface
             in_color, in_color1, in_color2, in_color3,
             in_color4, in_color5, in_color6, in_color7};
 
-        int len = arraylength(surfaces) - 1;
+        int len = arraylength(surfaces);
 
         compute_id_manifold(
             in_manifold_type,
@@ -288,8 +289,8 @@ shader as_switch_surface
             grey_id);
 
         int index = (in_cycle_mode == 0)
-            ? (int) mod(hash_id, len)
-            : (int) clamp(grey_id * len, 0, len);
+            ? (int) remainder(hash_id, len)
+            : (int) clamp(grey_id * (len - 1), 0, len - 1);
 
         out_outColor = surfaces[index];
     }

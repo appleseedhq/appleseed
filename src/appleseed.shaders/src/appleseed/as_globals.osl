@@ -30,7 +30,7 @@ shader as_globals
 [[
     string help = "OSL global variables.",
     string icon = "asGlobals.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_globals.html#label-as-globals",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_globals.html",
 
     string as_node_name = "asGlobals",
     string as_category = "utility",
@@ -150,18 +150,38 @@ shader as_globals
         int divider = 1,
         int as_max_param_id = 2
     ]],
-    output normal out_world_dNdu = 0
+    normal dNdu = 0
     [[
         int lockgeom = 0,
+        string widget = "null",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string widget = "null"
+    ]],
+    normal dNdv = 0
+    [[
+        int lockgeom = 0,
+        string widget = "null",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string widget = "null"
+    ]],
+    output normal out_world_dNdu = dNdu
+    [[
         string as_maya_attribute_name = "worldDNdu",
         string as_maya_attribute_short_name = "dnu",
         string label = "dN/du",
         string help = "Partial derivative of N along the V direction.",
         int as_max_param_id = 2
     ]],
-    output normal out_world_dNdv = 0
+    output normal out_world_dNdv = dNdv
     [[
-        int lockgeom = 0,
         string as_maya_attribute_name = "worldDNdv",
         string as_maya_attribute_short_name = "dnv",
         string label = "dN/dv",
@@ -169,17 +189,37 @@ shader as_globals
         int divider = 1,
         int as_max_param_id = 2
     ]],
-    output vector out_world_Tn = 0
+    normal Tn = 0
     [[
         int lockgeom = 0,
+        string widget = "null",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string widget = "null"
+    ]],
+    normal Bn = 0
+    [[
+        int lockgeom = 0,
+        string widget = "null",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string widget = "null"
+    ]],
+    output vector out_world_Tn = Tn
+    [[
         string as_maya_attribute_name = "worldTn",
         string as_maya_attribute_short_name = "tn",
         string label = "Tangent Vector",
         int as_max_param_id = 2
     ]],
-    output vector out_world_Bn = 0
+    output vector out_world_Bn = Bn
     [[
-        int lockgeom = 0,
         string as_maya_attribute_name = "worldBn",
         string as_maya_attribute_short_name = "bn",
         string label = "Bitangent Vector",
@@ -207,6 +247,23 @@ shader as_globals
         string label = "UV Coords",
         int divider = 1,
         int as_max_param_id = 2
+    ]],
+    color vertex_color = color(1)
+    [[
+        int lockgeom = 0,
+        string widget = "null",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string widget = "null"
+    ]],
+    output color out_vertex_color = vertex_color
+    [[
+        string as_maya_attribute_name = "vertexColor",
+        string as_maya_attribute_short_name = "vrc",
+        string label = "Vertex Color"
     ]],
     output float out_time = time
     [[

@@ -30,7 +30,7 @@ shader as_space_transform
 [[
     string help = "Coordinate system transform node.",
     string icon = "asSpaceTransform.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_space_transform.html#label-as-space-transform",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_space_transform.html",
 
     string as_node_name = "asSpaceTransform",
     string as_category = "utility",

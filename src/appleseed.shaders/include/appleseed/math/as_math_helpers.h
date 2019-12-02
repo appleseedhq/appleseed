@@ -81,48 +81,14 @@ float fast_gain(float value, float g)
 //
 // Reference:
 //
-//      Lehmer linear congruential generator (Park-Miller)
-//
-//      Random Number Generators: Good Ones Are Hard To Find,
-//      Stephen K.Park and Keith W.Miller
-//
-//      http://www.firstpr.com.au/dsp/rand31/p1192-park.pdf
-//      https://en.wikipedia.org/wiki/Lehmer_random_number_generator
+//  https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/divmodnote-letter.pdf
 //
 
-int rand_int(int seed)
+int remainder(int x, int y)
 {
-    int a = 16807;
-    int q = 127773;
-    int r = 2836;
-    int m = 2147483647;
-
-    int hi = seed / q;
-    int lo = seed % q;
-    int x = a * lo - r * hi;
-
-    return x > 0 ? x : x + m;
-}
-
-int rand_float(int seed, output float result)
-{
-    int x = rand_int(seed);
-    result = x / 2147483647;
-
-    return x;
-}
-
-float random(float x, float s, float t)
-{
-    vector A = vector(s, t, 0); // s=u, t=v usually
-    vector B = vector(4.213536, 8.34621351, 0);
-
-    return mod(sin(dot(A, B)) * 917853.4917593, 1.0);
-}
-
-float random(float x)
-{
-    return random(x, u, v);
+    int rem = x % y;
+    if ((rem > 0 && y < 0) || (rem < 0 && y > 0)) rem += y;
+    return rem;
 }
 
 float fract(float x)

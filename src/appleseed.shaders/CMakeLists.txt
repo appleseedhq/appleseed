@@ -267,6 +267,7 @@ set (src_appleseed_sources
      src/appleseed/as_attributes.osl
      src/appleseed/as_blackbody.osl
      src/appleseed/as_blend_color.osl
+     src/appleseed/as_blend_normal.osl
      src/appleseed/as_blend_shader.osl
      src/appleseed/as_bump.osl
      src/appleseed/as_closure2surface.osl
@@ -290,10 +291,12 @@ set (src_appleseed_sources
      src/appleseed/as_noise3d.osl
      src/appleseed/as_plastic.osl
      src/appleseed/as_ray_switch.osl
+     src/appleseed/as_ray_switch_surface.osl
      src/appleseed/as_sbs_pbrmaterial.osl
      src/appleseed/as_space_transform.osl
      src/appleseed/as_standard_surface.osl
      src/appleseed/as_subsurface.osl
+     src/appleseed/as_surface_luminance.osl
      src/appleseed/as_switch_surface.osl
      src/appleseed/as_switch_texture.osl
      src/appleseed/as_swizzle.osl

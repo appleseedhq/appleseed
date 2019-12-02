@@ -32,7 +32,7 @@ shader as_id_manifold
 [[
     string help = "ID manifold utility shader.",
     string icon = "asIdManifold.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_id_manifold.html#label-as-id-manifold",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_id_manifold.html",
 
     string as_node_name = "asIdManifold",
     string as_category = "utility",

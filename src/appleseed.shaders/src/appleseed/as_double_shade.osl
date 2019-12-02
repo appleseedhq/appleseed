@@ -30,7 +30,7 @@ shader as_double_shade
 [[
     string help = "Shades a different color on front or back faces.",
     string icon = "asDoubleShade.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_double_shade.html#label-as-double-shade",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_double_shade.html",
 
     string as_node_name = "asDoubleShade",
     string as_category = "utility",

@@ -30,7 +30,7 @@ shader as_glass
 [[
     string help = "Glass material with absorption.",
     string icon = "asGlass.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_glass.html#label-as-glass",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_glass.html",
 
     string as_node_name = "asGlass",
     string as_category = "shader",

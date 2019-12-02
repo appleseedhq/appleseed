@@ -34,7 +34,7 @@ shader as_triplanar
 [[
     string help = "Tri-planar projection node.",
     string icon = "asTriPlanar.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_triplanar.html#label-as-triplanar",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_triplanar.html",
 
     string as_node_name = "asTriPlanar",
     string as_category = "texture3d",
@@ -314,7 +314,52 @@ shader as_triplanar
         string label = "T Flip",
         string page = "Projection.X Axis",
         int as_max_param_id = 19
-    ]], 
+    ]],
+    int in_x_axis_flip_r = 0
+    [[
+        string as_maya_attribute_name = "xAxisFlipR",
+        string as_maya_attribute_short_name = "xfr",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Flip R",
+        string page = "Projection.X Axis.Normal",
+        string help = "Flip the red channel of the texture lookup",
+	int as_max_param_id = 53
+    ]],
+    int in_x_axis_flip_g = 0
+    [[
+        string as_maya_attribute_name = "xAxisFlipG",
+        string as_maya_attribute_short_name = "xfg",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Flip G",
+        string page = "Projection.X Axis.Normal",
+        string help = "Flip the green channel of the texture lookup",,
+	int as_max_param_id = 54
+    ]],
+    int in_x_axis_swap_rg = 0
+    [[
+        string as_maya_attribute_name = "xAxisSwapRG",
+        string as_maya_attribute_short_name = "xsp",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Swap RG",
+        string page = "Projection.X Axis.Normal",
+        string help = "Swap the red and green channels of the texture lookup",
+	int as_max_param_id = 55
+    ]],
     string in_x_tex_eotf = "sRGB"
     [[
         string as_maya_attribute_name = "xTextureEOTF",
@@ -513,6 +558,51 @@ shader as_triplanar
         string label = "T Flip",
         string page = "Projection.Y Axis",
         int as_max_param_id = 32
+    ]],
+    int in_y_axis_flip_r = 0
+    [[
+        string as_maya_attribute_name = "yAxisFlipR",
+        string as_maya_attribute_short_name = "yfr",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Flip R",
+        string page = "Projection.Y Axis.Normal",
+        string help = "Flip the red channel of the texture lookup",
+        int as_max_param_id = 56
+    ]],
+    int in_y_axis_flip_g = 0
+    [[
+        string as_maya_attribute_name = "yAxisFlipG",
+        string as_maya_attribute_short_name = "yfg",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Flip G",
+        string page = "Projection.Y Axis.Normal",
+        string help = "Flip the green channel of the texture lookup",
+        int as_max_param_id = 57
+    ]],
+    int in_y_axis_swap_rg = 0
+    [[
+        string as_maya_attribute_name = "yAxisSwapRG",
+        string as_maya_attribute_short_name = "ysp",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Swap RG",
+        string page = "Projection.Y Axis.Normal",
+        string help = "Swap the red and green channels of the texture lookup",
+        int as_max_param_id = 58
     ]],
     string in_y_tex_eotf = "sRGB"
     [[
@@ -713,6 +803,51 @@ shader as_triplanar
         string page = "Projection.Z Axis",
         int as_max_param_id = 45
     ]],
+    int in_z_axis_flip_r = 0
+    [[
+        string as_maya_attribute_name = "zAxisFlipR",
+        string as_maya_attribute_short_name = "zfr",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Flip R",
+        string page = "Projection.Z Axis.Normal",
+        string help = "Flip the red channel of the texture lookup",
+        int as_max_param_id = 59
+    ]],
+    int in_z_axis_flip_g = 0
+    [[
+        string as_maya_attribute_name = "zAxisFlipG",
+        string as_maya_attribute_short_name = "zfg",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Flip G",
+        string page = "Projection.Z Axis.Normal",
+        string help = "Flip the green channel of the texture lookup",
+        int as_max_param_id = 60
+    ]],
+    int in_z_axis_swap_rg = 0
+    [[
+        string as_maya_attribute_name = "zAxisSwapRG",
+        string as_maya_attribute_short_name = "zsp",
+        string widget = "checkBox",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Swap RG",
+        string page = "Projection.Z Axis.Normal",
+        string help = "Swap the red and green channels of the texture lookup",
+        int as_max_param_id = 61
+    ]],
     string in_z_tex_eotf = "sRGB"
     [[
         string as_maya_attribute_name = "zTextureEOTF",
@@ -762,7 +897,7 @@ shader as_triplanar
         string label = "Manifold",
         string page = "Projection.Randomization",
         string help = "Connects to an idManifold integer hash output, or lacking one, builds an hash based on the assembly instance name.",
-        int as_max_param_id = 50
+        int as_max_param_id = 57
     ]],
 
     output color out_color = color(0)
@@ -813,7 +948,6 @@ shader as_triplanar
         if (in_placement_matrix != matrix(1))
         {
             matrix xform = matrix("common", "object") *
-
                 inverse(in_placement_matrix);
             Nn = transform(xform, Nn);
             Pp = transform(xform, Pp);
@@ -910,6 +1044,17 @@ shader as_triplanar
             if (in_blend_mode == "Tangent Normal")
             {
                 normal tmp = clamp(x_axis * 2.0 - 1.0, -1.0, 1.0);
+
+                if (in_x_axis_flip_r) tmp[0] *= -1;
+                if (in_x_axis_flip_g) tmp[1] *= -1;
+
+                if (in_x_axis_swap_rg)
+                {
+                    float x = tmp[0];
+                    tmp[0] = tmp[1];
+                    tmp[1] = x;
+                }
+
                 tmp[0] *= normal_sign[0]; // account for flipped UVs
 
                 normal X = rnm_blend(
@@ -976,6 +1121,17 @@ shader as_triplanar
             if (in_blend_mode == "Tangent Normal")
             {
                 normal tmp = clamp(y_axis * 2.0 - 1.0, -1.0, 1.0);
+
+                if (in_y_axis_flip_r) tmp[0] *= -1;
+                if (in_y_axis_flip_g) tmp[1] *= -1;
+
+                if (in_y_axis_swap_rg)
+                {
+                    float x = tmp[0];
+                    tmp[0] = tmp[1];
+                    tmp[1] = x;
+                }
+
                 tmp[0] *= normal_sign[1];
                 
                 normal Y = rnm_blend(
@@ -1038,6 +1194,17 @@ shader as_triplanar
             if (in_blend_mode == "Tangent Normal")
             {
                 normal tmp = clamp(z_axis * 2.0 - 1.0, -1.0, 1.0);
+
+                if (in_z_axis_flip_r) tmp[0] *= -1;
+                if (in_z_axis_flip_g) tmp[1] *= -1;
+
+                if (in_z_axis_swap_rg)
+                {
+                    float x = tmp[0];
+                    tmp[0] = tmp[1];
+                    tmp[1] = x;
+                }
+
                 tmp[0] *= -normal_sign[2];
 
                 normal Z = rnm_blend(
@@ -1073,3 +1240,4 @@ shader as_triplanar
 
     if (dot(out_normal, N) < 0.0) out_normal *= normal(-1);
 }
+

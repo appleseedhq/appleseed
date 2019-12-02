@@ -30,7 +30,7 @@ shader as_texture_info
 [[
     string help = "Texture Information node.",
     string icon = "asTextureInfo.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_texture_info.html#label-as-texture-info",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_texture_info.html",
 
     string as_node_name = "asTextureInfo",
     string as_category = "texture2d",

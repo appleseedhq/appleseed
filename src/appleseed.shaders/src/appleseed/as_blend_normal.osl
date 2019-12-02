@@ -1,0 +1,253 @@
+
+//
+// This source file is part of appleseed.
+// Visit https://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2019 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/math/as_math_helpers.h"
+
+shader as_blend_normal
+[[
+    string help = "Tangent space normal blend utility node.",
+    string icon = "asBlendNormal.png",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_blend_normal.html",
+
+    string as_node_name = "asBlendNormal",
+    string as_category = "utility",
+
+    string as_max_class_id = "1585865021 797245718",
+    string as_max_plugin_type = "texture",
+
+    int as_maya_type_id = 0x00127a09,
+    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility"
+]]
+(
+    normal in_base_normal = normal(0)
+    [[
+        string as_maya_attribute_name = "baseNormal",
+        string as_maya_attribute_short_name = "bnr",
+        string label = "Base Normal",
+        string page = "Base Normal",
+        string help = "The base tangent space normal map.",
+        int divider = 1
+    ]],
+    string in_base_normal_mode = "Unsigned"
+    [[
+        string as_maya_attribute_name = "baseNormalMode",
+        string as_maya_attribute_short_name = "brm",
+        string widget = "popup",
+        string options = "Unsigned|Signed",
+        string label = "Normal Map Mode",
+        string page = "Base Normal",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    int in_base_normal_flip_r = 0
+    [[
+        string as_maya_attribute_name = "baseNormalFlipR",
+        string as_maya_attribute_short_name = "bfr",
+        string widget = "checkBox",
+        string label = "Flip R",
+        string page = "Base Normal",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    int in_base_normal_flip_g = 0
+    [[
+        string as_maya_attribute_name = "baseNormalFlipG",
+        string as_maya_attribute_short_name = "bfg",
+        string widget = "checkBox",
+        string label = "Flip G",
+        string page = "Base Normal",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    int in_base_normal_swap_rg = 0
+    [[
+        string as_maya_attribute_name = "baseNormalSwapRG",
+        string as_maya_attribute_short_name = "bsw",
+        string widget = "checkBox",
+        string label = "Swap RG",
+        string page = "Base Normal",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+
+    normal in_detail_normal = normal(0)
+    [[
+        string as_maya_attribute_name = "detailNormal",
+        string as_maya_attribute_short_name = "dno",
+        string label = "Detail Normal",
+        string page = "Detail Normal",
+        string help = "The detail tangent space normal to blend over the base.",
+        int divider = 1
+    ]],
+    string in_detail_normal_mode = "Unsigned"
+    [[
+        string as_maya_attribute_name = "detailNormalMode",
+        string as_maya_attribute_short_name = "dnm",
+        string widget = "popup",
+        string options = "Unsigned|Signed",
+        string label = "Normal Map Mode",
+        string page = "Detail Normal",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    int in_detail_normal_flip_r = 0
+    [[
+        string as_maya_attribute_name = "detailNormalFlipR",
+        string as_maya_attribute_short_name = "dfr",
+        string widget = "checkBox",
+        string label = "Flip R",
+        string page = "Detail Normal",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    int in_detail_normal_flip_g = 0
+    [[
+        string as_maya_attribute_name = "detailNormalFlipG",
+        string as_maya_attribute_short_name = "dfg",
+        string widget = "checkBox",
+        string label = "Flip G",
+        string page = "Detail Normal",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    int in_detail_normal_swap_rg = 0
+    [[
+        string as_maya_attribute_name = "detailNormalSwapRG",
+        string as_maya_attribute_short_name = "dsw",
+        string widget = "checkBox",
+        string label = "Swap RG",
+        string page = "Detail Normal",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    float in_detail_normal_weight = 1.0
+    [[
+        string as_maya_attribute_name = "detailNormalWeight",
+        string as_maya_attribute_short_name = "dwe",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Blending Weight",
+        string page = "Blending",
+        string help = "Detail normal blending weight.",
+        int divider = 1
+    ]],
+    vector Tn = vector(0)
+    [[
+        int lockgeom = 0,
+        string widget = "null",
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    vector Bn = vector(0)
+    [[
+        int lockgeom = 0,
+        string widget = "null",
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]], 
+
+    output normal out_normal = color(0)
+    [[
+        string as_maya_attribute_name = "outNormal",
+        string as_maya_attribute_short_name = "on",
+        string widget = "null",
+        string label = "Output Normal",
+        string help = "Output unsigned tangent space normal map"
+    ]]
+)
+{
+    normal baseN = (in_base_normal_mode == "Unsigned")
+        ? in_base_normal * normal(2) - normal(1)
+        : in_base_normal;
+
+    if (in_base_normal_flip_r) baseN[0] *= -1;
+    if (in_base_normal_flip_g) baseN[1] *= -1;
+
+    if (in_base_normal_swap_rg)
+    {
+        float tmp = baseN[0];
+        baseN[0] = baseN[1];
+        baseN[1] = tmp;
+    }
+
+    normal detailN = (in_detail_normal_mode == "Unsigned")
+        ? in_detail_normal * normal(2) - normal(1)
+        : in_detail_normal;
+
+    if (in_detail_normal_flip_r) detailN[0] *= -1;
+    if (in_detail_normal_flip_g) detailN[1] *= -1;
+
+    if (in_detail_normal_swap_rg)
+    {
+        float tmp = detailN[0];
+        detailN[0] = detailN[1];
+        detailN[1] = tmp;
+    }
+
+    baseN = normalize(baseN);
+    detailN = normalize(detailN);
+
+    baseN[2] += 1;
+    detailN[0] *= -in_detail_normal_weight;
+    detailN[1] *= -in_detail_normal_weight;
+
+    normal O = baseN * dot(baseN, detailN) / baseN[2] - detailN;
+
+    out_normal = normalize(O);
+    out_normal = out_normal * normal(0.5) + normal(0.5);
+}

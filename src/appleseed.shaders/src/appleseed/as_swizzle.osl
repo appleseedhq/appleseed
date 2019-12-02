@@ -30,7 +30,7 @@ shader as_swizzle
 [[
     string help = "RGBA or vector swizzle node.",
     string icon = "asSwizzle.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_swizzle.html#label-as-swizzle",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_swizzle.html",
 
     string as_node_name = "asSwizzle",
     string as_category = "utility",

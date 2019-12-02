@@ -30,7 +30,7 @@ shader as_blend_shader
 [[
     string help = "Shader blending or mixing node.",
     string icon = "asBlendShader.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_blend_shader.html#label-as-blend-shader",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_blend_shader.html",
 
     string as_node_name = "asBlendShader",
     string as_category = "shader",

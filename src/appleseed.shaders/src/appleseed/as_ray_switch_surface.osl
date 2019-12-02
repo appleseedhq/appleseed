@@ -1,0 +1,153 @@
+
+//
+// This source file is part of appleseed.
+// Visit https://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2019 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+shader as_ray_switch_surface
+[[
+    string help = "Ray switch surface shadear.",
+    string icon = "asRaySwitchSurface.png",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_ray_switch_surface.html",
+
+    string as_node_name = "asRaySwitchSurface",
+    string as_category = "shader",
+
+    string as_max_class_id = "553479896 1617499966",
+    string as_max_plugin_type = "material",
+
+    int as_maya_type_id = 0x00127a0b,
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch"
+]]
+(
+    closure color in_material_camera = 0
+    [[
+        string as_maya_attribute_name = "materialCamera",
+        string as_maya_attribute_short_name = "mca",
+        string label = "Camera Ray Material",
+        string page = "Material"
+    ]],
+    closure color in_material_light = 0
+    [[
+        string as_maya_attribute_name = "materialLight",
+        string as_maya_attribute_short_name = "mli",
+        string label = "Light Ray Material",
+        string page = "Material"
+    ]],
+    closure color in_material_shadow = 0
+    [[
+        string as_maya_attribute_name = "materialShadow",
+        string as_maya_attribute_short_name = "msh",
+        string label = "Shadow Ray Material",
+        string page = "Material"
+    ]],
+    closure color in_material_transparency = 0
+    [[
+        string as_maya_attribute_name = "materialTransparency",
+        string as_maya_attribute_short_name = "mtr",
+        string label = "Transparency Ray Material",
+        string page = "Material"
+    ]],
+    closure color in_material_diffuse = 0
+    [[
+        string as_maya_attribute_name = "materialDiffuse",
+        string as_maya_attribute_short_name = "mdi",
+        string label = "Diffuse Ray Material",
+        string page = "Material"
+    ]],
+    closure color in_material_glossy = 0
+    [[
+        string as_maya_attribute_name = "materialGlossy",
+        string as_maya_attribute_short_name = "cgl",
+        string label = "Glossy Ray Material",
+        string page = "Material"
+    ]],
+    closure color in_material_specular = 0
+    [[
+        string as_maya_attribute_name = "materialSpecular",
+        string as_maya_attribute_short_name = "msp",
+        string label = "Specular Ray Material",
+        string page = "Material"
+    ]],
+    closure color in_material_subsurface = 0
+    [[
+        string as_maya_attribute_name = "materialSubsurface",
+        string as_maya_attribute_short_name = "msu",
+        string label = "Subsurface Ray Material",
+        string page = "Material"
+    ]],
+
+    output closure color out_color = 0
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string label = "Output Material",
+        string page = "Output",
+        string widget = "null"
+    ]]
+)
+{
+    if (raytype("camera"))
+    {
+        out_color = in_material_camera;
+    }
+    else if (raytype("light"))
+    {
+        out_color = in_material_light;
+    }
+    else if (raytype("shadow"))
+    {
+        out_color = in_material_shadow;
+    }
+    else if (raytype("transparency"))
+    {
+        out_color = in_material_transparency;
+    }
+    else if (raytype("diffuse"))
+    {
+        out_color = in_material_diffuse;
+    }
+    else if (raytype("glossy"))
+    {
+        out_color = in_material_glossy;
+    }
+    else if (raytype("specular"))
+    {
+        out_color = in_material_specular;
+    }
+    else if (raytype("subsurface"))
+    {
+        out_color = in_material_subsurface;
+    }
+    else
+    {
+#ifdef DEBUG
+        string shadername = "";
+        getattribute("shader:shadername", shadername);
+        warning("[WARNING]: Unknown Ray Type in %s, %s:%d\n",
+                shadername, __FILE__, __LINE__);
+#endif
+    }
+}

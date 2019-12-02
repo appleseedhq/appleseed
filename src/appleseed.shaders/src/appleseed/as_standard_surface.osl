@@ -33,7 +33,7 @@ shader as_standard_surface
 [[
     string help = "appleseed's standard material shader.",
     string icon = "asStandardSurface.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_standard_surface.html#label-as-standard-surface",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_standard_surface.html",
 
     string as_node_name = "asStandardSurface",
     string as_category = "shader",

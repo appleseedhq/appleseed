@@ -34,7 +34,7 @@
 shader as_voronoi2d
 [[
     string icon = "asVoronoi2D.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_voronoi2d.html#label-as-voronoi2d",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_voronoi2d.html",
 
     string as_node_name = "asVoronoi2D",
     string as_category = "texture2d",

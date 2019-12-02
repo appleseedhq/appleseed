@@ -32,7 +32,7 @@ shader as_metal
 [[
     string icon = "asMetal.png",
     string help = "A metal material shader.",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_metal.html#label-as-metal",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_metal.html",
 
     string as_node_name = "asMetal",
     string as_category = "shader",

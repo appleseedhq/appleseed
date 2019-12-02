@@ -33,7 +33,7 @@ shader as_color_transform
 [[
     string help = "Transforms a color from one color model to another color model.",
     string icon = "asColorTransform.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_color_transform.html#label-as-color-transform",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_color_transform.html",
 
     string as_node_name = "asColorTransform",
     string as_category = "color",

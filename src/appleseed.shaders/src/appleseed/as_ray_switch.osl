@@ -30,7 +30,7 @@ shader as_ray_switch
 [[
     string help = "Ray switch utility node.",
     string icon = "asRaySwitch.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_ray_switch.html#label-as-ray-switch",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_ray_switch.html",
 
     string as_node_name = "asRaySwitch",
     string as_category = "utility",
