@@ -33,7 +33,7 @@
 // UI definition header.
 #include "ui_benchmarkwindow.h"
 
-// appleseed.shared headers.
+// appleseed.common headers.
 #include "application/application.h"
 
 // appleseed.foundation headers.
@@ -62,7 +62,7 @@
 #include <string>
 #include <utility>
 
-using namespace appleseed::shared;
+using namespace appleseed::common;
 using namespace boost;
 using namespace foundation;
 namespace bf = boost::filesystem;

@@ -51,7 +51,7 @@ using namespace foundation;
 using namespace renderer;
 
 namespace appleseed {
-namespace shared {
+namespace common {
 
 namespace
 {
@@ -165,5 +165,5 @@ ITileCallback* ProgressTileCallbackFactory::create()
     return impl->m_callback.get();
 }
 
-}   // namespace shared
+}   // namespace common
 }   // namespace appleseed

@@ -47,7 +47,7 @@ using namespace foundation;
 namespace bf = boost::filesystem;
 
 namespace appleseed {
-namespace shared {
+namespace common {
 
 //
 // Application class implementation.
@@ -349,5 +349,5 @@ void Application::initialize_resource_search_paths(SearchPaths& search_paths)
     search_paths.push_back_explicit_path((root_path / "shaders").string());
 }
 
-}   // namespace shared
+}   // namespace common
 }   // namespace appleseed

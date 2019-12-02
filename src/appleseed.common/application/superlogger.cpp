@@ -45,7 +45,7 @@
 using namespace foundation;
 
 namespace appleseed {
-namespace shared {
+namespace common {
 
 SuperLogger::SuperLogger()
   : m_log_target(nullptr)
@@ -116,5 +116,5 @@ void SuperLogger::configure_from_settings(const Dictionary& settings)
         set_verbosity_level_from_string(settings.get("message_verbosity"));
 }
 
-}   // namespace shared
+}   // namespace common
 }   // namespace appleseed

@@ -31,7 +31,7 @@
 #include "commandlinehandler.h"
 #include "stdouttilecallback.h"
 
-// appleseed.shared headers.
+// appleseed.common headers.
 #include "application/application.h"
 #include "application/progresstilecallback.h"
 #include "application/superlogger.h"
@@ -74,7 +74,7 @@
 #include <string>
 
 using namespace appleseed::cli;
-using namespace appleseed::shared;
+using namespace appleseed::common;
 using namespace foundation;
 using namespace renderer;
 namespace bf = boost::filesystem;

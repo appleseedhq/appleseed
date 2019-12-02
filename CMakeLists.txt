@@ -656,7 +656,7 @@ add_subdirectory (src/appleseed)
 add_subdirectory (src/appleseed.shaders)
 
 if (WITH_CLI OR WITH_STUDIO OR WITH_TOOLS)
-    add_subdirectory (src/appleseed.shared)
+    add_subdirectory (src/appleseed.common)
 endif ()
 
 if (WITH_CLI)

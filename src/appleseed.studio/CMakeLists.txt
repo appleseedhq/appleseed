@@ -502,7 +502,7 @@ endif ()
 
 include_directories (
     .
-    ../appleseed.shared
+    ../appleseed.common
     ${OPENCOLORIO_INCLUDE_DIRS}
     ${PYTHON_INCLUDE_DIRS}
 )
@@ -526,7 +526,7 @@ link_against_ocio (appleseed.studio)
 
 target_link_libraries (appleseed.studio
     appleseed
-    appleseed.shared
+    appleseed.common
     ${Boost_LIBRARIES}
     Qt5::Core
     Qt5::Concurrent

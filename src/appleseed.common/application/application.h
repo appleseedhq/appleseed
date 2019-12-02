@@ -29,9 +29,6 @@
 
 #pragma once
 
-// appleseed.shared headers.
-#include "dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/utility/log/logmessage.h"
 
@@ -46,14 +43,14 @@ namespace foundation    { class Logger; }
 namespace foundation    { class SearchPaths; }
 
 namespace appleseed {
-namespace shared {
+namespace common {
 
 //
 // The Application class gathers functionalities for checking if the application
 // is correctly installed, finding out what is the application's root path, etc.
 //
 
-class SHAREDDLL Application
+class Application
 {
   public:
     // Return true if the application can run on the host machine, false otherwise.
@@ -139,5 +136,5 @@ inline bool Application::create_unit_tests_output_directories()
     return !ec;
 }
 
-}   // namespace shared
+}   // namespace common
 }   // namespace appleseed

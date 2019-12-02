@@ -30,7 +30,7 @@
 // Interface header.
 #include "commandlinehandlerbase.h"
 
-// appleseed.shared headers.
+// appleseed.common headers.
 #include "application/superlogger.h"
 
 // appleseed.foundation headers.
@@ -58,7 +58,7 @@ using namespace foundation;
 namespace bf = boost::filesystem;
 
 namespace appleseed {
-namespace shared {
+namespace common {
 
 struct CommandLineHandlerBase::Impl
 {
@@ -353,5 +353,5 @@ const CommandLineParser& CommandLineHandlerBase::parser() const
     return impl->m_parser;
 }
 
-}   // namespace shared
+}   // namespace common
 }   // namespace appleseed

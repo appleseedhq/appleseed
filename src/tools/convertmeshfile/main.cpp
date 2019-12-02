@@ -30,7 +30,7 @@
 // convertmeshfile headers.
 #include "commandlinehandler.h"
 
-// appleseed.shared headers.
+// appleseed.common headers.
 #include "application/application.h"
 #include "application/superlogger.h"
 
@@ -55,7 +55,7 @@
 #include <vector>
 
 using namespace appleseed::convertmeshfile;
-using namespace appleseed::shared;
+using namespace appleseed::common;
 using namespace foundation;
 
 namespace

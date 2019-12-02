@@ -29,24 +29,21 @@
 
 #pragma once
 
-// appleseed.shared headers.
-#include "dllsymbol.h"
-
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
 // Forward declarations.
-namespace appleseed     { namespace shared { class SuperLogger; } }
+namespace appleseed     { namespace common { class SuperLogger; } }
 namespace foundation    { class CommandLineParser; }
 
 namespace appleseed {
-namespace shared {
+namespace common {
 
 //
 // Base class for command line handlers.
 //
 
-class SHAREDDLL CommandLineHandlerBase
+class CommandLineHandlerBase
   : public foundation::NonCopyable
 {
   public:
@@ -96,5 +93,5 @@ class SHAREDDLL CommandLineHandlerBase
     Impl* impl;
 };
 
-}   // namespace shared
+}   // namespace common
 }   // namespace appleseed

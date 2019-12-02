@@ -68,7 +68,7 @@ endif ()
 
 include_directories (
     .
-    ../../appleseed.shared
+    ../../appleseed.common
 )
 
 
@@ -87,7 +87,7 @@ link_against_platform (projecttool)
 
 target_link_libraries (projecttool
     appleseed
-    appleseed.shared
+    appleseed.common
     ${Boost_LIBRARIES}
 )
 

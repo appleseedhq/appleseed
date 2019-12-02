@@ -195,7 +195,7 @@ endif ()
 
 include_directories (
     .
-    ../appleseed.shared
+    ../appleseed.common
 )
 
 if (WITH_PYTHON2_BINDINGS)
