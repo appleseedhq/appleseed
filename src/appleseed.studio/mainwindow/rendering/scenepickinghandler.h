@@ -41,8 +41,8 @@
 #include <QObject>
 
 // Forward declarations.
+namespace appleseed { namespace qtcommon { class MouseCoordinatesTracker; } }
 namespace appleseed { namespace studio { class ItemBase; } }
-namespace appleseed { namespace studio { class MouseCoordinatesTracker; } }
 namespace appleseed { namespace studio { class ProjectExplorer; } }
 namespace renderer  { class Project; }
 class QComboBox;
@@ -62,11 +62,11 @@ class ScenePickingHandler
 
   public:
     ScenePickingHandler(
-        QWidget*                            widget,
-        QComboBox*                          picking_mode_combo,
-        const MouseCoordinatesTracker&      mouse_tracker,
-        const ProjectExplorer&              project_explorer,
-        const renderer::Project&            project);
+        QWidget*                                    widget,
+        QComboBox*                                  picking_mode_combo,
+        const qtcommon::MouseCoordinatesTracker&    mouse_tracker,
+        const ProjectExplorer&                      project_explorer,
+        const renderer::Project&                    project);
 
     ~ScenePickingHandler() override;
 
@@ -76,12 +76,12 @@ class ScenePickingHandler
     void signal_entity_picked(renderer::ScenePicker::PickingResult result);
 
   private:
-    QWidget*                                m_widget;
-    QComboBox*                              m_picking_mode_combo;
-    const MouseCoordinatesTracker&          m_mouse_tracker;
-    const ProjectExplorer&                  m_project_explorer;
-    const renderer::Project&                m_project;
-    bool                                    m_enabled;
+    QWidget*                                        m_widget;
+    QComboBox*                                      m_picking_mode_combo;
+    const qtcommon::MouseCoordinatesTracker&        m_mouse_tracker;
+    const ProjectExplorer&                          m_project_explorer;
+    const renderer::Project&                        m_project;
+    bool                                            m_enabled;
 
     bool eventFilter(QObject* object, QEvent* event) override;
 

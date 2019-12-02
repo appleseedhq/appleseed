@@ -32,9 +32,11 @@
 #include "mainwindow/rendering/cameracontroller.h"
 #include "mainwindow/rendering/lightpathspickinghandler.h"
 #include "mainwindow/rendering/renderclipboardhandler.h"
-#include "utility/mousecoordinatestracker.h"
-#include "utility/scrollareapanhandler.h"
-#include "utility/widgetzoomhandler.h"
+
+// appleseed.qtcommon headers.
+#include "widgets/mousecoordinatestracker.h"
+#include "widgets/scrollareapanhandler.h"
+#include "widgets/widgetzoomhandler.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
@@ -87,22 +89,22 @@ class LightPathsTab
     void slot_camera_changed();
 
   private:
-    renderer::Project&                          m_project;
-    renderer::ParamArray&                       m_settings;
-    LightPathsWidget*                           m_light_paths_widget;
-    QScrollArea*                                m_scroll_area;
-    QToolBar*                                   m_toolbar;
-    QToolButton*                                m_prev_path_button;
-    QToolButton*                                m_next_path_button;
-    QLabel*                                     m_info_label;
+    renderer::Project&                                  m_project;
+    renderer::ParamArray&                               m_settings;
+    LightPathsWidget*                                   m_light_paths_widget;
+    QScrollArea*                                        m_scroll_area;
+    QToolBar*                                           m_toolbar;
+    QToolButton*                                        m_prev_path_button;
+    QToolButton*                                        m_next_path_button;
+    QLabel*                                             m_info_label;
 
-    std::unique_ptr<WidgetZoomHandler>          m_zoom_handler;
-    std::unique_ptr<ScrollAreaPanHandler>       m_pan_handler;
-    std::unique_ptr<MouseCoordinatesTracker>    m_mouse_tracker;
-    std::unique_ptr<CameraController>           m_camera_controller;
-    std::unique_ptr<LightPathsPickingHandler>   m_screen_space_paths_picking_handler;
-    std::unique_ptr<LightPathsPickingHandler>   m_world_space_paths_picking_handler;
-    std::unique_ptr<RenderClipboardHandler>     m_clipboard_handler;
+    std::unique_ptr<qtcommon::WidgetZoomHandler>        m_zoom_handler;
+    std::unique_ptr<qtcommon::ScrollAreaPanHandler>     m_pan_handler;
+    std::unique_ptr<qtcommon::MouseCoordinatesTracker>  m_mouse_tracker;
+    std::unique_ptr<CameraController>                   m_camera_controller;
+    std::unique_ptr<LightPathsPickingHandler>           m_screen_space_paths_picking_handler;
+    std::unique_ptr<LightPathsPickingHandler>           m_world_space_paths_picking_handler;
+    std::unique_ptr<RenderClipboardHandler>             m_clipboard_handler;
 
     void create_light_paths_widget();
     void create_toolbar();

@@ -33,8 +33,10 @@
 #include "ui_applicationsettingswindow.h"
 
 // appleseed.studio headers.
-#include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
+
+// appleseed.qtcommon headers.
+#include "widgets/miscellaneous.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/utility.h"
@@ -52,6 +54,7 @@
 // Standard headers.
 #include <string>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 

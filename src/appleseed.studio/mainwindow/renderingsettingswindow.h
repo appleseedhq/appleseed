@@ -42,7 +42,7 @@
 #include <vector>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class ProjectManager; } }
+namespace appleseed { namespace qtcommon { class ProjectManager; } }
 namespace appleseed { namespace studio { class RenderSettingsPanel; } }
 namespace renderer  { class Configuration; }
 namespace renderer  { class ParamArray; }
@@ -64,7 +64,7 @@ class RenderingSettingsWindow
   public:
     // Constructor.
     RenderingSettingsWindow(
-        ProjectManager&                 project_manager,
+        qtcommon::ProjectManager&       project_manager,
         const renderer::ParamArray&     application_settings,
         QWidget*                        parent = nullptr);
 
@@ -87,7 +87,7 @@ class RenderingSettingsWindow
     // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.
     Ui::RenderingSettingsWindow*        m_ui;
 
-    ProjectManager&                     m_project_manager;
+    qtcommon::ProjectManager&           m_project_manager;
     const renderer::ParamArray&         m_application_settings;
 
     PanelCollection                     m_panels;

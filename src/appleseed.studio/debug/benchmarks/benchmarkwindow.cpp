@@ -63,6 +63,7 @@
 #include <utility>
 
 using namespace appleseed::common;
+using namespace appleseed::qtcommon;
 using namespace boost;
 using namespace foundation;
 namespace bf = boost::filesystem;

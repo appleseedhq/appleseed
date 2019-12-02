@@ -1,0 +1,43 @@
+<RCC>
+    <qresource prefix="/">
+        <file>widgets/checkbox_checked_disabled.png</file>
+        <file>widgets/checkbox_checked_enabled.png</file>
+        <file>widgets/checkbox_indeterminate_disabled.png</file>
+        <file>widgets/checkbox_indeterminate_enabled.png</file>
+        <file>widgets/checkbox_unchecked_disabled.png</file>
+        <file>widgets/checkbox_unchecked_enabled.png</file>
+        <file>widgets/combobox_arrow_down_disabled.png</file>
+        <file>widgets/combobox_arrow_down_enabled.png</file>
+        <file>widgets/combobox_arrow_down_selected.png</file>
+        <file>widgets/header_arrow_down_disabled.png</file>
+        <file>widgets/header_arrow_down_enabled.png</file>
+        <file>widgets/header_arrow_up_disabled.png</file>
+        <file>widgets/header_arrow_up_enabled.png</file>
+        <file>widgets/layer_fold.png</file>
+        <file>widgets/layer_move_down.png</file>
+        <file>widgets/layer_move_up.png</file>
+        <file>widgets/layer_remove.png</file>
+        <file>widgets/layer_unfold.png</file>
+        <file>widgets/menu_arrow_right_disabled.png</file>
+        <file>widgets/menu_arrow_right_enabled.png</file>
+        <file>widgets/menu_arrow_right_selected.png</file>
+        <file>widgets/radiobutton_checked_disabled.png</file>
+        <file>widgets/radiobutton_checked_enabled.png</file>
+        <file>widgets/radiobutton_checked_enabled_hover.png</file>
+        <file>widgets/radiobutton_unchecked_disabled.png</file>
+        <file>widgets/radiobutton_unchecked_enabled.png</file>
+        <file>widgets/radiobutton_unchecked_enabled_hover.png</file>
+        <file>widgets/scrollbar_arrow_down_disabled.png</file>
+        <file>widgets/scrollbar_arrow_down_enabled.png</file>
+        <file>widgets/scrollbar_arrow_left_disabled.png</file>
+        <file>widgets/scrollbar_arrow_left_enabled.png</file>
+        <file>widgets/scrollbar_arrow_right_disabled.png</file>
+        <file>widgets/scrollbar_arrow_right_enabled.png</file>
+        <file>widgets/scrollbar_arrow_up_disabled.png</file>
+        <file>widgets/scrollbar_arrow_up_enabled.png</file>
+        <file>widgets/spinbox_arrow_down_disabled.png</file>
+        <file>widgets/spinbox_arrow_down_enabled.png</file>
+        <file>widgets/spinbox_arrow_up_disabled.png</file>
+        <file>widgets/spinbox_arrow_up_enabled.png</file>
+    </qresource>
+</RCC>

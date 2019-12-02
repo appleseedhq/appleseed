@@ -659,6 +659,10 @@ if (WITH_CLI OR WITH_STUDIO OR WITH_TOOLS)
     add_subdirectory (src/appleseed.common)
 endif ()
 
+if (WITH_STUDIO)
+    add_subdirectory (src/appleseed.qtcommon)
+endif ()
+
 if (WITH_CLI)
     add_subdirectory (src/appleseed.cli)
 endif ()

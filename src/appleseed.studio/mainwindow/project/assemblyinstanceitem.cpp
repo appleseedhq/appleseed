@@ -34,7 +34,9 @@
 #include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/rendering/renderingmanager.h"
-#include "utility/miscellaneous.h"
+
+// appleseed.qtcommon headers.
+#include "widgets/miscellaneous.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/project.h"
@@ -46,6 +48,7 @@
 // Standard headers.
 #include <memory>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 

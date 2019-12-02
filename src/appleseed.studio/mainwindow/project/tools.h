@@ -42,7 +42,7 @@
 #include <string>
 
 // Forward declarations.
-namespace appleseed     { namespace studio { class DoubleSlider; } }
+namespace appleseed     { namespace qtcommon { class DoubleSlider; } }
 namespace foundation    { class Dictionary; }
 namespace renderer      { class ParamArray; }
 namespace renderer      { class Project; }
@@ -129,7 +129,7 @@ class LineEditSliderAdaptor
 
 
 //
-// Binds QLineEdit and DoubleSlider controls together such that updading
+// Binds QLineEdit and qtcommon::DoubleSlider controls together such that updading
 // the value in one control updates the value in the other.
 //
 
@@ -140,8 +140,8 @@ class LineEditDoubleSliderAdaptor
 
   public:
     LineEditDoubleSliderAdaptor(
-        QLineEdit*      line_edit,
-        DoubleSlider*   slider);
+        QLineEdit*              line_edit,
+        qtcommon::DoubleSlider* slider);
 
   public slots:
     void slot_set_line_edit_value(const double value);
@@ -149,8 +149,8 @@ class LineEditDoubleSliderAdaptor
     void slot_apply_line_edit_value();
 
   private:
-    QLineEdit*      m_line_edit;
-    DoubleSlider*   m_slider;
+    QLineEdit*                  m_line_edit;
+    qtcommon::DoubleSlider*     m_slider;
 
     void adjust_slider(const double new_value);
 };

@@ -33,7 +33,9 @@
 // appleseed.studio headers.
 #include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/rendering/renderwidget.h"
-#include "utility/miscellaneous.h"
+
+// appleseed.qtcommon headers.
+#include "widgets/miscellaneous.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
@@ -61,6 +63,7 @@
 // Standard headers.
 #include <string>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 namespace OCIO = OCIO_NAMESPACE;

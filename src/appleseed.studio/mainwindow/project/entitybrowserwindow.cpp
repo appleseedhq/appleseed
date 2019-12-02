@@ -33,9 +33,9 @@
 // UI definition header.
 #include "ui_entitybrowserwindow.h"
 
-// appleseed.studio headers.
-#include "utility/interop.h"
-#include "utility/miscellaneous.h"
+// appleseed.qtcommon headers.
+#include "widgets/interop.h"
+#include "widgets/miscellaneous.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"
@@ -52,6 +52,7 @@
 #include <Qt>
 #include <QWidget>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 
 namespace appleseed {

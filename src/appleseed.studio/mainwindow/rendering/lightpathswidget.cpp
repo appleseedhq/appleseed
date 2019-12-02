@@ -29,8 +29,8 @@
 // Interface header.
 #include "lightpathswidget.h"
 
-// appleseed.studio headers.
-#include "utility/miscellaneous.h"
+// appleseed.qtcommon headers.
+#include "widgets/miscellaneous.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/camera.h"
@@ -59,6 +59,7 @@
 #include <algorithm>
 #include <cmath>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 

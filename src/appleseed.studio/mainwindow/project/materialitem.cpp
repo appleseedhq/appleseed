@@ -35,8 +35,10 @@
 #endif
 #include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/tools.h"
-#include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
+
+// appleseed.qtcommon headers.
+#include "widgets/miscellaneous.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/material.h"
@@ -56,6 +58,7 @@
 // Standard headers.
 #include <utility>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 namespace bf = boost::filesystem;

@@ -47,9 +47,9 @@
 #include <memory>
 
 // Forward declarations.
+namespace appleseed { namespace qtcommon { class ProjectManager; } }
 namespace appleseed { namespace studio { class AttributeEditor; } }
 namespace appleseed { namespace studio { class ItemBase; } }
-namespace appleseed { namespace studio { class ProjectManager; } }
 namespace appleseed { namespace studio { class RenderingManager; } }
 namespace renderer  { class ParamArray; }
 namespace renderer  { class Project; }
@@ -70,12 +70,12 @@ class ProjectExplorer
 
   public:
     ProjectExplorer(
-        QTreeWidget*            tree_widget,
-        AttributeEditor*        attribute_editor,
-        renderer::Project&      project,
-        ProjectManager&         project_manager,
-        RenderingManager&       rendering_manager,
-        renderer::ParamArray&   settings);
+        QTreeWidget*                tree_widget,
+        AttributeEditor*            attribute_editor,
+        renderer::Project&          project,
+        qtcommon::ProjectManager&   project_manager,
+        RenderingManager&           rendering_manager,
+        renderer::ParamArray&       settings);
 
     ~ProjectExplorer() override;
 
@@ -89,12 +89,12 @@ class ProjectExplorer
     void signal_frame_modified() const;
 
   private:
-    QTreeWidget*                m_tree_widget;
-    AttributeEditor*            m_attribute_editor;
-    ProjectBuilder              m_project_builder;
-    ItemRegistry                m_item_registry;
-    EntityEditorContext         m_editor_context;
-    std::unique_ptr<QShortcut>  m_delete_shortcut;
+    QTreeWidget*                    m_tree_widget;
+    AttributeEditor*                m_attribute_editor;
+    ProjectBuilder                  m_project_builder;
+    ItemRegistry                    m_item_registry;
+    EntityEditorContext             m_editor_context;
+    std::unique_ptr<QShortcut>      m_delete_shortcut;
 
     QMenu* build_single_item_context_menu(QTreeWidgetItem* item) const;
     QMenu* build_multiple_items_context_menu(const QList<QTreeWidgetItem*>& item_widgets) const;

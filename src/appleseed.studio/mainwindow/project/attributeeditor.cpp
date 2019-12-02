@@ -32,7 +32,9 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/ientityvalueprovider.h"
-#include "utility/miscellaneous.h"
+
+// appleseed.qtcommon headers.
+#include "widgets/miscellaneous.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/utility.h"
@@ -43,6 +45,7 @@
 // Standard headers.
 #include <utility>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 

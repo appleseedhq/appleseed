@@ -35,16 +35,18 @@
 
 // appleseed.studio headers.
 #include "help/about/aboutwindow.h"
-#include "mainwindow/logwidget.h"
 #include "mainwindow/minimizebutton.h"
 #include "mainwindow/project/attributeeditor.h"
 #include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/pythonconsole/pythonconsolewidget.h"
 #include "mainwindow/rendering/lightpathstab.h"
 #include "mainwindow/rendering/renderwidget.h"
-#include "utility/interop.h"
-#include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
+
+// appleseed.qtcommon headers.
+#include "widgets/interop.h"
+#include "widgets/logwidget.h"
+#include "widgets/miscellaneous.h"
 
 // appleseed.common headers.
 #include "application/application.h"
@@ -104,6 +106,7 @@
 #include <cstdlib>
 
 using namespace appleseed::common;
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 namespace bf = boost::filesystem;

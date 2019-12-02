@@ -33,7 +33,9 @@
 // appleseed.studio headers.
 #include "mainwindow/project/itembase.h"
 #include "mainwindow/project/projectexplorer.h"
-#include "utility/mousecoordinatestracker.h"
+
+// appleseed.qtcommon headers.
+#include "widgets/mousecoordinatestracker.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/bsdf.h"
@@ -70,6 +72,7 @@
 #include <ostream>
 #include <sstream>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 

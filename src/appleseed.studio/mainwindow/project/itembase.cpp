@@ -36,6 +36,7 @@
 #include <QString>
 #include <Qt>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 
 namespace appleseed {

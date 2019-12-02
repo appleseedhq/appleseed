@@ -34,7 +34,9 @@
 #include "mainwindow/project/attributeeditor.h"
 #include "mainwindow/project/itembase.h"
 #include "mainwindow/project/projectitem.h"
-#include "utility/miscellaneous.h"
+
+// appleseed.qtcommon headers.
+#include "widgets/miscellaneous.h"
 
 // Qt headers.
 #include <QDrag>
@@ -53,6 +55,7 @@
 // Standard headers.
 #include <cassert>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 

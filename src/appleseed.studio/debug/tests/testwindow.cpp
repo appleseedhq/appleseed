@@ -35,7 +35,9 @@
 
 // appleseed.studio headers.
 #include "debug/tests/testoutputitem.h"
-#include "utility/miscellaneous.h"
+
+// appleseed.qtcommon headers.
+#include "widgets/miscellaneous.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/test.h"
@@ -55,6 +57,7 @@
 #include <cstddef>
 #include <utility>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 
 Q_DECLARE_METATYPE(ITestCaseFactory*);

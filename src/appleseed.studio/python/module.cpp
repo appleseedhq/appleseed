@@ -31,6 +31,9 @@
 #include "mainwindow/minimizebutton.h"
 #include "python/pythoninterpreter.h"
 
+// appleseed.qtcommon headers.
+#include "project/projectmanager.h"
+
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
 #include "foundation/platform/python.h"
@@ -46,6 +49,7 @@
 #include <cstdint>
 
 namespace bpy = boost::python;
+using namespace appleseed::qtcommon;
 using namespace appleseed::studio;
 using namespace foundation;
 using namespace renderer;

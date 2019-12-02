@@ -34,8 +34,10 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/tools.h"
-#include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
+
+// appleseed.qtcommon headers.
+#include "widgets/miscellaneous.h"
 
 // appleseed.common headers.
 #include "application/application.h"
@@ -78,6 +80,7 @@
 #include <sstream>
 
 using namespace appleseed::common;
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 namespace bf = boost::filesystem;
