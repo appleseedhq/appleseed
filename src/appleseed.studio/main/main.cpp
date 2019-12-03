@@ -148,7 +148,7 @@ namespace
 
             if (bf::is_directory(python_path))
             {
-                const std::string python_path_str = safe_canonical(python_path).string();
+                const std::string python_path_str = safe_weakly_canonical(python_path).string();
 
                 // The C string below must be declared static because Python just keeps a pointer to it.
                 static char python_home[FOUNDATION_MAX_PATH_LENGTH + 1];
