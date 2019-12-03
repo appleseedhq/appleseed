@@ -160,7 +160,7 @@ struct PluginStore::Impl
 
     void load_all_plugins_from_path_no_lock(bf::path path)
     {
-        path = safe_canonical(path);
+        path = safe_weakly_canonical(path);
 
         // Only consider directories.
         if (!bf::exists(path) || !bf::is_directory(path))

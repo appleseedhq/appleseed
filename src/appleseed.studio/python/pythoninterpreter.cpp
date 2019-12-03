@@ -106,7 +106,7 @@ namespace
         // Compute full path.
         const bf::path site_pkg_path = base_path / "lib" / "python" / "site-packages";
 
-        return safe_canonical(site_pkg_path);
+        return safe_weakly_canonical(site_pkg_path);
     }
 
     bf::path compute_appleseed_python_module_path()
@@ -132,7 +132,7 @@ namespace
         // Compute full path.
         lib_path = base_path / lib_path / "python";
 
-        return safe_canonical(lib_path);
+        return safe_weakly_canonical(lib_path);
     }
 
     bf::path compute_bundled_plugins_path()
@@ -153,7 +153,7 @@ namespace
         // Compute full path.
         bf::path plugins_path = base_path / "studio" / "plugins";
 
-        return safe_canonical(plugins_path);
+        return safe_weakly_canonical(plugins_path);
     }
 }
 

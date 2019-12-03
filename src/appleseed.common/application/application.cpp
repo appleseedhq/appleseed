@@ -271,7 +271,7 @@ bool Application::load_settings(
     // First try to read settings from the user path.
     if (const char* user_path = get_user_settings_path())
     {
-        const bf::path user_settings_file_path = safe_canonical(bf::path(user_path) / filename);
+        const bf::path user_settings_file_path = safe_weakly_canonical(bf::path(user_path) / filename);
         if (bf::exists(user_settings_file_path) &&
             reader.read(
                 user_settings_file_path.string().c_str(),
@@ -284,7 +284,7 @@ bool Application::load_settings(
     }
 
     // As a fallback, try to read settings from appleseed's installation directory.
-    const std::string settings_file_path = safe_canonical(root_path / "settings" / filename).string();
+    const std::string settings_file_path = safe_weakly_canonical(root_path / "settings" / filename).string();
     if (reader.read(
             settings_file_path.c_str(),
             schema_file_path.string().c_str(),
@@ -314,7 +314,7 @@ bool Application::save_settings(
             const bf::path user_settings_path(user_path);
             bf::create_directories(user_settings_path);
 
-            const std::string user_settings_file_path = safe_canonical(user_settings_path / filename).string();
+            const std::string user_settings_file_path = safe_weakly_canonical(user_settings_path / filename).string();
             if (writer.write(user_settings_file_path.c_str(), settings))
             {
                 LOG(logger, category, "successfully saved settings to %s.", user_settings_file_path.c_str());
@@ -328,7 +328,7 @@ bool Application::save_settings(
 
     // As a fallback, try to write settings to appleseed's installation directory.
     const bf::path root_path(get_root_path());
-    const std::string settings_file_path = safe_canonical(root_path / "settings" / filename).string();
+    const std::string settings_file_path = safe_weakly_canonical(root_path / "settings" / filename).string();
     if (writer.write(settings_file_path.c_str(), settings))
     {
         LOG(logger, category, "successfully saved settings to %s.", settings_file_path.c_str());
