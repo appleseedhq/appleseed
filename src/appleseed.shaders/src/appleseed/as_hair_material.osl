@@ -30,7 +30,7 @@ shader as_hair_material
 [[
     string help = "Hair Material.",
     string icon = "asHair.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_hair.html",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_hair.html#label-as-hair",
 
     string as_node_name = "asHair",
     string as_category = "shader",
