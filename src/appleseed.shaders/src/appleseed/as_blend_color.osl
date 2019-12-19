@@ -32,7 +32,7 @@ shader as_blend_color
 [[
     string help = "Color blend utility node.",
     string icon = "asBlendColor.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_blend_color.html#label-as-blend-color",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_blend_color.html",
 
     string as_node_name = "asBlendColor",
     string as_category = "color",

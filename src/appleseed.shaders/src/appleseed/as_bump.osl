@@ -32,7 +32,7 @@ shader as_bump
 [[
     string help = "Bump and normal mapping node.",
     string icon = "asBump.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_bump.html#label-as-bump",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_bump.html",
 
     string as_node_name = "asBump",
     string as_category = "utility",

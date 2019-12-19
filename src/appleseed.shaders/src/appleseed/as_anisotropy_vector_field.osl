@@ -30,7 +30,7 @@ shader as_anisotropy_vector_field
 [[
     string help = "Creates an anisotropy field vector from an input color.",
     string icon = "asAnisotropyVectorField.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_anisotropy_vector_field.html#label-as-anisotropy-vector-field",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_anisotropy_vector_field.html",
 
     string as_node_name = "asAnisotropyVectorField",
     string as_category = "utility",

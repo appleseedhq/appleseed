@@ -36,7 +36,7 @@ shader as_noise3d
 [[
     string icon = "asNoise3D.png",
     string help = "Recursive 3D fractal noise.",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_noise3d.html#label-as-noise3d",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_noise3d.html",
 
     string as_node_name = "asNoise3D",
     string as_category = "texture3d",

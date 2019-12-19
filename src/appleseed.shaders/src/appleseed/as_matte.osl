@@ -30,7 +30,7 @@ shader as_matte
 [[
     string help = "Matte Material",
     string icon = "asMatte.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_matte_surface.html#label-as-matte-surface",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_matte_surface.html",
 
     string as_node_name = "asMatte",
     string as_category = "shader",

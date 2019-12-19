@@ -33,7 +33,7 @@ shader as_blackbody
 [[
     string help = "Emission shader with black-body radiation.",
     string icon = "asBlackbody.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_blackbody.html#label-as-blackbody",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_blackbody.html",
 
     string as_node_name = "asBlackbody",
     string as_category = "shader",

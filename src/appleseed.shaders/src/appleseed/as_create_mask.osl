@@ -34,7 +34,7 @@ shader as_create_mask
 [[
     string help = "Creates a greyscale mask from an input color or grey value.",
     string icon = "asCreateMask.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_create_mask.html#label-as-create-mask",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_create_mask.html",
 
     string as_node_name = "asCreateMask",
     string as_category = "utility",

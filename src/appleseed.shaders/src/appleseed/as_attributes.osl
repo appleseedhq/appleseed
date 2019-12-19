@@ -30,7 +30,7 @@ shader as_attributes
 [[
     string help = "OSL and appleseed attributes.",
     string icon = "asAttributes.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_attributes.html#label-as-attributes",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_attributes.html",
 
     string as_node_name = "asAttributes",
     string as_category = "utility",

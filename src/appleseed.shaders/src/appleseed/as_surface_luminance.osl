@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017-2018 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2019 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,28 +30,74 @@
 #include "appleseed/color/as_colorimetry.h"
 #include "appleseed/maya/as_maya_helpers.h"
 
-shader as_luminance
+shader as_surface_luminance
 [[
-    string icon = "asLuminance.png",
-    string help = "A node that outputs the (color space-aware) relative luminance of a color.",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_luminance.html",
+    string icon = "asSurfaceLuminance.png",
+    string help = "Node that gets the relative luminance of an input closure.",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_surface_luminance.html",
 
-    string as_node_name = "asLuminance",
-    string as_category = "color",
+    string as_node_name = "asSurfaceLuminance",
+    string as_category = "shader",
 
-    string as_max_class_id = "1648771987 792674094",
-    string as_max_plugin_type = "texture",
+    string as_max_class_id = "1813865764 1568361250",
+    string as_max_plugin_type = "material",
 
-    int as_maya_type_id = 0x001279cd,
-    string as_maya_classification = "drawdb/shader:rendernode/appleseed/utility"
+    int as_maya_type_id = 0x00127a0a,
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch"
 ]]
 (
-    color in_color = color(0.5)
+    closure color in_color = 0
     [[
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
-        string label = "Input Color",
-        string page = "Color"
+        string label = "Surface shader",
+        string page = "Surface",
+        string help = "The input material shader.",
+        int divider = 1
+    ]],
+    string in_evaluation_mode = "diffuse+specular"
+    [[
+        string as_maya_attribute_name = "evaluationMode",
+        string as_maya_attribute_short_name = "evm",
+        string widget = "popup",
+        string options = "emission|diffuse|specular|emission+diffuse|emission+specular|diffuse+specular|all",
+        string label = "Evaluation Mode",
+        string page = "Surface",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "The choice of closure BxDF to consider for evaluation",
+        int divider = 1
+    ]],
+    int in_clamp_input = 0
+    [[
+        string as_maya_attribute_name = "clampInput",
+        string as_maya_attribute_short_name = "cin",
+        string widget = "checkBox",
+        string label = "Clamp Input",
+        string page = "Surface",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Clamp input to [0,1] range."
+    ]],
+    int in_clamp_output = 0
+    [[
+        string as_maya_attribute_name = "clampOutput",
+        string as_maya_attribute_short_name = "cou",
+        string widget = "checkBox",
+        string label = "Clamp Output",
+        string page = "Surface",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Clamp output to [0,1] range."
     ]],
     int in_deriveFromMayaCMS = 1
     [[
@@ -157,23 +203,72 @@ shader as_luminance
 
     MAYA_COLORMANAGEMENT_PARAMETERS,
 
-    output float out_result = 0.0
+    output float out_result = 0
     [[
         string as_maya_attribute_name = "result",
         string as_maya_attribute_short_name = "r",
+        string label = "Luminance Scalar"
+    ]],
+    output closure color out_color = 0
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string label = "Surface Luminance",
         string widget = "null"
     ]]
 )
 {
-    if (in_color != 0)
+    if (!isconnected(in_color))
     {
+        return;
+    }
+
+    if (!raytype("npr"))
+    {
+        out_color = in_color;
+    }
+    else
+    {
+        color emis = color(0), diff = color(0), spec = color(0);
+
+        if (in_evaluation_mode == "emission" ||
+            in_evaluation_mode == "emission+diffuse" ||
+            in_evaluation_mode == "emission+specular" ||
+            in_evaluation_mode == "all")
+        {
+            getattribute("surface_shader:emission", emis);
+        }
+
+        if (in_evaluation_mode == "diffuse" ||
+            in_evaluation_mode == "emission+diffuse" ||
+            in_evaluation_mode == "diffuse+specular" ||
+            in_evaluation_mode == "all")
+        {
+            getattribute("surface_shader:diffuse", diff);
+        }
+
+        if (in_evaluation_mode == "specular" ||
+            in_evaluation_mode == "emission+specular" ||
+            in_evaluation_mode == "diffuse+specular" ||
+            in_evaluation_mode == "all")
+        {
+            getattribute("surface_shader:glossy", spec);
+        }
+
+        if (max(emis) < EPS && max(diff) < EPS && max(spec) < EPS)
+        {
+            return;
+        }
+                                                      
+        // Derive the rendering/working space from Maya.
+
         color coeffs;
 
         if (in_deriveFromMayaCMS)
         {
             if (!in_colorManagementEnabled)
             {
-                // CMS is off, default to Rec.709 fallback.
+                // CMS off, default to sRGB/Rec.709 RGB primaries and white.
                 coeffs = color(REC709_D65_LUMINANCE_COEFFS);
             }
             else
@@ -212,9 +307,12 @@ shader as_luminance
         }
         else
         {
+            // Explicitly set the working space, starting with custom RGBW
+            // primaries and choice of white points.
+
             if (in_inputColorSpace == 5)
             {
-                color RGBW[4]; // explicit R,G,B,W chromaticity coordinates
+                color RGBW[4];
 
                 RGBW[0] = transform_CIExyY_to_CIEXYZ(
                     color(in_chromaticityCoordsR[0],
@@ -328,6 +426,8 @@ shader as_luminance
             }
             else
             {
+                // Provide common RGBW chromaticity coordinates.
+
                 if (in_inputColorSpace == 0)
                 {
                     coeffs = color(ACES_D60_LUMINANCE_COEFFS);
@@ -354,12 +454,23 @@ shader as_luminance
                 }
             }
         }
-        out_result = coeffs[0] * in_color[0] +
-                     coeffs[1] * in_color[1] +
-                     coeffs[2] * in_color[2];
-    }
-    else
-    {
-        out_result = 0.0;
+
+        if (in_clamp_input)
+        {
+            emis = clamp(emis, 0, 1);
+            diff = clamp(diff, 0, 1);
+            spec = clamp(spec, 0, 1);
+        }
+
+        color input_color = (in_clamp_output)
+            ? clamp(emis + diff + spec, 0, 1)
+            : emis + diff + spec;
+
+        float relative_Y = coeffs[0] * input_color[0] +
+                           coeffs[1] * input_color[1] +
+                           coeffs[2] * input_color[2];
+
+        out_color = relative_Y * as_npr_shading();
+        out_result = relative_Y;
     }
 }

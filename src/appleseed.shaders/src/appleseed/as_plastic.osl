@@ -30,7 +30,7 @@ shader as_plastic
 [[
     string icon = "asPlastic.png",
     string help = "A plastic material, layering a diffuse and specular terms.",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_plastic.html#label-as-plastic",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_plastic.html",
 
     string as_node_name = "asPlastic",
     string as_category = "shader",

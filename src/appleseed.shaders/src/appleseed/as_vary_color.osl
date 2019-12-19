@@ -34,7 +34,7 @@ shader as_vary_color
 [[
     string help = "Color variation utility shader.",
     string icon = "asVaryColor.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_vary_color.html#label-as-vary-color",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_vary_color.html",
 
     string as_node_name = "asVaryColor",
     string as_category = "color",
