@@ -328,7 +328,7 @@ shader as_triplanar
         string label = "Flip R",
         string page = "Projection.X Axis.Normal",
         string help = "Flip the red channel of the texture lookup",
-	int as_max_param_id = 53
+        int as_max_param_id = 53
     ]],
     int in_x_axis_flip_g = 0
     [[
@@ -343,7 +343,7 @@ shader as_triplanar
         string label = "Flip G",
         string page = "Projection.X Axis.Normal",
         string help = "Flip the green channel of the texture lookup",,
-	int as_max_param_id = 54
+        int as_max_param_id = 54
     ]],
     int in_x_axis_swap_rg = 0
     [[
@@ -358,7 +358,7 @@ shader as_triplanar
         string label = "Swap RG",
         string page = "Projection.X Axis.Normal",
         string help = "Swap the red and green channels of the texture lookup",
-	int as_max_param_id = 55
+        int as_max_param_id = 55
     ]],
     string in_x_tex_eotf = "sRGB"
     [[
