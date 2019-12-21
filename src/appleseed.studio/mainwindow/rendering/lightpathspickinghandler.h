@@ -36,8 +36,9 @@
 #include <QObject>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class LightPathsWidget; } }
+namespace appleseed { namespace studio { class LightPathsLayer; } }
 namespace appleseed { namespace studio { class MouseCoordinatesTracker; } }
+namespace appleseed { namespace studio { class ViewportWidget; } }
 namespace renderer  { class Project; }
 class QEvent;
 
@@ -51,24 +52,25 @@ class LightPathsPickingHandler
 
   public:
     LightPathsPickingHandler(
-        LightPathsWidget*                   light_paths_widget,
+        ViewportWidget*                     viewport_widget,
         const MouseCoordinatesTracker&      mouse_tracker,
         const renderer::Project&            project);
 
-    ~LightPathsPickingHandler() override;
-
     void set_enabled(const bool enabled);
 
-    void pick(const foundation::Vector2i& pixel) const;
-    void pick(const foundation::AABB2i& rect) const;
+    void pick(const foundation::Vector2i& pixel, QString* lpe);
+    void pick(const foundation::AABB2i& rect, QString* lpe);
+    void pick(QString* lpe);
 
   private:
-    LightPathsWidget*                       m_light_paths_widget;
-    const MouseCoordinatesTracker&          m_mouse_tracker;
+    ViewportWidget*                         m_viewport_widget;
     const renderer::Project&                m_project;
     bool                                    m_enabled;
-
-    bool eventFilter(QObject* object, QEvent* event) override;
+    size_t                                  m_prev_query_x_min;
+    size_t                                  m_prev_query_y_min;
+    size_t                                  m_prev_query_x_max;
+    size_t                                  m_prev_query_y_max;
+    bool                                    m_prev_query_valid;
 };
 
 }   // namespace studio

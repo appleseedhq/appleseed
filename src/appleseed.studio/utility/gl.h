@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Gray Olson, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,34 +28,48 @@
 
 #pragma once
 
-// appleseed.renderer headers.
-#include "renderer/api/rendering.h"
+// Qt headers.
+#include <QOpenGLWidget>
+#include <QOpenGLFunctions_4_1_Core>
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+// standard headers.
+#include <string>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class ViewportWidget; } }
+class QByteArray;
+class QString;
 
 namespace appleseed {
 namespace studio {
 
-class QtTileCallbackFactory
-  : public renderer::ITileCallbackFactory
-{
-  public:
-    // Constructor.
-    explicit QtTileCallbackFactory(ViewportWidget* viewport_widget);
+// Get a string from an OpenGL shader kind value.
+const std::string shader_kind_to_string(const GLint shader_kind);
 
-    // Delete this instance.
-    void release() override;
+// Compile a GL shader.
+void compile_shader(
+    QOpenGLFunctions_4_1_Core* f,
+    const GLuint               shader,
+    const GLsizei              count,
+    const GLchar**             src_string,
+    const GLint*               length);
 
-    // Return a new instance of the class.
-    renderer::ITileCallback* create() override;
+// Link a GL shader program.
+void link_shader_program(
+    QOpenGLFunctions_4_1_Core*  f,
+    const GLuint                program,
+    const GLuint                vert,
+    const GLuint                frag);
 
-  private:
-    ViewportWidget* m_viewport_widget;
-};
+// Create a GL shader program with a vertex and optional fragment shader.
+void create_shader_program(
+    QOpenGLFunctions_4_1_Core*  f,
+    GLuint&                     program,
+    const QByteArray*           vert_source,
+    const QByteArray*           frag_source);
+
+// Load a GLSL shader from file into a QByteArray.
+QByteArray load_gl_shader(const QString& base_name);
 
 }   // namespace studio
 }   // namespace appleseed
+

@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Gray Olson, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,36 +26,51 @@
 // THE SOFTWARE.
 //
 
-#pragma once
+#include "lpevalidator.h"
 
-// appleseed.renderer headers.
-#include "renderer/api/rendering.h"
-
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-
-// Forward declarations.
-namespace appleseed { namespace studio { class ViewportWidget; } }
+using namespace OSL;
 
 namespace appleseed {
 namespace studio {
 
-class QtTileCallbackFactory
-  : public renderer::ITileCallbackFactory
+// LpeValidator implementation
+
+LpeValidator::LpeValidator()
+{}
+
+QValidator::State LpeValidator::validate(QString& input, int& pos) const
 {
-  public:
-    // Constructor.
-    explicit QtTileCallbackFactory(ViewportWidget* viewport_widget);
+    AccumAutomata automata;
 
-    // Delete this instance.
-    void release() override;
+    if (automata.addRule(input.toUtf8().data(), 0, false) != NULL)
+    {
+        return QValidator::State::Acceptable;
+    }
+    else
+    {
+        return QValidator::State::Intermediate;
+    }
+}
 
-    // Return a new instance of the class.
-    renderer::ITileCallback* create() override;
+// LPSortAov implementation
 
-  private:
-    ViewportWidget* m_viewport_widget;
-};
+void LPSortAov::write(
+    void*    flush_data,
+    Color3&  color,
+    float    alpha,
+    bool     has_color,
+    bool     has_alpha)
+{
+    size_t lp_idx = (size_t)flush_data;
+    if (has_color && color.x > 0)
+        // only add if there is a positive color in x
+        m_received.push_back(lp_idx);
+}
 
-}   // namespace studio
-}   // namespace appleseed
+std::vector<size_t> LPSortAov::get_received() const
+{
+    return m_received;
+}
+
+} // namespace studio
+} // namespace appleseed

@@ -30,7 +30,8 @@
 #include "lightpathspickinghandler.h"
 
 // appleseed.studio headers.
-#include "mainwindow/rendering/lightpathswidget.h"
+#include "mainwindow/rendering/lightpathslayer.h"
+#include "mainwindow/rendering/viewportwidget.h"
 #include "utility/mousecoordinatestracker.h"
 
 // appleseed.renderer headers.
@@ -57,20 +58,13 @@ namespace appleseed {
 namespace studio {
 
 LightPathsPickingHandler::LightPathsPickingHandler(
-    LightPathsWidget*               light_paths_widget,
+    ViewportWidget*                 viewport_widget,
     const MouseCoordinatesTracker&  mouse_tracker,
     const Project&                  project)
-  : m_light_paths_widget(light_paths_widget)
-  , m_mouse_tracker(mouse_tracker)
-  , m_project(project)
+  : m_project(project)
   , m_enabled(true)
+  , m_viewport_widget(viewport_widget)
 {
-    m_light_paths_widget->installEventFilter(this);
-}
-
-LightPathsPickingHandler::~LightPathsPickingHandler()
-{
-    m_light_paths_widget->removeEventFilter(this);
 }
 
 void LightPathsPickingHandler::set_enabled(const bool enabled)
@@ -78,7 +72,7 @@ void LightPathsPickingHandler::set_enabled(const bool enabled)
     m_enabled = enabled;
 }
 
-void LightPathsPickingHandler::pick(const Vector2i& pixel) const
+void LightPathsPickingHandler::pick(const Vector2i& pixel, QString* lpe)
 {
     const Image& image = m_project.get_frame()->image();
     const CanvasProperties& props = image.properties();
@@ -88,32 +82,46 @@ void LightPathsPickingHandler::pick(const Vector2i& pixel) const
         pixel.x < static_cast<int>(props.m_canvas_width) &&
         pixel.y < static_cast<int>(props.m_canvas_height))
     {
+        m_prev_query_x_min = static_cast<size_t>(pixel.x);
+        m_prev_query_y_min = static_cast<size_t>(pixel.y);
+        m_prev_query_x_max = static_cast<size_t>(pixel.x);
+        m_prev_query_y_max = static_cast<size_t>(pixel.y);
+        m_prev_query_valid = true;
         LightPathArray light_paths;
         m_project.get_light_path_recorder().query(
-            static_cast<size_t>(pixel.x),
-            static_cast<size_t>(pixel.y),
-            static_cast<size_t>(pixel.x),
-            static_cast<size_t>(pixel.y),
+            m_prev_query_x_min,
+            m_prev_query_y_min,
+            m_prev_query_x_max,
+            m_prev_query_y_max,
+            lpe == NULL ? NULL : lpe->toUtf8().data(),
             light_paths);
 
         if (light_paths.empty())
-            RENDERER_LOG_INFO("no light path found at pixel (%d, %d).", pixel.x, pixel.y);
+            RENDERER_LOG_INFO("no light path found at pixel (%d, %d) with light path expression `%s`.",
+                pixel.x,
+                pixel.y,
+                lpe ? lpe->toUtf8().data() : "");
         else
         {
             RENDERER_LOG_INFO(
-                "%s light path%s found at pixel (%d, %d).",
+                "%s light path%s found at pixel (%d, %d) with light path expression `%s`.",
                 pretty_uint(light_paths.size()).c_str(),
                 light_paths.size() > 1 ? "s" : "",
                 pixel.x,
-                pixel.y);
+                pixel.y,
+                lpe ? lpe->toUtf8().data() : "");
         }
 
-        m_light_paths_widget->set_light_paths(light_paths);
-        m_light_paths_widget->update();
+        m_viewport_widget->get_light_paths_layer()->set_light_paths(light_paths);
+        m_viewport_widget->update();
+    }
+    else
+    {
+        m_prev_query_valid = false;
     }
 }
 
-void LightPathsPickingHandler::pick(const AABB2i& rect) const
+void LightPathsPickingHandler::pick(const AABB2i& rect, QString* lpe)
 {
     const Image& image = m_project.get_frame()->image();
     const CanvasProperties& props = image.properties();
@@ -128,58 +136,89 @@ void LightPathsPickingHandler::pick(const AABB2i& rect) const
 
     if (final_rect.is_valid())
     {
+        m_prev_query_x_min = static_cast<size_t>(final_rect.min.x);
+        m_prev_query_y_min = static_cast<size_t>(final_rect.min.y);
+        m_prev_query_x_max = static_cast<size_t>(final_rect.max.x);
+        m_prev_query_y_max = static_cast<size_t>(final_rect.max.y);
+        m_prev_query_valid = true;
         LightPathArray light_paths;
         m_project.get_light_path_recorder().query(
-            static_cast<size_t>(final_rect.min.x),
-            static_cast<size_t>(final_rect.min.y),
-            static_cast<size_t>(final_rect.max.x),
-            static_cast<size_t>(final_rect.max.y),
+            m_prev_query_x_min,
+            m_prev_query_y_min,
+            m_prev_query_x_max,
+            m_prev_query_y_max,
+            lpe == NULL ? NULL : lpe->toUtf8().data(),
             light_paths);
 
         if (light_paths.empty())
         {
-            RENDERER_LOG_INFO("no light path found in rectangle (%d, %d)-(%d, %d).",
+            RENDERER_LOG_INFO("no light path found in rectangle (%d, %d)-(%d, %d) with light path expression `%s`.",
                 final_rect.min.x,
                 final_rect.min.y,
                 final_rect.max.x,
-                final_rect.max.y);
+                final_rect.max.y,
+                lpe ? lpe->toUtf8().data() : "");
         }
         else
         {
             RENDERER_LOG_INFO(
-                "%s light path%s found in rectangle (%d, %d)-(%d, %d).",
+                "%s light path%s found in rectangle (%d, %d)-(%d, %d) with light path expression `%s`.",
                 pretty_uint(light_paths.size()).c_str(),
                 light_paths.size() > 1 ? "s" : "",
                 final_rect.min.x,
                 final_rect.min.y,
                 final_rect.max.x,
-                final_rect.max.y);
+                final_rect.max.y,
+                lpe ? lpe->toUtf8().data() : "");
         }
 
-        m_light_paths_widget->set_light_paths(light_paths);
-        m_light_paths_widget->update();
+        m_viewport_widget->get_light_paths_layer()->set_light_paths(light_paths);
+        m_viewport_widget->update();
+    }
+    else
+    {
+        m_prev_query_valid = false;
     }
 }
 
-bool LightPathsPickingHandler::eventFilter(QObject* object, QEvent* event)
+void LightPathsPickingHandler::pick(QString* lpe)
 {
-    if (m_enabled)
+    if (m_prev_query_valid)
     {
-        if (event->type() == QEvent::MouseButtonPress)
-        {
-            const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
-            if (!(mouse_event->modifiers() & (Qt::AltModifier | Qt::ShiftModifier | Qt::ControlModifier)))
-            {
-                if (mouse_event->button() == Qt::LeftButton)
-                {
-                    pick(m_mouse_tracker.widget_to_pixel(mouse_event->pos()));
-                    return true;
-                }
-            }
-        }
-    }
+        LightPathArray light_paths;
+        m_project.get_light_path_recorder().query(
+            m_prev_query_x_min,
+            m_prev_query_y_min,
+            m_prev_query_x_max,
+            m_prev_query_y_max,
+            lpe == NULL ? NULL : lpe->toUtf8().data(),
+            light_paths);
 
-    return QObject::eventFilter(object, event);
+        if (light_paths.empty())
+        {
+            RENDERER_LOG_INFO("no light path found in rectangle (%d, %d)-(%d, %d) with light path expression `%s`.",
+                m_prev_query_x_min,
+                m_prev_query_y_min,
+                m_prev_query_x_max,
+                m_prev_query_y_max,
+                lpe ? lpe->toUtf8().data() : "");
+        }
+        else
+        {
+            RENDERER_LOG_INFO(
+                "%s light path%s found in rectangle (%d, %d)-(%d, %d) with light path expression `%s`.",
+                pretty_uint(light_paths.size()).c_str(),
+                light_paths.size() > 1 ? "s" : "",
+                m_prev_query_x_min,
+                m_prev_query_y_min,
+                m_prev_query_x_max,
+                m_prev_query_y_max,
+                lpe ? lpe->toUtf8().data() : "");
+        }
+
+        m_viewport_widget->get_light_paths_layer()->set_light_paths(light_paths);
+        m_viewport_widget->update();
+    }
 }
 
 }   // namespace studio

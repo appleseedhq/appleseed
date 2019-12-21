@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019  Gray Olson, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +58,7 @@ namespace renderer  { class ObjectInstance; }
 namespace renderer  { class Project; }
 class QKeyEvent;
 class QImage;
-class QOpenGLFunctions_3_3_Core;
+class QOpenGLFunctions_4_1_Core;
 
 namespace appleseed {
 namespace studio {
@@ -67,19 +67,19 @@ namespace studio {
 // A widget providing an hardware-accelerated visualization of recorded light paths.
 //
 
-class LightPathsWidget
-  : public QOpenGLWidget
-  , public ICapturableWidget
+class LightPathsLayer: public QObject
 {
     Q_OBJECT
 
   public:
-    LightPathsWidget(
+    LightPathsLayer(
         const renderer::Project&            project,
-        const size_t                        width,
-        const size_t                        height);
+        const std::size_t                   width,
+        const std::size_t                   height);
 
-    QImage capture() override;
+    void resize(const std::size_t width, const std::size_t height);
+
+    void update_render_camera_transform();
 
     void set_transform(
         const foundation::Transformd&       transform);
@@ -90,6 +90,15 @@ class LightPathsWidget
     void set_selected_light_path_index(
         const int                           selected_light_path_index);
 
+    void set_gl_functions(
+        QOpenGLFunctions_4_1_Core*          functions);
+
+    void init_gl(QSurfaceFormat format);
+
+    void draw() const;
+
+    void draw_render_camera() const;
+
   signals:
     void signal_light_path_selection_changed(
         const int                           selected_light_path_index,
@@ -99,68 +108,48 @@ class LightPathsWidget
     void slot_display_all_light_paths();
     void slot_display_previous_light_path();
     void slot_display_next_light_path();
-    void slot_toggle_backface_culling(const bool checked);
     void slot_synchronize_camera();
 
   private:
     const renderer::Project&                m_project;
     renderer::Camera&                       m_camera;
     foundation::Matrix4d                    m_camera_matrix;
-    foundation::Vector3f                    m_camera_position;
-
-    bool                                    m_backface_culling_enabled;
+    foundation::Matrix4d                    m_render_camera_matrix;
 
     renderer::LightPathArray                m_light_paths;
     int                                     m_selected_light_path_index;    // -1 == display all paths
+    float                                   m_max_luminance;
+    float                                   m_max_thickness;
+    float                                   m_min_thickness;
+    std::size_t                             m_width;
+    std::size_t                             m_height;
 
-    QOpenGLFunctions_3_3_Core*              m_gl;
+    QOpenGLFunctions_4_1_Core*              m_gl;
 
-    std::vector<GLuint>                     m_scene_object_data_vbos;
-    std::vector<GLsizei>                    m_scene_object_data_index_counts;
-    std::vector<GLuint>                     m_scene_object_instance_vbos;
-    std::vector<GLsizei>                    m_scene_object_instance_counts;
-    std::vector<GLsizei>                    m_scene_object_current_instances;
-    std::vector<GLuint>                     m_scene_object_vaos;
-    std::unordered_map<std::string, size_t> m_scene_object_index_map;
-    GLuint                                  m_scene_shader_program;
-    GLint                                   m_scene_view_mat_location;
-    GLint                                   m_scene_proj_mat_location;
-    GLint                                   m_scene_camera_pos_location;
-    GLuint                                  m_light_paths_vbo;
-    std::vector<GLsizei>                    m_light_paths_index_offsets;
+    GLuint                                  m_positions_vbo;
+    GLuint                                  m_others_vbo;
+    GLuint                                  m_indices_ebo;
+    std::vector<GLsizei>                    m_path_terminator_vertex_indices;
+    GLsizei                                 m_total_triangle_count;
     GLuint                                  m_light_paths_vao;
-    GLuint                                  m_light_paths_shader_program;
-    GLint                                   m_light_paths_view_mat_location;
-    GLint                                   m_light_paths_proj_mat_location;
+    GLuint                                  m_shader_program;
+    GLint                                   m_view_mat_loc;
+    GLint                                   m_proj_mat_loc;
+    GLint                                   m_res_loc;
+    GLint                                   m_max_luminance_loc;
+    GLint                                   m_min_thickness_loc;
+    GLint                                   m_max_thickness_loc;
+    GLint                                   m_first_selected_loc;
+    GLint                                   m_last_selected_loc;
+    foundation::Matrix4f                    m_gl_render_view_matrix;
     foundation::Matrix4f                    m_gl_view_matrix;
     foundation::Matrix4f                    m_gl_proj_matrix;
     bool                                    m_gl_initialized;
 
-    void initializeGL() override;
-    void resizeGL(int w, int h) override;
-    void paintGL() override;
-    void keyPressEvent(QKeyEvent* event) override;
-
     void cleanup_gl_data();
-    void load_scene_data();
     void load_light_paths_data();
 
-    void load_assembly_data(
-        const renderer::Assembly&           object);
-
-    void load_assembly_instance(
-        const renderer::AssemblyInstance&   assembly_instance,
-        const float                         time);
-
-    void load_object_data(
-        const renderer::Object&             object);
-
-    void load_object_instance(
-        const renderer::ObjectInstance&     object_instance,
-        const foundation::Matrix4f&         assembly_transform_matrix);
-
-    void render_geometry();
-    void render_light_paths();
+    void render_scene(const GLfloat* gl_view_matrix) const;
 
     void dump_selected_light_path() const;
 };
