@@ -69,7 +69,6 @@
 #include "foundation/platform/python.h"
 #include "foundation/platform/system.h"
 #include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/foreach.h"
 #include "foundation/utility/log/logmessage.h"
 
 // Qt headers.
@@ -742,17 +741,12 @@ void MainWindow::update_workspace()
     m_ui->attribute_editor_scrollarea_contents->setEnabled(true);
 
     // Enable/disable light paths
-    if (m_project_manager.is_project_open() &&
-        m_project_manager.get_project()->get_light_path_recorder().get_light_path_count() > 0)
-    {
-        for (const_each<ViewportTabCollection> i = m_viewport_tabs; i; ++i)
-            i->second->set_light_paths_toggle_enabled(true);
-    }
-    else
-    {
-        for (const_each<ViewportTabCollection> i = m_viewport_tabs; i; ++i)
-            i->second->set_light_paths_toggle_enabled(false);
-    }
+    const bool enable_light_paths_toogle =
+        m_project_manager.is_project_open() &&
+        m_project_manager.get_project()->get_light_path_recorder().get_light_path_count() > 0;
+
+    for (const std::pair<std::string, ViewportTab*>& kvp : m_viewport_tabs)
+        kvp.second->set_light_paths_toggle_enabled(enable_light_paths_toogle);
 }
 
 void MainWindow::update_project_explorer()
