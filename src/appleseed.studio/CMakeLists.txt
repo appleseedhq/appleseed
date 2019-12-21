@@ -248,8 +248,8 @@ source_group ("mainwindow\\pythonconsole" FILES
 set (mainwindow_rendering_sources
     mainwindow/rendering/cameracontroller.cpp
     mainwindow/rendering/cameracontroller.h
-    mainwindow/rendering/glscenelayer.h
     mainwindow/rendering/glscenelayer.cpp
+    mainwindow/rendering/glscenelayer.h
     mainwindow/rendering/lightpathslayer.cpp
     mainwindow/rendering/lightpathslayer.h
     mainwindow/rendering/lightpathspickinghandler.cpp
