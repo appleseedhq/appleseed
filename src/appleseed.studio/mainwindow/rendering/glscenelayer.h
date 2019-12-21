@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2018 Gray Olson, The appleseedhq Organization
+// Copyright (c) 2019 Gray Olson, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -40,8 +40,8 @@
 #include "foundation/math/vector.h"
 
 // Qt headers.
-#include <QOpenGLWidget>
 #include <QObject>
+#include <QOpenGLWidget>
 
 // Standard headers.
 #include <cstddef>
@@ -56,8 +56,8 @@ namespace renderer  { class Camera; }
 namespace renderer  { class Object; }
 namespace renderer  { class ObjectInstance; }
 namespace renderer  { class Project; }
-class QKeyEvent;
 class QImage;
+class QKeyEvent;
 class QOpenGLFunctions_4_1_Core;
 class QSurfaceFormat;
 
@@ -76,8 +76,8 @@ class GLSceneLayer
   public:
     GLSceneLayer(
         const renderer::Project&            project,
-        const size_t                        width,
-        const size_t                        height);
+        const std::size_t                   width,
+        const std::size_t                   height);
 
     ~GLSceneLayer();
 
@@ -98,33 +98,36 @@ class GLSceneLayer
     void slot_synchronize_camera();
 
   private:
-    const renderer::Project&                m_project;
-    renderer::Camera&                       m_camera;
-    foundation::Matrix4d                    m_camera_matrix;
-    foundation::Vector3f                    m_camera_position;
+    const renderer::Project&                        m_project;
+    renderer::Camera&                               m_camera;
+    foundation::Matrix4d                            m_camera_matrix;
+    foundation::Vector3f                            m_camera_position;
 
-    bool                                    m_backface_culling_enabled;
+    bool                                            m_backface_culling_enabled;
 
-    QOpenGLFunctions_4_1_Core*              m_gl;
+    QOpenGLFunctions_4_1_Core*                      m_gl;
 
-    std::vector<GLuint>                     m_scene_object_data_vbos;
-    std::vector<GLsizei>                    m_scene_object_data_index_counts;
-    std::vector<GLuint>                     m_scene_object_instance_vbos;
-    std::vector<GLsizei>                    m_scene_object_instance_counts;
-    std::vector<GLsizei>                    m_scene_object_current_instances;
-    std::vector<GLuint>                     m_scene_object_vaos;
-    std::unordered_map<std::string, size_t> m_scene_object_index_map;
-    GLuint                                  m_scene_shader_program;
-    GLint                                   m_scene_view_mat_location;
-    GLint                                   m_scene_proj_mat_location;
-    GLint                                   m_scene_camera_pos_location;
-    GLuint                                  m_depthonly_shader_program;
-    GLint                                   m_depthonly_view_mat_location;
-    GLint                                   m_depthonly_proj_mat_location;
-    GLint                                   m_depthonly_camera_pos_location;
-    foundation::Matrix4f                    m_gl_view_matrix;
-    foundation::Matrix4f                    m_gl_proj_matrix;
-    bool                                    m_initialized;
+    std::vector<GLuint>                             m_scene_object_data_vbos;
+    std::vector<GLsizei>                            m_scene_object_data_index_counts;
+    std::vector<GLuint>                             m_scene_object_instance_vbos;
+    std::vector<GLsizei>                            m_scene_object_instance_counts;
+    std::vector<GLsizei>                            m_scene_object_current_instances;
+    std::vector<GLuint>                             m_scene_object_vaos;
+    std::unordered_map<std::string, std::size_t>    m_scene_object_index_map;
+    GLuint                                          m_scene_shader_program;
+    GLint                                           m_scene_view_mat_location;
+    GLint                                           m_scene_proj_mat_location;
+    GLint                                           m_scene_camera_pos_location;
+
+    GLuint                                          m_depthonly_shader_program;
+    GLint                                           m_depthonly_view_mat_location;
+    GLint                                           m_depthonly_proj_mat_location;
+    GLint                                           m_depthonly_camera_pos_location;
+
+    foundation::Matrix4f                            m_gl_view_matrix;
+    foundation::Matrix4f                            m_gl_proj_matrix;
+
+    bool                                            m_initialized;
 
     void render_scene();
     void cleanup_gl_data();

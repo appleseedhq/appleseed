@@ -62,7 +62,7 @@ namespace appleseed {
 namespace studio {
 
 //
-// Manager for the light paths display overlay into the viewport
+// Manages the state of the light paths overlay.
 //
 
 class LightPathsViewportManager

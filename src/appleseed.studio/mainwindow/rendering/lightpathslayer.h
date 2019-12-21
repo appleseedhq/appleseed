@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019  Gray Olson, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -74,10 +74,10 @@ class LightPathsLayer: public QObject
   public:
     LightPathsLayer(
         const renderer::Project&            project,
-        const size_t                        width,
-        const size_t                        height);
+        const std::size_t                   width,
+        const std::size_t                   height);
 
-    void resize(const size_t width, const size_t height);
+    void resize(const std::size_t width, const std::size_t height);
 
     void update_render_camera_transform();
 
@@ -121,8 +121,8 @@ class LightPathsLayer: public QObject
     float                                   m_max_luminance;
     float                                   m_max_thickness;
     float                                   m_min_thickness;
-    size_t                                  m_width;
-    size_t                                  m_height;
+    std::size_t                             m_width;
+    std::size_t                             m_height;
 
     QOpenGLFunctions_4_1_Core*              m_gl;
 

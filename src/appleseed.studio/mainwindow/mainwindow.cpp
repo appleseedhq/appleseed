@@ -2046,10 +2046,11 @@ void MainWindow::slot_clear_frame()
     frame->clear_main_and_aov_images();
 
     // In the UI, clear all render widgets to black.
-    for (const_each<ViewportTabCollection> i = m_viewport_tabs; i; ++i)
+    for (const std::pair<std::string, ViewportTab*>& kvp : m_viewport_tabs)
     {
-        i->second->get_viewport_widget()->get_render_layer()->clear();
-        i->second->get_viewport_widget()->repaint();
+        const auto viewport_widget = kvp.second->get_viewport_widget();
+        viewport_widget->get_render_layer()->clear();
+        viewport_widget->repaint();
     }
 }
 

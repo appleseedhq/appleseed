@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019  Gray Olson, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -51,8 +51,8 @@
 // Qt headers.
 #include <QKeyEvent>
 #include <QOpenGLFunctions_4_1_Core>
-#include <QSurfaceFormat>
 #include <QString>
+#include <QSurfaceFormat>
 
 // Standard headers.
 #include <algorithm>
@@ -61,14 +61,14 @@
 
 using namespace foundation;
 using namespace renderer;
-using namespace std;
 
 namespace appleseed {
 namespace studio {
 
-namespace {
+namespace
+{
     // Byte stride of a vec3.
-    const size_t Vec3ByteStride = sizeof(float) * 3;
+    constexpr std::size_t Vec3ByteStride = sizeof(float) * 3;
 
     // Struct of an element of the "others" vertex buffer
     struct OtherAttributes {
@@ -81,8 +81,8 @@ namespace {
 
 LightPathsLayer::LightPathsLayer(
     const Project&             project,
-    const size_t               width,
-    const size_t               height)
+    const std::size_t          width,
+    const std::size_t          height)
   : m_project(project)
   , m_camera(*m_project.get_uncached_active_camera())
   , m_selected_light_path_index(-1)
@@ -93,12 +93,11 @@ LightPathsLayer::LightPathsLayer(
   , m_min_thickness(1.0f)
   , m_max_luminance(0.0f)
 {
-
     const float time = m_camera.get_shutter_middle_time();
     set_transform(m_camera.transform_sequence().evaluate(time));
 }
 
-void LightPathsLayer::resize(const size_t width, const size_t height)
+void LightPathsLayer::resize(const std::size_t width, const std::size_t height)
 {
     m_width = width,
     m_height = height;
@@ -130,7 +129,7 @@ void LightPathsLayer::set_light_paths(const LightPathArray& light_paths)
     {
         // Sort paths by descending radiance at the camera.
         const auto& light_path_recorder = m_project.get_light_path_recorder();
-        sort(
+        std::sort(
             &m_light_paths[0],
             &m_light_paths[0] + m_light_paths.size(),
             [&light_path_recorder](const LightPath& lhs, const LightPath& rhs)
@@ -184,7 +183,8 @@ void LightPathsLayer::slot_display_next_light_path()
 void LightPathsLayer::slot_synchronize_camera()
 {
     m_camera.transform_sequence().clear();
-    m_camera.transform_sequence().set_transform(0.0f,
+    m_camera.transform_sequence().set_transform(
+        0.0f,
         Transformd::from_local_to_parent(inverse(m_camera_matrix)));
 }
 
@@ -192,6 +192,7 @@ void LightPathsLayer::load_light_paths_data()
 {
     m_path_terminator_vertex_indices.clear();
     m_max_luminance = 0.0f;
+
     if (!m_light_paths.empty())
     {
         m_path_terminator_vertex_indices.push_back(0);
@@ -205,14 +206,14 @@ void LightPathsLayer::load_light_paths_data()
         // Add two because we need extra at the front and back for the extra 'previous' and 'next' attributes
         const size_t total_gl_vertex_count = 2 * (light_path_recorder.get_vertex_count() + 2);
 
-        vector<unsigned int> indices;
-        vector<float> positions_buffer;
+        std::vector<unsigned int> indices;
+        std::vector<float> positions_buffer;
         // * 3 since we want 3 floats per position
         positions_buffer.reserve(total_gl_vertex_count * 3);
         indices.reserve(total_gl_vertex_count);
 
         // Add an empty vertex at the beginning to serve as first 'previous'
-        array<float, 6> empty_positions =
+        std::array<float, 6> empty_positions =
         {
             0.0, 0.0, 0.0,
             0.0, 0.0, 0.0,
@@ -222,9 +223,9 @@ void LightPathsLayer::load_light_paths_data()
             empty_positions.begin(),
             empty_positions.end());
         
-        vector<OtherAttributes> others_buffer;
+        std::vector<OtherAttributes> others_buffer;
         others_buffer.reserve(total_gl_vertex_count);
-        array<OtherAttributes, 4> others;
+        std::array<OtherAttributes, 4> others;
 
         for (size_t light_path_idx = 0; light_path_idx < m_light_paths.size(); light_path_idx++)
         {
@@ -243,9 +244,8 @@ void LightPathsLayer::load_light_paths_data()
                 auto piece_luminance = luminance(piece_radiance);
                 m_max_luminance = max(m_max_luminance, piece_luminance);
                 piece_radiance /= piece_luminance;
-                //piece_radiance /= piece_radiance + Color3f(1.0);
 
-                array<GLfloat, 12> positions_temp_store = {
+                std::array<GLfloat, 12> positions_temp_store = {
                     prev.m_position[0], prev.m_position[1], prev.m_position[2],
                     prev.m_position[0], prev.m_position[1], prev.m_position[2],
                     vert.m_position[0], vert.m_position[1], vert.m_position[2],
@@ -292,7 +292,7 @@ void LightPathsLayer::load_light_paths_data()
                     others.begin(),
                     others.end());
 
-                array<unsigned int, 6> indices_scratch = {
+                std::array<unsigned int, 6> indices_scratch = {
                     start_index, start_index + 1, start_index + 2,
                     start_index + 1, start_index + 2, start_index + 3,
                 };
@@ -590,12 +590,12 @@ void LightPathsLayer::dump_selected_light_path() const
         const auto& light_path_recorder = m_project.get_light_path_recorder();
         const auto& path = m_light_paths[m_selected_light_path_index];
 
-        for (size_t i = path.m_vertex_begin_index; i < path.m_vertex_end_index; ++i)
+        for (std::size_t i = path.m_vertex_begin_index; i < path.m_vertex_end_index; ++i)
         {
             LightPathVertex v;
             light_path_recorder.get_light_path_vertex(i, v);
 
-            const string entity_name =
+            const std::string entity_name =
                 v.m_entity != nullptr
                     ? foundation::format("\"{0}\"", v.m_entity->get_path().c_str())
                     : "n/a";

@@ -59,10 +59,13 @@ PerspectiveCamera::PerspectiveCamera(const char* name, const ParamArray& params)
 
     // Extract the focal length from the camera parameters.
     m_focal_length = extract_focal_length(m_film_dimensions[0]);
+
     // Extract the abscissa of the near plane from the camera parameters.
     m_near_z = extract_near_z();
+
     // Extract the shift from the camera parameters.
     m_shift = extract_shift();
+
     // Precompute reciprocals of film dimensions.
     m_rcp_film_width = 1.0 / m_film_dimensions[0];
     m_rcp_film_height = 1.0 / m_film_dimensions[1];

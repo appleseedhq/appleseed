@@ -289,9 +289,6 @@ namespace
                     0.5 + point.x * m_rcp_film_width,
                     0.5 - point.y * m_rcp_film_height);
         }
-
-      private:
-        bool m_extracted_params;
     };
 }
 

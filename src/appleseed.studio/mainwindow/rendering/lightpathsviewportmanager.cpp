@@ -325,5 +325,3 @@ void LightPathsViewportManager::recreate_handlers()
 
 }   // namespace studio
 }   // namespace appleseed
-
-//#include "mainwindow/rendering/moc_cpp_lightpathsviewportmanager.cxx"
