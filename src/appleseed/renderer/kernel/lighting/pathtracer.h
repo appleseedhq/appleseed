@@ -75,11 +75,13 @@ namespace renderer
 //
 //   struct PathVisitor
 //   {
-//       void on_first_diffuse_bounce(const PathVertex& vertex);
+//       void on_first_diffuse_bounce(
+//           const PathVertex&              vertex,
+//           const Spectrum&                albedo);
 //   
 //       bool accept_scattering(
-//           const ScatteringMode::Mode  prev_mode,
-//           const ScatteringMode::Mode  next_mode) const;
+//           const ScatteringMode::Mode     prev_mode,
+//           const ScatteringMode::Mode     next_mode) const;
 //
 //       void on_miss(const PathVertex& vertex);
 //       void on_hit(const PathVertex& vertex);
@@ -721,12 +723,8 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
 
         next_ray.m_min_roughness = m_clamp_roughness ? sample.m_min_roughness : 0.0f;
 
-        if (sample.get_mode() == ScatteringMode::Diffuse && !vertex.m_albedo_saved)
-        {
-            vertex.m_albedo = sample.m_aov_components.m_albedo;
-            vertex.m_albedo_saved = true;
-            m_path_visitor.on_first_diffuse_bounce(vertex);
-        }
+        if (vertex.m_path_length == 1 && sample.get_mode() == ScatteringMode::Diffuse)
+            m_path_visitor.on_first_diffuse_bounce(vertex, sample.m_aov_components.m_albedo);
     }
     else
     {

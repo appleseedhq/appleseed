@@ -697,7 +697,9 @@ namespace
             {
             }
 
-            void on_first_diffuse_bounce(const PathVertex& vertex)
+            void on_first_diffuse_bounce(
+                const PathVertex&           vertex,
+                const Spectrum&             albedo)
             {
             }
 
