@@ -165,8 +165,14 @@ void compute_smooth_vertex_tangents_base_pose(MeshObject& object)
         const GVector3& v2 = object.get_vertex(triangle.m_v2);
         const GVector3 dp0 = object.get_vertex(triangle.m_v0) - v2;
         const GVector3 dp1 = object.get_vertex(triangle.m_v1) - v2;
-        const GVector3 tangent = normalize(dv1 * dp0 - dv0 * dp1);
 
+        GVector3 tangent = dv1 * dp0 - dv0 * dp1;
+        const GScalar tangent_norm = norm(tangent);
+
+        if (tangent_norm == GScalar(0.0))
+            continue;
+
+        tangent /= tangent_norm;
         tangents[triangle.m_v0] += tangent;
         tangents[triangle.m_v1] += tangent;
         tangents[triangle.m_v2] += tangent;
@@ -216,8 +222,14 @@ void compute_smooth_vertex_tangents_pose(MeshObject& object, const size_t motion
         const GVector3& v2 = object.get_vertex_pose(triangle.m_v2, motion_segment_index);
         const GVector3 dp0 = object.get_vertex_pose(triangle.m_v0, motion_segment_index) - v2;
         const GVector3 dp1 = object.get_vertex_pose(triangle.m_v1, motion_segment_index) - v2;
-        const GVector3 tangent = normalize(dv1 * dp0 - dv0 * dp1);
 
+        GVector3 tangent = dv1 * dp0 - dv0 * dp1;
+        const GScalar tangent_norm = norm(tangent);
+
+        if (tangent_norm == GScalar(0.0))
+            continue;
+
+        tangent /= tangent_norm;
         tangents[triangle.m_v0] += tangent;
         tangents[triangle.m_v1] += tangent;
         tangents[triangle.m_v2] += tangent;
