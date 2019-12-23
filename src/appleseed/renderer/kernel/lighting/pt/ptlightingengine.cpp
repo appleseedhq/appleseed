@@ -347,9 +347,11 @@ namespace
         class PathVisitorBase
         {
           public:
-            void on_first_diffuse_bounce(const PathVertex& vertex)
+            void on_first_diffuse_bounce(
+                const PathVertex&           vertex,
+                const Spectrum&             albedo)
             {
-                m_aov_components.m_albedo = vertex.m_albedo;
+                m_aov_components.m_albedo = albedo;
             }
 
             bool accept_scattering(
