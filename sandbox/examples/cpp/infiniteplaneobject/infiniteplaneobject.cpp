@@ -155,6 +155,13 @@ namespace
 
             return true;
         }
+
+        void refine_and_offset(
+            const foundation::Ray3d& obj_inst_ray,
+            foundation::Vector3d& obj_inst_front_point,
+            foundation::Vector3d& obj_inst_back_point,
+            foundation::Vector3d& obj_inst_geo_normal) const override
+        {}
     };
 
 

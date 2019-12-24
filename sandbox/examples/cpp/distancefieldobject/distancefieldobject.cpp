@@ -44,7 +44,6 @@
 #include "foundation/math/rng/xoroshiro128plus.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/job/iabortswitch.h"
@@ -59,6 +58,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 
 namespace asf = foundation;
 namespace asr = renderer;
@@ -151,6 +151,13 @@ namespace
             return raymarch(ray, t, p);
         }
 
+        void refine_and_offset(
+            const foundation::Ray3d& obj_inst_ray,
+            foundation::Vector3d& obj_inst_front_point,
+            foundation::Vector3d& obj_inst_back_point,
+            foundation::Vector3d& obj_inst_geo_normal) const override
+        {}
+
       private:
 
         //
@@ -181,12 +188,12 @@ namespace
         {
             return
                 asf::Xoroshiro128plus(
-                    asf::hash_uint64(asf::binary_cast<asf::uint64>(ray.m_org.x)) ^
-                    asf::hash_uint64(asf::binary_cast<asf::uint64>(ray.m_org.y)) ^
-                    asf::hash_uint64(asf::binary_cast<asf::uint64>(ray.m_org.z)),
-                    asf::hash_uint64(asf::binary_cast<asf::uint64>(ray.m_dir.x)) ^
-                    asf::hash_uint64(asf::binary_cast<asf::uint64>(ray.m_dir.y)) ^
-                    asf::hash_uint64(asf::binary_cast<asf::uint64>(ray.m_dir.z)));
+                    asf::hash_uint64(asf::binary_cast<uint64_t>(ray.m_org.x)) ^
+                    asf::hash_uint64(asf::binary_cast<uint64_t>(ray.m_org.y)) ^
+                    asf::hash_uint64(asf::binary_cast<uint64_t>(ray.m_org.z)),
+                    asf::hash_uint64(asf::binary_cast<uint64_t>(ray.m_dir.x)) ^
+                    asf::hash_uint64(asf::binary_cast<uint64_t>(ray.m_dir.y)) ^
+                    asf::hash_uint64(asf::binary_cast<uint64_t>(ray.m_dir.z)));
         }
 
         static float op_union(const float a, const float b)
