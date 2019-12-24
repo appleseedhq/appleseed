@@ -125,10 +125,6 @@ void BenchmarkWindow::build_connections()
     connect(
         m_ui->treewidget_benchmarks, SIGNAL(itemSelectionChanged()),
         this, SLOT(slot_rebuild_charts()));
-
-    connect(
-        m_ui->checkbox_equidistant, SIGNAL(stateChanged(int)),
-        this, SLOT(slot_on_equidistant_checkbox_state_changed(int)));
 }
 
 namespace
@@ -217,7 +213,7 @@ std::unique_ptr<ChartBase> BenchmarkWindow::create_chart(
 {
     auto chart = std::make_unique<LineChart>();
 
-    chart->set_equidistant(m_ui->checkbox_equidistant->isChecked());
+    chart->set_equidistant(true);
     chart->set_tooltip_formatter(std::make_unique<ToolTipFormatter>());
 
     static QColor CurveColors[] =
@@ -286,11 +282,6 @@ void BenchmarkWindow::slot_rebuild_charts()
     }
 
     m_chart_widget.update();
-}
-
-void BenchmarkWindow::slot_on_equidistant_checkbox_state_changed(int state)
-{
-    slot_rebuild_charts();
 }
 
 }   // namespace studio
