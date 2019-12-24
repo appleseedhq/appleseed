@@ -92,7 +92,6 @@ class BenchmarkWindow
     void slot_run_benchmarks();
     void slot_on_benchmarks_execution_complete();
     void slot_rebuild_charts();
-    void slot_on_equidistant_checkbox_state_changed(int state);
 };
 
 }   // namespace studio
