@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/utility/api/apistring.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -149,9 +150,13 @@ class APPLESEED_DLLSYMBOL System
         bool    m_os_avx512;
     };
 
+    // Detect CPU features (x86 architecture only).
     static void detect_x86_cpu_features(X86CPUFeatures& features);
 
 #endif
+
+    // Return a string with the principal instruction sets available on the CPU.
+    static APIString get_cpu_features_string();
 
     //
     // Physical memory.
