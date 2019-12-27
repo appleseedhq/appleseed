@@ -433,7 +433,7 @@ void RenderingManager::slot_rendering_begin()
     run_sticky_actions();
     run_scheduled_actions();
 
-    if (m_rendering_mode == InteractiveRendering)
+    if (m_rendering_mode == RenderingMode::InteractiveRendering)
         m_render_tab->get_camera_controller()->set_enabled(true);
 
     m_has_camera_changed = false;
@@ -460,7 +460,7 @@ void RenderingManager::slot_rendering_resume()
 void RenderingManager::slot_rendering_end()
 {
     // Disable camera interaction.
-    if (m_rendering_mode == InteractiveRendering)
+    if (m_rendering_mode == RenderingMode::InteractiveRendering)
         m_render_tab->get_camera_controller()->set_enabled(false);
 
     // Save the controller target point into the camera.
@@ -483,7 +483,7 @@ void RenderingManager::slot_rendering_end()
 void RenderingManager::slot_rendering_failed()
 {
     // Disable camera interaction.
-    if (m_rendering_mode == InteractiveRendering)
+    if (m_rendering_mode == RenderingMode::InteractiveRendering)
         m_render_tab->get_camera_controller()->set_enabled(false);
 
     // Save the controller target point into the camera.

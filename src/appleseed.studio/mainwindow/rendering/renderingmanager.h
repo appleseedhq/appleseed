@@ -70,7 +70,7 @@ class RenderingManager
     Q_OBJECT
 
   public:
-    enum RenderingMode
+    enum class RenderingMode
     {
         InteractiveRendering,
         FinalRendering

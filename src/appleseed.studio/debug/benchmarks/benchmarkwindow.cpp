@@ -215,11 +215,10 @@ std::unique_ptr<ChartBase> BenchmarkWindow::create_chart(
     const UniqueID      case_uid,
     const size_t        chart_index) const
 {
-    std::unique_ptr<LineChart> chart(new LineChart());
+    auto chart = std::make_unique<LineChart>();
 
     chart->set_equidistant(m_ui->checkbox_equidistant->isChecked());
-
-    chart->set_grid_brush(QBrush(QColor(60, 60, 60, 255)));
+    chart->set_tooltip_formatter(std::make_unique<ToolTipFormatter>());
 
     static QColor CurveColors[] =
     {
@@ -233,14 +232,12 @@ std::unique_ptr<ChartBase> BenchmarkWindow::create_chart(
         QColor(160, 160, 160, 255)
     };
 
+    chart->set_grid_brush(QBrush(QColor(60, 60, 60, 255)));
     chart->set_curve_brush(QBrush(CurveColors[chart_index % COUNT_OF(CurveColors)]));
-
-    std::unique_ptr<IToolTipFormatter> formatter(new ToolTipFormatter());
-    chart->set_tooltip_formatter(std::move(formatter));
 
     const BenchmarkSeries& series = m_benchmark_aggregator.get_series(case_uid);
 
-    for (size_t i = 0; i < series.size(); ++i)
+    for (size_t i = 0, e = series.size(); i < e; ++i)
     {
         const BenchmarkDataPoint& point = series[i];
 

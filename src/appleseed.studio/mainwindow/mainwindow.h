@@ -118,7 +118,7 @@ class MainWindow
     void signal_application_settings_modified() const;
 
   private:
-    enum RenderingMode
+    enum class RenderingMode
     {
         NotRendering,
         InteractiveRendering,

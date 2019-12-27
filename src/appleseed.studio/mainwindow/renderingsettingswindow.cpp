@@ -1891,8 +1891,7 @@ namespace
         QMessageBox msgbox(parent);
         msgbox.setWindowTitle("Save Changes?");
         msgbox.setIcon(QMessageBox::Question);
-        msgbox.setText("This configuration has been modified.");
-        msgbox.setInformativeText("Do you want to save your changes?");
+        msgbox.setText("This configuration has been modified.\n\nDo you want to save your changes?");
         msgbox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard);
         msgbox.setDefaultButton(QMessageBox::Save);
         return msgbox.exec();
