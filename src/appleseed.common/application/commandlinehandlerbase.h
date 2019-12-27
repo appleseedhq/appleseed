@@ -64,7 +64,7 @@ class CommandLineHandlerBase
     void add_message_verbosity_option();
     void add_message_coloring_option();
     void add_display_options_option();
-#ifdef WIN32
+#ifdef _WIN32
     void add_disable_abort_dialogs_option();
 #endif
 
