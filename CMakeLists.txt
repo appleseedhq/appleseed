@@ -189,7 +189,6 @@ else ()
 endif ()
 
 if (WITH_SPECTRAL_SUPPORT)
-    set (APPLESEED_WITH_SPECTRAL_SUPPORT ON)
     add_definitions (-DAPPLESEED_WITH_SPECTRAL_SUPPORT)
 endif ()
 
@@ -430,10 +429,6 @@ endif ()
 #
 # Definitions common to all configurations.
 #
-
-set (preprocessor_definitions_common
-    ${preprocessor_definitions_common}
-)
 
 # $ORIGIN support in rpath.
 if (UNIX AND NOT APPLE)
