@@ -59,16 +59,14 @@ namespace qtcommon {
 // ChartBase class implementation.
 //
 
-ChartBase::ChartBase()
-  : m_equidistant(false)
-  , m_margin(15.0, 15.0)
-  , m_grid_brush(QBrush(QColor(50, 50, 50, 255)))
-{
-}
-
 void ChartBase::set_equidistant(const bool equidistant)
 {
     m_equidistant = equidistant;
+}
+
+void ChartBase::set_origin(const Vector2d& origin)
+{
+    m_origin = origin;
 }
 
 void ChartBase::set_grid_brush(const QBrush& brush)
@@ -76,19 +74,44 @@ void ChartBase::set_grid_brush(const QBrush& brush)
     m_grid_brush = brush;
 }
 
-void ChartBase::set_tooltip_formatter(std::unique_ptr<IToolTipFormatter> formatter)
+void ChartBase::set_legend_brush(const QBrush& brush)
 {
-    m_tooltip_formatter = std::move(formatter);
+    m_legend_brush = brush;
 }
 
-void ChartBase::add_point(const Vector2d& p)
+void ChartBase::set_horizontal_legend_formatter(const ValueFormatter& formatter)
+{
+    m_horizontal_legend_formatter = formatter;
+}
+
+void ChartBase::set_vertical_legend_formatter(const ValueFormatter& formatter)
+{
+    m_vertical_legend_formatter = formatter;
+}
+
+void ChartBase::set_tooltip_formatter(const TooltipFormatter& formatter)
+{
+    m_tooltip_formatter = formatter;
+}
+
+size_t ChartBase::size() const
+{
+    return m_original_points.size();
+}
+
+void ChartBase::push_back(const Vector2d& p)
 {
     m_original_points.push_back(p);
 }
 
-void ChartBase::add_point(const double x, const double y)
+void ChartBase::push_back(const double x, const double y)
 {
     m_original_points.emplace_back(x, y);
+}
+
+void ChartBase::pop_front()
+{
+    m_original_points.pop_front();
 }
 
 void ChartBase::prepare_drawing(QPainter& painter)
@@ -97,13 +120,12 @@ void ChartBase::prepare_drawing(QPainter& painter)
 
     if (m_equidistant)
     {
-        for (size_t i = 0; i < m_points.size(); ++i)
+        for (size_t i = 0, e = m_points.size(); i < e; ++i)
             m_points[i].x = static_cast<double>(i);
-
     }
 
     m_points_bbox = compute_points_bbox();
-    m_rcp_points_bbox_extent = Vector2d(1.0) / m_points_bbox.extent();
+    m_rcp_points_bbox_extent = m_points_bbox.is_valid() ? Vector2d(1.0) / m_points_bbox.extent() : Vector2d(1.0);   // todo: fix!
 
     const QRect window = painter.window();
 
@@ -113,6 +135,8 @@ void ChartBase::prepare_drawing(QPainter& painter)
 
 void ChartBase::draw_grid(QPainter& painter) const
 {
+    painter.save();
+
     QPen pen;
     pen.setBrush(m_grid_brush);
     pen.setWidthF(1.0);
@@ -120,31 +144,48 @@ void ChartBase::draw_grid(QPainter& painter) const
 
     draw_horizontal_grid(painter);
     draw_vertical_grid(painter);
+
+    painter.restore();
+}
+
+void ChartBase::draw_legends(QPainter& painter) const
+{
+    painter.save();
+
+    QPen pen;
+    pen.setBrush(m_legend_brush);
+    painter.setPen(pen);
+
+    if (m_horizontal_legend_formatter)
+        draw_horizontal_legend(painter);
+
+    if (m_vertical_legend_formatter)
+        draw_vertical_legend(painter);
+
+    painter.restore();
 }
 
 void ChartBase::draw_tooltip(QPainter& painter, const QPoint& mouse_position) const
 {
-    size_t point_index;
-
-    if (!on_chart(mouse_position, point_index))
-        return;
-
-    const int ShiftX = 2;
-    const int ShiftY = 2;
-    const int MarginX = 8;
-    const int MarginY = 5;
-    const int FrameMargin = 3;
-    const qreal CornerRadius = 2.0;
-    const int Opacity = 180;
+    constexpr int ShiftX = 2;
+    constexpr int ShiftY = 2;
+    constexpr int MarginX = 8;
+    constexpr int MarginY = 5;
+    constexpr int FrameMargin = 3;
+    constexpr int Opacity = 180;
     const QColor TextColor(210, 210, 210, Opacity);
     const QColor BorderColor(40, 40, 40, Opacity);
     const QColor BackgroundColor(80, 80, 80, Opacity);
 
-    if (m_tooltip_formatter.get() == nullptr)
+    if (!m_tooltip_formatter)
+        return;
+
+    size_t point_index;
+    if (!on_chart(mouse_position, point_index))
         return;
 
     const Vector2d& point = m_original_points[point_index];
-    const QString text = m_tooltip_formatter->format(point);
+    const QString text = m_tooltip_formatter(point);
     const QRect text_rect = painter.fontMetrics().boundingRect(QRect(), Qt::AlignCenter, text);
 
     QRect tooltip_rect(
@@ -159,20 +200,24 @@ void ChartBase::draw_tooltip(QPainter& painter, const QPoint& mouse_position) co
     if (tooltip_rect.top() < FrameMargin)
         tooltip_rect.moveTop(FrameMargin);
 
-    const int MaxRight = painter.window().right() - FrameMargin;
-    if (tooltip_rect.right() > MaxRight)
-        tooltip_rect.moveRight(MaxRight);
+    const int max_right = painter.window().right() - FrameMargin;
+    if (tooltip_rect.right() > max_right)
+        tooltip_rect.moveRight(max_right);
 
-    const int MaxBottom = painter.window().bottom() - FrameMargin;
-    if (tooltip_rect.bottom() > MaxBottom)
-        tooltip_rect.moveBottom(MaxBottom);
+    const int max_bottom = painter.window().bottom() - FrameMargin;
+    if (tooltip_rect.bottom() > max_bottom)
+        tooltip_rect.moveBottom(max_bottom);
 
+    painter.save();
     painter.setPen(BorderColor);
-    painter.setBrush(QBrush(BackgroundColor));
-    painter.drawRoundedRect(tooltip_rect, CornerRadius, CornerRadius);
+    painter.setBrush(BackgroundColor);
+    painter.drawRect(tooltip_rect);
+    painter.restore();
 
+    painter.save();
     painter.setPen(TextColor);
     painter.drawText(tooltip_rect, Qt::AlignCenter, text);
+    painter.restore();
 }
 
 void ChartBase::draw_highlight(QPainter& painter, const QPoint& mouse_position) const
@@ -184,10 +229,10 @@ AABB2d ChartBase::compute_points_bbox() const
     AABB2d bbox;
     bbox.invalidate();
 
-    bbox.insert(Vector2d(0.0));
+    bbox.insert(m_origin);
 
-    for (size_t i = 0; i < m_points.size(); ++i)
-        bbox.insert(m_points[i]);
+    for (const Vector2d& point : m_points)
+        bbox.insert(point);
 
     return bbox;
 }
@@ -225,18 +270,18 @@ Vector2d ChartBase::convert_to_data(const Vector2d& point) const
 
 void ChartBase::draw_horizontal_grid(QPainter& painter) const
 {
-    const size_t Subdivisions = 10;
+    constexpr size_t Subdivisions = 10;
 
     for (size_t i = 0; i < Subdivisions; ++i)
     {
-        const double k = static_cast<double>(i) / (Subdivisions - 1);
-        const double y = mix(m_points_bbox.min.y, m_points_bbox.max.y, k);
-
+        const double y = fit<size_t, double>(i, 0, Subdivisions - 1, m_points_bbox.min.y, m_points_bbox.max.y);
         const Vector2d p = convert_to_frame(Vector2d(0.0, y));
 
         painter.drawLine(
-            m_window_origin.x, p.y,
-            m_window_origin.x + m_window_size.x, p.y);
+            static_cast<int>(m_window_origin.x),
+            static_cast<int>(p.y),
+            static_cast<int>(m_window_origin.x + m_window_size.x),
+            static_cast<int>(p.y));
     }
 }
 
@@ -244,14 +289,58 @@ void ChartBase::draw_vertical_grid(QPainter& painter) const
 {
     if (m_points.size() > 2)
     {
-        for (size_t i = 0; i < m_points.size(); ++i)
+        for (const Vector2d& point : m_points)
         {
-            const Vector2d p = convert_to_frame(m_points[i]);
+            const Vector2d p = convert_to_frame(point);
 
             painter.drawLine(
-                p.x, m_window_origin.y,
-                p.x, m_window_origin.y + m_window_size.y);
+                static_cast<int>(p.x),
+                static_cast<int>(m_window_origin.y),
+                static_cast<int>(p.x),
+                static_cast<int>(m_window_origin.y + m_window_size.y));
         }
+    }
+}
+
+void ChartBase::draw_horizontal_legend(QPainter& painter) const
+{
+    constexpr size_t TextMargin = 3;    // pixels
+
+    assert(m_horizontal_legend_formatter);
+
+    if (m_points.size() > 2)
+    {
+        for (const Vector2d& point : m_points)
+        {
+            const double x = point.x;
+            const Vector2d p = convert_to_frame(point);
+            const QString text = m_horizontal_legend_formatter(x);
+
+            painter.drawText(
+                static_cast<int>(p.x) + TextMargin,
+                static_cast<int>(m_window_origin.y + m_window_size.y) - TextMargin,
+                text);
+        }
+    }
+}
+
+void ChartBase::draw_vertical_legend(QPainter& painter) const
+{
+    constexpr size_t Subdivisions = 10;
+    constexpr size_t TextMargin = 3;    // pixels
+
+    assert(m_vertical_legend_formatter);
+
+    for (size_t i = 0; i < Subdivisions; ++i)
+    {
+        const double y = fit<size_t, double>(i, 0, Subdivisions - 1, m_points_bbox.min.y, m_points_bbox.max.y);
+        const Vector2d p = convert_to_frame(Vector2d(0.0, y));
+        const QString text = m_vertical_legend_formatter(y);
+
+        painter.drawText(
+            static_cast<int>(m_window_origin.x) + TextMargin,
+            static_cast<int>(p.y) - TextMargin,
+            text);
     }
 }
 
@@ -260,9 +349,9 @@ void ChartBase::draw_vertical_grid(QPainter& painter) const
 // LineChart class implementation.
 //
 
-LineChart::LineChart()
-  : m_curve_brush(QBrush(QColor(255, 255, 255, 255)))
+void LineChart::set_shadow_enabled(const bool enabled)
 {
+    m_shadow_enabled = enabled;
 }
 
 void LineChart::set_curve_brush(const QBrush& brush)
@@ -270,34 +359,83 @@ void LineChart::set_curve_brush(const QBrush& brush)
     m_curve_brush = brush;
 }
 
+void LineChart::set_shadow_brush(const QBrush& brush)
+{
+    m_shadow_brush = brush;
+}
+
+void LineChart::set_draw_points(const bool draw_points)
+{
+    m_draw_points = draw_points;
+}
+
 void LineChart::draw_chart(QPainter& painter) const
 {
+    const QPoint ShadowOffset(-2, 3);   // pixels
+    constexpr qreal LineWidth = 2.0;    // pixels
+
     if (m_points.size() > 1)
     {
         QPen pen;
-        pen.setBrush(m_curve_brush);
-        pen.setWidthF(2.0);
-        painter.setPen(pen);
+        pen.setWidthF(LineWidth);
 
-        for (size_t i = 0; i < m_points.size() - 1; ++i)
+        if (m_shadow_enabled)
         {
-            const Vector2d from = convert_to_frame(m_points[i]);
-            const Vector2d to = convert_to_frame(m_points[i + 1]);
-            painter.drawLine(from.x, from.y, to.x, to.y);
+            painter.save();
+            pen.setBrush(m_shadow_brush);
+            painter.setPen(pen);
+            painter.setBrush(m_shadow_brush);
+            draw_lines(painter, ShadowOffset);
+            painter.restore();
+        }
+
+        painter.save();
+        pen.setBrush(m_curve_brush);
+        painter.setPen(pen);
+        painter.setBrush(m_curve_brush);
+        draw_lines(painter);
+        painter.restore();
+    }
+}
+
+void LineChart::draw_lines(QPainter& painter, const QPoint& shadow_offset) const
+{
+    constexpr qreal DiskRadius = 4.0;
+
+    assert(m_points.size() > 1);
+
+    for (size_t i = 0, e = m_points.size() - 1; i < e; ++i)
+    {
+        const Vector2d from = convert_to_frame(m_points[i]);
+        const Vector2d to = convert_to_frame(m_points[i + 1]);
+
+        painter.drawLine(
+            static_cast<int>(from.x) + shadow_offset.x(),
+            static_cast<int>(from.y) + shadow_offset.y(),
+            static_cast<int>(to.x) + shadow_offset.x(),
+            static_cast<int>(to.y) + shadow_offset.y());
+    }
+
+    if (m_draw_points)
+    {
+        for (const Vector2d& point : m_points)
+        {
+            const Vector2d p = convert_to_frame(point);
+            painter.drawEllipse(QPointF(p.x, p.y), DiskRadius, DiskRadius);
         }
     }
 }
 
 bool LineChart::on_chart(const QPoint& mouse_position, size_t& point_index) const
 {
-    const double MinDistance = 8.0;
+    constexpr double MinDistance = 20.0;
 
     const Vector2d mp(mouse_position.x(), mouse_position.y());
 
     double closest_square_distance = std::numeric_limits<double>::max();
     size_t closest_index = 0;
 
-    for (size_t i = 0; i < m_points.size(); ++i)
+    for (size_t i = 0, e = m_points.size(); i < e; ++i)
     {
         const Vector2d p = convert_to_frame(m_points[i]);
         const double d = square_distance(mp, p);
@@ -309,7 +447,7 @@ bool LineChart::on_chart(const QPoint& mouse_position, size_t& point_index) cons
         }
     }
 
-    if (closest_square_distance < MinDistance * MinDistance)
+    if (closest_square_distance < square(MinDistance))
     {
         point_index = closest_index;
         return true;
@@ -326,24 +464,27 @@ void LineChart::draw_highlight(QPainter& painter, const QPoint& mouse_position) 
 
 void LineChart::draw_point_highlight(QPainter& painter, const QPoint& mouse_position) const
 {
-    size_t point_index;
+    const QColor DiskColor(190, 140, 50);
+    constexpr qreal DiskRadius = 6.0;
 
+    size_t point_index;
     if (on_chart(mouse_position, point_index))
     {
-        const QColor DiskColor(140, 200, 255);
-        const qreal DiskRadius = 3.0;
-
         const Vector2d p = convert_to_frame(m_points[point_index]);
 
+        painter.save();
         painter.setPen(DiskColor);
-        painter.setBrush(QBrush(DiskColor));
+        painter.setBrush(DiskColor);
         painter.drawEllipse(QPointF(p.x, p.y), DiskRadius, DiskRadius);
+        painter.restore();
     }
 }
 
 void LineChart::draw_cross(QPainter& painter, const QPoint& mouse_position) const
 {
     const QColor CrossColor(100, 100, 100);
+
+    painter.save();
 
     QPen pen;
     pen.setStyle(Qt::DotLine);
@@ -352,12 +493,18 @@ void LineChart::draw_cross(QPainter& painter, const QPoint& mouse_position) cons
     painter.setPen(pen);
 
     painter.drawLine(
-        m_window_origin.x, mouse_position.y(),
-        m_window_origin.x + m_window_size.x, mouse_position.y());
+        static_cast<int>(m_window_origin.x),
+        static_cast<int>(mouse_position.y()),
+        static_cast<int>(m_window_origin.x + m_window_size.x),
+        static_cast<int>(mouse_position.y()));
 
     painter.drawLine(
-        mouse_position.x(), m_window_origin.y,
-        mouse_position.x(), m_window_origin.y + m_window_size.y);
+        static_cast<int>(mouse_position.x()),
+        static_cast<int>(m_window_origin.y),
+        static_cast<int>(mouse_position.x()),
+        static_cast<int>(m_window_origin.y + m_window_size.y));
+
+    painter.restore();
 }
 
 
@@ -372,24 +519,16 @@ ChartWidget::ChartWidget(QWidget* parent)
     setMouseTracking(true);
 }
 
-ChartWidget::~ChartWidget()
-{
-    clear();
-}
-
 void ChartWidget::clear()
 {
-    for (const_each<ChartCollection> i = m_charts; i; ++i)
-        delete *i;
-
     m_charts.clear();
 }
 
-void ChartWidget::add_chart(std::unique_ptr<ChartBase> chart)
+ChartBase* ChartWidget::add_chart(std::unique_ptr<ChartBase> chart)
 {
-    assert(chart.get());
-
-    m_charts.push_back(chart.release());
+    assert(chart);
+    m_charts.emplace_back(std::move(chart));
+    return m_charts.back().get();
 }
 
 void ChartWidget::mouseMoveEvent(QMouseEvent* event)
@@ -425,36 +564,29 @@ void ChartWidget::paintEvent(QPaintEvent* event)
 
 void ChartWidget::draw_charts(QPainter& painter) const
 {
-    for (const_each<ChartCollection> i = m_charts; i; ++i)
-    {
-        ChartBase* chart = *i;
+    for (const std::unique_ptr<ChartBase>& chart : m_charts)
         chart->prepare_drawing(painter);
-        chart->draw_grid(painter);
-    }
 
-    for (const_each<ChartCollection> i = m_charts; i; ++i)
-    {
-        const ChartBase* chart = *i;
+    for (const std::unique_ptr<ChartBase>& chart : m_charts)
+        chart->draw_grid(painter);
+
+    for (const std::unique_ptr<ChartBase>& chart : m_charts)
+        chart->draw_legends(painter);
+
+    for (const std::unique_ptr<ChartBase>& chart : m_charts)
         chart->draw_chart(painter);
-    }
 }
 
 void ChartWidget::draw_highlights(QPainter& painter) const
 {
-    for (const_each<ChartCollection> i = m_charts; i; ++i)
-    {
-        const ChartBase* chart = *i;
+    for (const std::unique_ptr<ChartBase>& chart : m_charts)
         chart->draw_highlight(painter, m_mouse_position);
-    }
 }
 
 void ChartWidget::draw_tooltips(QPainter& painter) const
 {
-    for (const_each<ChartCollection> i = m_charts; i; ++i)
-    {
-        const ChartBase* chart = *i;
+    for (const std::unique_ptr<ChartBase>& chart : m_charts)
         chart->draw_tooltip(painter, m_mouse_position);
-    }
 }
 
 void ChartWidget::draw_frame(QPainter& painter) const

@@ -183,40 +183,11 @@ void BenchmarkWindow::enable_widgets(const bool enabled)
     m_ui->pushbutton_run->setEnabled(enabled);
 }
 
-namespace
-{
-    struct ToolTipFormatter
-      : public IToolTipFormatter
-    {
-        QString format(const Vector2d& point) const override
-        {
-            const std::uint64_t date_microseconds = static_cast<std::uint64_t>(point.x);
-            const posix_time::ptime date =
-                BenchmarkDataPoint::microseconds_to_ptime(date_microseconds);
-            const std::string date_string = posix_time::to_simple_string(date);
-
-            const std::string ticks_string =
-                pretty_scalar(point.y) + " " +
-                plural(point.y, "tick");
-
-            return
-                QString("%1\n%2")
-                    .arg(QString::fromStdString(date_string))
-                    .arg(QString::fromStdString(ticks_string));
-        }
-    };
-}
-
 std::unique_ptr<ChartBase> BenchmarkWindow::create_chart(
     const UniqueID      case_uid,
     const size_t        chart_index) const
 {
-    auto chart = std::make_unique<LineChart>();
-
-    chart->set_equidistant(true);
-    chart->set_tooltip_formatter(std::make_unique<ToolTipFormatter>());
-
-    static QColor CurveColors[] =
+    static const QColor CurveColors[] =
     {
         QColor(190, 140,  50, 255),
         QColor(160,  30,  30, 255),
@@ -228,8 +199,25 @@ std::unique_ptr<ChartBase> BenchmarkWindow::create_chart(
         QColor(160, 160, 160, 255)
     };
 
+    std::unique_ptr<LineChart> chart(new LineChart());
+
+    chart->set_equidistant(true);
     chart->set_grid_brush(QBrush(QColor(60, 60, 60, 255)));
     chart->set_curve_brush(QBrush(CurveColors[chart_index % COUNT_OF(CurveColors)]));
+
+    chart->set_tooltip_formatter(
+        [](const Vector2d& point) -> QString
+        {
+            const std::uint64_t date_microseconds = static_cast<std::uint64_t>(point.x);
+            const posix_time::ptime date = BenchmarkDataPoint::microseconds_to_ptime(date_microseconds);
+
+            return
+                QString("%1\n%2 tick%3")
+                    .arg(QString::fromStdString(posix_time::to_simple_string(date)))
+                    .arg(QString::fromStdString(pretty_scalar(point.y)))
+                    .arg(point.y > 1 ? "s" : "");
+        });
+
 
     const BenchmarkSeries& series = m_benchmark_aggregator.get_series(case_uid);
 
@@ -241,7 +229,7 @@ std::unique_ptr<ChartBase> BenchmarkWindow::create_chart(
             static_cast<double>(
                 BenchmarkDataPoint::ptime_to_microseconds(point.get_date()));
 
-        chart->add_point(x, point.get_ticks());
+        chart->push_back(x, point.get_ticks());
     }
 
     return std::unique_ptr<ChartBase>(std::move(chart));
