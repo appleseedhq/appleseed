@@ -187,11 +187,6 @@ QString make_app_path(const QString& path)
     return combine_paths(Application::get_root_path(), path);
 }
 
-QString combine_name_and_shortcut(const QString& name, const QKeySequence& shortcut)
-{
-    return name + " (" + shortcut.toString(QKeySequence::NativeText) + ")";
-}
-
 bool file_exists(const QString& path)
 {
     const QFileInfo info(path);
@@ -381,7 +376,12 @@ QShortcut* create_window_local_shortcut(QWidget* parent, const QKeySequence key_
             parent,
             nullptr,
             nullptr,
-            Qt::WidgetWithChildrenShortcut);
+            Qt::WindowShortcut);
+}
+
+QString combine_name_and_shortcut(const QString& name, const QKeySequence& shortcut)
+{
+    return name + " (" + shortcut.toString(QKeySequence::NativeText) + ")";
 }
 
 void clear_layout(QLayout* layout)
