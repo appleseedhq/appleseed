@@ -131,6 +131,9 @@ void Application::check_compatibility_with_host(Logger& logger)
 
 namespace
 {
+    static char g_root_path[FOUNDATION_MAX_PATH_LENGTH + 1] = { 0 };
+    static bool g_is_root_path_set = false;
+
     // Compute the root path of the application.  Return true if the root path could be
     // determined, in which case it is stored in root_path, or false if the application
     // is not properly installed, in which case root_path is left unaltered.
@@ -157,8 +160,8 @@ namespace
 
         assert(path_string.size() <= FOUNDATION_MAX_PATH_LENGTH);
 
-        strcpy(output, path_string.c_str());
-        output[path_string.size()] = '\0';
+        std::strncpy(output, path_string.c_str(), FOUNDATION_MAX_PATH_LENGTH);
+        output[FOUNDATION_MAX_PATH_LENGTH] = '\0';
     }
 
     const char* nullptr_if_empty(const char* buffer)
@@ -167,21 +170,26 @@ namespace
     }
 }
 
+void Application::set_root_path(const char* path)
+{
+    std::strncpy(g_root_path, path, FOUNDATION_MAX_PATH_LENGTH);
+    g_root_path[FOUNDATION_MAX_PATH_LENGTH] = '\0';
+
+    g_is_root_path_set = true;
+}
+
 const char* Application::get_root_path()
 {
-    static char buffer[FOUNDATION_MAX_PATH_LENGTH + 1] = { 0 };
-    static bool buffer_initialized = false;
-
-    if (!buffer_initialized)
+    if (!g_is_root_path_set)
     {
         bf::path root_path;
         if (compute_root_path(root_path))
-            copy_directory_path_to_buffer(root_path, buffer);
+            copy_directory_path_to_buffer(root_path, g_root_path);
 
-        buffer_initialized = true;
+        g_is_root_path_set = true;
     }
 
-    return nullptr_if_empty(buffer);
+    return nullptr_if_empty(g_root_path);
 }
 
 const char* Application::get_user_settings_path()

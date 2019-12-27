@@ -67,6 +67,10 @@ class Application
     // a fatal error message through the provided foundation::Logger object.
     static void check_installation(foundation::Logger& logger);
 
+    // Force the use of a given root path instead of automatically determining it.
+    // get_root_path() will return the exact value that was set by this method.
+    static void set_root_path(const char* path);
+
     // Return the root path of the application.
     // This is the path to the parent of the bin/ directory.
     // Returns nullptr if the application is not correctly installed.
