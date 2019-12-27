@@ -174,14 +174,16 @@ void yield()
 
 
 //
-// ProcessPriorityContext class implementation (Windows).
-//
-// Reference:
-//
-//   http://msdn.microsoft.com/en-us/library/windows/desktop/ms685100(v=vs.85).aspx
+// ProcessPriorityContext class implementation.
 //
 
 #ifdef _WIN32
+
+    //
+    // Reference:
+    //
+    //   http://msdn.microsoft.com/en-us/library/windows/desktop/ms685100(v=vs.85).aspx
+    //
 
     namespace
     {
@@ -250,6 +252,7 @@ void yield()
         const ProcessPriority   priority,
         Logger*                 logger)
     {
+        // todo: implement.
     }
 
     ProcessPriorityContext::~ProcessPriorityContext()
@@ -260,14 +263,16 @@ void yield()
 
 
 //
-// ThreadPriorityContext class implementation (Windows).
-//
-// Reference:
-//
-//   http://msdn.microsoft.com/en-us/library/windows/desktop/ms685100(v=vs.85).aspx
+// ThreadPriorityContext class implementation.
 //
 
 #ifdef _WIN32
+
+    //
+    // Reference:
+    //
+    //   http://msdn.microsoft.com/en-us/library/windows/desktop/ms685100(v=vs.85).aspx
+    //
 
     namespace
     {
@@ -336,6 +341,7 @@ void yield()
         const ProcessPriority   priority,
         Logger*                 logger)
     {
+        // todo: implement.
     }
 
     ThreadPriorityContext::~ThreadPriorityContext()
@@ -346,7 +352,7 @@ void yield()
 
 
 //
-// BenchmarkingThreadContext class implementation (Windows).
+// BenchmarkingThreadContext class implementation.
 //
 
 #ifdef _WIN32
@@ -384,6 +390,7 @@ void yield()
 
     BenchmarkingThreadContext::BenchmarkingThreadContext(Logger* logger)
     {
+        // todo: implement.
     }
 
     BenchmarkingThreadContext::~BenchmarkingThreadContext()
