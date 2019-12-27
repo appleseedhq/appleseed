@@ -71,13 +71,9 @@ ApplicationSettingsWindow::ApplicationSettingsWindow(ParamArray& settings, QWidg
   , m_settings(settings)
 {
     m_ui->setupUi(this);
-
     setWindowFlags(Qt::Window);
-
     build_connections();
-
     WindowBase::load_settings();
-
     load_settings();
 }
 

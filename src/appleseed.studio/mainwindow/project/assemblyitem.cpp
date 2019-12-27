@@ -332,8 +332,7 @@ namespace
         QMessageBox msgbox;
         msgbox.setWindowTitle("Delete Assembly?");
         msgbox.setIcon(QMessageBox::Question);
-        msgbox.setText(QString("You are about to delete the assembly \"%1\" and all its instances.").arg(assembly_name));
-        msgbox.setInformativeText("Continue?");
+        msgbox.setText(QString("You are about to delete the assembly \"%1\" and all its instances.\n\nContinue?").arg(assembly_name));
         msgbox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
         msgbox.setDefaultButton(QMessageBox::No);
         return msgbox.exec();

@@ -33,6 +33,9 @@
 // appleseed.foundation headers.
 #include "foundation/utility/string.h"
 
+// Standard headers.
+#include <cassert>
+
 using namespace foundation;
 using namespace renderer;
 
@@ -52,7 +55,6 @@ void StatusBar::start_rendering_time_display(RenderingTimer* rendering_timer)
 {
     assert(m_rendering_timer == nullptr);
     assert(m_timer_id == -1);
-
     assert(rendering_timer);
 
     m_rendering_timer = rendering_timer;
@@ -64,7 +66,6 @@ void StatusBar::stop_rendering_time_display()
     if (m_rendering_timer != nullptr)
     {
         assert(m_timer_id != -1);
-
         killTimer(m_timer_id);
 
         m_rendering_timer = nullptr;

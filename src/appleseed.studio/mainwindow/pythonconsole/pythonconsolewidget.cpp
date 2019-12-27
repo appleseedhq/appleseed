@@ -272,8 +272,7 @@ namespace
         QMessageBox msgbox(parent);
         msgbox.setWindowTitle("Save Changes?");
         msgbox.setIcon(QMessageBox::Question);
-        msgbox.setText("The Python script has been modified.");
-        msgbox.setInformativeText("Do you want to save your changes?");
+        msgbox.setText("The Python script has been modified.\n\nDo you want to save your changes?");
         msgbox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
         msgbox.setDefaultButton(QMessageBox::Save);
         return msgbox.exec();

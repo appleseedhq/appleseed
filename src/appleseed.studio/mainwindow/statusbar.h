@@ -30,7 +30,7 @@
 #pragma once
 
 // appleseed.renderer headers.
-#include "renderer/modeling/project/renderingtimer.h"
+#include "renderer/api/project.h"
 
 // Qt headers.
 #include <QLabel>

@@ -205,10 +205,10 @@ bool MainWindow::open_project(const QString& filepath)
 
     remove_render_tabs();
 
-    set_file_widgets_enabled(false, NotRendering);
+    set_file_widgets_enabled(false, RenderingMode::NotRendering);
     set_project_explorer_enabled(false);
-    set_rendering_widgets_enabled(false, NotRendering);
-    set_diagnostics_widgets_enabled(false, NotRendering);
+    set_rendering_widgets_enabled(false, RenderingMode::NotRendering);
+    set_diagnostics_widgets_enabled(false, RenderingMode::NotRendering);
 
     const bool successful = m_project_manager.load_project(filepath.toUtf8().constData());
 
@@ -237,10 +237,10 @@ void MainWindow::open_project_async(const QString& filepath)
 
     remove_render_tabs();
 
-    set_file_widgets_enabled(false, NotRendering);
+    set_file_widgets_enabled(false, RenderingMode::NotRendering);
     set_project_explorer_enabled(false);
-    set_rendering_widgets_enabled(false, NotRendering);
-    set_diagnostics_widgets_enabled(false, NotRendering);
+    set_rendering_widgets_enabled(false, RenderingMode::NotRendering);
+    set_diagnostics_widgets_enabled(false, RenderingMode::NotRendering);
 
     m_project_manager.load_project_async(filepath.toUtf8().constData());
 }
@@ -737,10 +737,10 @@ void MainWindow::update_workspace()
     update_window_title();
 
     // Enable/disable menus and widgets appropriately.
-    set_file_widgets_enabled(true, NotRendering);
+    set_file_widgets_enabled(true, RenderingMode::NotRendering);
     set_project_explorer_enabled(true);
-    set_rendering_widgets_enabled(true, NotRendering);
-    set_diagnostics_widgets_enabled(true, NotRendering);
+    set_rendering_widgets_enabled(true, RenderingMode::NotRendering);
+    set_diagnostics_widgets_enabled(true, RenderingMode::NotRendering);
     update_pause_resume_checkbox(false);
     m_ui->attribute_editor_scrollarea_contents->setEnabled(true);
 
@@ -826,12 +826,12 @@ void MainWindow::set_file_widgets_enabled(const bool is_enabled, const Rendering
     m_ui->menu_file_open_builtin_project->setEnabled(is_enabled);
 
     // File -> Reload Project.
-    const bool allow_reload = (is_enabled || rendering_mode == InteractiveRendering) && project_has_path;
+    const bool allow_reload = (is_enabled || rendering_mode == RenderingMode::InteractiveRendering) && project_has_path;
     m_ui->action_file_reload_project->setEnabled(allow_reload);
     m_action_reload_project->setEnabled(allow_reload);
 
     // File -> Monitor Project.
-    const bool allow_monitor = (is_enabled || rendering_mode == InteractiveRendering) && project_has_path;
+    const bool allow_monitor = (is_enabled || rendering_mode == RenderingMode::InteractiveRendering) && project_has_path;
     m_ui->action_file_monitor_project->setEnabled(allow_monitor);
     m_action_monitor_project_file->setEnabled(allow_monitor);
 
@@ -863,8 +863,8 @@ void MainWindow::set_project_explorer_enabled(const bool is_enabled)
 void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const RenderingMode rendering_mode)
 {
     const bool is_project_open = m_project_manager.is_project_open();
-    const bool allow_start = is_enabled && is_project_open && rendering_mode == NotRendering;
-    const bool allow_stop = is_enabled && is_project_open && rendering_mode != NotRendering;
+    const bool allow_start = is_enabled && is_project_open && rendering_mode == RenderingMode::NotRendering;
+    const bool allow_stop = is_enabled && is_project_open && rendering_mode != RenderingMode::NotRendering;
 
     // Rendering -> Start Interactive Rendering.
     m_ui->action_rendering_start_interactive_rendering->setEnabled(allow_start);
@@ -897,15 +897,15 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const Rend
 
             // Clear frame.
             render_tab->set_clear_frame_button_enabled(
-                is_enabled && is_project_open && rendering_mode == NotRendering);
+                is_enabled && is_project_open && rendering_mode == RenderingMode::NotRendering);
 
             // Set/clear rendering region.
             render_tab->set_render_region_buttons_enabled(
-                is_enabled && is_project_open && rendering_mode != FinalRendering);
+                is_enabled && is_project_open && rendering_mode != RenderingMode::FinalRendering);
 
             // Scene picker.
             render_tab->get_scene_picking_handler()->set_enabled(
-                is_enabled && is_project_open && rendering_mode != FinalRendering);
+                is_enabled && is_project_open && rendering_mode != RenderingMode::FinalRendering);
         }
     }
 }
@@ -915,7 +915,7 @@ void MainWindow::set_diagnostics_widgets_enabled(const bool is_enabled, const Re
     const bool is_project_open = m_project_manager.is_project_open();
 
     m_ui->menu_diagnostics_override_shading->setEnabled(is_enabled && is_project_open);
-    m_ui->action_diagnostics_false_colors->setEnabled(is_enabled && is_project_open && rendering_mode == NotRendering);
+    m_ui->action_diagnostics_false_colors->setEnabled(is_enabled && is_project_open && rendering_mode == RenderingMode::NotRendering);
 }
 
 void MainWindow::save_state_before_project_open()
@@ -942,7 +942,7 @@ void MainWindow::restore_state_after_project_open()
         }
 
         if (m_state_before_project_open->m_is_rendering)
-            start_rendering(InteractiveRendering);
+            start_rendering(RenderingMode::InteractiveRendering);
     }
 }
 
@@ -1058,6 +1058,7 @@ ParamArray MainWindow::get_project_params(const char* configuration_name) const
 {
     ParamArray params;
 
+    // Retrieve the configuration.
     Configuration* configuration =
         m_project_manager.is_project_open()
             ? m_project_manager.get_project()->configurations().get_by_name(configuration_name)
@@ -1084,8 +1085,7 @@ namespace
         QMessageBox msgbox(parent);
         msgbox.setWindowTitle("Save Changes?");
         msgbox.setIcon(QMessageBox::Question);
-        msgbox.setText("The project has been modified.");
-        msgbox.setInformativeText("Do you want to save your changes?");
+        msgbox.setText("The project has been modified.\n\nDo you want to save your changes?");
         msgbox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
         msgbox.setDefaultButton(QMessageBox::Save);
         return msgbox.exec();
@@ -1225,16 +1225,16 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
 
     // Enable/disable menus and widgets appropriately.
     set_file_widgets_enabled(false, rendering_mode);
-    set_project_explorer_enabled(rendering_mode == InteractiveRendering);
+    set_project_explorer_enabled(rendering_mode == RenderingMode::InteractiveRendering);
     set_rendering_widgets_enabled(true, rendering_mode);
-    set_diagnostics_widgets_enabled(rendering_mode == InteractiveRendering, rendering_mode);
-    m_ui->attribute_editor_scrollarea_contents->setEnabled(rendering_mode == InteractiveRendering);
+    set_diagnostics_widgets_enabled(rendering_mode == RenderingMode::InteractiveRendering, rendering_mode);
+    m_ui->attribute_editor_scrollarea_contents->setEnabled(rendering_mode == RenderingMode::InteractiveRendering);
 
     // Remove light paths tab.
     remove_light_paths_tab();
 
     // Stop monitoring the project file in Final rendering mode.
-    if (rendering_mode == FinalRendering)
+    if (rendering_mode == RenderingMode::FinalRendering)
     {
         if (m_project_file_watcher)
             stop_monitoring_project_file();
@@ -1254,16 +1254,16 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
 
     // Retrieve the appropriate rendering configuration.
     const char* configuration_name =
-        rendering_mode == InteractiveRendering ? "interactive" : "final";
+        rendering_mode == RenderingMode::InteractiveRendering ? "interactive" : "final";
     const ParamArray params = get_project_params(configuration_name);
 
     // Effectively start rendering.
     m_rendering_manager.start_rendering(
         project,
         params,
-        rendering_mode == InteractiveRendering
-            ? RenderingManager::InteractiveRendering
-            : RenderingManager::FinalRendering,
+        rendering_mode == RenderingMode::InteractiveRendering
+            ? RenderingManager::RenderingMode::InteractiveRendering
+            : RenderingManager::RenderingMode::FinalRendering,
         m_render_tabs["RGB"]);
 }
 
@@ -1340,8 +1340,7 @@ namespace
         QMessageBox msgbox(parent);
         msgbox.setWindowTitle("Abort Rendering?");
         msgbox.setIcon(QMessageBox::Question);
-        msgbox.setText("Rendering is in progress.");
-        msgbox.setInformativeText("Do you want to abort rendering?");
+        msgbox.setText("Rendering is in progress.\n\nDo you want to abort rendering?");
         msgbox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
         msgbox.setDefaultButton(QMessageBox::No);
         return msgbox.exec();
@@ -1626,6 +1625,11 @@ void MainWindow::slot_project_file_changed(const QString& filepath)
     slot_reload_project();
 }
 
+namespace
+{
+    const char* SettingsFilename = "appleseed.studio.xml";
+}
+
 void MainWindow::slot_load_application_settings()
 {
     const QSettings qt_settings(SETTINGS_ORGANIZATION, SETTINGS_APPLICATION);
@@ -1637,7 +1641,7 @@ void MainWindow::slot_load_application_settings()
         qt_settings.value("main_window_project_explorer_state").toByteArray());
 
     Dictionary settings;
-    if (Application::load_settings("appleseed.studio.xml", settings, global_logger(), LogMessage::Info))
+    if (Application::load_settings(SettingsFilename, settings, global_logger(), LogMessage::Info))
     {
         m_application_settings = settings;
         slot_apply_application_settings();
@@ -1654,7 +1658,7 @@ void MainWindow::slot_save_application_settings()
     settings.setValue("main_window_project_explorer_state",
         m_ui->treewidget_project_explorer_scene->header()->saveState());
 
-    Application::save_settings("appleseed.studio.xml", m_application_settings, global_logger(), LogMessage::Info);
+    Application::save_settings(SettingsFilename, m_application_settings, global_logger(), LogMessage::Info);
 }
 
 void MainWindow::slot_apply_application_settings()
@@ -1685,12 +1689,12 @@ void MainWindow::slot_apply_application_settings()
 
 void MainWindow::slot_start_interactive_rendering()
 {
-    start_rendering(InteractiveRendering);
+    start_rendering(RenderingMode::InteractiveRendering);
 }
 
 void MainWindow::slot_start_final_rendering()
 {
-    start_rendering(FinalRendering);
+    start_rendering(RenderingMode::FinalRendering);
 }
 
 void MainWindow::slot_start_rendering_once(const QString& filepath, const QString& configuration, const bool successful)
@@ -1700,8 +1704,8 @@ void MainWindow::slot_start_rendering_once(const QString& filepath, const QStrin
     if (successful)
     {
         if (configuration == "interactive")
-            start_rendering(InteractiveRendering);
-        else start_rendering(FinalRendering);
+            start_rendering(RenderingMode::InteractiveRendering);
+        else start_rendering(RenderingMode::FinalRendering);
     }
 }
 
@@ -1923,7 +1927,7 @@ void MainWindow::slot_set_render_region(const QRect& rect)
         set_render_region_action->operator()(*m_project_manager.get_project());
 
         if (m_application_settings.get_path_optional<bool>(SETTINGS_RENDER_REGION_TRIGGERS_RENDERING))
-            start_rendering(InteractiveRendering);
+            start_rendering(RenderingMode::InteractiveRendering);
     }
     else
     {
@@ -1941,12 +1945,12 @@ void MainWindow::slot_render_widget_context_menu(const QPoint& point)
         return;
 
     QMenu* menu = new QMenu(this);
-    menu->addAction("Save Frame...", this, SLOT(slot_save_frame()));
-    menu->addAction("Save Frame and AOVs...", this, SLOT(slot_save_frame_and_aovs()));
+    menu->addAction("Save &Frame...", this, SLOT(slot_save_frame()));
+    menu->addAction("Save Frame and &AOVs...", this, SLOT(slot_save_frame_and_aovs()));
     menu->addSeparator();
-    menu->addAction("Save Render Widget Content...", this, SLOT(slot_save_render_widget_content()));
+    menu->addAction("Save &Render Widget Content...", this, SLOT(slot_save_render_widget_content()));
     menu->addSeparator();
-    menu->addAction("Clear All", this, SLOT(slot_clear_frame()));
+    menu->addAction("&Clear All", this, SLOT(slot_clear_frame()));
     menu->exec(point);
 }
 
@@ -2082,7 +2086,7 @@ void MainWindow::slot_clear_frame()
     Frame* frame = m_project_manager.get_project()->get_frame();
     frame->clear_main_and_aov_images();
 
-    // In the UI, clear all render widgets to black.
+    // Clear all render widgets to black.
     for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
         i->second->clear();
 }
@@ -2216,6 +2220,7 @@ void MainWindow::slot_show_benchmark_window()
 
 void MainWindow::slot_show_about_window()
 {
+    // This window deletes itself on close.
     AboutWindow* about_window = new AboutWindow(this);
     about_window->showNormal();
     about_window->activateWindow();
