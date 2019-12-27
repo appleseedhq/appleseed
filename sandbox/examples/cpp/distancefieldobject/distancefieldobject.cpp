@@ -152,10 +152,10 @@ namespace
         }
 
         void refine_and_offset(
-            const foundation::Ray3d& obj_inst_ray,
-            foundation::Vector3d& obj_inst_front_point,
-            foundation::Vector3d& obj_inst_back_point,
-            foundation::Vector3d& obj_inst_geo_normal) const override
+            const asf::Ray3d&   obj_inst_ray,
+            asf::Vector3d&      obj_inst_front_point,
+            asf::Vector3d&      obj_inst_back_point,
+            asf::Vector3d&      obj_inst_geo_normal) const override
         {}
 
       private:
@@ -188,12 +188,12 @@ namespace
         {
             return
                 asf::Xoroshiro128plus(
-                    asf::hash_uint64(asf::binary_cast<uint64_t>(ray.m_org.x)) ^
-                    asf::hash_uint64(asf::binary_cast<uint64_t>(ray.m_org.y)) ^
-                    asf::hash_uint64(asf::binary_cast<uint64_t>(ray.m_org.z)),
-                    asf::hash_uint64(asf::binary_cast<uint64_t>(ray.m_dir.x)) ^
-                    asf::hash_uint64(asf::binary_cast<uint64_t>(ray.m_dir.y)) ^
-                    asf::hash_uint64(asf::binary_cast<uint64_t>(ray.m_dir.z)));
+                    asf::hash_uint64(asf::binary_cast<std::uint64_t>(ray.m_org.x)) ^
+                    asf::hash_uint64(asf::binary_cast<std::uint64_t>(ray.m_org.y)) ^
+                    asf::hash_uint64(asf::binary_cast<std::uint64_t>(ray.m_org.z)),
+                    asf::hash_uint64(asf::binary_cast<std::uint64_t>(ray.m_dir.x)) ^
+                    asf::hash_uint64(asf::binary_cast<std::uint64_t>(ray.m_dir.y)) ^
+                    asf::hash_uint64(asf::binary_cast<std::uint64_t>(ray.m_dir.z)));
         }
 
         static float op_union(const float a, const float b)
