@@ -141,6 +141,7 @@ namespace
                         *m_buffer.get(),
                         m_sample_generators[i],
                         m_sample_counter,
+                        m_params.m_sampling_profile,
                         m_params.m_spectrum_mode,
                         m_job_queue,
                         i,                              // job index
@@ -372,14 +373,15 @@ namespace
 
         struct Parameters
         {
-            const Spectrum::Mode        m_spectrum_mode;
-            const SamplingContext::Mode m_sampling_mode;
-            const size_t                m_thread_count;       // number of rendering threads
-            const std::uint64_t         m_max_average_spp;    // maximum average number of samples to compute per pixel
-            const double                m_time_limit;         // maximum rendering time in seconds
-            const double                m_max_fps;            // maximum display frequency in frames/second
-            const bool                  m_perf_stats;         // collect and print performance statistics?
-            const bool                  m_luminance_stats;    // collect and print luminance statistics?
+            const Spectrum::Mode                    m_spectrum_mode;
+            const SamplingContext::Mode             m_sampling_mode;
+            const size_t                            m_thread_count;       // number of rendering threads
+            const std::uint64_t                     m_max_average_spp;    // maximum average number of samples to compute per pixel
+            const double                            m_time_limit;         // maximum rendering time in seconds
+            const double                            m_max_fps;            // maximum display frequency in frames/second
+            const bool                              m_perf_stats;         // collect and print performance statistics?
+            const bool                              m_luminance_stats;    // collect and print luminance statistics?
+            SampleGeneratorJob::SamplingProfile     m_sampling_profile;
 
             explicit Parameters(const ParamArray& params)
               : m_spectrum_mode(get_spectrum_mode(params))
@@ -391,6 +393,17 @@ namespace
               , m_perf_stats(params.get_optional<bool>("performance_statistics", false))
               , m_luminance_stats(params.get_optional<bool>("luminance_statistics", false))
             {
+                const SampleGeneratorJob::SamplingProfile default_sampling_profile;
+                m_sampling_profile.m_samples_in_uninterruptible_phase =
+                    params.get_optional<std::uint64_t>("samples_in_uninterruptible_phase", default_sampling_profile.m_samples_in_uninterruptible_phase);
+                m_sampling_profile.m_samples_in_linear_phase =
+                    params.get_optional<std::uint64_t>("samples_in_linear_phase", default_sampling_profile.m_samples_in_linear_phase);
+                m_sampling_profile.m_samples_per_job_in_linear_phase =
+                    params.get_optional<std::uint64_t>("samples_per_job_in_linear_phase", default_sampling_profile.m_samples_per_job_in_linear_phase);
+                m_sampling_profile.m_max_samples_per_job_in_exponential_phase =
+                    params.get_optional<std::uint64_t>("max_samples_per_job_in_exponential_phase", default_sampling_profile.m_max_samples_per_job_in_exponential_phase);
+                m_sampling_profile.m_curve_exponent_in_exponential_phase =
+                    params.get_optional<double>("curve_exponent_in_exponential_phase", default_sampling_profile.m_curve_exponent_in_exponential_phase);
             }
         };
 

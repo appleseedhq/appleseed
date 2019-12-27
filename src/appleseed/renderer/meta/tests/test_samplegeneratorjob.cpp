@@ -42,18 +42,20 @@
 using namespace foundation;
 using namespace renderer;
 
-TEST_SUITE(Renderer_Kernel_Rendering_Progressive_SampleGeneratorJob)
+TEST_SUITE(Renderer_Kernel_Rendering_Progressive_SampleGeneratorJob_SamplingProfile)
 {
     TEST_CASE(PlotSamplesPerJob)
     {
         const std::uint64_t N = 1500000;
+
+        const SampleGeneratorJob::SamplingProfile sampling_profile;
 
         std::vector<Vector2d> points;
         points.reserve(N);
 
         for (std::uint64_t x = 0; x < N; x += 100)
         {
-            const std::uint64_t y = SampleGeneratorJob::samples_to_samples_per_job(x);
+            const std::uint64_t y = sampling_profile.get_job_sample_count(x);
             points.emplace_back(
                 static_cast<double>(x),
                 static_cast<double>(y));
