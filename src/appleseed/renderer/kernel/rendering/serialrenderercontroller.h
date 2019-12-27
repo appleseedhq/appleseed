@@ -37,6 +37,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 #include <deque>
 
 // Forward declarations.
@@ -88,7 +89,11 @@ class SerialRendererController
         const size_t            tile_y);
 
     void add_on_progressive_frame_update_callback(
-        const Frame*            frame);
+        const Frame&            frame,
+        const double            time,
+        const std::uint64_t     samples,
+        const double            samples_per_pixel,
+        const std::uint64_t     samples_per_second);
 
     void exec_callbacks();
 
@@ -108,6 +113,10 @@ class SerialRendererController
         const Frame*    m_frame;
         size_t          m_tile_x;
         size_t          m_tile_y;
+        double          m_time;
+        std::uint64_t   m_samples;
+        double          m_samples_per_pixel;
+        std::uint64_t   m_samples_per_second;
     };
 
     IRendererController*                m_controller;

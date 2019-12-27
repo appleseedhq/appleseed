@@ -37,15 +37,20 @@
 namespace renderer
 {
 
-template <size_t N>
+template <std::size_t N>
 class SampleCountHistory
 {
   public:
     SampleCountHistory()
-      : m_size(0)
-      , m_first(0)
-      , m_index(0)
     {
+        clear();
+    }
+
+    void clear()
+    {
+        m_size = 0;
+        m_first = 0;
+        m_index = 0;
     }
 
     void insert(const double time, const std::uint64_t value)
@@ -85,10 +90,10 @@ class SampleCountHistory
         std::uint64_t   m_value;
     };
 
-    Record  m_records[N];
-    size_t  m_size;
-    size_t  m_first;
-    size_t  m_index;
+    Record      m_records[N];
+    std::size_t m_size;
+    std::size_t m_first;
+    std::size_t m_index;
 };
 
 }   // namespace renderer
