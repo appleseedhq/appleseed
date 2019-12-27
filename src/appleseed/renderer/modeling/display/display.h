@@ -47,7 +47,7 @@ namespace renderer
 {
 
 //
-// Tile callback plugin.
+// Display plugin.
 //
 
 class APPLESEED_DLLSYMBOL Display
