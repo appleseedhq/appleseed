@@ -70,7 +70,8 @@ class APPLESEED_DLLSYMBOL ShaderCompiler
     ~ShaderCompiler();
 };
 
- //
+
+//
 // ShaderCompiler factory.
 //
 

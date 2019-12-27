@@ -55,7 +55,7 @@ namespace renderer
 {
 
 //
-// OSL Shader.
+// OSL shader.
 //
 
 class APPLESEED_DLLSYMBOL Shader
