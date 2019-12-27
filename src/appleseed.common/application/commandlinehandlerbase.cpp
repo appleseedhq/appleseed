@@ -39,7 +39,7 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/system.h"
 #include "foundation/platform/types.h"
-#ifdef WIN32
+#ifdef _WIN32
 #include "foundation/platform/windows.h"
 #endif
 #include "foundation/utility/commandlineparser.h"
@@ -72,7 +72,7 @@ struct CommandLineHandlerBase::Impl
     FlagOptionHandler                m_message_coloring;
     FlagOptionHandler                m_display_options;
 
-#ifdef WIN32
+#ifdef _WIN32
     FlagOptionHandler                m_disable_abort_dialogs;
 #endif
 
@@ -183,7 +183,7 @@ void CommandLineHandlerBase::add_default_options()
     add_system_option();
     add_message_verbosity_option();
     add_message_coloring_option();
-#ifdef WIN32
+#ifdef _WIN32
     add_disable_abort_dialogs_option();
 #endif
     add_display_options_option();
@@ -241,7 +241,7 @@ void CommandLineHandlerBase::add_message_coloring_option()
             .set_description("enable message coloring"));
 }
 
-#ifdef WIN32
+#ifdef _WIN32
 
 void CommandLineHandlerBase::add_disable_abort_dialogs_option()
 {
@@ -278,7 +278,7 @@ void CommandLineHandlerBase::parse(const int argc, char* argv[], SuperLogger& lo
         exit(EXIT_SUCCESS);
     }
 
-#ifdef WIN32
+#ifdef _WIN32
 
     // Disable all abort dialogs as soon as possible.
     if (impl->m_disable_abort_dialogs.is_set())
