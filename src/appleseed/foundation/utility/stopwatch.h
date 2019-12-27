@@ -45,24 +45,36 @@ namespace foundation
 //
 // A stopwatch that allows to measure the amount of time elapsed between two instants.
 //
+// None of the methods of this class are thread-safe.
+//
 
 template <typename Timer>
 class Stopwatch
   : public NonCopyable
 {
   public:
-    // Constructor, calibrates the stopwatch.
-    explicit Stopwatch(const size_t overhead_measures = 10);
+    enum class State
+    {
+        Stopped,
+        Running,
+        Paused
+    };
+
+    // Constructor, optionally measures the stopwatch's overhead.
+    explicit Stopwatch(const size_t overhead_measures = 0);
 
     // Return the internal timer.
     Timer& get_timer();
     const Timer& get_timer() const;
 
-    // Set the elapsed time to 0.
-    void clear();
+    // Return the state of the stopwatch.
+    State get_state() const;
 
     // Start or restart the stopwatch.
     void start();
+
+    // Stop the stopwatch.
+    void stop();
 
     // Pause the stopwatch.
     void pause();
@@ -73,6 +85,9 @@ class Stopwatch
     // Measure the time elapsed since the last call to start().
     // The stopwatch keeps running.
     Stopwatch& measure();
+
+    // Clear the number of timer ticks recorded by measure().
+    void clear();
 
     // Read the number of timer ticks recorded by the last call to measure().
     // Overhead is subtracted from the returned value.
@@ -86,11 +101,11 @@ class Stopwatch
     Timer           m_timer;        // internal timer
     std::uint64_t   m_timer_freq;   // frequency of the internal timer
     std::uint64_t   m_overhead;     // measured overhead of calling start() + measure()
-    std::uint64_t   m_start;        // timer value when start(), resume() or measure() is called
+    State           m_state;        // current state of the stopwatch
+    std::uint64_t   m_start_time;   // timer value when start(), resume() or measure() is called
     std::uint64_t   m_pause_time;   // timer value when pause() is called
     std::uint64_t   m_elapsed;      // elapsed time when measure() is called
-    std::uint64_t   m_commited;     // time spent before resume() was called
-    bool            m_paused;       // state of the watch
+    std::uint64_t   m_committed;    // time spent before resume() was called
 
     // Measure the overhead of calling start() + measure().
     std::uint64_t measure_overhead(const size_t measures);
@@ -103,26 +118,22 @@ class Stopwatch
 
 template <typename Timer>
 Stopwatch<Timer>::Stopwatch(const size_t overhead_measures)
-  : m_start(0)
+  : m_overhead(0)
+  , m_state(State::Stopped)
+  , m_start_time(0)
   , m_pause_time(0)
   , m_elapsed(0)
-  , m_commited(0)
-  , m_paused(false)
+  , m_committed(0)
 {
     // Retrieve internal timer frequency.
     m_timer_freq = m_timer.frequency();
 
-    // First, assume no overhead.
-    m_overhead = 0;
-
-    // Then, optionally measure the overhead.
+    // Optionally measure the overhead.
     if (overhead_measures > 0)
     {
         // Measure the overhead of calling start() + measure().
         m_overhead = measure_overhead(overhead_measures);
     }
-
-    clear();
 }
 
 template <typename Timer>
@@ -138,55 +149,72 @@ inline const Timer& Stopwatch<Timer>::get_timer() const
 }
 
 template <typename Timer>
-inline void Stopwatch<Timer>::clear()
+inline typename Stopwatch<Timer>::State Stopwatch<Timer>::get_state() const
 {
-    m_elapsed = 0;
-    m_commited = 0;
+    return m_state;
 }
 
 template <typename Timer>
 inline void Stopwatch<Timer>::start()
 {
-    m_paused = false;
     clear();
-    m_start = m_timer.read_start();
+
+    m_state = State::Running;
+    m_start_time = m_timer.read_start();
+}
+
+template <typename Timer>
+inline void Stopwatch<Timer>::stop()
+{
+    m_state = State::Stopped;
 }
 
 template <typename Timer>
 inline void Stopwatch<Timer>::pause()
 {
-    assert(!m_paused);
+    assert(m_state == State::Running);
+
+    m_state = State::Paused;
     m_pause_time = m_timer.read_end();
-    m_paused = true;
 }
 
 template <typename Timer>
 inline void Stopwatch<Timer>::resume()
 {
-    assert(m_paused);
+    assert(m_state == State::Paused);
 
     // Update committed time.
     const std::uint64_t end = m_timer.read_end();
-    m_commited += end >= m_start ? end - m_start : 0;
-    m_commited -= end >= m_pause_time ? end - m_pause_time : 0;
+    m_committed += end >= m_start_time ? end - m_start_time : 0;
+    m_committed -= end >= m_pause_time ? end - m_pause_time : 0;
 
-    m_start = m_timer.read_start();
-    m_paused = false;
+    m_state = State::Running;
+    m_start_time = m_timer.read_start();
 }
 
 template <typename Timer>
 inline Stopwatch<Timer>& Stopwatch<Timer>::measure()
 {
-    // Compute and store elapsed time.
-    const std::uint64_t end = m_timer.read_end();
-    m_elapsed = end >= m_start ? end - m_start : 0;
+    if (m_state != State::Stopped)
+    {
+        // Compute and store elapsed time.
+        const std::uint64_t end = m_timer.read_end();
+        m_elapsed = end >= m_start_time ? end - m_start_time : 0;
 
-    if (m_paused)
-        m_elapsed -= end >= m_pause_time ? end - m_pause_time : 0;
+        if (m_state == State::Paused)
+            m_elapsed -= end >= m_pause_time ? end - m_pause_time : 0;
 
-    m_elapsed += m_commited;
+        m_elapsed += m_committed;
+    }
 
     return *this;
+}
+
+template <typename Timer>
+inline void Stopwatch<Timer>::clear()
+{
+    m_elapsed = 0;
+    m_committed = 0;
 }
 
 template <typename Timer>
