@@ -491,7 +491,6 @@ endif ()
 set (preprocessor_definitions_debug
     ${preprocessor_definitions_debug}
     ${preprocessor_definitions_common}
-    DEBUG
     _DEBUG
 )
 
@@ -514,10 +513,22 @@ set (preprocessor_definitions_profile
     ${preprocessor_definitions_ship}        # the Profile configuration inherits from the Ship configuration
 )
 
-# Add the SHIP preprocessor definition only after the Profile configuration is set.
+# Add symbols identifying configurations.
+set (preprocessor_definitions_debug
+    ${preprocessor_definitions_debug}
+    APPLESEED_DEBUG
+)
+set (preprocessor_definitions_release
+    ${preprocessor_definitions_release}
+    APPLESEED_RELEASE
+)
+set (preprocessor_definitions_profile
+    ${preprocessor_definitions_profile}
+    APPLESEED_PROFILE
+)
 set (preprocessor_definitions_ship
     ${preprocessor_definitions_ship}
-    SHIP
+    APPLESEED_SHIP
 )
 
 # A convenience macro to apply the preprocessor definitions to all configurations of a given target.

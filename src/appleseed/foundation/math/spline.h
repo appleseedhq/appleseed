@@ -133,7 +133,7 @@ inline T cubic_hermite_spline(
     assert(knot_derivative);
 
     // Check that knots abscissa are strictly increasing.
-#ifdef DEBUG
+#ifdef APPLESEED_DEBUG
     for (size_t k = 0; k < knot_count - 1; ++k)
         assert(knot_x[k] < knot_x[k + 1]);
 #endif

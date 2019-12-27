@@ -72,10 +72,16 @@ const char* Appleseed::get_lib_version()
 
 const char* Appleseed::get_lib_configuration()
 {
-#ifdef DEBUG
+#if defined APPLESEED_DEBUG
     return "Debug";
-#else
+#elif defined APPLESEED_RELEASE
     return "Release";
+#elif defined APPLESEED_PROFILE
+    return "Profile";
+#elif defined APPLESEED_SHIP
+    return "Ship";
+#else
+    return "Unknown";
 #endif
 }
 
