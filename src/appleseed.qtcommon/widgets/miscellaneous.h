@@ -74,9 +74,6 @@ QString combine_paths(const QString& lhs, const QString& rhs);
 // Combine the application's base path and a given relative path.
 QString make_app_path(const QString& path);
 
-// Combine the action tooltip's name and shortcut.
-QString combine_name_and_shortcut(const QString& name, const QKeySequence& shortcut);
-
 // Check whether a file exists.
 bool file_exists(const QString& path);
 
@@ -119,6 +116,9 @@ void set_minimum_width(QMessageBox& msgbox, const int minimum_width);
 // Create a keyboard shortcut that is active for a given window and its
 // child widgets, but not for its top-level children like subwindows.
 QShortcut* create_window_local_shortcut(QWidget* parent, const QKeySequence key_sequence);
+
+// Combine the action tooltip's name and shortcut.
+QString combine_name_and_shortcut(const QString& name, const QKeySequence& shortcut);
 
 // Remove all widgets and sub-layouts from a layout.
 void clear_layout(QLayout* layout);
