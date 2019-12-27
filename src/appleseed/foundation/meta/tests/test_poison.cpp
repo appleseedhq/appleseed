@@ -36,7 +36,7 @@
 
 using namespace foundation;
 
-#ifdef DEBUG
+#ifdef APPLESEED_DEBUG
 
 TEST_SUITE(Foundation_Utility_Debug_Poison)
 {

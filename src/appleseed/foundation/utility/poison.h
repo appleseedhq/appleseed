@@ -46,7 +46,7 @@ namespace foundation
 //
 //     foundation::always_poison(x);
 //
-// To poison a variable or object `x` in DEBUG mode only:
+// To poison a variable or object `x` in APPLESEED_DEBUG mode only:
 //
 //    foundation::debug_poison(x);
 //
@@ -100,7 +100,7 @@ inline void always_poison(T& x)
 template <typename T>
 inline void debug_poison(T& x)
 {
-#ifdef DEBUG
+#ifdef APPLESEED_DEBUG
     PoisonImpl<T>::do_poison(x);
 #endif
 }
