@@ -208,7 +208,7 @@ namespace
                 QString(
                     "The stylesheet %1 could not be loaded.\n\n"
                     "The application will use the default style.")
-                    .arg(QString::fromStdString(stylesheet_path)));
+                    .arg(QString::fromStdString(safe_weakly_canonical(stylesheet_path).string())));
             msgbox.setStandardButtons(QMessageBox::Ok);
             msgbox.setDefaultButton(QMessageBox::Ok);
             msgbox.exec();
