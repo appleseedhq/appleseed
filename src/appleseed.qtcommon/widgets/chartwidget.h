@@ -43,6 +43,8 @@
 
 // Standard headers.
 #include <cstddef>
+#include <deque>
+#include <functional>
 #include <memory>
 #include <vector>
 
@@ -57,19 +59,6 @@ namespace appleseed {
 namespace qtcommon {
 
 //
-// Interface for tooltip formatters.
-//
-
-class IToolTipFormatter
-{
-  public:
-    virtual ~IToolTipFormatter() {}
-
-    virtual QString format(const foundation::Vector2d& point) const = 0;
-};
-
-
-//
 // Base class for charts.
 //
 
@@ -77,23 +66,30 @@ class ChartBase
   : public foundation::NonCopyable
 {
   public:
-    ChartBase();
+    using ValueFormatter = std::function<QString(const double)>;
+    using TooltipFormatter = std::function<QString(const foundation::Vector2d&)>;
 
-    virtual ~ChartBase() {}
+    virtual ~ChartBase() = default;
 
     void set_equidistant(const bool equidistant);
+    void set_origin(const foundation::Vector2d& origin);
 
     void set_grid_brush(const QBrush& brush);
+    void set_legend_brush(const QBrush& brush);
 
-    void set_tooltip_formatter(std::unique_ptr<IToolTipFormatter> formatter);
+    void set_horizontal_legend_formatter(const ValueFormatter& formatter);
+    void set_vertical_legend_formatter(const ValueFormatter& formatter);
+    void set_tooltip_formatter(const TooltipFormatter& formatter);
 
-    void add_point(const foundation::Vector2d& p);
-
-    void add_point(const double x, const double y);
+    size_t size() const;
+    void push_back(const foundation::Vector2d& p);
+    void push_back(const double x, const double y);
+    void pop_front();
 
     void prepare_drawing(QPainter& painter);
 
     virtual void draw_grid(QPainter& painter) const;
+    virtual void draw_legends(QPainter& painter) const;
 
     virtual void draw_chart(QPainter& painter) const = 0;
 
@@ -110,13 +106,17 @@ class ChartBase
         size_t&         point_index) const = 0;
 
   protected:
-    bool                                m_equidistant;
-    foundation::Vector2d                m_margin;
-    QBrush                              m_grid_brush;
-    std::unique_ptr<IToolTipFormatter>  m_tooltip_formatter;
+    bool                                m_equidistant = false;
+    foundation::Vector2d                m_origin = foundation::Vector2d(0.0);
+    foundation::Vector2d                m_margin = foundation::Vector2d(15.0);
+    QBrush                              m_grid_brush = QColor(50, 50, 50, 255);
+    QBrush                              m_legend_brush = QColor(100, 100, 100, 255);
+    ValueFormatter                      m_horizontal_legend_formatter;
+    ValueFormatter                      m_vertical_legend_formatter;
+    TooltipFormatter                    m_tooltip_formatter;
 
-    std::vector<foundation::Vector2d>   m_original_points;
-    std::vector<foundation::Vector2d>   m_points;
+    std::deque<foundation::Vector2d>    m_original_points;
+    std::deque<foundation::Vector2d>    m_points;
 
     foundation::AABB2d                  m_points_bbox;
     foundation::Vector2d                m_rcp_points_bbox_extent;
@@ -133,6 +133,9 @@ class ChartBase
 
     void draw_horizontal_grid(QPainter& painter) const;
     void draw_vertical_grid(QPainter& painter) const;
+
+    void draw_horizontal_legend(QPainter& painter) const;
+    void draw_vertical_legend(QPainter& painter) const;
 };
 
 
@@ -144,9 +147,11 @@ class LineChart
   : public ChartBase
 {
   public:
-    LineChart();
+    void set_shadow_enabled(const bool enabled);
 
     void set_curve_brush(const QBrush& brush);
+    void set_shadow_brush(const QBrush& brush);
+    void set_draw_points(const bool draw_points);
 
     void draw_chart(QPainter& painter) const override;
 
@@ -159,7 +164,14 @@ class LineChart
         size_t&         point_index) const override;
 
   private:
-    QBrush  m_curve_brush;
+    bool    m_shadow_enabled = false;
+    QBrush  m_curve_brush = QColor(255, 255, 255, 255);
+    QBrush  m_shadow_brush = QColor(30, 30, 30, 255);
+    bool    m_draw_points = true;
+
+    void draw_lines(
+        QPainter&       painter,
+        const QPoint&   shadow_offset = QPoint(0, 0)) const;
 
     void draw_point_highlight(
         QPainter&       painter,
@@ -183,14 +195,12 @@ class ChartWidget
   public:
     explicit ChartWidget(QWidget* parent);
 
-    ~ChartWidget() override;
-
     void clear();
 
-    void add_chart(std::unique_ptr<ChartBase> chart);
+    ChartBase* add_chart(std::unique_ptr<ChartBase> chart);
 
   private:
-    typedef std::vector<ChartBase*> ChartCollection;
+    using ChartCollection = std::vector<std::unique_ptr<ChartBase>>;
 
     ChartCollection     m_charts;
     bool                m_mouse_inside_widget;
