@@ -52,7 +52,7 @@ char* duplicate_string(const char* s)
     assert(s);
 
     char* result = new char[strlen(s) + 1];
-    strcpy(result, s);
+    std::strcpy(result, s);
 
     return result;
 }

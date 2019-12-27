@@ -153,7 +153,7 @@ namespace
                 // The C string below must be declared static because Python just keeps a pointer to it.
                 static char python_home[FOUNDATION_MAX_PATH_LENGTH + 1];
                 assert(python_path_str.size() <= FOUNDATION_MAX_PATH_LENGTH);
-                strncpy(python_home, python_path_str.c_str(), sizeof(python_home) - 1);
+                std::strncpy(python_home, python_path_str.c_str(), sizeof(python_home) - 1);
 
                 LOG_INFO(
                     g_logger,

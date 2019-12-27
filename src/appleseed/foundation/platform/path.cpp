@@ -122,7 +122,7 @@ const char* get_executable_directory()
         executable_path.remove_filename();
 
         assert(executable_path.string().size() <= FOUNDATION_MAX_PATH_LENGTH);
-        strncpy(path, executable_path.string().c_str(), sizeof(path) - 1);
+        std::strncpy(path, executable_path.string().c_str(), sizeof(path) - 1);
         path[sizeof(path) - 1] = '\0';
 
         path_initialized = true;
@@ -156,7 +156,7 @@ const char* get_home_directory()
         if (home_dir == nullptr)
             home_dir = getpwuid(getuid())->pw_dir;
 
-        strncpy(path, home_dir, FOUNDATION_MAX_PATH_LENGTH);
+        std::strncpy(path, home_dir, FOUNDATION_MAX_PATH_LENGTH);
         path[FOUNDATION_MAX_PATH_LENGTH] = '\0';
 
 // Other platforms.
