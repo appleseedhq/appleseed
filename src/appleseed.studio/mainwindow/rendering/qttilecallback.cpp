@@ -40,6 +40,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 
 // Forward declarations.
 namespace renderer  { class Frame; }
@@ -80,6 +81,7 @@ namespace
         {
             assert(m_render_widget);
             m_render_widget->highlight_tile(*frame, tile_x, tile_y);
+
             emit signal_update();
         }
 
@@ -90,14 +92,20 @@ namespace
         {
             assert(m_render_widget);
             m_render_widget->blit_tile(*frame, tile_x, tile_y);
+
             emit signal_update();
         }
 
         void on_progressive_frame_update(
-            const Frame*    frame) override
+            const Frame&            frame,
+            const double            /*time*/,
+            const std::uint64_t     /*samples*/,
+            const double            /*samples_per_pixel*/,
+            const std::uint64_t     /*samples_per_second*/) override
         {
             assert(m_render_widget);
-            m_render_widget->blit_frame(*frame);
+            m_render_widget->blit_frame(frame);
+
             emit signal_update();
         }
 

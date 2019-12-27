@@ -40,12 +40,13 @@
 #include "foundation/platform/python.h"
 #include "foundation/utility/autoreleaseptr.h"
 
-// OpenGL
+// OpenGL.
 #include <glad/glad.h>
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <vector>
 
 namespace bpy = boost::python;
@@ -93,33 +94,44 @@ namespace
             delete this;
         }
 
-        void on_tiled_frame_begin(const Frame*) override
+        void on_tiled_frame_begin(const Frame* /*frame*/) override
         {
             PyErr_SetString(PyExc_RuntimeError, "BlenderProgressiveTileCallback cannot be used for final renders");
             bpy::throw_error_already_set();
         }
 
-        void on_tiled_frame_end(const Frame*) override
+        void on_tiled_frame_end(const Frame* /*frame*/) override
         {
             PyErr_SetString(PyExc_RuntimeError, "BlenderProgressiveTileCallback cannot be used for final renders");
             bpy::throw_error_already_set();
         }
 
-        void on_tile_begin(const Frame*, const size_t, const size_t) override
+        void on_tile_begin(
+            const Frame*            /*frame*/,
+            const size_t            /*tile_x*/,
+            const size_t            /*tile_y*/) override
         {
             PyErr_SetString(PyExc_RuntimeError, "BlenderProgressiveTileCallback cannot be used for final renders");
             bpy::throw_error_already_set();
         }
 
-        void on_tile_end(const Frame*, const size_t, const size_t) override
+        void on_tile_end(
+            const Frame*            /*frame*/,
+            const size_t            /*tile_x*/,
+            const size_t            /*tile_y*/) override
         {
             PyErr_SetString(PyExc_RuntimeError, "BlenderProgressiveTileCallback cannot be used for final renders");
             bpy::throw_error_already_set();
         }
 
-        void on_progressive_frame_update(const Frame* frame) override
+        void on_progressive_frame_update(
+            const Frame&            frame,
+            const double            /*time*/,
+            const std::uint64_t     /*samples*/,
+            const double            /*samples_per_pixel*/,
+            const std::uint64_t     /*samples_per_second*/) override
         {
-            Image& image = frame->image();
+            Image& image = frame.image();
 
             // Realloc the buffer if the image size changed since the last time.
             const CanvasProperties& props = image.properties();

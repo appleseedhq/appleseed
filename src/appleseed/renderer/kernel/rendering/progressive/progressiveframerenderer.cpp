@@ -245,6 +245,10 @@ namespace
             m_buffer->clear();
             m_sample_counter.clear();
 
+            m_sample_count_history_spinlock.lock();
+            m_sample_count_history.clear();
+            m_sample_count_history_spinlock.unlock();
+
             // Reset sample generators.
             for (auto sample_generator : m_sample_generators)
                 sample_generator->reset();
@@ -264,7 +268,9 @@ namespace
             m_statistics_func.reset(
                 new StatisticsFunc(
                     m_project,
-                    *m_buffer.get(),
+                    *m_buffer,
+                    m_sample_count_history,
+                    m_sample_count_history_spinlock,
                     m_params.m_perf_stats,
                     m_params.m_luminance_stats,
                     m_project.get_frame()->ref_image(),
@@ -280,7 +286,9 @@ namespace
                 m_display_func.reset(
                     new DisplayFunc(
                         *m_project.get_frame(),
-                        *m_buffer.get(),
+                        *m_buffer,
+                        m_sample_count_history,
+                        m_sample_count_history_spinlock,
                         m_tile_callback.get(),
                         m_params.m_max_fps,
                         m_display_thread_abort_switch));
@@ -367,6 +375,8 @@ namespace
         }
 
       private:
+        using SampleCountHistoryType = SampleCountHistory<128>;
+
         //
         // Progressive frame renderer parameters.
         //
@@ -418,16 +428,24 @@ namespace
             DisplayFunc(
                 Frame&                      frame,
                 SampleAccumulationBuffer&   buffer,
+                SampleCountHistoryType&     sample_count_history,
+                Spinlock&                   sample_count_history_spinlock,
                 ITileCallback*              tile_callback,
                 const double                max_fps,
                 IAbortSwitch&               abort_switch)
               : m_frame(frame)
               , m_buffer(buffer)
+              , m_sample_count_history(sample_count_history)
+              , m_sample_count_history_spinlock(sample_count_history_spinlock)
               , m_tile_callback(tile_callback)
-              , m_min_sample_count(min<std::uint64_t>(frame.get_crop_window().volume(), 32 * 32 * 2))
+              , m_min_sample_count(std::min<std::uint64_t>(frame.get_crop_window().volume(), 32 * 32 * 2))
               , m_target_elapsed(1.0 / max_fps)
               , m_abort_switch(abort_switch)
+              , m_rcp_timer_freq(1.0 / m_timer.frequency())
             {
+                const Vector2u crop_window_extent = frame.get_crop_window().extent();
+                const size_t pixel_count = crop_window_extent.x * crop_window_extent.y;
+                m_rcp_pixel_count = 1.0 / pixel_count;
             }
 
             void pause()
@@ -444,9 +462,9 @@ namespace
             {
                 set_current_thread_name("display");
 
-                DefaultWallclockTimer timer;
-                const double rcp_timer_freq = 1.0 / timer.frequency();
-                std::uint64_t last_time = timer.read();
+                m_start_time = m_timer.read();
+
+                std::uint64_t last_time = m_start_time;
 
 #ifdef PRINT_DISPLAY_THREAD_PERFS
                 m_stopwatch.start();
@@ -454,6 +472,11 @@ namespace
 
                 while (!m_abort_switch.is_aborted())
                 {
+                    // Compute time elapsed since last call to display().
+                    const std::uint64_t time = m_timer.read();
+                    const double elapsed = (time - last_time) * m_rcp_timer_freq;
+                    last_time = time;
+
                     if (m_pause_flag.is_clear())
                     {
                         // It's time to display but the sample accumulation buffer doesn't contain
@@ -466,11 +489,6 @@ namespace
                         // Merge the samples and display the final frame.
                         develop_and_display();
                     }
-
-                    // Compute time elapsed since last call to display().
-                    const std::uint64_t time = timer.read();
-                    const double elapsed = (time - last_time) * rcp_timer_freq;
-                    last_time = time;
 
                     // Limit display rate.
                     if (elapsed < m_target_elapsed)
@@ -500,8 +518,24 @@ namespace
                 if (m_abort_switch.is_aborted())
                     return;
 
+                // Compute current rendering time.
+                const double time = (m_timer.read() - m_start_time) * m_rcp_timer_freq;
+
+                // Compute sampling statistics.
+                const std::uint64_t samples = m_buffer.get_sample_count();
+                const double samples_per_pixel = samples * m_rcp_pixel_count;
+                m_sample_count_history_spinlock.lock();
+                const std::uint64_t samples_per_second =
+                    truncate<std::uint64_t>(m_sample_count_history.get_samples_per_second());
+                m_sample_count_history_spinlock.unlock();
+
                 // Present the frame.
-                m_tile_callback->on_progressive_frame_update(&m_frame);
+                m_tile_callback->on_progressive_frame_update(
+                    m_frame,
+                    time,
+                    samples,
+                    samples_per_pixel,
+                    samples_per_second);
 
 #ifdef PRINT_DISPLAY_THREAD_PERFS
                 m_stopwatch.measure();
@@ -522,12 +556,18 @@ namespace
           private:
             Frame&                              m_frame;
             SampleAccumulationBuffer&           m_buffer;
+            SampleCountHistoryType&             m_sample_count_history;
+            Spinlock&                           m_sample_count_history_spinlock;
             ITileCallback*                      m_tile_callback;
             const std::uint64_t                 m_min_sample_count;
             const double                        m_target_elapsed;
             IAbortSwitch&                       m_abort_switch;
             ThreadFlag                          m_pause_flag;
             Stopwatch<DefaultWallclockTimer>    m_stopwatch;
+            double                              m_rcp_pixel_count;
+            DefaultWallclockTimer               m_timer;
+            const double                        m_rcp_timer_freq;
+            std::uint64_t                       m_start_time;
         };
 
         //
@@ -541,6 +581,8 @@ namespace
             StatisticsFunc(
                 const Project&              project,
                 SampleAccumulationBuffer&   buffer,
+                SampleCountHistoryType&     sample_count_history,
+                Spinlock&                   sample_count_history_spinlock,
                 const bool                  perf_stats,
                 const bool                  luminance_stats,
                 const Image*                ref_image,
@@ -548,6 +590,8 @@ namespace
                 IAbortSwitch&               abort_switch)
               : m_project(project)
               , m_buffer(buffer)
+              , m_sample_count_history(sample_count_history)
+              , m_sample_count_history_spinlock(sample_count_history_spinlock)
               , m_perf_stats(perf_stats)
               , m_luminance_stats(luminance_stats)
               , m_ref_image(ref_image)
@@ -628,6 +672,8 @@ namespace
           private:
             const Project&                  m_project;
             SampleAccumulationBuffer&       m_buffer;
+            SampleCountHistoryType&         m_sample_count_history;
+            Spinlock&                       m_sample_count_history_spinlock;
             const bool                      m_perf_stats;
             const bool                      m_luminance_stats;
             const Image*                    m_ref_image;
@@ -640,17 +686,19 @@ namespace
             std::uint64_t                   m_timer_start_value;
 
             double                          m_rcp_pixel_count;
-            SampleCountHistory<128>         m_sample_count_history;
             std::vector<Vector2d>           m_sample_count_records;     // total sample count over time
             std::vector<Vector2d>           m_rmsd_records;             // RMS deviation over time
 
             void record_and_print_perf_stats(const double time)
             {
                 const std::uint64_t samples = m_buffer.get_sample_count();
-                m_sample_count_history.insert(time, samples);
-
                 const double samples_per_pixel = samples * m_rcp_pixel_count;
-                const std::uint64_t samples_per_second = truncate<std::uint64_t>(m_sample_count_history.get_samples_per_second());
+
+                m_sample_count_history_spinlock.lock();
+                m_sample_count_history.insert(time, samples);
+                const std::uint64_t samples_per_second =
+                    truncate<std::uint64_t>(m_sample_count_history.get_samples_per_second());
+                m_sample_count_history_spinlock.unlock();
 
                 RENDERER_LOG_INFO(
                     "%s samples, %s samples/pixel, %s samples/second",
@@ -704,33 +752,35 @@ namespace
         // Progressive frame renderer implementation details.
         //
 
-        const Project&                               m_project;
-        const Parameters                             m_params;
-        SampleCounter                                m_sample_counter;
+        const Project&                              m_project;
+        const Parameters                            m_params;
+        SampleCounter                               m_sample_counter;
+        SampleCountHistoryType                      m_sample_count_history;
+        Spinlock                                    m_sample_count_history_spinlock;
 
-        std::unique_ptr<SampleAccumulationBuffer>    m_buffer;
+        std::unique_ptr<SampleAccumulationBuffer>   m_buffer;
 
-        JobQueue                                     m_job_queue;
-        std::unique_ptr<JobManager>                  m_job_manager;
-        AbortSwitch                                  m_abort_switch;
+        JobQueue                                    m_job_queue;
+        std::unique_ptr<JobManager>                 m_job_manager;
+        AbortSwitch                                 m_abort_switch;
 
-        typedef std::vector<ISampleGenerator*>       SampleGeneratorVector;
-        SampleGeneratorVector                        m_sample_generators;
+        typedef std::vector<ISampleGenerator*>      SampleGeneratorVector;
+        SampleGeneratorVector                       m_sample_generators;
 
-        typedef std::vector<SampleGeneratorJob*>     SampleGeneratorJobVector;
-        SampleGeneratorJobVector                     m_sample_generator_jobs;
+        typedef std::vector<SampleGeneratorJob*>    SampleGeneratorJobVector;
+        SampleGeneratorJobVector                    m_sample_generator_jobs;
 
-        auto_release_ptr<ITileCallback>              m_tile_callback;
+        auto_release_ptr<ITileCallback>             m_tile_callback;
 
-        std::unique_ptr<DisplayFunc>                 m_display_func;
-        std::unique_ptr<boost::thread>               m_display_thread;
-        AbortSwitch                                  m_display_thread_abort_switch;
+        std::unique_ptr<DisplayFunc>                m_display_func;
+        std::unique_ptr<boost::thread>              m_display_thread;
+        AbortSwitch                                 m_display_thread_abort_switch;
 
-        double                                       m_ref_image_avg_lum;
-        std::unique_ptr<StatisticsFunc>              m_statistics_func;
-        std::unique_ptr<boost::thread>               m_statistics_thread;
+        double                                      m_ref_image_avg_lum;
+        std::unique_ptr<StatisticsFunc>             m_statistics_func;
+        std::unique_ptr<boost::thread>              m_statistics_thread;
 
-        TimedRendererController                      m_renderer_controller;
+        TimedRendererController                     m_renderer_controller;
 
         void print_sample_generators_stats() const
         {

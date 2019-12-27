@@ -50,7 +50,7 @@ class SampleAccumulationBuffer
 {
   public:
     // Destructor.
-    virtual ~SampleAccumulationBuffer() {}
+    virtual ~SampleAccumulationBuffer() = default;
 
     // Get the number of samples stored in the buffer. Thread-safe.
     std::uint64_t get_sample_count() const;
