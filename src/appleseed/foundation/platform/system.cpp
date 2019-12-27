@@ -973,26 +973,6 @@ void System::print_information(Logger& logger)
 #ifdef APPLESEED_X86
     X86CPUFeatures features;
     detect_x86_cpu_features(features);
-
-    std::stringstream isabuilder;
-    if (features.m_hw_sse) isabuilder << "SSE ";
-    if (features.m_hw_sse2) isabuilder << "SSE2 ";
-    if (features.m_hw_sse3) isabuilder << "SSE3 ";
-    if (features.m_hw_ssse3) isabuilder << "SSSE3 ";
-    if (features.m_hw_sse41) isabuilder << "SSE4.1 ";
-    if (features.m_hw_sse42) isabuilder << "SSE4.2 ";
-    if (features.m_hw_sse4a) isabuilder << "SSE4a ";
-    if (features.m_hw_avx) isabuilder << "AVX ";
-    if (features.m_hw_avx2) isabuilder << "AVX2 ";
-    if (features.m_hw_fma3) isabuilder << "FMA3 ";
-    if (features.m_hw_f16c) isabuilder << "F16C ";
-
-    const std::string isa =
-        isabuilder.str().empty()
-            ? "base instruction set"
-            : trim_right(isabuilder.str());
-#else
-    const std::string isa = "base instruction set";
 #endif
 
     // Can't use LOG_INFO() here because of the #ifdefs.
@@ -1027,7 +1007,7 @@ void System::print_information(Logger& logger)
         pretty_size(get_l2_cache_line_size()).c_str(),
         pretty_size(get_l3_cache_size()).c_str(),
         pretty_size(get_l3_cache_line_size()).c_str(),
-        isa.c_str(),
+        get_cpu_features_string().c_str(),
         pretty_size(get_total_physical_memory_size()).c_str(),
         pretty_size(get_total_virtual_memory_size()).c_str(),
         pretty_uint(DefaultWallclockTimer().frequency()).c_str(),
@@ -1198,5 +1178,33 @@ void System::detect_x86_cpu_features(X86CPUFeatures& features)
 }
 
 #endif
+
+APIString System::get_cpu_features_string()
+{
+#ifdef APPLESEED_X86
+    X86CPUFeatures features;
+    detect_x86_cpu_features(features);
+
+    std::stringstream isabuilder;
+    if (features.m_hw_sse) isabuilder << "SSE ";
+    if (features.m_hw_sse2) isabuilder << "SSE2 ";
+    if (features.m_hw_sse3) isabuilder << "SSE3 ";
+    if (features.m_hw_ssse3) isabuilder << "SSSE3 ";
+    if (features.m_hw_sse41) isabuilder << "SSE4.1 ";
+    if (features.m_hw_sse42) isabuilder << "SSE4.2 ";
+    if (features.m_hw_sse4a) isabuilder << "SSE4a ";
+    if (features.m_hw_avx) isabuilder << "AVX ";
+    if (features.m_hw_avx2) isabuilder << "AVX2 ";
+    if (features.m_hw_fma3) isabuilder << "FMA3 ";
+    if (features.m_hw_f16c) isabuilder << "F16C ";
+
+    return
+        isabuilder.str().empty()
+            ? "base instruction set"
+            : trim_right(isabuilder.str());
+#else
+    return "base instruction set";
+#endif
+}
 
 }   // namespace foundation
