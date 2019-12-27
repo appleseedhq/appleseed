@@ -361,7 +361,7 @@
   </action>
   <action name="action_help_about">
    <property name="text">
-    <string>&amp;About...</string>
+    <string>&amp;About</string>
    </property>
   </action>
   <action name="action_diagnostics_override_shading_no_override">
