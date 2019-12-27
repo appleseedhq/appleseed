@@ -99,7 +99,6 @@ inline void Exception::copy_string(
     assert(destination_size > 0);
 
     std::strncpy(destination, source, destination_size - 1);
-
     destination[destination_size - 1] = '\0';
 }
 
