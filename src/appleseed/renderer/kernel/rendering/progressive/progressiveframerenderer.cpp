@@ -86,6 +86,342 @@ namespace renderer
 
 namespace
 {
+    using SampleCountHistoryType = SampleCountHistory<128>;
+
+
+    //
+    // Frame display thread.
+    //
+
+    class DisplayFunc
+      : public NonCopyable
+    {
+      public:
+        DisplayFunc(
+            Frame&                      frame,
+            SampleAccumulationBuffer&   buffer,
+            SampleCountHistoryType&     sample_count_history,
+            Spinlock&                   sample_count_history_spinlock,
+            ITileCallback*              tile_callback,
+            const double                max_fps,
+            IAbortSwitch&               abort_switch)
+          : m_frame(frame)
+          , m_buffer(buffer)
+          , m_sample_count_history(sample_count_history)
+          , m_sample_count_history_spinlock(sample_count_history_spinlock)
+          , m_tile_callback(tile_callback)
+          , m_min_sample_count(std::min<std::uint64_t>(frame.get_crop_window().volume(), 32 * 32 * 2))
+          , m_target_elapsed(1.0 / max_fps)
+          , m_abort_switch(abort_switch)
+          , m_rcp_timer_freq(1.0 / m_timer.frequency())
+        {
+            const Vector2u crop_window_extent = frame.get_crop_window().extent();
+            const size_t pixel_count = crop_window_extent.x * crop_window_extent.y;
+            m_rcp_pixel_count = 1.0 / pixel_count;
+        }
+
+        void pause()
+        {
+            m_pause_flag.set();
+        }
+
+        void resume()
+        {
+            m_pause_flag.clear();
+        }
+
+        void operator()()
+        {
+            set_current_thread_name("display");
+
+            m_start_time = m_timer.read();
+
+            std::uint64_t last_time = m_start_time;
+
+#ifdef PRINT_DISPLAY_THREAD_PERFS
+            m_stopwatch.start();
+#endif
+
+            while (!m_abort_switch.is_aborted())
+            {
+                // Compute time elapsed since last call to display().
+                const std::uint64_t time = m_timer.read();
+                const double elapsed = (time - last_time) * m_rcp_timer_freq;
+                last_time = time;
+
+                if (m_pause_flag.is_clear())
+                {
+                    // It's time to display but the sample accumulation buffer doesn't contain
+                    // enough samples yet. Giving up would lead to noticeable jerkiness, so we
+                    // wait until enough samples are available.
+                    while (!m_abort_switch.is_aborted() &&
+                           m_buffer.get_sample_count() < m_min_sample_count)
+                        yield();
+
+                    // Merge the samples and display the final frame.
+                    develop_and_display();
+                }
+
+                // Limit display rate.
+                if (elapsed < m_target_elapsed)
+                {
+                    const double ms = std::ceil(1000.0 * (m_target_elapsed - elapsed));
+                    sleep(truncate<std::uint32_t>(ms), m_abort_switch);
+                }
+            }
+        }
+
+        void develop_and_display()
+        {
+#ifdef PRINT_DISPLAY_THREAD_PERFS
+            m_stopwatch.measure();
+            const double t1 = m_stopwatch.get_seconds();
+#endif
+
+            // Develop the accumulation buffer to the frame.
+            m_buffer.develop_to_frame(m_frame, m_abort_switch);
+
+#ifdef PRINT_DISPLAY_THREAD_PERFS
+            m_stopwatch.measure();
+            const double t2 = m_stopwatch.get_seconds();
+#endif
+
+            // Make sure we don't present incomplete frames.
+            if (m_abort_switch.is_aborted())
+                return;
+
+            // Compute current rendering time.
+            const double time = (m_timer.read() - m_start_time) * m_rcp_timer_freq;
+
+            // Compute sampling statistics.
+            const std::uint64_t samples = m_buffer.get_sample_count();
+            const double samples_per_pixel = samples * m_rcp_pixel_count;
+            m_sample_count_history_spinlock.lock();
+            const std::uint64_t samples_per_second =
+                truncate<std::uint64_t>(m_sample_count_history.get_samples_per_second());
+            m_sample_count_history_spinlock.unlock();
+
+            // Present the frame.
+            m_tile_callback->on_progressive_frame_update(
+                m_frame,
+                time,
+                samples,
+                samples_per_pixel,
+                samples_per_second);
+
+#ifdef PRINT_DISPLAY_THREAD_PERFS
+            m_stopwatch.measure();
+            const double t3 = m_stopwatch.get_seconds();
+
+            RENDERER_LOG_DEBUG(
+                "display thread:\n"
+                "  buffer to frame               %s\n"
+                "  frame to widget               %s\n"
+                "  total                         %s (%s fps)",
+                pretty_time(t2 - t1).c_str(),
+                pretty_time(t3 - t2).c_str(),
+                pretty_time(t3 - t1).c_str(),
+                pretty_ratio(1.0, t3 - t1).c_str());
+#endif
+        }
+
+      private:
+        Frame&                              m_frame;
+        SampleAccumulationBuffer&           m_buffer;
+        SampleCountHistoryType&             m_sample_count_history;
+        Spinlock&                           m_sample_count_history_spinlock;
+        ITileCallback*                      m_tile_callback;
+        const std::uint64_t                 m_min_sample_count;
+        const double                        m_target_elapsed;
+        IAbortSwitch&                       m_abort_switch;
+        ThreadFlag                          m_pause_flag;
+        Stopwatch<DefaultWallclockTimer>    m_stopwatch;
+        double                              m_rcp_pixel_count;
+        DefaultWallclockTimer               m_timer;
+        const double                        m_rcp_timer_freq;
+        std::uint64_t                       m_start_time;
+    };
+
+
+    //
+    // Statistics gathering and printing thread.
+    //
+
+    class StatisticsFunc
+      : public NonCopyable
+    {
+      public:
+        StatisticsFunc(
+            const Project&              project,
+            SampleAccumulationBuffer&   buffer,
+            SampleCountHistoryType&     sample_count_history,
+            Spinlock&                   sample_count_history_spinlock,
+            const bool                  perf_stats,
+            const bool                  luminance_stats,
+            const Image*                ref_image,
+            const double                ref_image_avg_lum,
+            IAbortSwitch&               abort_switch)
+          : m_project(project)
+          , m_buffer(buffer)
+          , m_sample_count_history(sample_count_history)
+          , m_sample_count_history_spinlock(sample_count_history_spinlock)
+          , m_perf_stats(perf_stats)
+          , m_luminance_stats(luminance_stats)
+          , m_ref_image(ref_image)
+          , m_ref_image_avg_lum(ref_image_avg_lum)
+          , m_abort_switch(abort_switch)
+          , m_rcp_timer_frequency(1.0 / m_timer.frequency())
+          , m_timer_start_value(m_timer.read())
+        {
+            const Vector2u crop_window_extent = m_project.get_frame()->get_crop_window().extent();
+            const size_t pixel_count = crop_window_extent.x * crop_window_extent.y;
+            m_rcp_pixel_count = 1.0 / pixel_count;
+        }
+
+        ~StatisticsFunc()
+        {
+            if (!m_sample_count_records.empty())
+            {
+                const std::string filepath =
+                    (bf::path(m_project.search_paths().get_root_path().c_str()) / "sample_count.gnuplot").string();
+                RENDERER_LOG_DEBUG("writing %s...", filepath.c_str());
+
+                GnuplotFile plotfile;
+                plotfile.set_xlabel("Time");
+                plotfile.set_ylabel("Samples");
+                plotfile
+                    .new_plot()
+                    .set_points(m_sample_count_records)
+                    .set_title("Total Sample Count Over Time");
+                plotfile.write(filepath);
+            }
+
+            if (!m_rmsd_records.empty())
+            {
+                const std::string filepath =
+                    (bf::path(m_project.search_paths().get_root_path().c_str()) / "rms_deviation.gnuplot").string();
+                RENDERER_LOG_DEBUG("writing %s...", filepath.c_str());
+
+                GnuplotFile plotfile;
+                plotfile.set_xlabel("Samples per Pixel");
+                plotfile.set_ylabel("RMS Deviation");
+                plotfile
+                    .new_plot()
+                    .set_points(m_rmsd_records)
+                    .set_title("RMS Deviation Over Time");
+                plotfile.write(filepath);
+            }
+        }
+
+        void pause()
+        {
+            m_pause_flag.set();
+        }
+
+        void resume()
+        {
+            m_pause_flag.clear();
+        }
+
+        void operator()()
+        {
+            set_current_thread_name("statistics");
+
+            while (!m_abort_switch.is_aborted())
+            {
+                if (m_pause_flag.is_clear())
+                {
+                    const double time = (m_timer.read() - m_timer_start_value) * m_rcp_timer_frequency;
+                    record_and_print_perf_stats(time);
+
+                    if (m_luminance_stats || m_ref_image)
+                        record_and_print_convergence_stats();
+                }
+
+                sleep(1000, m_abort_switch);
+            }
+        }
+
+      private:
+        const Project&                  m_project;
+        SampleAccumulationBuffer&       m_buffer;
+        SampleCountHistoryType&         m_sample_count_history;
+        Spinlock&                       m_sample_count_history_spinlock;
+        const bool                      m_perf_stats;
+        const bool                      m_luminance_stats;
+        const Image*                    m_ref_image;
+        const double                    m_ref_image_avg_lum;
+        IAbortSwitch&                   m_abort_switch;
+        ThreadFlag                      m_pause_flag;
+
+        DefaultWallclockTimer           m_timer;
+        double                          m_rcp_timer_frequency;
+        std::uint64_t                   m_timer_start_value;
+
+        double                          m_rcp_pixel_count;
+        std::vector<Vector2d>           m_sample_count_records;     // total sample count over time
+        std::vector<Vector2d>           m_rmsd_records;             // RMS deviation over time
+
+        void record_and_print_perf_stats(const double time)
+        {
+            const std::uint64_t samples = m_buffer.get_sample_count();
+            const double samples_per_pixel = samples * m_rcp_pixel_count;
+
+            m_sample_count_history_spinlock.lock();
+            m_sample_count_history.insert(time, samples);
+            const std::uint64_t samples_per_second =
+                truncate<std::uint64_t>(m_sample_count_history.get_samples_per_second());
+            m_sample_count_history_spinlock.unlock();
+
+            RENDERER_LOG_INFO(
+                "%s samples, %s samples/pixel, %s samples/second",
+                pretty_uint(samples).c_str(),
+                pretty_scalar(samples_per_pixel).c_str(),
+                pretty_uint(samples_per_second).c_str());
+
+            if (m_perf_stats)
+                m_sample_count_records.emplace_back(time, static_cast<double>(samples));
+        }
+
+        void record_and_print_convergence_stats()
+        {
+            assert(m_luminance_stats || m_ref_image);
+
+            // Develop the accumulation buffer to the frame.
+            m_buffer.develop_to_frame(*m_project.get_frame(), m_abort_switch);
+
+            std::string output;
+
+            if (m_luminance_stats)
+            {
+                const double avg_lum = compute_average_luminance(m_project.get_frame()->image());
+                output += "average luminance " + pretty_scalar(avg_lum, 6);
+
+                if (m_ref_image)
+                {
+                    const double avg_lum_delta = std::abs(m_ref_image_avg_lum - avg_lum);
+                    output += " (";
+                    output += pretty_percent(avg_lum_delta, m_ref_image_avg_lum, 3);
+                    output += " error)";
+                }
+            }
+
+            if (m_ref_image)
+            {
+                const double samples_per_pixel = m_buffer.get_sample_count() * m_rcp_pixel_count;
+                const double rmsd = compute_rms_deviation(m_project.get_frame()->image(), *m_ref_image);
+                m_rmsd_records.emplace_back(samples_per_pixel, rmsd);
+
+                if (m_luminance_stats)
+                    output += ", ";
+                output += "rms deviation " + pretty_scalar(rmsd, 6);
+            }
+
+            RENDERER_LOG_DEBUG("%s", output.c_str());
+        }
+    };
+
+
     //
     // Progressive frame renderer.
     //
@@ -375,12 +711,6 @@ namespace
         }
 
       private:
-        using SampleCountHistoryType = SampleCountHistory<128>;
-
-        //
-        // Progressive frame renderer parameters.
-        //
-
         struct Parameters
         {
             const Spectrum::Mode                    m_spectrum_mode;
@@ -417,340 +747,8 @@ namespace
             }
         };
 
-        //
-        // Frame display thread.
-        //
-
-        class DisplayFunc
-          : public NonCopyable
-        {
-          public:
-            DisplayFunc(
-                Frame&                      frame,
-                SampleAccumulationBuffer&   buffer,
-                SampleCountHistoryType&     sample_count_history,
-                Spinlock&                   sample_count_history_spinlock,
-                ITileCallback*              tile_callback,
-                const double                max_fps,
-                IAbortSwitch&               abort_switch)
-              : m_frame(frame)
-              , m_buffer(buffer)
-              , m_sample_count_history(sample_count_history)
-              , m_sample_count_history_spinlock(sample_count_history_spinlock)
-              , m_tile_callback(tile_callback)
-              , m_min_sample_count(std::min<std::uint64_t>(frame.get_crop_window().volume(), 32 * 32 * 2))
-              , m_target_elapsed(1.0 / max_fps)
-              , m_abort_switch(abort_switch)
-              , m_rcp_timer_freq(1.0 / m_timer.frequency())
-            {
-                const Vector2u crop_window_extent = frame.get_crop_window().extent();
-                const size_t pixel_count = crop_window_extent.x * crop_window_extent.y;
-                m_rcp_pixel_count = 1.0 / pixel_count;
-            }
-
-            void pause()
-            {
-                m_pause_flag.set();
-            }
-
-            void resume()
-            {
-                m_pause_flag.clear();
-            }
-
-            void operator()()
-            {
-                set_current_thread_name("display");
-
-                m_start_time = m_timer.read();
-
-                std::uint64_t last_time = m_start_time;
-
-#ifdef PRINT_DISPLAY_THREAD_PERFS
-                m_stopwatch.start();
-#endif
-
-                while (!m_abort_switch.is_aborted())
-                {
-                    // Compute time elapsed since last call to display().
-                    const std::uint64_t time = m_timer.read();
-                    const double elapsed = (time - last_time) * m_rcp_timer_freq;
-                    last_time = time;
-
-                    if (m_pause_flag.is_clear())
-                    {
-                        // It's time to display but the sample accumulation buffer doesn't contain
-                        // enough samples yet. Giving up would lead to noticeable jerkiness, so we
-                        // wait until enough samples are available.
-                        while (!m_abort_switch.is_aborted() &&
-                               m_buffer.get_sample_count() < m_min_sample_count)
-                            yield();
-
-                        // Merge the samples and display the final frame.
-                        develop_and_display();
-                    }
-
-                    // Limit display rate.
-                    if (elapsed < m_target_elapsed)
-                    {
-                        const double ms = std::ceil(1000.0 * (m_target_elapsed - elapsed));
-                        sleep(truncate<std::uint32_t>(ms), m_abort_switch);
-                    }
-                }
-            }
-
-            void develop_and_display()
-            {
-#ifdef PRINT_DISPLAY_THREAD_PERFS
-                m_stopwatch.measure();
-                const double t1 = m_stopwatch.get_seconds();
-#endif
-
-                // Develop the accumulation buffer to the frame.
-                m_buffer.develop_to_frame(m_frame, m_abort_switch);
-
-#ifdef PRINT_DISPLAY_THREAD_PERFS
-                m_stopwatch.measure();
-                const double t2 = m_stopwatch.get_seconds();
-#endif
-
-                // Make sure we don't present incomplete frames.
-                if (m_abort_switch.is_aborted())
-                    return;
-
-                // Compute current rendering time.
-                const double time = (m_timer.read() - m_start_time) * m_rcp_timer_freq;
-
-                // Compute sampling statistics.
-                const std::uint64_t samples = m_buffer.get_sample_count();
-                const double samples_per_pixel = samples * m_rcp_pixel_count;
-                m_sample_count_history_spinlock.lock();
-                const std::uint64_t samples_per_second =
-                    truncate<std::uint64_t>(m_sample_count_history.get_samples_per_second());
-                m_sample_count_history_spinlock.unlock();
-
-                // Present the frame.
-                m_tile_callback->on_progressive_frame_update(
-                    m_frame,
-                    time,
-                    samples,
-                    samples_per_pixel,
-                    samples_per_second);
-
-#ifdef PRINT_DISPLAY_THREAD_PERFS
-                m_stopwatch.measure();
-                const double t3 = m_stopwatch.get_seconds();
-
-                RENDERER_LOG_DEBUG(
-                    "display thread:\n"
-                    "  buffer to frame               %s\n"
-                    "  frame to widget               %s\n"
-                    "  total                         %s (%s fps)",
-                    pretty_time(t2 - t1).c_str(),
-                    pretty_time(t3 - t2).c_str(),
-                    pretty_time(t3 - t1).c_str(),
-                    pretty_ratio(1.0, t3 - t1).c_str());
-#endif
-            }
-
-          private:
-            Frame&                              m_frame;
-            SampleAccumulationBuffer&           m_buffer;
-            SampleCountHistoryType&             m_sample_count_history;
-            Spinlock&                           m_sample_count_history_spinlock;
-            ITileCallback*                      m_tile_callback;
-            const std::uint64_t                 m_min_sample_count;
-            const double                        m_target_elapsed;
-            IAbortSwitch&                       m_abort_switch;
-            ThreadFlag                          m_pause_flag;
-            Stopwatch<DefaultWallclockTimer>    m_stopwatch;
-            double                              m_rcp_pixel_count;
-            DefaultWallclockTimer               m_timer;
-            const double                        m_rcp_timer_freq;
-            std::uint64_t                       m_start_time;
-        };
-
-        //
-        // Statistics gathering and printing thread.
-        //
-
-        class StatisticsFunc
-          : public NonCopyable
-        {
-          public:
-            StatisticsFunc(
-                const Project&              project,
-                SampleAccumulationBuffer&   buffer,
-                SampleCountHistoryType&     sample_count_history,
-                Spinlock&                   sample_count_history_spinlock,
-                const bool                  perf_stats,
-                const bool                  luminance_stats,
-                const Image*                ref_image,
-                const double                ref_image_avg_lum,
-                IAbortSwitch&               abort_switch)
-              : m_project(project)
-              , m_buffer(buffer)
-              , m_sample_count_history(sample_count_history)
-              , m_sample_count_history_spinlock(sample_count_history_spinlock)
-              , m_perf_stats(perf_stats)
-              , m_luminance_stats(luminance_stats)
-              , m_ref_image(ref_image)
-              , m_ref_image_avg_lum(ref_image_avg_lum)
-              , m_abort_switch(abort_switch)
-              , m_rcp_timer_frequency(1.0 / m_timer.frequency())
-              , m_timer_start_value(m_timer.read())
-            {
-                const Vector2u crop_window_extent = m_project.get_frame()->get_crop_window().extent();
-                const size_t pixel_count = crop_window_extent.x * crop_window_extent.y;
-                m_rcp_pixel_count = 1.0 / pixel_count;
-            }
-
-            ~StatisticsFunc()
-            {
-                if (!m_sample_count_records.empty())
-                {
-                    const std::string filepath =
-                        (bf::path(m_project.search_paths().get_root_path().c_str()) / "sample_count.gnuplot").string();
-                    RENDERER_LOG_DEBUG("writing %s...", filepath.c_str());
-
-                    GnuplotFile plotfile;
-                    plotfile.set_xlabel("Time");
-                    plotfile.set_ylabel("Samples");
-                    plotfile
-                        .new_plot()
-                        .set_points(m_sample_count_records)
-                        .set_title("Total Sample Count Over Time");
-                    plotfile.write(filepath);
-                }
-
-                if (!m_rmsd_records.empty())
-                {
-                    const std::string filepath =
-                        (bf::path(m_project.search_paths().get_root_path().c_str()) / "rms_deviation.gnuplot").string();
-                    RENDERER_LOG_DEBUG("writing %s...", filepath.c_str());
-
-                    GnuplotFile plotfile;
-                    plotfile.set_xlabel("Samples per Pixel");
-                    plotfile.set_ylabel("RMS Deviation");
-                    plotfile
-                        .new_plot()
-                        .set_points(m_rmsd_records)
-                        .set_title("RMS Deviation Over Time");
-                    plotfile.write(filepath);
-                }
-            }
-
-            void pause()
-            {
-                m_pause_flag.set();
-            }
-
-            void resume()
-            {
-                m_pause_flag.clear();
-            }
-
-            void operator()()
-            {
-                set_current_thread_name("statistics");
-
-                while (!m_abort_switch.is_aborted())
-                {
-                    if (m_pause_flag.is_clear())
-                    {
-                        const double time = (m_timer.read() - m_timer_start_value) * m_rcp_timer_frequency;
-                        record_and_print_perf_stats(time);
-
-                        if (m_luminance_stats || m_ref_image)
-                            record_and_print_convergence_stats();
-                    }
-
-                    sleep(1000, m_abort_switch);
-                }
-            }
-
-          private:
-            const Project&                  m_project;
-            SampleAccumulationBuffer&       m_buffer;
-            SampleCountHistoryType&         m_sample_count_history;
-            Spinlock&                       m_sample_count_history_spinlock;
-            const bool                      m_perf_stats;
-            const bool                      m_luminance_stats;
-            const Image*                    m_ref_image;
-            const double                    m_ref_image_avg_lum;
-            IAbortSwitch&                   m_abort_switch;
-            ThreadFlag                      m_pause_flag;
-
-            DefaultWallclockTimer           m_timer;
-            double                          m_rcp_timer_frequency;
-            std::uint64_t                   m_timer_start_value;
-
-            double                          m_rcp_pixel_count;
-            std::vector<Vector2d>           m_sample_count_records;     // total sample count over time
-            std::vector<Vector2d>           m_rmsd_records;             // RMS deviation over time
-
-            void record_and_print_perf_stats(const double time)
-            {
-                const std::uint64_t samples = m_buffer.get_sample_count();
-                const double samples_per_pixel = samples * m_rcp_pixel_count;
-
-                m_sample_count_history_spinlock.lock();
-                m_sample_count_history.insert(time, samples);
-                const std::uint64_t samples_per_second =
-                    truncate<std::uint64_t>(m_sample_count_history.get_samples_per_second());
-                m_sample_count_history_spinlock.unlock();
-
-                RENDERER_LOG_INFO(
-                    "%s samples, %s samples/pixel, %s samples/second",
-                    pretty_uint(samples).c_str(),
-                    pretty_scalar(samples_per_pixel).c_str(),
-                    pretty_uint(samples_per_second).c_str());
-
-                if (m_perf_stats)
-                    m_sample_count_records.emplace_back(time, static_cast<double>(samples));
-            }
-
-            void record_and_print_convergence_stats()
-            {
-                assert(m_luminance_stats || m_ref_image);
-
-                // Develop the accumulation buffer to the frame.
-                m_buffer.develop_to_frame(*m_project.get_frame(), m_abort_switch);
-
-                std::string output;
-
-                if (m_luminance_stats)
-                {
-                    const double avg_lum = compute_average_luminance(m_project.get_frame()->image());
-                    output += "average luminance " + pretty_scalar(avg_lum, 6);
-
-                    if (m_ref_image)
-                    {
-                        const double avg_lum_delta = std::abs(m_ref_image_avg_lum - avg_lum);
-                        output += " (";
-                        output += pretty_percent(avg_lum_delta, m_ref_image_avg_lum, 3);
-                        output += " error)";
-                    }
-                }
-
-                if (m_ref_image)
-                {
-                    const double samples_per_pixel = m_buffer.get_sample_count() * m_rcp_pixel_count;
-                    const double rmsd = compute_rms_deviation(m_project.get_frame()->image(), *m_ref_image);
-                    m_rmsd_records.emplace_back(samples_per_pixel, rmsd);
-
-                    if (m_luminance_stats)
-                        output += ", ";
-                    output += "rms deviation " + pretty_scalar(rmsd, 6);
-                }
-
-                RENDERER_LOG_DEBUG("%s", output.c_str());
-            }
-        };
-
-        //
-        // Progressive frame renderer implementation details.
-        //
+        using SampleGeneratorVector = std::vector<ISampleGenerator*>;
+        using SampleGeneratorJobVector = std::vector<SampleGeneratorJob*>;
 
         const Project&                              m_project;
         const Parameters                            m_params;
@@ -764,10 +762,7 @@ namespace
         std::unique_ptr<JobManager>                 m_job_manager;
         AbortSwitch                                 m_abort_switch;
 
-        typedef std::vector<ISampleGenerator*>      SampleGeneratorVector;
         SampleGeneratorVector                       m_sample_generators;
-
-        typedef std::vector<SampleGeneratorJob*>    SampleGeneratorJobVector;
         SampleGeneratorJobVector                    m_sample_generator_jobs;
 
         auto_release_ptr<ITileCallback>             m_tile_callback;
