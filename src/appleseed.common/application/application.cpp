@@ -39,6 +39,9 @@
 #include "foundation/utility/settings.h"
 #include "foundation/utility/string.h"
 
+// Boost headers.
+#include "boost/filesystem/exception.hpp"
+
 // Standard headers.
 #include <cstring>
 #include <string>
