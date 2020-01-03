@@ -498,7 +498,7 @@ void RenderTab::recreate_handlers()
     // Set initial state.
     m_pixel_inspector_handler->set_enabled(false);
     m_camera_controller->set_enabled(false);
-    m_scene_picking_handler->set_enabled(true);     // todo: should be true by default
+    m_scene_picking_handler->set_enabled(true);
 }
 
 }   // namespace studio
