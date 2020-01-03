@@ -137,7 +137,7 @@ namespace
     static char g_root_path[FOUNDATION_MAX_PATH_LENGTH + 1] = { 0 };
     static bool g_is_root_path_set = false;
 
-    // Compute the root path of the application.  Return true if the root path could be
+    // Compute the root path of the application. Return true if the root path could be
     // determined, in which case it is stored in root_path, or false if the application
     // is not properly installed, in which case root_path is left unaltered.
     bool compute_root_path(bf::path& root_path)

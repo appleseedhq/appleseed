@@ -59,9 +59,6 @@ namespace renderer
 
 std::uint64_t SampleGeneratorJob::SamplingProfile::get_job_sample_count(const std::uint64_t samples) const
 {
-    // The uninterruptible phase must have at least as many samples as the linear phase.
-    // assert(m_samples_in_uninterruptible_phase >= m_samples_per_job_in_linear_phase);
-
     if (samples < m_samples_in_linear_phase)
         return m_samples_per_job_in_linear_phase;
 
