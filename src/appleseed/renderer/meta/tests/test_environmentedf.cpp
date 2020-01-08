@@ -50,6 +50,7 @@
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/modeling/texture/texture.h"
+#include "renderer/modeling/texture/tileptr.h"
 #include "renderer/utility/paramarray.h"
 #include "renderer/utility/testutils.h"
 
@@ -135,21 +136,13 @@ TEST_SUITE(Renderer_Modeling_EnvironmentEDF)
             return new TextureSource(assembly_uid, texture_instance);
         }
 
-        Tile* load_tile(
+        TilePtr load_tile(
             const size_t            tile_x,
             const size_t            tile_y) override
         {
             assert(tile_x == 0);
             assert(tile_y == 0);
-
-            return m_tile.get();
-        }
-
-        void unload_tile(
-            const size_t            tile_x,
-            const size_t            tile_y,
-            const Tile*             tile) override
-        {
+            return TilePtr::make_non_owning(m_tile.get());
         }
 
       private:

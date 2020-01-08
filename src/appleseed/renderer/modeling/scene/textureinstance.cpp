@@ -34,6 +34,7 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/modeling/scene/basegroup.h"
 #include "renderer/modeling/texture/texture.h"
+#include "renderer/modeling/texture/tileptr.h"
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
@@ -197,9 +198,10 @@ namespace
             {
                 for (size_t x = 0; x < props.m_tile_count_x; ++x)
                 {
-                    const Tile* tile = texture.load_tile(x, y);
-                    const bool has_transparency = has_transparent_pixels(*tile);
-                    texture.unload_tile(x, y, tile);
+                    const TilePtr tile_ptr = texture.load_tile(x, y);
+                    const bool has_transparency = has_transparent_pixels(*tile_ptr.get_tile());
+                    if (tile_ptr.has_ownership())
+                        delete tile_ptr.get_tile();
 
                     if (has_transparency)
                         return TextureAlphaModeAlphaChannel;
