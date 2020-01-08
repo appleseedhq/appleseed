@@ -35,6 +35,7 @@
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/texturesource.h"
 #include "renderer/modeling/texture/texture.h"
+#include "renderer/modeling/texture/tileptr.h"
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
@@ -156,21 +157,13 @@ namespace
             return new TextureSource(assembly_uid, texture_instance);
         }
 
-        Tile* load_tile(
+        TilePtr load_tile(
             const size_t            tile_x,
             const size_t            tile_y) override
         {
             boost::mutex::scoped_lock lock(m_mutex);
             open_image_file();
-            return m_reader.read_tile(tile_x, tile_y);
-        }
-
-        void unload_tile(
-            const size_t            tile_x,
-            const size_t            tile_y,
-            const Tile*             tile) override
-        {
-            delete tile;
+            return TilePtr::make_owning(m_reader.read_tile(tile_x, tile_y));
         }
 
       private:

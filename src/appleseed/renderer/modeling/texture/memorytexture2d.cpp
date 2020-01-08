@@ -33,6 +33,7 @@
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/texturesource.h"
 #include "renderer/modeling/texture/texture.h"
+#include "renderer/modeling/texture/tileptr.h"
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
@@ -137,22 +138,15 @@ namespace
             return new TextureSource(assembly_uid, texture_instance);
         }
 
-        Tile* load_tile(
+        TilePtr load_tile(
             const size_t            tile_x,
             const size_t            tile_y) override
         {
-            return
+            Tile* tile = 
                 m_image.get()
                     ? &m_image->tile(tile_x, tile_y)
                     : &m_dummy_texture->m_tile;
-        }
-
-        void unload_tile(
-            const size_t            tile_x,
-            const size_t            tile_y,
-            const Tile*             tile) override
-        {
-            // Nothing to do, the tile is owned by `m_image`.
+            return TilePtr::make_non_owning(tile);  // the tile is owned by `m_image`
         }
 
       private:
