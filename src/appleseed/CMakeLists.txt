@@ -1048,7 +1048,6 @@ source_group ("renderer\\device" FILES
 )
 
 set (renderer_device_cpu_sources
-    renderer/device/cpu/cpurendercontext.cpp
     renderer/device/cpu/cpurendercontext.h
     renderer/device/cpu/cpurenderdevice.cpp
     renderer/device/cpu/cpurenderdevice.h
