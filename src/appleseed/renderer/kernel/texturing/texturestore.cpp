@@ -209,7 +209,7 @@ void TextureStore::TileSwapper::load(const TileKey& key, TileRecord& record)
     }
 
     // Load the tile.
-    record.m_tile = texture->load_tile(key.get_tile_x(), key.get_tile_y());
+    record.m_tile_ptr = texture->load_tile(key.get_tile_x(), key.get_tile_y());
     record.m_owners = 0;
 
     // Convert the tile to the linear RGB color space.
@@ -219,18 +219,18 @@ void TextureStore::TileSwapper::load(const TileKey& key, TileRecord& record)
         break;
 
       case ColorSpaceSRGB:
-        convert_tile_srgb_to_linear_rgb(*record.m_tile);
+        convert_tile_srgb_to_linear_rgb(*record.m_tile_ptr.get_tile());
         break;
 
       case ColorSpaceCIEXYZ:
-        convert_tile_ciexyz_to_linear_rgb(*record.m_tile);
+        convert_tile_ciexyz_to_linear_rgb(*record.m_tile_ptr.get_tile());
         break;
 
       assert_otherwise;
     }
 
     // Track the amount of memory used by the tile cache.
-    m_memory_size += record.m_tile->get_memory_size();
+    m_memory_size += record.m_tile_ptr.get_tile()->get_memory_size();
     m_peak_memory_size = max(m_peak_memory_size, m_memory_size);
 
     if (m_params.m_track_store_size)
@@ -261,31 +261,43 @@ bool TextureStore::TileSwapper::unload(const TileKey& key, TileRecord& record)
         return false;
 
     // Track the amount of memory used by the tile cache.
-    const size_t tile_memory_size = record.m_tile->get_memory_size();
+    const size_t tile_memory_size = record.m_tile_ptr.get_tile()->get_memory_size();
     assert(m_memory_size >= tile_memory_size);
     m_memory_size -= tile_memory_size;
 
-    // Fetch the texture container.
-    const TextureContainer& textures =
-        key.m_assembly_uid == ~UniqueID(0)
+    if (m_params.m_track_tile_unloading)
+    {
+        // Fetch the texture container.
+        const TextureContainer& textures =
+            key.m_assembly_uid == ~UniqueID(0)
             ? m_scene.textures()
             : m_assemblies[key.m_assembly_uid]->textures();
 
-    // Fetch the texture.
-    Texture* texture = textures.get_by_uid(key.m_texture_uid);
+        // Fetch the texture.
+        Texture* texture = textures.get_by_uid(key.m_texture_uid);
 
-    if (m_params.m_track_tile_unloading)
-    {
-        RENDERER_LOG_DEBUG(
-            "unloading tile (" FMT_SIZE_T ", " FMT_SIZE_T ") "
-            "from texture \"%s\"...",
-            key.get_tile_x(),
-            key.get_tile_y(),
-            texture->get_path().c_str());
+        if (texture != nullptr)
+        {
+            RENDERER_LOG_DEBUG(
+                "unloading tile (" FMT_SIZE_T ", " FMT_SIZE_T ") "
+                "from texture \"%s\"...",
+                key.get_tile_x(),
+                key.get_tile_y(),
+                texture->get_path().c_str());
+        }
+        else
+        {
+            RENDERER_LOG_DEBUG(
+                "unloading tile (" FMT_SIZE_T ", " FMT_SIZE_T ") "
+                "from defunct texture...",
+                key.get_tile_x(),
+                key.get_tile_y());
+        }
     }
 
     // Unload the tile.
-    texture->unload_tile(key.get_tile_x(), key.get_tile_y(), record.m_tile);
+    if (record.m_tile_ptr.has_ownership())
+        delete record.m_tile_ptr.get_tile();
 
     // Successfully unloaded the tile.
     return true;

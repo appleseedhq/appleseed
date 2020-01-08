@@ -126,7 +126,7 @@ inline foundation::Tile& TextureCache::get(
     const size_t                    tile_y)
 {
     const TileKey key(assembly_uid, texture_uid, tile_x, tile_y);
-    return *m_tile_cache.get(key)->m_tile;
+    return *m_tile_cache.get(key)->m_tile_ptr.get_tile();
 }
 
 inline foundation::StatisticsVector TextureCache::get_statistics() const
