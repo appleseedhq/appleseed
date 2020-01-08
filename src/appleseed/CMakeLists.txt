@@ -2126,6 +2126,7 @@ set (renderer_modeling_texture_sources
     renderer/modeling/texture/texturefactoryregistrar.cpp
     renderer/modeling/texture/texturefactoryregistrar.h
     renderer/modeling/texture/texturetraits.h
+    renderer/modeling/texture/tileptr.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_texture_sources}
