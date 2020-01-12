@@ -80,6 +80,9 @@ class APPLESEED_DLLSYMBOL EnvironmentEDF
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
 
+    // Return whether this environment EDF casts shadows.
+    bool get_cast_shadows() const;
+
     // Access the transform sequence of the environment EDF.
     TransformSequence& transform_sequence();
     const TransformSequence& transform_sequence() const;
@@ -114,20 +117,20 @@ class APPLESEED_DLLSYMBOL EnvironmentEDF
     virtual float evaluate_pdf(
         const foundation::Vector3f& outgoing) const = 0;        // world space emission direction, unit-length
 
-    inline bool get_cast_shadows() const
-    {
-        return m_cast_shadows;
-    }
-
   protected:
     TransformSequence m_transform_sequence;
-    bool m_cast_shadows;
+    bool              m_cast_shadows;
 };
 
 
 //
 // EnvironmentEDF class implementation.
 //
+
+inline bool EnvironmentEDF::get_cast_shadows() const
+{
+    return m_cast_shadows;
+}
 
 inline TransformSequence& EnvironmentEDF::transform_sequence()
 {
