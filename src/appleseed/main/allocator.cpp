@@ -6,7 +6,7 @@
 // This software is released under the MIT license.
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2014-2020 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -40,11 +40,6 @@
 // of problems, as discussed in this thread on Stack Overflow:
 //
 // http://stackoverflow.com/questions/13793325/hiding-symbols-in-a-shared-library-on-mac-os-x
-//
-// Unfortunately, there is a bug in Visual Studio 2012's debug runtime on x64
-// that will result in a crash when the application exits:
-//
-// http://connect.microsoft.com/VisualStudio/feedback/details/750951/std-locale-implementation-in-crt-assumes-all-facets-to-be-allocated-on-crt-heap-and-crashes-in-destructor-in-debug-mode-if-a-facet-was-allocated-by-a-custom-allocator
 //
 
 #ifdef _WIN32
@@ -100,16 +95,19 @@ using namespace foundation;
 // Define this symbol to dump a (part of) the callstack when a block of memory is allocated.
 #define DUMP_CALLSTACK_ON_ALLOCATION
 
+// Define this symbol to force a call to std::fflush() after every write to the log file.
+#define FLUSH_AFTER_WRITE
+
 namespace
 {
     // Name of the log file. It will be created in the current working directory.
     const char* MemoryLogFileName = "memory.log";
 
     // Shave off that many levels from the top of the stack when dumping it to the log file.
-    const size_t NumberOfCallStackLevelsToSkip = 3;
+    const std::size_t NumberOfCallStackLevelsToSkip = 3;
 
     // Minimum alignment boundary of all memory allocations, in bytes.
-    const size_t MemoryAlignment = 16;
+    const std::size_t MemoryAlignment = 16;
 }
 
 
@@ -137,9 +135,9 @@ namespace
     // File to which memory operations and leaks are logged.
     std::FILE* g_log_file = 0;
 
-    typedef std::pair<const void*, size_t> MemoryBlock;
+    typedef std::pair<const void*, std::size_t> MemoryBlock;
     typedef std::vector<MemoryBlock> MemoryBlockVector;
-    typedef std::map<const void*, size_t> MemoryBlockMap;
+    typedef std::map<const void*, std::size_t> MemoryBlockMap;
 
     // Memory blocks currently allocated.
     MemoryBlockMap g_allocated_mem_blocks;
@@ -166,10 +164,10 @@ namespace
 
       private:
         std::FILE*  m_file;
-        size_t      m_level;
+        std::size_t m_level;
         bool        m_skip;
 
-        virtual void OnOutput(LPCSTR szText)
+        void OnOutput(LPCSTR szText) override
         {
             ++m_level;
 
@@ -181,21 +179,24 @@ namespace
 
             if (m_file == nullptr)
                 StackWalker::OnOutput(szText);
-            else std::fprintf(m_file, "        %s", szText);
+            else std::fprintf(m_file, "    %s", szText);
 
             static const char* MainFunctionSuffix = ": main\n";
-            const size_t main_function_suffix_length = strlen(MainFunctionSuffix);
-            const size_t text_length = strlen(szText);
+            const std::size_t main_function_suffix_length = strlen(MainFunctionSuffix);
+            const std::size_t text_length = strlen(szText);
 
             // Don't report stack frames below main().
             if (text_length >= main_function_suffix_length &&
-                strcmp(
-                    szText + text_length - main_function_suffix_length,
-                    MainFunctionSuffix) == 0)
+                strcmp(szText + text_length - main_function_suffix_length, MainFunctionSuffix) == 0)
             {
                 m_skip = true;
                 return;
             }
+        }
+
+        void OnDbgHelpErr(LPCSTR szFuncName, DWORD gle, DWORD64 addr) override
+        {
+            // Eat all error messages.
         }
     };
 
@@ -220,28 +221,33 @@ namespace
         return sstr.str();
     }
 
-    void log_allocation_to_file(const void* ptr, const size_t size)
+    void log_allocation_to_file(const void* unaligned_ptr, const void* aligned_ptr, const std::size_t size)
     {
         assert(!g_tracking_enabled);
 
         std::fprintf(
             g_log_file,
-            "[%s] Allocated %s at %s\n",
+            "[%s] Allocated %s at %s (unaligned: %s)\n",
             get_timestamp_string().c_str(),
             pretty_size(size).c_str(),
-            to_string(ptr).c_str());
+            to_string(aligned_ptr).c_str(),
+            to_string(unaligned_ptr).c_str());
 
 #ifdef DUMP_CALLSTACK_ON_ALLOCATION
-        std::fprintf(g_log_file, "    Call stack:\n");
+        std::fprintf(g_log_file, "  Call stack:\n");
 
         g_stack_walker.reset(g_log_file);
         g_stack_walker.ShowCallstack();
 
         std::fprintf(g_log_file, "\n");
 #endif
+
+#ifdef FLUSH_AFTER_WRITE
+        std::fflush(g_log_file);
+#endif
     }
 
-    void log_allocation_failure_to_file(const size_t size)
+    void log_allocation_failure_to_file(const std::size_t size)
     {
         assert(!g_tracking_enabled);
 
@@ -250,21 +256,30 @@ namespace
             "[%s] FAILED to allocate %s\n",
             get_timestamp_string().c_str(),
             pretty_size(size).c_str());
+
+#ifdef FLUSH_AFTER_WRITE
+        std::fflush(g_log_file);
+#endif
     }
 
-    void log_deallocation_to_file(const void* ptr, const size_t size)
+    void log_deallocation_to_file(const void* unaligned_ptr, const void* aligned_ptr, const std::size_t size)
     {
         assert(!g_tracking_enabled);
 
         std::fprintf(
             g_log_file,
-            "[%s] Deallocated %s at %s\n",
+            "[%s] Deallocating %s at %s (unaligned: %s)...\n",
             get_timestamp_string().c_str(),
             pretty_size(size).c_str(),
-            to_string(ptr).c_str());
+            to_string(aligned_ptr).c_str(),
+            to_string(unaligned_ptr).c_str());
 
 #ifdef DUMP_CALLSTACK_ON_ALLOCATION
         std::fprintf(g_log_file, "\n");
+#endif
+
+#ifdef FLUSH_AFTER_WRITE
+        std::fflush(g_log_file);
 #endif
     }
 
@@ -295,10 +310,10 @@ namespace
             "\n"
             "Statistics:\n"
             "\n"
-            "    Allocations:            %s\n"
-            "    Total allocated:        %s (%s byte%s)\n"
-            "    Peak allocated:         %s (%s byte%s)\n"
-            "    Largest allocation:     %s (%s byte%s)\n"
+            "  Allocations:            %s\n"
+            "  Total allocated:        %s (%s byte%s)\n"
+            "  Peak allocated:         %s (%s byte%s)\n"
+            "  Largest allocation:     %s (%s byte%s)\n"
             "\n",
             pretty_uint(g_allocation_count).c_str(),
             pretty_size(g_total_allocated_bytes).c_str(),
@@ -322,7 +337,7 @@ namespace
         }
         else
         {
-            const size_t leak_count = g_allocated_mem_blocks.size();
+            const std::size_t leak_count = g_allocated_mem_blocks.size();
             const std::uint64_t leak_bytes = compute_leaked_memory_size();
 
             std::fprintf(
@@ -344,7 +359,7 @@ namespace
             {
                 std::fprintf(
                     g_log_file,
-                    "    %s at %s\n",
+                    "  %s at %s\n",
                     pretty_size(i->second).c_str(),
                     to_string(i->first).c_str());
             }
@@ -357,7 +372,7 @@ namespace
 // Public entry points.
 //
 
-void log_allocation(const void* ptr, const size_t size)
+void log_allocation(const void* unaligned_ptr, const void* aligned_ptr, const std::size_t size)
 {
     if (!g_tracking_enabled)
         return;
@@ -372,16 +387,16 @@ void log_allocation(const void* ptr, const size_t size)
     g_total_allocated_bytes += size;
     g_largest_allocation_bytes = std::max<std::uint64_t>(g_largest_allocation_bytes, size);
 
-    g_allocated_mem_blocks[ptr] = size;
+    g_allocated_mem_blocks[aligned_ptr] = size;
 
 #ifdef LOG_MEMORY_ALLOCATIONS
-    log_allocation_to_file(ptr, size);
+    log_allocation_to_file(unaligned_ptr, aligned_ptr, size);
 #endif
 
     g_tracking_enabled = true;
 }
 
-void log_allocation_failure(const size_t size)
+void log_allocation_failure(const std::size_t size)
 {
 #ifdef LOG_MEMORY_ALLOCATION_FAILURES
     if (!g_tracking_enabled)
@@ -397,7 +412,7 @@ void log_allocation_failure(const size_t size)
 #endif
 }
 
-void log_deallocation(const void* ptr)
+void log_deallocation(const void* unaligned_ptr, const void* aligned_ptr)
 {
     if (!g_tracking_enabled)
         return;
@@ -406,7 +421,7 @@ void log_deallocation(const void* ptr)
 
     g_tracking_enabled = false;
 
-    const MemoryBlockMap::iterator i = g_allocated_mem_blocks.find(ptr);
+    const MemoryBlockMap::iterator i = g_allocated_mem_blocks.find(aligned_ptr);
 
     if (i != g_allocated_mem_blocks.end())
     {
@@ -414,7 +429,7 @@ void log_deallocation(const void* ptr)
         g_allocated_bytes -= i->second;
 
 #ifdef LOG_MEMORY_DEALLOCATIONS
-        log_deallocation_to_file(ptr, i->second);
+        log_deallocation_to_file(unaligned_ptr, aligned_ptr, i->second);
 #endif
 
         g_allocated_mem_blocks.erase(i);
@@ -466,9 +481,9 @@ void stop_memory_tracking()
 
 #else
 
-void log_allocation(const void* ptr, const size_t size) {}
-void log_allocation_failure(const size_t size) {}
-void log_deallocation(const void* ptr) {}
+void log_allocation(const void* unaligned_ptr, const void* aligned_ptr, const std::size_t size) {}
+void log_allocation_failure(const std::size_t size) {}
+void log_deallocation(const void* unaligned_ptr, const void* aligned_ptr) {}
 void start_memory_tracking() {}
 void stop_memory_tracking() {}
 
@@ -481,7 +496,7 @@ void stop_memory_tracking() {}
 
 namespace
 {
-    void* new_impl(size_t size)
+    void* new_impl(std::size_t size)
     {
         if (size < 1)
             size = 1;
@@ -504,28 +519,28 @@ namespace
 }
 
 _Ret_notnull_ _Post_writable_byte_size_(size)
-void* operator new(size_t size)
+void* operator new(std::size_t size)
   throw(std::bad_alloc)
 {
     return new_impl(size);
 }
 
 _Ret_notnull_ _Post_writable_byte_size_(size)
-void* operator new[](size_t size)
+void* operator new[](std::size_t size)
   throw(std::bad_alloc)
 {
     return new_impl(size);
 }
 
 _Ret_maybenull_ _Post_writable_byte_size_(size)
-void* operator new(size_t size, const std::nothrow_t&)
+void* operator new(std::size_t size, const std::nothrow_t&)
   throw()
 {
     return new_impl(size);
 }
 
 _Ret_maybenull_ _Post_writable_byte_size_(size)
-void* operator new[](size_t size, const std::nothrow_t&)
+void* operator new[](std::size_t size, const std::nothrow_t&)
   throw()
 {
     return new_impl(size);
@@ -553,9 +568,9 @@ void operator delete[](void* ptr, const std::nothrow_t&)
 
 #else
 
-void log_allocation(const void* ptr, const size_t size) {}
-void log_allocation_failure(const size_t size) {}
-void log_deallocation(const void* ptr) {}
+void log_allocation(const void* unaligned_ptr, const void* aligned_ptr, const std::size_t size) {}
+void log_allocation_failure(const std::size_t size) {}
+void log_deallocation(const void* unaligned_ptr, const void* aligned_ptr) {}
 void start_memory_tracking() {}
 void stop_memory_tracking() {}
 

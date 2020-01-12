@@ -5,7 +5,8 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2011 Francois Beaune
+// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
+// Copyright (c) 2014-2020 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -34,8 +35,8 @@
 // Standard headers.
 #include <cstddef>
 
-APPLESEED_DLLSYMBOL void log_allocation(const void* ptr, const size_t size);
-APPLESEED_DLLSYMBOL void log_allocation_failure(const size_t size);
-APPLESEED_DLLSYMBOL void log_deallocation(const void* ptr);
+APPLESEED_DLLSYMBOL void log_allocation(const void* unaligned_ptr, const void* aligned_ptr, const std::size_t size);
+APPLESEED_DLLSYMBOL void log_allocation_failure(const std::size_t size);
+APPLESEED_DLLSYMBOL void log_deallocation(const void* unaligned_ptr, const void* aligned_ptr);
 APPLESEED_DLLSYMBOL void start_memory_tracking();
 APPLESEED_DLLSYMBOL void stop_memory_tracking();
