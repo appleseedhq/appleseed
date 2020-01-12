@@ -85,6 +85,9 @@ class APPLESEED_DLLSYMBOL Light
     // Retrieve the flags.
     int get_flags() const;
 
+    // Return whether this light casts shadows.
+    bool get_cast_shadows() const;
+
     // Retrieve the importance multiplier.
     float get_uncached_importance_multiplier() const;
 
@@ -134,11 +137,6 @@ class APPLESEED_DLLSYMBOL Light
         const foundation::Vector3d&     target,                     // world space target point
         const foundation::Vector3d&     position) const = 0;        // world space emission position
 
-    inline bool get_cast_shadows() const
-    {
-        return m_cast_shadows;
-    }
-
   protected:
     int  m_flags;
     bool m_cast_shadows;
@@ -158,4 +156,11 @@ inline int Light::get_flags() const
     return m_flags;
 }
 
-}   // namespace renderer
+inline bool Light::get_cast_shadows() const
+{
+    return m_cast_shadows;
+}
+
+}       // namespace renderer
+
+#endif  // !APPLESEED_RENDERER_MODELING_LIGHT_LIGHT_H
