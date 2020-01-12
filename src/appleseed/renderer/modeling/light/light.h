@@ -140,7 +140,7 @@ class APPLESEED_DLLSYMBOL Light
     }
 
   protected:
-    int m_flags;
+    int  m_flags;
     bool m_cast_shadows;
 
   private:
