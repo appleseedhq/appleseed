@@ -109,6 +109,13 @@ TEST_SUITE(Foundation_Utility_SettingsFileReader)
         EXPECT_EQ("aa", m_dictionary.get<std::string>("a"));
         EXPECT_EQ("bb\nbb\nbb", m_dictionary.get<std::string>("b"));
     }
+
+    TEST_CASE_F(Read_GivenSettingsFileNameWithUTF8Encoding_ReturnsSuccess, Fixture)
+    {
+        const bool succeeded = read(u8"unit tests/inputs/test_settings_utf8_\u00e2\u00e9\u00ef\u00f4\u00f9.xml");
+
+        EXPECT_TRUE(succeeded);
+    }
 }
 
 TEST_SUITE(Foundation_Utility_SettingsFileWriter)
@@ -185,5 +192,16 @@ TEST_SUITE(Foundation_Utility_SettingsFileWriter)
                 "unit tests/outputs/test_settings_settingsfilewithnewlinesinparameters.xml");
 
         EXPECT_TRUE(identical);
+    }
+
+    TEST_CASE(Write_GivenSettingsFileNameWithUTF8Encoding_ReturnsSuccess)
+    {
+        const Dictionary dictionary;
+
+        SettingsFileWriter writer;
+        const bool succeeded =
+            writer.write(u8"unit tests/outputs/test_settings_utf8_\u00e2\u00e9\u00ef\u00f4\u00f9.xml", dictionary);
+
+        EXPECT_TRUE(succeeded);
     }
 }

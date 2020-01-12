@@ -67,6 +67,12 @@ source_group ("help\\about" FILES
 set (main_sources
     main/main.cpp
 )
+if (WIN32)
+    set (main_sources
+        ${main_sources}
+        main/windowsapp.manifest
+    )
+endif ()
 list (APPEND appleseed.bench_sources
     ${main_sources}
 )

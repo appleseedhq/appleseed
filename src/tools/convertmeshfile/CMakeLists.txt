@@ -37,6 +37,12 @@ set (sources
     commandlinehandler.h
     main.cpp
 )
+if (WIN32)
+    set (sources
+        ${sources}
+        windowsapp.manifest
+    )
+endif ()
 list (APPEND convertmeshfile_sources
     ${sources}
 )
