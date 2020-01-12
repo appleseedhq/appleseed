@@ -100,6 +100,15 @@ source_group ("include\\appleseed\\math" FILES
     ${include_appleseed_math_sources}
 )
 
+set (include_appleseed_max_sources
+)
+list (APPEND osl_headers
+    ${include_appleseed_max_sources}
+)
+source_group ("include\\appleseed\\max" FILES
+    ${include_appleseed_max_sources}
+)
+
 set (include_appleseed_maya_sources
     include/appleseed/maya/as_maya_cms_syncolor_idt.h
     include/appleseed/maya/as_maya_fractal_helpers.h
@@ -126,6 +135,16 @@ list (APPEND osl_headers
 )
 source_group ("include\\appleseed\\pattern" FILES
     ${include_appleseed_pattern_sources}
+)
+
+set (include_appleseed_texture_sources
+    include/appleseed/texture/as_texture_helpers.h
+)
+list (APPEND osl_headers
+    ${include_appleseed_texture_sources}
+)
+source_group ("include\\appleseed\\texture" FILES
+    ${include_appleseed_texture_sources}
 )
 
 set (include_appleseed_transform_sources
