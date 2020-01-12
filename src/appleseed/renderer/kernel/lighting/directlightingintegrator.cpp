@@ -408,14 +408,9 @@ void DirectLightingIntegrator::add_emitting_shape_sample_contribution(
         sample.m_point,
         transmission);
 
-        // Discard occluded samples.
-        if (is_zero(transmission))
-            return;
-    }
-    else
-    {
-        transmission.set(1.0f);
-    }
+    // Discard occluded samples.
+    if (is_zero(transmission))
+        return;
 
     // Evaluate the BSDF (or volume).
     DirectShadingComponents material_value;

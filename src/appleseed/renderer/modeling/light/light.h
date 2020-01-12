@@ -162,5 +162,3 @@ inline bool Light::get_cast_shadows() const
 }
 
 }       // namespace renderer
-
-#endif  // !APPLESEED_RENDERER_MODELING_LIGHT_LIGHT_H

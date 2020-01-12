@@ -206,7 +206,7 @@ void compute_ibl_environment_sampling(
         Spectrum transmission;
         if (environment_edf.get_cast_shadows())
         {
-            const ShadingPoint& shading_point = material_sampler.trace(
+            const ShadingPoint& shading_point = material_sampler.trace_full(
                 shading_context,
                 incoming,
                 transmission);
