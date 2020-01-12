@@ -456,16 +456,13 @@ void MainWindow::build_override_shading_menu_item()
 
         QAction* action = new QAction(this);
         action->setObjectName(
-            QString::fromUtf8("action_diagnostics_override_shading_") + shading_mode_value);
+            QString("action_diagnostics_override_shading_") + shading_mode_value);
         action->setCheckable(true);
         action->setText(shading_mode_name);
 
         const int shortcut_number = i + 1;
         if (shortcut_number <= 9)
-        {
-            action->setShortcut(
-                QKeySequence(QString::fromUtf8("Ctrl+Shift+%1").arg(shortcut_number)));
-        }
+            action->setShortcut(QKeySequence(QString("Ctrl+Shift+%1").arg(shortcut_number)));
 
         action->setData(shading_mode_value);
 

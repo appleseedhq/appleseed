@@ -40,7 +40,6 @@
 namespace foundation    { class BenchmarkSeries; }
 namespace foundation    { class Dictionary; }
 
-
 namespace foundation
 {
 

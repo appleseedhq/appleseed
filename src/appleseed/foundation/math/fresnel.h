@@ -29,7 +29,7 @@
 
 #pragma once
 
-// Foundation headers.
+// appleseed.foundation headers.
 #include "foundation/math/scalar.h"
 
 // Standard headers.

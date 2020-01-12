@@ -30,19 +30,18 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/log.h"
 
 // Qt headers.
-#include <QColor>
 #include <QObject>
-#include <QString>
 
 // Standard headers.
 #include <cstddef>
 
 // Forward declarations.
 namespace appleseed { namespace qtcommon { class LogWidget; } }
+class QColor;
+class QString;
 
 namespace appleseed {
 namespace qtcommon {
@@ -68,7 +67,7 @@ class QtLogTarget
     void write(
         const foundation::LogMessage::Category  category,
         const char*                             file,
-        const size_t                            line,
+        const std::size_t                       line,
         const char*                             header,
         const char*                             message) override;
 

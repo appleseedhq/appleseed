@@ -396,7 +396,7 @@ void RenderTab::create_scrollarea()
 
     // Wrap the render widget in a scroll area.
     m_scroll_area = new QScrollArea();
-    m_scroll_area->setObjectName(QString::fromUtf8("render_widget_scrollarea"));
+    m_scroll_area->setObjectName("render_widget_scrollarea");
     m_scroll_area->setAlignment(Qt::AlignCenter);
     m_scroll_area->setWidget(render_widget_wrapper);
 }

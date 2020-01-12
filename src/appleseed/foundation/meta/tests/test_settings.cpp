@@ -122,7 +122,7 @@ TEST_SUITE(Foundation_Utility_SettingsFileWriter)
 {
     TEST_CASE(Write_GivenEmptyDictionary_WriteEmptySettingsFile)
     {
-        Dictionary dictionary;
+        const Dictionary dictionary;
 
         SettingsFileWriter writer;
         writer.write("unit tests/outputs/test_settings_emptysettingsfile.xml", dictionary);
