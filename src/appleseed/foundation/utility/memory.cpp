@@ -75,7 +75,7 @@ void* aligned_malloc(const size_t size, size_t alignment)
     // Store the address of the unaligned memory block.
     *(aligned_ptr - 1) = unaligned_ptr;
 
-    log_allocation(aligned_ptr, total_size);
+    log_allocation(unaligned_ptr, aligned_ptr, total_size);
 
     return aligned_ptr;
 }
@@ -87,10 +87,10 @@ void aligned_free(void* aligned_ptr)
     // Retrieve the address of the unaligned memory block.
     void* unaligned_ptr = *(reinterpret_cast<void**>(aligned_ptr) - 1);
 
+    log_deallocation(unaligned_ptr, aligned_ptr);
+
     // Deallocate the memory.
     free(unaligned_ptr);
-
-    log_deallocation(aligned_ptr);
 }
 
 }   // namespace foundation
