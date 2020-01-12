@@ -39,6 +39,12 @@ set (sources
     stdouttilecallback.cpp
     stdouttilecallback.h
 )
+if (WIN32)
+    set (sources
+        ${sources}
+        windowsapp.manifest
+    )
+endif ()
 list (APPEND appleseed.cli_sources
     ${sources}
 )

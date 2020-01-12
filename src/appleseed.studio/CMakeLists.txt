@@ -108,6 +108,12 @@ set (main_sources
     main/commandlinehandler.h
     main/main.cpp
 )
+if (WIN32)
+    set (main_sources
+        ${main_sources}
+        main/windowsapp.manifest
+    )
+endif ()
 list (APPEND appleseed.studio_sources
     ${main_sources}
 )
