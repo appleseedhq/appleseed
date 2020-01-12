@@ -59,6 +59,7 @@
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.
+#include <cassert>
 #include <clocale>
 #include <cstdio>
 #include <cstdlib>
@@ -277,11 +278,11 @@ int main(int argc, char* argv[])
     // Qt changes the locale when loading images from disk for the very first time.
     // The problem was tracked for both `QImage` and `QPixmap`: in their `load()`
     // functions, both classes call `QImageReader::read()` which causes the locale
-    // to be changed to the system's one. The line that follows is a dirty fix
-    // that consists in loading an image (any image) at the very beginning and
-    // resetting the locale right after, thus preventing `QImageReader::read()`
-    // from changing it again (as it happens only on the very first `read()`).
-    // Issue reported and tracked on GitHub under reference #1435.
+    // to be changed to the system's one. The line that follows is a dirty fix that
+    // consists in loading an image (any image) at the very beginning and resetting
+    // the locale right after, thus preventing `QImageReader::read()` from changing
+    // it again (as it happens only on the very first `read()`). Issue reported and
+    // tracked on appleseed's GitHub under reference #1435.
     QImageReader(make_app_path("icons/icon.png")).read();   // any image
 
     // Force linking of resources provided by appleseed.qtcommon into the final binary.
@@ -305,7 +306,11 @@ int main(int argc, char* argv[])
     // Create the application's main window.
     MainWindow window;
 
-    // QApplication and QMainWindow set C locale to the user's locale, we need to fix this.
+    // QApplication and QMainWindow reset the C locale to the user's locale.
+    // Fix this by setting the C locale back to "C" which is the startup locale.
+    // Note that setting the C locale once at the start of the application is enough:
+    // all modules link dynamically against the C runtime library so they will all
+    // use this locale.
     std::setlocale(LC_ALL, "C");
 
 #ifndef APPLESEED_SHIP

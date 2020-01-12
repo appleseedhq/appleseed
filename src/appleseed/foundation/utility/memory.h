@@ -138,6 +138,9 @@ class MemoryWriter
 //
 // Memory-alignment related functions implementation.
 //
+// C-style casts below allow to cast `ptr` regardless of whether it is an integer or a pointer.
+// Neither static_cast<>() nor reinterpret_cast<>() has this ability.
+//
 
 template <typename T>
 inline T align(const T ptr, const size_t alignment)

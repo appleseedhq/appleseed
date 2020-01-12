@@ -282,7 +282,7 @@ namespace
             }
         }
 
-    private:
+      private:
         std::vector<float>      m_buffer;
         size_t                  m_buffer_width;
         size_t                  m_buffer_height;
@@ -418,14 +418,6 @@ namespace
         return auto_release_ptr<BlenderProgressiveTileCallback>(new BlenderProgressiveTileCallback(request_redraw_callback));
     }
 }
-
-// Work around a regression in Visual Studio 2015 Update 3.
-#if defined(_MSC_VER) && _MSC_VER == 1900
-namespace boost
-{
-    template <> BlenderProgressiveTileCallback const volatile* get_pointer<BlenderProgressiveTileCallback const volatile>(BlenderProgressiveTileCallback const volatile* p) { return p; }
-}
-#endif
 
 void bind_blender_progressive_tile_callback()
 {

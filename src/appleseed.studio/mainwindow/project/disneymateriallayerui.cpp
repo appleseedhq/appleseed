@@ -296,7 +296,7 @@ namespace
 
                 search_path =
                     QDir::cleanPath(
-                        QString::fromUtf8(s.get_root_path().c_str()) +
+                        QString(s.get_root_path().c_str()) +
                         QDir::separator() +
                         search_path);
             }
@@ -310,7 +310,7 @@ namespace
 
         if (s.has_root_path())
         {
-            const QDir root_dir(QString::fromUtf8(s.get_root_path().c_str()));
+            const QDir root_dir(s.get_root_path().c_str());
             assert(root_dir.isAbsolute());
 
             QString relative_path;

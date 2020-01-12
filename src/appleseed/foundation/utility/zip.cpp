@@ -290,12 +290,8 @@ void zip(const std::string& zip_filename, const std::string& directory_to_zip)
         if (zip_file == nullptr)
             throw ZipException(("can't open file " + zip_filename).c_str());
 
-        for (std::set<std::string>::iterator it = files_to_zip.begin();
-             it != files_to_zip.end(); ++it)
-        {
-            const std::string filename_to_zip = *it;
+        for (const std::string& filename_to_zip : files_to_zip)
             zip_current_file(zip_file, filename_to_zip, directory_to_zip);
-        }
 
         zipClose(zip_file, nullptr);
     }

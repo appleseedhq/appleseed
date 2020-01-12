@@ -42,6 +42,8 @@ namespace foundation
 //
 // Memory-alignment related functions implementation.
 //
+// todo: consider using _aligned_malloc() and _aligned_free() from <malloc.h> on Windows.
+//
 
 void* aligned_malloc(const size_t size, size_t alignment)
 {

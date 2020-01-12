@@ -67,6 +67,7 @@
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
