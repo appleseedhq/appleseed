@@ -28,6 +28,9 @@
 //
 
 // appleseed.foundation headers.
+#ifdef _WIN32
+#include "foundation/platform/windows.h"
+#endif
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/log.h"
 #include "foundation/utility/settings.h"
@@ -112,6 +115,14 @@ TEST_SUITE(Foundation_Utility_SettingsFileReader)
 
     TEST_CASE_F(Read_GivenSettingsFileNameWithUTF8Encoding_ReturnsSuccess, Fixture)
     {
+#ifdef _WIN32
+        if (!does_windows_support_utf8_code_page())
+        {
+            // todo: if the unit testing infrastructure made a logger available, we would issue a warning here.
+            return;
+        }
+#endif
+
         const bool succeeded = read(u8"unit tests/inputs/test_settings_utf8_\u00e2\u00e9\u00ef\u00f4\u00f9.xml");
 
         EXPECT_TRUE(succeeded);
@@ -196,6 +207,14 @@ TEST_SUITE(Foundation_Utility_SettingsFileWriter)
 
     TEST_CASE(Write_GivenSettingsFileNameWithUTF8Encoding_ReturnsSuccess)
     {
+#ifdef _WIN32
+        if (!does_windows_support_utf8_code_page())
+        {
+            // todo: if the unit testing infrastructure made a logger available, we would issue a warning here.
+            return;
+        }
+#endif
+
         const Dictionary dictionary;
 
         SettingsFileWriter writer;
