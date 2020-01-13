@@ -39,9 +39,7 @@ namespace foundation
 
 void disable_all_windows_abort_dialogs()
 {
-    //
     // See comments at https://stackoverflow.com/q/53907689/393756 for explanations.
-    //
 
     SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOGPFAULTERRORBOX | SEM_NOOPENFILEERRORBOX);
 
@@ -52,6 +50,11 @@ void disable_all_windows_abort_dialogs()
     _CrtSetReportFile(_CRT_WARN, _CRTDBG_FILE_STDERR);
     _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDERR);
     _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDERR);
+}
+
+bool does_windows_support_utf8_code_page()
+{
+    return GetACP() == 65001;
 }
 
 }   // namespace foundation

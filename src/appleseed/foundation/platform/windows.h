@@ -64,6 +64,11 @@ std::string get_last_windows_error_message();
 // Same as get_last_windows_error_message() but returns a wide string.
 std::wstring get_last_windows_error_message_wide();
 
+// Return true if the current code page is UTF-8, which is what we ask for in the embedded manifests.
+// We expect this function to return true starting with Windows 10 version 1903 (May update) and false
+// for earlier Windows 10 versions and older Windows versions (8.1 and below).
+bool does_windows_support_utf8_code_page();
+
 
 //
 // Inline implementations to expose these functions (that return std:: types) to plugins.
