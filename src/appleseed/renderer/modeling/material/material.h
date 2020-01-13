@@ -161,7 +161,7 @@ class APPLESEED_DLLSYMBOL Material
     const RenderData& get_render_data() const;
 
   protected:
-    RenderData  m_render_data;
+    RenderData m_render_data;
 
     // Constructor.
     Material(
