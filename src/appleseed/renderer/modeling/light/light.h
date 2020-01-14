@@ -79,14 +79,12 @@ class APPLESEED_DLLSYMBOL Light
     enum Flags
     {
         CastIndirectLight = 1UL << 0,       // does this light generate indirect lighting?
-        LightTreeCompatible = 1UL << 1      // can this light be used by the LightTree?
+        LightTreeCompatible = 1UL << 1,     // can this light be used by the LightTree?
+        CastShadows = 1UL << 2              // does this light cast shadows
     };
 
     // Retrieve the flags.
     int get_flags() const;
-
-    // Return whether this light casts shadows.
-    bool get_cast_shadows() const;
 
     // Retrieve the importance multiplier.
     float get_uncached_importance_multiplier() const;
@@ -154,11 +152,6 @@ class APPLESEED_DLLSYMBOL Light
 inline int Light::get_flags() const
 {
     return m_flags;
-}
-
-inline bool Light::get_cast_shadows() const
-{
-    return m_cast_shadows;
 }
 
 }       // namespace renderer

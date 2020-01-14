@@ -129,7 +129,7 @@ void compute_ibl_material_sampling(
 
         // Discard occluded samples.
         Spectrum transmission;
-        if (environment_edf.get_cast_shadows())
+        if ((environment_edf.get_flags() & EnvironmentEDF::CastShadows) != 0)
         {
             material_sampler.trace_simple(shading_context, incoming.get_value(), transmission);
             if (is_zero(transmission))
@@ -207,7 +207,7 @@ void compute_ibl_environment_sampling(
 
         // Discard occluded samples.
         Spectrum transmission;
-        if (environment_edf.get_cast_shadows())
+        if ((environment_edf.get_flags() & EnvironmentEDF::CastShadows) != 0)
         {
             material_sampler.trace_simple(
                 shading_context,

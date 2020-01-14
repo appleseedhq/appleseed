@@ -119,7 +119,10 @@ bool EnvironmentEDF::on_frame_begin(
         m_transform_sequence.set_transform(time, transform);
     }
 
-    m_cast_shadows = m_params.get_optional<bool>("cast_shadows", true);
+    if (m_params.get_optional<bool>("cast_shadows", true))
+        m_flags |= CastShadows;
+    else
+        m_flags &= ~CastShadows;
 
     return true;
 }

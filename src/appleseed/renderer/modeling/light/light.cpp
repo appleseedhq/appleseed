@@ -113,7 +113,10 @@ bool Light::on_frame_begin(
     else
         m_flags &= ~CastIndirectLight;
 
-    m_cast_shadows = m_params.get_optional<bool>("cast_shadows", true);
+    if (m_params.get_optional<bool>("cast_shadows", true))
+        m_flags |= CastShadows;
+    else
+        m_flags &= ~CastShadows;
 
     if (get_uncached_importance_multiplier() <= 0.0)
     {

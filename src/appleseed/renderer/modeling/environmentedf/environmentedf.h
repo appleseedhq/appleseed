@@ -80,8 +80,13 @@ class APPLESEED_DLLSYMBOL EnvironmentEDF
     // Return a string identifying the model of this entity.
     virtual const char* get_model() const = 0;
 
-    // Return whether this environment EDF casts shadows.
-    bool get_cast_shadows() const;
+    enum Flags
+    {
+        CastShadows = 1UL << 0                            // does this environment cast shadows
+    };
+
+    // Retrieve the flags.
+    int get_flags() const;
 
     // Access the transform sequence of the environment EDF.
     TransformSequence& transform_sequence();
@@ -119,7 +124,7 @@ class APPLESEED_DLLSYMBOL EnvironmentEDF
 
   protected:
     TransformSequence m_transform_sequence;
-    bool              m_cast_shadows;
+    int               m_flags;
 };
 
 
@@ -127,9 +132,9 @@ class APPLESEED_DLLSYMBOL EnvironmentEDF
 // EnvironmentEDF class implementation.
 //
 
-inline bool EnvironmentEDF::get_cast_shadows() const
+inline int EnvironmentEDF::get_flags() const
 {
-    return m_cast_shadows;
+    return m_flags;
 }
 
 inline TransformSequence& EnvironmentEDF::transform_sequence()
