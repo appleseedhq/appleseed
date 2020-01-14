@@ -129,9 +129,12 @@ void compute_ibl_material_sampling(
 
         // Discard occluded samples.
         Spectrum transmission;
-        material_sampler.trace_simple(shading_context, incoming.get_value(), transmission);
-        if (is_zero(transmission))
-            continue;
+        if (environment_edf.get_cast_shadows())
+        {
+            material_sampler.trace_simple(shading_context, incoming.get_value(), transmission);
+            if (is_zero(transmission))
+                continue;
+        }
 
         // Evaluate the environment EDF.
         Spectrum env_value(Spectrum::Illuminance);
