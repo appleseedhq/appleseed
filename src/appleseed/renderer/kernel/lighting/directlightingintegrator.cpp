@@ -508,14 +508,18 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
 
     // Compute the transmission factor between the light sample and the shading point.
     Spectrum transmission;
-    m_material_sampler.trace_between(
-        m_shading_context,
-        emission_position,
-        transmission);
+    if (light->get_flags() & Light::CastShadows)
+    {
+        m_material_sampler.trace_between(
+            m_shading_context,
+            emission_position,
+            transmission);
 
-    // Discard occluded samples.
-    if (is_zero(transmission))
-        return;
+        // Discard occluded samples.
+        if (is_zero(transmission))
+            return;
+    }
+    else transmission.set(1.0f);
 
     // Evaluate the BSDF (or volume).
     DirectShadingComponents material_value;

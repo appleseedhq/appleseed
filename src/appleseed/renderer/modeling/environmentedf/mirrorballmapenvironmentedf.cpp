@@ -272,6 +272,8 @@ DictionaryArray MirrorBallMapEnvironmentEDFFactory::get_input_metadata() const
             .insert("default", "0.0")
             .insert("help", "Environment exposure"));
 
+    add_common_input_metadata(metadata);
+
     return metadata;
 }
 

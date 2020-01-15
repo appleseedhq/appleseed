@@ -193,6 +193,8 @@ DictionaryArray ConstantEnvironmentEDFFactory::get_input_metadata() const
             .insert("default", "1.0")
             .insert("help", "Environment radiance"));
 
+    add_common_input_metadata(metadata);
+
     return metadata;
 }
 

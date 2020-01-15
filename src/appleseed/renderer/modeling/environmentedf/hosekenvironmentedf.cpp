@@ -521,6 +521,8 @@ DictionaryArray HosekEnvironmentEDFFactory::get_input_metadata() const
             .insert("use", "optional")
             .insert("default", "0.3")
             .insert("help", "Ground albedo (reflection coefficient of the ground)"));
+            
+    add_common_input_metadata(metadata);
 
     return metadata;
 }

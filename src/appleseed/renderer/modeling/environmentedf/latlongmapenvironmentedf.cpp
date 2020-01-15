@@ -584,6 +584,8 @@ DictionaryArray LatLongMapEnvironmentEDFFactory::get_input_metadata() const
             .insert("use", "optional")
             .insert("help", "Environment texture vertical shift in degrees"));
 
+    add_common_input_metadata(metadata);
+    
     return metadata;
 }
 

@@ -66,6 +66,15 @@ void ILightFactory::add_common_input_metadata(DictionaryArray& metadata)
             .insert("use", "optional")
             .insert("default", "1.0")
             .insert("help", "Adjust the sampling effort for this light with respect to the other lights"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "cast_shadows")
+            .insert("label", "Cast Shadows")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "true")
+            .insert("help", "If enabled, this light casts shadows"));
 }
 
 }   // namespace renderer

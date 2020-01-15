@@ -38,6 +38,18 @@ using namespace foundation;
 namespace renderer
 {
 
+void IEnvironmentEDFFactory::add_common_input_metadata(DictionaryArray& metadata)
+{
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "cast_shadows")
+            .insert("label", "Cast Shadows")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "true")
+            .insert("help", "If enabled, the environment casts shadows"));
+}
+
 void IEnvironmentEDFFactory::add_common_sky_input_metadata(DictionaryArray& metadata)
 {
     metadata.push_back(

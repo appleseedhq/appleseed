@@ -492,6 +492,8 @@ DictionaryArray PreethamEnvironmentEDFFactory::get_input_metadata() const
 
     add_common_sky_input_metadata(metadata);
 
+    add_common_input_metadata(metadata);
+
     return metadata;
 }
 

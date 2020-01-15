@@ -250,6 +250,8 @@ DictionaryArray GradientEnvironmentEDFFactory::get_input_metadata() const
             .insert("default", "0.7")
             .insert("help", "Zenith radiance"));
 
+    add_common_input_metadata(metadata);
+
     return metadata;
 }
 

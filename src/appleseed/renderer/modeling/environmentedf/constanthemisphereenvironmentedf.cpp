@@ -242,6 +242,8 @@ DictionaryArray ConstantHemisphereEnvironmentEDFFactory::get_input_metadata() co
             .insert("default", "0.3")
             .insert("help", "Lower hemisphere radiance"));
 
+    add_common_input_metadata(metadata);
+
     return metadata;
 }
 
