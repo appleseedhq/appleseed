@@ -82,7 +82,7 @@ class APPLESEED_DLLSYMBOL EnvironmentEDF
 
     enum Flags
     {
-        CastShadows = 1UL << 0                            // does this environment cast shadows
+        CastShadows = 1UL << 0      // does this environment cast shadows?
     };
 
     // Retrieve the flags.
@@ -123,8 +123,8 @@ class APPLESEED_DLLSYMBOL EnvironmentEDF
         const foundation::Vector3f& outgoing) const = 0;        // world space emission direction, unit-length
 
   protected:
-    TransformSequence m_transform_sequence;
-    int               m_flags;
+    int                 m_flags;
+    TransformSequence   m_transform_sequence;
 };
 
 

@@ -127,14 +127,17 @@ void compute_ibl_material_sampling(
                 material_prob))
             continue;
 
-        // Discard occluded samples.
+        // Compute the transmission factor between the environment and the shading point.
         Spectrum transmission;
-        if ((environment_edf.get_flags() & EnvironmentEDF::CastShadows) != 0)
+        if (environment_edf.get_flags() & EnvironmentEDF::CastShadows)
         {
             material_sampler.trace_simple(shading_context, incoming.get_value(), transmission);
+
+            // Discard occluded samples.
             if (is_zero(transmission))
                 continue;
         }
+        else transmission.set(1.0f);
 
         // Evaluate the environment EDF.
         Spectrum env_value(Spectrum::Illuminance);
@@ -205,22 +208,17 @@ void compute_ibl_environment_sampling(
             env_prob);
         assert(is_normalized(incoming));
 
-        // Discard occluded samples.
+        // Compute the transmission factor between the environment and the shading point.
         Spectrum transmission;
-        if ((environment_edf.get_flags() & EnvironmentEDF::CastShadows) != 0)
+        if (environment_edf.get_flags() & EnvironmentEDF::CastShadows)
         {
-            material_sampler.trace_simple(
-                shading_context,
-                incoming,
-                transmission);
+            material_sampler.trace_simple(shading_context, incoming, transmission);
 
+            // Discard occluded samples.
             if (is_zero(transmission))
                 continue;
         }
-        else
-        {
-            transmission.set(1.0f);
-        }
+        else transmission.set(1.0f);
 
         // Evaluate the BSDF.
         DirectShadingComponents material_value;

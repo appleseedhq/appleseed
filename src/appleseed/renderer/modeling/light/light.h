@@ -80,7 +80,7 @@ class APPLESEED_DLLSYMBOL Light
     {
         CastIndirectLight = 1UL << 0,       // does this light generate indirect lighting?
         LightTreeCompatible = 1UL << 1,     // can this light be used by the LightTree?
-        CastShadows = 1UL << 2              // does this light cast shadows
+        CastShadows = 1UL << 2              // does this light cast shadows?
     };
 
     // Retrieve the flags.
@@ -136,8 +136,7 @@ class APPLESEED_DLLSYMBOL Light
         const foundation::Vector3d&     position) const = 0;        // world space emission position
 
   protected:
-    int  m_flags;
-    bool m_cast_shadows;
+    int m_flags;
 
   private:
     struct Impl;
@@ -154,4 +153,4 @@ inline int Light::get_flags() const
     return m_flags;
 }
 
-}       // namespace renderer
+}   // namespace renderer
