@@ -218,7 +218,7 @@ endif ()
 
 
 #--------------------------------------------------------------------------------------------------
-# Auto-generate version headers.
+# Auto-generate version header.
 #--------------------------------------------------------------------------------------------------
 
 set (appleseed_version_major    2)
@@ -226,8 +226,10 @@ set (appleseed_version_minor    1)
 set (appleseed_version_patch    0)
 set (appleseed_version_maturity beta)
 
-configure_file (${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/version.h.in
-                ${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/version.h)
+configure_file (
+    ${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/version.h.in
+    ${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/version.h
+)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -569,8 +571,10 @@ endmacro ()
 # Auto-generate build options header.
 #--------------------------------------------------------------------------------------------------
 
-configure_file (${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/buildoptions.h.in
-                ${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/buildoptions.h)
+configure_file (
+    ${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/buildoptions.h.in
+    ${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/buildoptions.h
+)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -721,7 +725,11 @@ if (WITH_DOXYGEN)
     find_package (Doxygen)
 
     if (DOXYGEN_FOUND)
-        configure_file (${PROJECT_SOURCE_DIR}/scripts/appleseed.doxyfile.in ${PROJECT_BINARY_DIR}/appleseed.doxyfile @ONLY)
+        configure_file (
+            ${PROJECT_SOURCE_DIR}/scripts/appleseed.doxyfile.in
+            ${PROJECT_BINARY_DIR}/appleseed.doxyfile
+            @ONLY
+        )
 
         add_custom_target (
             genarate_api_reference ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/appleseed.doxyfile
