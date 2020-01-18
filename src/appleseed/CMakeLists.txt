@@ -571,6 +571,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_stlallocatortestbed.cpp
     foundation/meta/tests/test_stopwatch.cpp
     foundation/meta/tests/test_string.cpp
+    foundation/meta/tests/test_tea.cpp
     foundation/meta/tests/test_test.cpp
     foundation/meta/tests/test_thread.cpp
     foundation/meta/tests/test_tile.cpp
@@ -947,6 +948,7 @@ set (foundation_utility_sources
     foundation/utility/stopwatch.h
     foundation/utility/string.cpp
     foundation/utility/string.h
+    foundation/utility/tea.h
     foundation/utility/test.h
     foundation/utility/testutils.cpp
     foundation/utility/testutils.h
