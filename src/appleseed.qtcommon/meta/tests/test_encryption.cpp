@@ -39,6 +39,8 @@
 
 using namespace appleseed::qtcommon;
 
+void force_linking_qtcommon_utility_encryption_tests() {}
+
 TEST_SUITE(QtCommon_Utility_Encryption)
 {
     const QByteArray Key = QByteArrayLiteral("\xff\x99\xfa\x8e\xc1\x6d\x82\xfc\xc0\x62\x8d\xe9\x2e\xe7\x01\x32");

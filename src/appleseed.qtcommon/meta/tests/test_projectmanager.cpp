@@ -42,7 +42,9 @@
 using namespace appleseed::qtcommon;
 using namespace renderer;
 
-TEST_SUITE(QtCommon_ProjectManager)
+void force_linking_qtcommon_project_projectmanager_tests() {}
+
+TEST_SUITE(QtCommon_Project_ProjectManager)
 {
     TEST_CASE(GetProject_GivenProjectManagerInDefaultState_ReturnsNull)
     {
