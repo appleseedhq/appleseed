@@ -31,7 +31,7 @@
 #include "miscellaneous.h"
 
 // appleseed.qtcommon headers.
-#include "widgets/interop.h"
+#include "utility/interop.h"
 
 // appleseed.common headers.
 #include "application/application.h"
@@ -191,6 +191,20 @@ bool file_exists(const QString& path)
 {
     const QFileInfo info(path);
     return info.exists() && info.isFile();
+}
+
+QByteArray compute_file_hash(const QString& filepath, const QCryptographicHash::Algorithm hashAlgorithm)
+{
+    QFile file(filepath);
+
+    if (file.open(QFile::ReadOnly))
+    {
+        QCryptographicHash hash(hashAlgorithm);
+        if (hash.addData(&file))
+            return hash.result();
+    }
+
+    return QByteArray();
 }
 
 QByteArray load_gl_shader(const QString& base_name)

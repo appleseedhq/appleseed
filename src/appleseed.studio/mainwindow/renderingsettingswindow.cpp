@@ -41,8 +41,8 @@
 
 // appleseed.qtcommon headers.
 #include "project/projectmanager.h"
+#include "utility/miscellaneous.h"
 #include "widgets/foldablepanelwidget.h"
-#include "widgets/miscellaneous.h"
 #include "widgets/mousewheelfocuseventfilter.h"
 
 // appleseed.renderer headers.

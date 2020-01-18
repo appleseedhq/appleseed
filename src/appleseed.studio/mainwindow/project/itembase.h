@@ -30,7 +30,7 @@
 #pragma once
 
 // appleseed.qtcommon headers.
-#include "widgets/miscellaneous.h"
+#include "utility/miscellaneous.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/uid.h"

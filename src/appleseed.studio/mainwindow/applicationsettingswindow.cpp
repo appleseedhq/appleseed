@@ -36,7 +36,7 @@
 #include "utility/settingskeys.h"
 
 // appleseed.qtcommon headers.
-#include "widgets/miscellaneous.h"
+#include "utility/miscellaneous.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/utility.h"
@@ -111,7 +111,7 @@ void ApplicationSettingsWindow::build_connections()
 
 void ApplicationSettingsWindow::load_settings()
 {
-    // Exploit the fact that category values match combobox item indices exactly.
+    // Message verbosity.
     const std::string message_verbosity =
         m_settings.get_path_optional<std::string>(SETTINGS_MESSAGE_VERBOSITY, "info");
     m_ui->combobox_message_verbosity->setCurrentIndex(
@@ -120,7 +120,7 @@ void ApplicationSettingsWindow::load_settings()
         message_verbosity == "warning" ? 2 :
         message_verbosity == "error"   ? 3 :
         message_verbosity == "fatal"   ? 4 :
-        1);     // info if an unknown value was found
+        1);     // "info" if an unknown value was found
 
     // Sampling mode.
     const std::string sampling_mode =
@@ -128,7 +128,7 @@ void ApplicationSettingsWindow::load_settings()
     m_ui->combobox_sampling_mode->setCurrentIndex(
         sampling_mode == "rng" ? 0 :
         sampling_mode == "qmc" ? 1 :
-        1);     // qmc if an unknown value was found
+        1);     // "qmc" if an unknown value was found
 
     // Rendering threads.
     m_ui->spinbox_rendering_threads->setValue(static_cast<int>(System::get_logical_cpu_core_count()));
@@ -168,14 +168,15 @@ void ApplicationSettingsWindow::load_settings()
 
 void ApplicationSettingsWindow::save_settings()
 {
-    // Exploit the fact that category values match combobox item indices exactly.
-    const auto sampling_mode_index = m_ui->combobox_message_verbosity->currentIndex();
-    m_settings.insert_path(SETTINGS_MESSAGE_VERBOSITY,
-        sampling_mode_index == 0 ? "debug" :
-        sampling_mode_index == 1 ? "info" :
-        sampling_mode_index == 2 ? "warning" :
-        sampling_mode_index == 3 ? "error" :
-                                   "fatal");
+    // Message verbosity.
+    const auto message_verbosity_index = m_ui->combobox_message_verbosity->currentIndex();
+    m_settings.insert_path(
+        SETTINGS_MESSAGE_VERBOSITY,
+        message_verbosity_index == 0 ? "debug" :
+        message_verbosity_index == 1 ? "info" :
+        message_verbosity_index == 2 ? "warning" :
+        message_verbosity_index == 3 ? "error" :
+                                       "fatal");
 
     // Sampling mode.
     m_settings.insert_path(SETTINGS_SAMPLING_MODE,

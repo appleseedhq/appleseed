@@ -31,7 +31,7 @@
 #include "qtlogtarget.h"
 
 // appleseed.qtcommon headers.
-#include "widgets/interop.h"
+#include "utility/interop.h"
 #include "widgets/logwidget.h"
 
 // appleseed.foundation headers.

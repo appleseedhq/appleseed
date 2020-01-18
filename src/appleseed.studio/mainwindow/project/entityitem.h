@@ -40,7 +40,7 @@
 #include "mainwindow/rendering/renderingmanager.h"
 
 // appleseed.qtcommon headers.
-#include "widgets/miscellaneous.h"
+#include "utility/miscellaneous.h"
 #include "widgets/treewidget.h"
 
 // appleseed.renderer headers.

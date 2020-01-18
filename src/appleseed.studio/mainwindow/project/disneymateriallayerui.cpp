@@ -35,9 +35,9 @@
 #include "utility/settingskeys.h"
 
 // appleseed.qtcommon headers.
+#include "utility/interop.h"
+#include "utility/miscellaneous.h"
 #include "widgets/doubleslider.h"
-#include "widgets/interop.h"
-#include "widgets/miscellaneous.h"
 #include "widgets/mousewheelfocuseventfilter.h"
 
 // appleseed.renderer headers.

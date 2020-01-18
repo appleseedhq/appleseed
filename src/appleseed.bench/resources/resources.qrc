@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/appleseed-logo-256.png</file>
+    </qresource>
+</RCC>

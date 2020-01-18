@@ -31,7 +31,7 @@
 #include "entitycreatorbase.h"
 
 // appleseed.qtcommon headers.
-#include "widgets/miscellaneous.h"
+#include "utility/miscellaneous.h"
 
 // Qt headers.
 #include <QMessageBox>

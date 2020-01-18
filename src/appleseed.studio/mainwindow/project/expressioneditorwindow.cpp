@@ -37,7 +37,7 @@
 #include "utility/settingskeys.h"
 
 // appleseed.qtcommon headers.
-#include "widgets/miscellaneous.h"
+#include "utility/miscellaneous.h"
 
 // appleseed.common headers.
 #include "application/application.h"

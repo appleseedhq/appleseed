@@ -34,8 +34,8 @@
 #include "mainwindow/project/entityeditorwindow.h"
 
 // appleseed.qtcommon headers.
+#include "utility/interop.h"
 #include "widgets/doubleslider.h"
-#include "widgets/interop.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"

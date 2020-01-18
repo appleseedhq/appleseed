@@ -201,14 +201,13 @@ std::unique_ptr<ChartBase> BenchmarkWindow::create_chart(
 
     std::unique_ptr<LineChart> chart(new LineChart());
 
-    chart->set_equidistant(true);
     chart->set_grid_brush(QBrush(QColor(60, 60, 60, 255)));
     chart->set_curve_brush(QBrush(CurveColors[chart_index % COUNT_OF(CurveColors)]));
 
     chart->set_tooltip_formatter(
-        [](const Vector2d& point) -> QString
+        [](const Vector2d& point, const QVariant& data) -> QString
         {
-            const std::uint64_t date_microseconds = static_cast<std::uint64_t>(point.x);
+            const std::uint64_t date_microseconds = data.toULongLong();
             const posix_time::ptime date = BenchmarkDataPoint::microseconds_to_ptime(date_microseconds);
 
             return
@@ -218,18 +217,19 @@ std::unique_ptr<ChartBase> BenchmarkWindow::create_chart(
                     .arg(point.y > 1 ? "s" : "");
         });
 
-
     const BenchmarkSeries& series = m_benchmark_aggregator.get_series(case_uid);
 
     for (size_t i = 0, e = series.size(); i < e; ++i)
     {
         const BenchmarkDataPoint& point = series[i];
 
-        const double x =
-            static_cast<double>(
-                BenchmarkDataPoint::ptime_to_microseconds(point.get_date()));
+        const std::uint64_t date_microseconds =
+            BenchmarkDataPoint::ptime_to_microseconds(point.get_date());
 
-        chart->push_back(x, point.get_ticks());
+        chart->add_point(
+            static_cast<double>(i),
+            point.get_ticks(),
+            static_cast<qulonglong>(date_microseconds));
     }
 
     return std::unique_ptr<ChartBase>(std::move(chart));

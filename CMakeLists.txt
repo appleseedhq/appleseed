@@ -126,6 +126,7 @@ write_compiler_detection_header (
 
 option (WITH_CLI                            "Build appleseed.cli"                                       ON)
 option (WITH_STUDIO                         "Build appleseed.studio"                                    ON)
+option (WITH_BENCH                          "Build appleseed.bench"                                     ON)
 option (WITH_TOOLS                          "Build appleseed tools"                                     ON)
 option (WITH_PYTHON2_BINDINGS               "Build Python bindings for Python 2"                        ON)
 option (WITH_PYTHON3_BINDINGS               "Build Python bindings for Python 3"                        OFF)
@@ -665,11 +666,11 @@ add_subdirectory (src/thirdparty/murmurhash3)
 add_subdirectory (src/appleseed)
 add_subdirectory (src/appleseed.shaders)
 
-if (WITH_CLI OR WITH_STUDIO OR WITH_TOOLS)
+if (WITH_CLI OR WITH_STUDIO OR WITH_BENCH OR WITH_TOOLS)
     add_subdirectory (src/appleseed.common)
 endif ()
 
-if (WITH_STUDIO)
+if (WITH_STUDIO OR WITH_BENCH)
     add_subdirectory (src/appleseed.qtcommon)
 endif ()
 
@@ -705,6 +706,10 @@ if (WITH_STUDIO)
         message (FATAL_ERROR "Option WITH_PYTHON2_BINDINGS should be \"ON\" to build appleseed.studio.")
     endif ()
     add_subdirectory (src/appleseed.studio)
+endif ()
+
+if (WITH_BENCH)
+    add_subdirectory (src/appleseed.bench)
 endif ()
 
 if (WITH_TOOLS)

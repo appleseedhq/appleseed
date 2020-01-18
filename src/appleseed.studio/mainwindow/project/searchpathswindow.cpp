@@ -34,7 +34,7 @@
 
 // appleseed.qtcommon headers.
 #include "project/projectmanager.h"
-#include "widgets/miscellaneous.h"
+#include "utility/miscellaneous.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/project.h"

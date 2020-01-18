@@ -30,6 +30,7 @@
 #pragma once
 
 // Qt headers.
+#include <QCryptographicHash>
 #include <QFileDialog>
 #include <QList>
 
@@ -76,6 +77,9 @@ QString make_app_path(const QString& path);
 
 // Check whether a file exists.
 bool file_exists(const QString& path);
+
+// Compute the hash of a file on disk. Returns an empty QByteArray on failure.
+QByteArray compute_file_hash(const QString& filepath, const QCryptographicHash::Algorithm hashAlgorithm);
 
 // Load a GLSL shader from file into a QByteArray.
 QByteArray load_gl_shader(const QString& base_name);

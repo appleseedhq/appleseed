@@ -33,7 +33,7 @@
 #--------------------------------------------------------------------------------------------------
 
 if (WITH_GPU)
-    include_directories(
+    include_directories (
         ${CUDA_INCLUDE_DIRS}
         ${OPTIX_INCLUDE_DIR}
     )

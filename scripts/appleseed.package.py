@@ -51,7 +51,7 @@ import zipfile
 # Constants.
 # -------------------------------------------------------------------------------------------------
 
-VERSION = "2.7.2"
+VERSION = "2.7.3"
 SETTINGS_FILENAME = "appleseed.package.configuration.xml"
 VERBOSE = False
 
@@ -211,10 +211,11 @@ class Settings:
         print("  Configuration:             {0}".format(self.configuration))
         print("  Path to appleseed:         {0}".format(self.appleseed_path))
         print("  Path to appleseed headers: {0}".format(self.appleseed_headers_path))
+        print("  Path to Python 2.7:        {0}".format(self.python_path))
         print("  Path to Qt runtime:        {0}".format(self.qt_runtime_path))
         if os.name == "nt":
             print("  Path to platform runtime:  {0}".format(self.platform_runtime_path))
-        print("  Path to Python 2.7:        {0}".format(self.python_path))
+            print("  Path to OpenSSL DLLs:      {0}".format(self.openssl_path))
         print("  Output directory:          {0}".format(self.package_output_path))
         print("")
 
@@ -226,6 +227,7 @@ class Settings:
         self.qt_runtime_path = self.__get_required(tree, "qt_runtime_path")
         self.platform_runtime_path = self.__get_required(tree, "platform_runtime_path")
         self.python_path = self.__get_required(tree, "python_path")
+        self.openssl_path = self.__get_required(tree, "openssl_path")
         self.package_output_path = self.__get_required(tree, "package_output_path")
 
     def __get_required(self, tree, key):
@@ -517,6 +519,7 @@ class WindowsPackageBuilder(PackageBuilder):
     def postprocess_stage(self):
         self.__add_dependencies_to_stage()
         self.__add_python_to_stage()
+        self.__add_openssl_to_stage()
 
     def __add_dependencies_to_stage(self):
         progress("Windows-specific: Adding dependencies to staging directory")
@@ -524,6 +527,7 @@ class WindowsPackageBuilder(PackageBuilder):
         # Qt frameworks.
         self.__copy_qt_framework("Qt5Core")
         self.__copy_qt_framework("Qt5Gui")
+        self.__copy_qt_framework("Qt5Network")
         self.__copy_qt_framework("Qt5OpenGL")
         self.__copy_qt_framework("Qt5Widgets")
 
@@ -559,6 +563,13 @@ class WindowsPackageBuilder(PackageBuilder):
         dst_path = os.path.join("appleseed", "bin")
         shutil.copy(src_filepath, dst_path)
 
+    def __add_openssl_to_stage(self):
+        progress("Windows-specific: Adding OpenSSL DLLs to staging directory")
+
+        shutil.copy(os.path.join(self.settings.openssl_path, "libeay32.dll"), "appleseed/bin/")
+        shutil.copy(os.path.join(self.settings.openssl_path, "ssleay32.dll"), "appleseed/bin/")
+        shutil.copy(os.path.join(self.settings.openssl_path, "OpenSSL License.txt"), "appleseed/bin/")
+
 
 # -------------------------------------------------------------------------------------------------
 # Mac package builder.
@@ -584,6 +595,7 @@ class MacPackageBuilder(PackageBuilder):
         "QtCore",
         "QtDBus",
         "QtGui",
+        "QtNetwork",
         "QtOpenGL",
         "QtPrintSupport",
         "QtWidgets"
