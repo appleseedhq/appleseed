@@ -43,6 +43,7 @@ find_package (Qt5 REQUIRED COMPONENTS Concurrent Core OpenGL Widgets)
 #--------------------------------------------------------------------------------------------------
 
 set (meta_tests_sources
+    meta/tests/test_encryption.cpp
     meta/tests/test_interop.cpp
     meta/tests/test_projectmanager.cpp
 )
@@ -62,6 +63,17 @@ list (APPEND appleseed.qtcommon_sources
 )
 source_group ("project" FILES
     ${project_sources}
+)
+
+set (utility_sources
+    utility/encryption.cpp
+    utility/encryption.h
+)
+list (APPEND appleseed.qtcommon_sources
+    ${utility_sources}
+)
+source_group ("utility" FILES
+    ${utility_sources}
 )
 
 set (widgets_sources
