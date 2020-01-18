@@ -41,7 +41,9 @@
 using namespace appleseed::qtcommon;
 using namespace foundation;
 
-TEST_SUITE(QtCommon_InterOp)
+void force_linking_qtcommon_utility_interop_tests() {}
+
+TEST_SUITE(QtCommon_Utility_InterOp)
 {
     TEST_CASE(UnitColorComponentToInt_GivenMinusOne_ReturnsZero)
     {

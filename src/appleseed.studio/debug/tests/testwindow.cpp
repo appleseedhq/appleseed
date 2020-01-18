@@ -63,6 +63,25 @@ using namespace foundation;
 Q_DECLARE_METATYPE(ITestCaseFactory*);
 Q_DECLARE_METATYPE(TestSuite*);
 
+extern void force_linking_qtcommon_project_projectmanager_tests();
+extern void force_linking_qtcommon_utility_encryption_tests();
+extern void force_linking_qtcommon_utility_interop_tests();
+
+namespace
+{
+    struct ForceLinkingQtCommonTests
+    {
+        ForceLinkingQtCommonTests()
+        {
+            force_linking_qtcommon_project_projectmanager_tests();
+            force_linking_qtcommon_utility_encryption_tests();
+            force_linking_qtcommon_utility_interop_tests();
+        }
+    };
+
+    const ForceLinkingQtCommonTests g_force_linking_qt_common_tests;
+}
+
 namespace appleseed {
 namespace studio {
 
