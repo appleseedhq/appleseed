@@ -33,7 +33,7 @@
 #include "python/pythoninterpreter.h"
 
 // appleseed.qtcommon headers.
-#include "widgets/miscellaneous.h"
+#include "utility/miscellaneous.h"
 
 // appleseed.common headers.
 #include "application/application.h"
@@ -55,7 +55,6 @@
 #include <QMessageBox>
 #include <QString>
 #include <QSurfaceFormat>
-#include <QTextStream>
 
 // Boost headers.
 #include "boost/filesystem/operations.hpp"
@@ -381,7 +380,7 @@ int main(int argc, char* argv[])
     set_default_stylesheet(application);
 
     // Create the application's main window.
-    appleseed::studio::MainWindow window;
+    MainWindow window;
 
     // QApplication and QMainWindow set C locale to the user's locale, we need to fix this.
     std::setlocale(LC_ALL, "C");

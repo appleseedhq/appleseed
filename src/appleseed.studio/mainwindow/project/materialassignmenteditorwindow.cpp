@@ -42,8 +42,8 @@
 #include "mainwindow/rendering/renderingmanager.h"
 
 // appleseed.qtcommon headers.
-#include "widgets/interop.h"
-#include "widgets/miscellaneous.h"
+#include "utility/interop.h"
+#include "utility/miscellaneous.h"
 #include "widgets/mousewheelfocuseventfilter.h"
 
 // appleseed.renderer headers.

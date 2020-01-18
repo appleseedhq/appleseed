@@ -44,7 +44,7 @@
 #include "mainwindow/rendering/renderingmanager.h"
 
 // appleseed.qtcommon headers.
-#include "widgets/miscellaneous.h"
+#include "utility/miscellaneous.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/scene.h"

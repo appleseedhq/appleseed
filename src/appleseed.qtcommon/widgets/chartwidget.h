@@ -40,10 +40,10 @@
 #include <QObject>
 #include <QPoint>
 #include <QString>
+#include <QVariant>
 
 // Standard headers.
 #include <cstddef>
-#include <deque>
 #include <functional>
 #include <memory>
 #include <vector>
@@ -67,12 +67,19 @@ class ChartBase
 {
   public:
     using ValueFormatter = std::function<QString(const double)>;
-    using TooltipFormatter = std::function<QString(const foundation::Vector2d&)>;
+    using TooltipFormatter = std::function<QString(const foundation::Vector2d&, const QVariant&)>;
 
     virtual ~ChartBase() = default;
 
-    void set_equidistant(const bool equidistant);
-    void set_origin(const foundation::Vector2d& origin);
+    void set_auto_horizontal_range();
+    void set_auto_vertical_range();
+    void set_horizontal_range(const double min, const double max);
+    void set_vertical_range(const double min, const double max);
+
+    void set_vertical_subdivisions(const int subdivisions);
+
+    void set_horizontal_window_margins(const double left, const double right);
+    void set_vertical_window_margins(const double bottom, const double top);
 
     void set_grid_brush(const QBrush& brush);
     void set_legend_brush(const QBrush& brush);
@@ -81,10 +88,8 @@ class ChartBase
     void set_vertical_legend_formatter(const ValueFormatter& formatter);
     void set_tooltip_formatter(const TooltipFormatter& formatter);
 
-    size_t size() const;
-    void push_back(const foundation::Vector2d& p);
-    void push_back(const double x, const double y);
-    void pop_front();
+    void add_point(const foundation::Vector2d& p, const QVariant& data = QVariant());
+    void add_point(const double x, const double y, const QVariant& data = QVariant());
 
     void prepare_drawing(QPainter& painter);
 
@@ -103,25 +108,33 @@ class ChartBase
 
     virtual bool on_chart(
         const QPoint&   mouse_position,
-        size_t&         point_index) const = 0;
+        std::size_t&    point_index) const = 0;
 
   protected:
-    bool                                m_equidistant = false;
-    foundation::Vector2d                m_origin = foundation::Vector2d(0.0);
-    foundation::Vector2d                m_margin = foundation::Vector2d(15.0);
+    bool                                m_auto_horizontal_range = true;
+    bool                                m_auto_vertical_range = true;
+    double                              m_horizontal_min = 0.0;
+    double                              m_horizontal_max = 1.0;
+    double                              m_vertical_min = 0.0;
+    double                              m_vertical_max = 1.0;
+    int                                 m_vertical_subdivisions = 10;
+    double                              m_window_left_margin = 15.0;
+    double                              m_window_right_margin = 15.0;
+    double                              m_window_bottom_margin = 15.0;
+    double                              m_window_top_margin = 15.0;
     QBrush                              m_grid_brush = QColor(50, 50, 50, 255);
     QBrush                              m_legend_brush = QColor(100, 100, 100, 255);
     ValueFormatter                      m_horizontal_legend_formatter;
     ValueFormatter                      m_vertical_legend_formatter;
     TooltipFormatter                    m_tooltip_formatter;
 
-    std::deque<foundation::Vector2d>    m_original_points;
-    std::deque<foundation::Vector2d>    m_points;
+    std::vector<foundation::Vector2d>   m_points;
+    std::vector<QVariant>               m_data;
 
-    foundation::AABB2d                  m_points_bbox;
-    foundation::Vector2d                m_rcp_points_bbox_extent;
     foundation::Vector2d                m_window_origin;
     foundation::Vector2d                m_window_size;
+    double                              m_rcp_horizontal_extent;
+    double                              m_rcp_vertical_extent;
 
     foundation::AABB2d compute_points_bbox() const;
 
@@ -151,7 +164,9 @@ class LineChart
 
     void set_curve_brush(const QBrush& brush);
     void set_shadow_brush(const QBrush& brush);
-    void set_draw_points(const bool draw_points);
+
+    void set_points_visible(const bool visible);
+    void set_points_highlightable(const bool highlightable);
 
     void draw_chart(QPainter& painter) const override;
 
@@ -161,17 +176,22 @@ class LineChart
 
     bool on_chart(
         const QPoint&   mouse_position,
-        size_t&         point_index) const override;
+        std::size_t&    point_index) const override;
 
   private:
     bool    m_shadow_enabled = false;
     QBrush  m_curve_brush = QColor(255, 255, 255, 255);
     QBrush  m_shadow_brush = QColor(30, 30, 30, 255);
-    bool    m_draw_points = true;
+    bool    m_points_visible = true;
+    bool    m_points_highlightable = true;
 
     void draw_lines(
         QPainter&       painter,
-        const QPoint&   shadow_offset = QPoint(0, 0)) const;
+        const QPointF&  shadow_offset = QPointF(0.0, 0.0)) const;
+
+    void draw_points(
+        QPainter&       painter,
+        const QPointF&  shadow_offset = QPointF(0.0, 0.0)) const;
 
     void draw_point_highlight(
         QPainter&       painter,

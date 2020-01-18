@@ -68,6 +68,9 @@ source_group ("project" FILES
 set (utility_sources
     utility/encryption.cpp
     utility/encryption.h
+    utility/interop.h
+    utility/miscellaneous.cpp
+    utility/miscellaneous.h
 )
 list (APPEND appleseed.qtcommon_sources
     ${utility_sources}
@@ -83,11 +86,8 @@ set (widgets_sources
     widgets/doubleslider.h
     widgets/foldablepanelwidget.cpp
     widgets/foldablepanelwidget.h
-    widgets/interop.h
     widgets/logwidget.cpp
     widgets/logwidget.h
-    widgets/miscellaneous.cpp
-    widgets/miscellaneous.h
     widgets/mousecoordinatestracker.cpp
     widgets/mousecoordinatestracker.h
     widgets/mousewheelfocuseventfilter.cpp

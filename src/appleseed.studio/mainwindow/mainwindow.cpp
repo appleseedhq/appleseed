@@ -44,9 +44,9 @@
 #include "utility/settingskeys.h"
 
 // appleseed.qtcommon headers.
-#include "widgets/interop.h"
+#include "utility/interop.h"
+#include "utility/miscellaneous.h"
 #include "widgets/logwidget.h"
-#include "widgets/miscellaneous.h"
 
 // appleseed.common headers.
 #include "application/application.h"

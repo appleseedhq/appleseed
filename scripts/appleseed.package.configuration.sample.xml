@@ -13,14 +13,17 @@
     <!-- The path to appleseed header files. -->
     <appleseed_headers_path>C:\dev\appleseed\src\appleseed</appleseed_headers_path>
 
+    <!-- The path to a Python 2.7 installation. -->
+    <python_path>C:\dev\windows-deps\python27</python_path>
+
     <!-- The path to the Qt runtime files. -->
     <qt_runtime_path>C:\dev\qt\5.12.2\msvc2017_64</qt_runtime_path>
 
     <!-- The path to the platform runtime files (Windows only). -->
     <platform_runtime_path>C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Redist\MSVC\14.16.27012\x64\Microsoft.VC141.CRT</platform_runtime_path>
 
-    <!-- The path to a Python 2.7 installation. -->
-    <python_path>C:\dev\windows-deps\python27</python_path>
+    <!-- The path to OpenSSL libraries (Windows only). -->
+    <openssl_path>C:\dev\windows-deps\openssl</openssl_path>
 
     <!-- The directory inside which the final archive file will be created. -->
     <package_output_path>C:\dev\appleseed\archives\releases</package_output_path>

@@ -37,7 +37,7 @@
 #include "debug/tests/testoutputitem.h"
 
 // appleseed.qtcommon headers.
-#include "widgets/miscellaneous.h"
+#include "utility/miscellaneous.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/test.h"

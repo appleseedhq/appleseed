@@ -33,8 +33,8 @@
 #include "mainwindow/project/tools.h"
 
 // appleseed.qtcommon headers.
+#include "utility/interop.h"
 #include "widgets/doubleslider.h"
-#include "widgets/interop.h"
 #include "widgets/mousewheelfocuseventfilter.h"
 
 // appleseed.foundation headers.

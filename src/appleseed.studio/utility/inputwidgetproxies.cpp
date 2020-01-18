@@ -31,7 +31,7 @@
 #include "inputwidgetproxies.h"
 
 // appleseed.qtcommon headers.
-#include "widgets/interop.h"
+#include "utility/interop.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/color.h"

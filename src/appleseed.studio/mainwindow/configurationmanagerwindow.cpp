@@ -34,7 +34,7 @@
 #include "ui_configurationmanagerwindow.h"
 
 // appleseed.qtcommon headers.
-#include "widgets/miscellaneous.h"
+#include "utility/miscellaneous.h"
 
 // Qt headers.
 #include <QShortcut>
