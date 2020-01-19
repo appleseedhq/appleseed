@@ -148,6 +148,7 @@ def make_writable(filepath):
     st = os.stat(filepath)
     os.chmod(filepath, st.st_mode | stat.S_IRUSR | stat.S_IWUSR)
 
+
 def merge_tree(src, dst, symlinks=False, ignore=None):
     names = os.listdir(src)
     if ignore is not None:
@@ -210,20 +211,19 @@ def create_mac_icon(image, icon_path):
     subprocess.check_call(['iconutil', '--convert', 'icns', icon_set, '-o', icon_path])
     safe_delete_directory(icon_set)
 
-def create_mac_app(staging_dir, app_path, icon_path):
 
+def create_mac_app(staging_dir, app_path, icon_path):
     # cleanup old app
     safe_delete_directory(app_path)
 
     contents = os.path.join(app_path, "Contents")
 
     shutil.move(staging_dir, contents)
-    # shutil.copytree(staging_dir, contents, symlinks=True)
 
-    resources = os.path.join(contents,"Resources")
+    resources = os.path.join(contents, "Resources")
     safe_make_directory(resources)
 
-    macos =  os.path.join(contents,"MacOS")
+    macos = os.path.join(contents, "MacOS")
     safe_make_directory(macos)
 
     # relative symlink for executable
@@ -252,8 +252,8 @@ def create_mac_app(staging_dir, app_path, icon_path):
         f.write(b'</dict>\n')
         f.write(b'</plist>\n')
 
-def create_mac_dmg(app_path, dmg_path, background_path, drive_icon_path):
 
+def create_mac_dmg(app_path, dmg_path, background_path, drive_icon_path):
     drive_icon = 'appleseed-drive.icns'
     create_mac_icon(drive_icon_path, drive_icon)
 
@@ -263,11 +263,10 @@ def create_mac_dmg(app_path, dmg_path, background_path, drive_icon_path):
         "icon": drive_icon,
         "format": "UDZO",
         "compression-level": 9,
-        "window": { "position": { "x": 100, "y": 100 },
-                    "size": { "width": 640, "height": 280 } },
+        "window": {"position": {"x": 100, "y": 100}, "size": {"width": 640, "height": 280}},
         "contents": [
-            { "x": 140, "y": 120, "type": "file", "path": app_path},
-            { "x": 500, "y": 120, "type": "link", "path": "/Applications" },
+            {"x": 140, "y": 120, "type": "file", "path": app_path},
+            {"x": 500, "y": 120, "type": "link", "path": "/Applications"},
         ]
     }
 
@@ -281,7 +280,7 @@ def create_mac_dmg(app_path, dmg_path, background_path, drive_icon_path):
 
     # use dmgbuild to create disk image
     # https://github.com/al45tair/dmgbuild
-    cmd = ['dmgbuild', '-s', settings_file , 'appleseed', dmg_path]
+    cmd = ['dmgbuild', '-s', settings_file, 'appleseed', dmg_path]
     subprocess.check_call(cmd)
 
     # cleanup
@@ -291,6 +290,7 @@ def create_mac_dmg(app_path, dmg_path, background_path, drive_icon_path):
 # -------------------------------------------------------------------------------------------------
 # Settings.
 # -------------------------------------------------------------------------------------------------
+
 
 class Settings:
 
@@ -799,7 +799,7 @@ class MacPackageBuilder(PackageBuilder):
                         self.__change_qt_framework_paths_in_binary(lib_path)
 
     def __change_library_paths_in_executables(self):
-        for bin_dir in ("appleseed/bin", "appleseed/python27/bin", "appleseed/python27/Frameworks/Python.framework/Versions/2.7/bin" ):
+        for bin_dir in ("appleseed/bin", "appleseed/python27/bin", "appleseed/python27/Frameworks/Python.framework/Versions/2.7/bin"):
             for dirpath, dirnames, filenames in os.walk(bin_dir):
                 for filename in filenames:
                     ext = os.path.splitext(filename)[1]
@@ -1034,7 +1034,6 @@ class MacPackageBuilder(PackageBuilder):
 
     def __get_qt_frameworks_for_file(self, filepath):
         libs = set()
-
         for lib in self.__iter_all_dependencies(filepath):
             if re.search(r"Qt.*\.framework", lib):
                 libs.add(lib)
@@ -1124,7 +1123,8 @@ class LinuxPackageBuilder(PackageBuilder):
         for dirpath, dirnames, filenames in os.walk(root_path):
             for filename in filenames:
                 ext = os.path.splitext(filename)[1]
-                if ext != ".py" and ext != ".conf" and not self.__is_shared_lib(filename):  # need to skip shared libs because we don't want to patch Qt plugins
+                # need to skip shared libs because we don't want to patch Qt plugins
+                if ext != ".py" and ext != ".conf" and not self.__is_shared_lib(filename):
                     self.run("patchelf --set-rpath '{0}' {1}".format(rpath, os.path.join(dirpath, filename)))
                 else:
                     trace("  Skipping {0}".format(filename))
@@ -1196,7 +1196,7 @@ def main():
     parser = argparse.ArgumentParser(description="build an appleseed package from sources")
 
     parser.add_argument("--nozip", help="do not build a final zip file. Files will be copied to staging directory only", action="store_true")
-    parser.add_argument("--noapp", help="do not build a MacOS app. Files will be stored in directory format only", action="store_true")
+    parser.add_argument("--noapp", help="do not build a macOS app. Files will be stored in directory format only", action="store_true")
 
     args = parser.parse_args()
 
@@ -1213,8 +1213,8 @@ def main():
     print("  - Make sure there are no obsolete binaries in sandbox/bin/ and sandbox/lib/")
     print("  - You may need to run this tool with sudo on Linux and macOS")
     print("  - On Linux, you may need to set $LD_LIBRARY_PATH to allow ldd(1) to find third party shared libraries")
-    print("  - On MacOS, you may need to set $DYLD_LIBRARY_PATH to allow script to find third party shared libraries")
-    print("  - You need to have dmgbuild installed and in $PATH on MacOS to build .dmg file: pip install dmgbuild")
+    print("  - On macOS, you may need to set $DYLD_LIBRARY_PATH to allow script to find third party shared libraries")
+    print("  - You need to have dmgbuild installed and in $PATH on macOS to build .dmg file: pip install dmgbuild")
     print("")
 
     settings = Settings()
