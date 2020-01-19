@@ -192,101 +192,6 @@ def merge_tree(src, dst, symlinks=False, ignore=None):
         raise Error(errors)
 
 
-def create_mac_icon(image, icon_path):
-    icon_set = "appleseed.iconset"
-    safe_make_directory(icon_set)
-
-    for size in (16, 32, 64, 128, 256, 1024, 2048):
-        if size < 1024:
-            name = "icon_{0}x{0}.png".format(size)
-            cmd = ['sips', '-z', str(size), str(size), image, '--out', os.path.join(icon_set, name)]
-            # pipe stderr to stdout to silence verbosity
-            subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-        if size > 16:
-            name = "icon_{0}x{0}@2x.png".format(size/2)
-            cmd = ['sips', '-z', str(size), str(size), image, '--out', os.path.join(icon_set, name)]
-            # pipe stderr to stdout to silence verbosity
-            subprocess.check_output(cmd, stderr=subprocess.STDOUT)
-
-    subprocess.check_call(['iconutil', '--convert', 'icns', icon_set, '-o', icon_path])
-    safe_delete_directory(icon_set)
-
-
-def create_mac_app(staging_dir, app_path, icon_path):
-    # cleanup old app
-    safe_delete_directory(app_path)
-
-    contents = os.path.join(app_path, "Contents")
-
-    shutil.move(staging_dir, contents)
-
-    resources = os.path.join(contents, "Resources")
-    safe_make_directory(resources)
-
-    macos = os.path.join(contents, "MacOS")
-    safe_make_directory(macos)
-
-    # relative symlink for executable
-    os.symlink('../bin/appleseed-studio', os.path.join(macos, 'appleseed'))
-
-    icon = os.path.join(resources, "appleseed.icns")
-    create_mac_icon(icon_path, icon)
-
-    with open(os.path.join(contents, "Info.plist"), 'wb') as f:
-        f.write(b'<?xml version="1.0" encoding="UTF-8"?>\n')
-        f.write(b'<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n')
-        f.write(b'<plist version="1.0">\n')
-        f.write(b'<dict>\n')
-        f.write(b'  <key>NSPrincipalClass</key>\n')
-        f.write(b'  <string>NSApplication</string>\n')
-        f.write(b'  <key>CFBundlePackageType</key>\n')
-        f.write(b'  <string>APPL</string>\n')
-        f.write(b'  <key>CFBundleExecutable</key>\n')
-        f.write(b'  <string>appleseed</string>\n')
-        f.write(b'  <key>CFBundleIconFile</key>\n')
-        f.write(b'  <string>appleseed.icns</string>\n')
-        f.write(b'  <key>CFBundleIdentifier</key>\n')
-        f.write(b'  <string>net.appleseedhq.appleseed</string>\n')
-        f.write(b'  <key>CFBundleShortVersionString</key>\n')
-        f.write(b'  <string>2.1.0</string>\n')
-        f.write(b'</dict>\n')
-        f.write(b'</plist>\n')
-
-
-def create_mac_dmg(app_path, dmg_path, background_path, drive_icon_path):
-    drive_icon = 'appleseed-drive.icns'
-    create_mac_icon(drive_icon_path, drive_icon)
-
-    settings = {
-        "title": "appleseed",
-        "background":  background_path,
-        "icon": drive_icon,
-        "format": "UDZO",
-        "compression-level": 9,
-        "window": {"position": {"x": 100, "y": 100}, "size": {"width": 640, "height": 280}},
-        "contents": [
-            {"x": 140, "y": 120, "type": "file", "path": app_path},
-            {"x": 500, "y": 120, "type": "link", "path": "/Applications"},
-        ]
-    }
-
-    settings_file = "settings.json"
-    with open(settings_file, 'wb') as f:
-        json.dump(settings, f)
-
-    output_dir = os.path.dirname(dmg_path)
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
-
-    # use dmgbuild to create disk image
-    # https://github.com/al45tair/dmgbuild
-    cmd = ['dmgbuild', '-s', settings_file, 'appleseed', dmg_path]
-    subprocess.check_call(cmd)
-
-    # cleanup
-    safe_delete_file(drive_icon)
-    safe_delete_file(settings_file)
-
 # -------------------------------------------------------------------------------------------------
 # Settings.
 # -------------------------------------------------------------------------------------------------
@@ -606,7 +511,7 @@ class PackageBuilder:
         elif not self.package_info.no_app:
             background_icon_path = os.path.join(self.settings.appleseed_path, "resources/logo/appleseed-drive-background.png")
             drive_icon_path = os.path.join(self.settings.appleseed_path, "resources/logo/appleseed-drive.png")
-            create_mac_dmg('appleseed.app', self.package_info.package_path, background_icon_path, drive_icon_path)
+            self._create_dmg('appleseed.app', self.package_info.package_path, background_icon_path, drive_icon_path)
         else:
             archive_util.make_tarball(package_base_path, "appleseed")
 
@@ -710,7 +615,7 @@ class MacPackageBuilder(PackageBuilder):
         os.rename("appleseed/bin/appleseed.studio", "appleseed/bin/appleseed-studio")
         if not self.package_info.no_app:
             icon_path = os.path.join(self.settings.appleseed_path, "resources/logo/appleseed-seeds-2048.png")
-            create_mac_app('appleseed', "appleseed.app", icon_path)
+            self.__create_app('appleseed', "appleseed.app", icon_path)
 
     def __add_dependencies_to_stage(self):
         progress("Mac-specific: Adding dependencies to staging directory")
@@ -1045,6 +950,99 @@ class MacPackageBuilder(PackageBuilder):
             if lib.startswith(prefix):
                 return True
         return False
+
+    def __create_icon(self, image, icon_path):
+        icon_set = "appleseed.iconset"
+        safe_make_directory(icon_set)
+
+        for size in (16, 32, 64, 128, 256, 1024, 2048):
+            if size < 1024:
+                name = "icon_{0}x{0}.png".format(size)
+                cmd = ['sips', '-z', str(size), str(size), image, '--out', os.path.join(icon_set, name)]
+                # pipe stderr to stdout to silence verbosity
+                subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+            if size > 16:
+                name = "icon_{0}x{0}@2x.png".format(size/2)
+                cmd = ['sips', '-z', str(size), str(size), image, '--out', os.path.join(icon_set, name)]
+                # pipe stderr to stdout to silence verbosity
+                subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+
+        subprocess.check_call(['iconutil', '--convert', 'icns', icon_set, '-o', icon_path])
+        safe_delete_directory(icon_set)
+
+    def __create_app(self, staging_dir, app_path, icon_path):
+        # cleanup old app
+        safe_delete_directory(app_path)
+
+        contents = os.path.join(app_path, "Contents")
+
+        shutil.move(staging_dir, contents)
+
+        resources = os.path.join(contents, "Resources")
+        safe_make_directory(resources)
+
+        macos = os.path.join(contents, "MacOS")
+        safe_make_directory(macos)
+
+        # relative symlink for executable
+        os.symlink('../bin/appleseed-studio', os.path.join(macos, 'appleseed'))
+
+        icon = os.path.join(resources, "appleseed.icns")
+        self.__create_icon(icon_path, icon)
+
+        with open(os.path.join(contents, "Info.plist"), 'wb') as f:
+            f.write(b'<?xml version="1.0" encoding="UTF-8"?>\n')
+            f.write(b'<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n')
+            f.write(b'<plist version="1.0">\n')
+            f.write(b'<dict>\n')
+            f.write(b'  <key>NSPrincipalClass</key>\n')
+            f.write(b'  <string>NSApplication</string>\n')
+            f.write(b'  <key>CFBundlePackageType</key>\n')
+            f.write(b'  <string>APPL</string>\n')
+            f.write(b'  <key>CFBundleExecutable</key>\n')
+            f.write(b'  <string>appleseed</string>\n')
+            f.write(b'  <key>CFBundleIconFile</key>\n')
+            f.write(b'  <string>appleseed.icns</string>\n')
+            f.write(b'  <key>CFBundleIdentifier</key>\n')
+            f.write(b'  <string>net.appleseedhq.appleseed</string>\n')
+            f.write(b'  <key>CFBundleShortVersionString</key>\n')
+            f.write(b'  <string>2.1.0</string>\n')
+            f.write(b'</dict>\n')
+            f.write(b'</plist>\n')
+
+    def _create_dmg(self, app_path, dmg_path, background_path, drive_icon_path):
+        drive_icon = 'appleseed-drive.icns'
+        self.__create_icon(drive_icon_path, drive_icon)
+
+        settings = {
+            "title": "appleseed",
+            "background":  background_path,
+            "icon": drive_icon,
+            "format": "UDZO",
+            "compression-level": 9,
+            "window": {"position": {"x": 100, "y": 100}, "size": {"width": 640, "height": 280}},
+            "contents": [
+                {"x": 140, "y": 120, "type": "file", "path": app_path},
+                {"x": 500, "y": 120, "type": "link", "path": "/Applications"},
+            ]
+        }
+
+        settings_file = "settings.json"
+        with open(settings_file, 'wb') as f:
+            json.dump(settings, f)
+
+        output_dir = os.path.dirname(dmg_path)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        # use dmgbuild to create disk image
+        # https://github.com/al45tair/dmgbuild
+        cmd = ['dmgbuild', '-s', settings_file, 'appleseed', dmg_path]
+        subprocess.check_call(cmd)
+
+        # cleanup
+        safe_delete_file(drive_icon)
+        safe_delete_file(settings_file)
 
 
 # -------------------------------------------------------------------------------------------------
