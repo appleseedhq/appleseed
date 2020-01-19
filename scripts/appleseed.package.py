@@ -604,9 +604,9 @@ class PackageBuilder:
         if os.name == 'nt':
             archive_util.make_zipfile(package_base_path, "appleseed")
         elif not self.package_info.no_app:
-            background_path = os.path.join(self.settings.appleseed_path, "resources/logo/appleseed-drive-background.png")
+            background_icon_path = os.path.join(self.settings.appleseed_path, "resources/logo/appleseed-drive-background.png")
             drive_icon_path = os.path.join(self.settings.appleseed_path, "resources/logo/appleseed-drive.png")
-            create_mac_dmg('appleseed.app', self.package_info.package_path, background_path, drive_icon_path)
+            create_mac_dmg('appleseed.app', self.package_info.package_path, background_icon_path, drive_icon_path)
         else:
             archive_util.make_tarball(package_base_path, "appleseed")
 
