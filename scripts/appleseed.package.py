@@ -989,7 +989,7 @@ class MacPackageBuilder(PackageBuilder):
                         # Try to handle other relative libs.
                         candidate = os.path.join(loader_path, fixed_lib)
                         if not os.path.exists(candidate):
-                            fatal("Unable to resolve lib {}", lib)
+                            fatal("Unable to resolve lib {}".format(lib))
                         lib = candidate
 
                 for path in search_paths:
