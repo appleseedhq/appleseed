@@ -348,7 +348,7 @@ namespace
                     if (m_pass_count > 1)
                         RENDERER_LOG_INFO("--- beginning rendering pass %s ---", pretty_uint(pass + 1).c_str());
 
-                    // Invoke the pre-pass callback if there is one.
+                    // Invoke on_pass_begin() on the pass callback if there is one.
                     if (m_pass_callback)
                     {
                         assert(!m_job_queue.has_scheduled_or_running_jobs());
@@ -384,7 +384,7 @@ namespace
                     for (auto tile_callback : m_tile_callbacks)
                         tile_callback->on_tiled_frame_end(&m_frame);
 
-                    // Invoke the post-pass callback if there is one.
+                    // Invoke on_pass_end() on the pass callback if there is one.
                     if (m_pass_callback)
                     {
                         assert(!m_job_queue.has_scheduled_or_running_jobs());
