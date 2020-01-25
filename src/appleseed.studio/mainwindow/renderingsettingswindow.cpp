@@ -172,8 +172,8 @@ namespace
         set_widget_width_for_text(widget, QString::number(value), margin, min_width);
     }
 
-    const int SpinBoxMargin = 28;
-    const int SpinBoxMinWidth = 40;
+    constexpr int SpinBoxMargin = 28;
+    constexpr int SpinBoxMinWidth = 40;
 }
 
 //
@@ -270,7 +270,10 @@ class RenderSettingsPanel
         spinbox->setRange(min, max);
         spinbox->setDecimals(decimals);
         spinbox->setSingleStep(step);
-        set_widget_width_for_value(spinbox, max, SpinBoxMargin, SpinBoxMinWidth);
+
+        QString text;
+        text.setNum(max, 'f', decimals);
+        set_widget_width_for_text(spinbox, text, SpinBoxMargin, SpinBoxMinWidth);
 
         new MouseWheelFocusEventFilter(spinbox);
 
@@ -1499,11 +1502,11 @@ namespace
 
             create_bounce_settings(sublayout, "radiance_estimation", "sppm.path_tracing_max_bounces");
 
-            QDoubleSpinBox* initial_radius = create_double_input("radiance_estimation.initial_radius", 0.001, 100.0, 3, 0.1, "%");
+            QDoubleSpinBox* initial_radius = create_double_input("radiance_estimation.initial_radius", 0.001, 100.0, 2, 0.1, "%");
             initial_radius->setToolTip(m_params_metadata.get_path("sppm.initial_radius.help"));
             sublayout->addRow("Initial Radius:", initial_radius);
 
-            QSpinBox* max_photons = create_integer_input("radiance_estimation.max_photons", 8, 1000000000, 50);
+            QSpinBox* max_photons = create_integer_input("radiance_estimation.max_photons", 8, 10000, 50);
             max_photons->setToolTip(m_params_metadata.get_path("sppm.max_photons_per_estimate.help"));
             sublayout->addRow("Max Photons:", max_photons);
 
