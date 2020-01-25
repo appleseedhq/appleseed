@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2020 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,50 +28,19 @@
 
 #pragma once
 
-// appleseed.renderer headers.
-#include "renderer/kernel/rendering/ishadingresultframebufferfactory.h"
-
 // appleseed.foundation headers.
-#include "foundation/math/aabb.h"
+#include "foundation/math/vector.h"
 
 // Standard headers.
-#include <cstddef>
 #include <vector>
-
-// Forward declarations.
-namespace renderer  { class Frame; }
-namespace renderer  { class ShadingResultFrameBuffer; }
 
 namespace renderer
 {
 
-class PermanentShadingResultFrameBufferFactory
-  : public IShadingResultFrameBufferFactory
-{
-  public:
-    // Constructor.
-    explicit PermanentShadingResultFrameBufferFactory(
-        const Frame&                frame);
+//
+// A vector of importons.
+//
 
-    // Destructor.
-    ~PermanentShadingResultFrameBufferFactory() override;
-
-    // Delete this instance.
-    void release() override;
-
-    void clear() override;
-
-    ShadingResultFrameBuffer* create(
-        const Frame&                frame,
-        const std::size_t           tile_x,
-        const std::size_t           tile_y,
-        const foundation::AABB2u&   tile_bbox) override;
-
-    void destroy(
-        ShadingResultFrameBuffer*   framebuffer) override;
-
-  private:
-    std::vector<ShadingResultFrameBuffer*> m_framebuffers;
-};
+using SPPMImportonVector = std::vector<foundation::Vector3f>;
 
 }   // namespace renderer

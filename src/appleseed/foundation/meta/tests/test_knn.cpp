@@ -45,6 +45,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <functional>
+#include <iterator>
 #include <vector>
 
 using namespace foundation;
@@ -460,5 +461,52 @@ TEST_SUITE(Foundation_Math_Knn_Query)
 
         auto make_query_point = [&rng, &points]() { return points[rand_int1(rng, 0, static_cast<std::int32_t>(points.size()) - 1)]; };
         EXPECT_TRUE(do_results_match_naive_algorithm(points, AnswerSize, QueryCount, make_query_point));
+    }
+}
+
+TEST_SUITE(Foundation_Math_Knn_AnyQuery)
+{
+    void generate_random_points(
+        MersenneTwister&            rng,
+        std::vector<Vector3d>&      points,
+        const size_t                count)
+    {
+        assert(points.empty());
+
+        points.reserve(count);
+
+        for (size_t i = 0; i < count; ++i)
+            points.push_back(rand_vector1<Vector3d>(rng));
+    }
+
+    TEST_CASE(Run_UniformPointDistribution_ReturnsIdenticalResultAsNaiveAlgorithm)
+    {
+        const size_t PointCount = 1000;
+        const size_t QueryCount = 1000;
+        const double QueryMaxSquareDistance = square(0.06);  // tuned such that about 50% of the queries result in a neighbor being found
+
+        MersenneTwister rng;
+
+        std::vector<Vector3d> points;
+        generate_random_points(rng, points, PointCount);
+
+        knn::Tree3d tree;
+        knn::Builder3d builder(tree);
+        builder.build<DefaultWallclockTimer>(&points[0], points.size());
+
+        knn::AnyQuery3d query(tree);
+
+        for (size_t i = 0; i < QueryCount; ++i)
+        {
+            const Vector3d q = rand_vector1<Vector3d>(rng);
+
+            const bool result = query.run(q, QueryMaxSquareDistance);
+
+            const bool ref_result =
+                std::any_of(std::begin(points), std::end(points),
+                    [&](const Vector3d& p) -> bool { return square_distance(p, q) <= QueryMaxSquareDistance; });
+
+            EXPECT_EQ(ref_result, result);
+        }
     }
 }

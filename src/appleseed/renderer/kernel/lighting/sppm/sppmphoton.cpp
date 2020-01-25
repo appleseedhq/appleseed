@@ -67,6 +67,13 @@ void SPPMPhotonVector::swap(SPPMPhotonVector& rhs)
     m_poly_photons.swap(rhs.m_poly_photons);
 }
 
+void SPPMPhotonVector::clear_release_memory()
+{
+    foundation::clear_release_memory(m_positions);
+    foundation::clear_release_memory(m_mono_photons);
+    foundation::clear_release_memory(m_poly_photons);
+}
+
 void SPPMPhotonVector::clear_keep_memory()
 {
     foundation::clear_keep_memory(m_positions);
@@ -105,7 +112,6 @@ void SPPMPhotonVector::push_back(
 void SPPMPhotonVector::append(const SPPMPhotonVector& rhs)
 {
     boost::mutex::scoped_lock lock(m_mutex);
-
     m_positions.insert(m_positions.end(), rhs.m_positions.begin(), rhs.m_positions.end());
     m_mono_photons.insert(m_mono_photons.end(), rhs.m_mono_photons.begin(), rhs.m_mono_photons.end());
     m_poly_photons.insert(m_poly_photons.end(), rhs.m_poly_photons.begin(), rhs.m_poly_photons.end());

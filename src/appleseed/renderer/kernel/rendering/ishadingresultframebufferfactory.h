@@ -47,10 +47,12 @@ class IShadingResultFrameBufferFactory
   : public foundation::IUnknown
 {
   public:
+    virtual void clear() = 0;
+
     virtual ShadingResultFrameBuffer* create(
         const Frame&                frame,
-        const size_t                tile_x,
-        const size_t                tile_y,
+        const std::size_t           tile_x,
+        const std::size_t           tile_y,
         const foundation::AABB2u&   tile_bbox) = 0;
 
     virtual void destroy(

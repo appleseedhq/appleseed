@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2020 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +31,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/distance.h"
-#include "foundation/math/knn/knn_answer.h"
 #include "foundation/math/knn/knn_statistics.h"
 #include "foundation/math/knn/knn_tree.h"
 #include "foundation/math/scalar.h"
@@ -51,7 +49,7 @@ namespace foundation {
 namespace knn {
 
 template <typename T, std::size_t N>
-class Query
+class AnyQuery
   : public NonCopyable
 {
   public:
@@ -60,20 +58,10 @@ class Query
 
     typedef Vector<T, N> VectorType;
     typedef Tree<T, N> TreeType;
-    typedef Answer<T> AnswerType;
 
-    Query(
-        const TreeType&     tree,
-        AnswerType&         answer);
+    explicit AnyQuery(const TreeType& tree);
 
-    void run(
-        const VectorType&   query_point
-#ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
-        , QueryStatistics&  stats
-#endif
-        ) const;
-
-    void run(
+    bool run(
         const VectorType&   query_point,
         const ValueType     query_max_square_distance
 #ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
@@ -82,10 +70,7 @@ class Query
         ) const;
 
 #ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
-    void run(
-        const VectorType&   query_point) const;
-
-    void run(
+    bool run(
         const VectorType&   query_point,
         const ValueType     query_max_square_distance) const;
 #endif
@@ -112,14 +97,13 @@ class Query
         }
     };
 
-    const TreeType&         m_tree;
-    AnswerType&             m_answer;
+    const TreeType& m_tree;
 };
 
-typedef Query<float, 2>  Query2f;
-typedef Query<double, 2> Query2d;
-typedef Query<float, 3>  Query3f;
-typedef Query<double, 3> Query3d;
+typedef AnyQuery<float, 2>  AnyQuery2f;
+typedef AnyQuery<double, 2> AnyQuery2d;
+typedef AnyQuery<float, 3>  AnyQuery3f;
+typedef AnyQuery<double, 3> AnyQuery3d;
 
 
 //
@@ -133,33 +117,13 @@ typedef Query<double, 3> Query3d;
 #endif
 
 template <typename T, std::size_t N>
-inline Query<T, N>::Query(
-    const TreeType&         tree,
-    AnswerType&             answer)
+inline AnyQuery<T, N>::AnyQuery(const TreeType& tree)
   : m_tree(tree)
-  , m_answer(answer)
 {
 }
 
 template <typename T, std::size_t N>
-inline void Query<T, N>::run(
-    const VectorType&       query_point
-#ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
-    , QueryStatistics&      stats
-#endif
-    ) const
-{
-    run(
-        query_point,
-        std::numeric_limits<ValueType>::max()
-#ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
-        , stats
-#endif
-        );
-}
-
-template <typename T, std::size_t N>
-inline void Query<T, N>::run(
+inline bool AnyQuery<T, N>::run(
     const VectorType&       query_point,
     const ValueType         query_max_square_distance
 #ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
@@ -169,8 +133,6 @@ inline void Query<T, N>::run(
 {
     assert(!m_tree.empty());
 
-    m_answer.clear();
-
     FOUNDATION_KNN_QUERY_STATS(++stats.m_query_count);
     FOUNDATION_KNN_QUERY_STATS(std::size_t fetched_node_count = 0);
     FOUNDATION_KNN_QUERY_STATS(std::size_t visited_leaf_count = 0);
@@ -178,10 +140,9 @@ inline void Query<T, N>::run(
 
     const VectorType* APPLESEED_RESTRICT points = &m_tree.m_points.front();
     const NodeType* APPLESEED_RESTRICT root_node = &m_tree.m_nodes.front();
-    const std::size_t max_answer_size = m_answer.m_max_size;
     const NodeType* APPLESEED_RESTRICT node;
 
-    const std::size_t IdealLeafSize = 10;
+    const std::size_t IdealLeafSize = 40;
 
     //
     // Step 1:
@@ -213,16 +174,8 @@ inline void Query<T, N>::run(
         FOUNDATION_KNN_QUERY_STATS(++fetched_node_count);
 
         // Stop at the parent node if the child node contains too few points.
-        if (follow_node->get_point_count() < max_answer_size)
-        {
-            // That said, there is no point in choosing the current (parent) node over the
-            // child node since the sibling child node is too far anyway. We're better off
-            // choosing the child node even if it doesn't contain enough points.
-            // todo: it doesn't look like this has any positive (or negative) effect.
-            // if (square(split_dist) > query_max_square_distance)
-            //     node = follow_node;
+        if (follow_node->get_point_count() < IdealLeafSize)
             break;
-        }
 
         // Continue with the child node.
         node = follow_node;
@@ -231,20 +184,16 @@ inline void Query<T, N>::run(
     //
     // Step 2:
     //
-    //   Collect all the points in this node (if it's a leaf node) or below this node
-    //   (if it's an interior node) and compute an initial maximum search distance.
+    //   Check if one of the points in this node (if it's a leaf node) or below this
+    //   node (if it's an interior node) is within the query distance.
     //
-
-    ValueType max_square_dist(0.0);
 
     {
         FOUNDATION_KNN_QUERY_STATS(++visited_leaf_count);
 
-        std::size_t point_index = node->get_point_index();
-        const VectorType* APPLESEED_RESTRICT point_ptr = points + point_index;
+        const VectorType* APPLESEED_RESTRICT point_ptr = points + node->get_point_index();
         const VectorType* APPLESEED_RESTRICT point_end = point_ptr + node->get_point_count();
 
-        // First, we fill up the answer like an array.
         while (point_ptr < point_end)
         {
             FOUNDATION_KNN_QUERY_STATS(++tested_point_count);
@@ -253,47 +202,12 @@ inline void Query<T, N>::run(
 
             if (square_dist <= query_max_square_distance)
             {
-                m_answer.array_insert(point_index, square_dist);
+                FOUNDATION_KNN_QUERY_STATS(stats.m_fetched_nodes.insert(fetched_node_count));
+                FOUNDATION_KNN_QUERY_STATS(stats.m_visited_leaves.insert(visited_leaf_count));
+                FOUNDATION_KNN_QUERY_STATS(stats.m_tested_points.insert(tested_point_count));
 
-                if (max_square_dist < square_dist)
-                    max_square_dist = square_dist;
-
-                ++point_index;
-
-                if (m_answer.m_size == max_answer_size)
-                    break;
-
-                continue;
+                return true;
             }
-
-            ++point_index;
-        }
-
-        if (m_answer.m_size == max_answer_size)
-        {
-            // The answer is full, so we transform it into a heap.
-            m_answer.make_heap();
-
-            // Then, we insert the remaining points into the answer.
-            while (point_ptr < point_end)
-            {
-                FOUNDATION_KNN_QUERY_STATS(++tested_point_count);
-
-                const ValueType square_dist = square_distance(*point_ptr++, query_point);
-
-                if (square_dist < max_square_dist)
-                {
-                    m_answer.heap_insert(point_index, square_dist);
-                    max_square_dist = m_answer.top().m_square_dist;
-                }
-
-                ++point_index;
-            }
-        }
-        else
-        {
-            // We ran out of points.
-            max_square_dist = query_max_square_distance;
         }
     }
 
@@ -339,12 +253,12 @@ inline void Query<T, N>::run(
         FOUNDATION_KNN_QUERY_STATS(++fetched_node_count);
 
         // Like in the initial step, we stop as soon as we reached a node with enough points.
-        if (follow_node->get_point_count() < max_answer_size)
+        if (follow_node->get_point_count() < IdealLeafSize)
             break;
 
         // Push the node that we don't visit now to the node stack.
         const ValueType square_split_dist = square(split_dist);
-        if (square_split_dist < max_square_dist)
+        if (square_split_dist < query_max_square_distance)
         {
             VectorType dvec(0.0);
             dvec[split_dim] = split_dist;
@@ -381,7 +295,7 @@ inline void Query<T, N>::run(
         --node_stack_size;
 
         const NodeEntry* top_entry = node_stack + node_stack_size;
-        if (top_entry->m_dvec_square_norm >= max_square_dist)
+        if (top_entry->m_dvec_square_norm >= query_max_square_distance)
             continue;
 
         node = top_entry->m_node;
@@ -410,7 +324,7 @@ inline void Query<T, N>::run(
                 break;
 
             // Push the node that we don't visit now to the node stack.
-            if (square(split_dist) < max_square_dist)
+            if (square(split_dist) < query_max_square_distance)
             {
                 VectorType dvec = parent_dvec;
                 dvec[split_dim] = split_dist;
@@ -436,8 +350,7 @@ inline void Query<T, N>::run(
 
         FOUNDATION_KNN_QUERY_STATS(++visited_leaf_count);
 
-        std::size_t point_index = node->get_point_index();
-        const VectorType* APPLESEED_RESTRICT point_ptr = points + point_index;
+        const VectorType* APPLESEED_RESTRICT point_ptr = points + node->get_point_index();
         const VectorType* APPLESEED_RESTRICT point_end = point_ptr + node->get_point_count();
 
         while (point_ptr < point_end)
@@ -446,23 +359,14 @@ inline void Query<T, N>::run(
 
             const ValueType square_dist = square_distance(*point_ptr++, query_point);
 
-            if (square_dist < max_square_dist)
+            if (square_dist <= query_max_square_distance)
             {
-                if (m_answer.m_size == max_answer_size)
-                {
-                    m_answer.heap_insert(point_index, square_dist);
-                    max_square_dist = m_answer.top().m_square_dist;
-                }
-                else
-                {
-                    m_answer.array_insert(point_index, square_dist);
+                FOUNDATION_KNN_QUERY_STATS(stats.m_fetched_nodes.insert(fetched_node_count));
+                FOUNDATION_KNN_QUERY_STATS(stats.m_visited_leaves.insert(visited_leaf_count));
+                FOUNDATION_KNN_QUERY_STATS(stats.m_tested_points.insert(tested_point_count));
 
-                    if (m_answer.m_size == max_answer_size)
-                        m_answer.make_heap();
-                }
+                return true;
             }
-
-            ++point_index;
         }
     }
 
@@ -471,25 +375,19 @@ inline void Query<T, N>::run(
     FOUNDATION_KNN_QUERY_STATS(stats.m_fetched_nodes.insert(fetched_node_count));
     FOUNDATION_KNN_QUERY_STATS(stats.m_visited_leaves.insert(visited_leaf_count));
     FOUNDATION_KNN_QUERY_STATS(stats.m_tested_points.insert(tested_point_count));
+
+    return false;
 }
 
 #ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
 
 template <typename T, std::size_t N>
-inline void Query<T, N>::run(
-    const VectorType&       query_point) const
-{
-    QueryStatistics stats;
-    run(query_point, stats);
-}
-
-template <typename T, std::size_t N>
-inline void Query<T, N>::run(
+inline bool AnyQuery<T, N>::run(
     const VectorType&       query_point,
     const ValueType         query_max_square_distance) const
 {
     QueryStatistics stats;
-    run(query_point, query_max_square_distance, stats);
+    return run(query_point, query_max_square_distance, stats);
 }
 
 #endif

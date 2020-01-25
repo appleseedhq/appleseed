@@ -144,7 +144,7 @@ namespace
                 0,                          // number of samples -- unknown
                 instance);                  // initial instance number
 
-            for (size_t i = 0; i < m_sample_count; ++i)
+            for (size_t i = 0, e = m_sample_count; i < e; ++i)
             {
                 // Generate a uniform sample in [0,1)^2.
                 const Vector2f s =

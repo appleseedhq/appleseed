@@ -33,9 +33,6 @@
 #include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/kernel/lighting/sppm/sppmparameters.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace renderer      { class BackwardLightSampler; }
@@ -58,7 +55,7 @@ class SPPMLightingEngineFactory
 
     // Constructor.
     SPPMLightingEngineFactory(
-        const SPPMPassCallback&         pass_callback,
+        SPPMPassCallback&               pass_callback,
         const ForwardLightSampler&      forward_light_sampler,
         const BackwardLightSampler&     backward_light_sampler,
         const SPPMParameters&           params);
@@ -70,10 +67,10 @@ class SPPMLightingEngineFactory
     ILightingEngine* create() override;
 
   private:
-    const SPPMParameters            m_params;
-    const SPPMPassCallback&         m_pass_callback;
-    const ForwardLightSampler&      m_forward_light_sampler;
-    const BackwardLightSampler&     m_backward_light_sampler;
+    SPPMPassCallback&                   m_pass_callback;
+    const ForwardLightSampler&          m_forward_light_sampler;
+    const BackwardLightSampler&         m_backward_light_sampler;
+    const SPPMParameters                m_params;
 };
 
 }   // namespace renderer

@@ -36,9 +36,12 @@
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/lighting/sppm/sppmimporton.h"
+#include "renderer/kernel/lighting/sppm/sppmlightingengineworkingset.h"
 #include "renderer/kernel/lighting/sppm/sppmpasscallback.h"
 #include "renderer/kernel/lighting/sppm/sppmphoton.h"
 #include "renderer/kernel/lighting/sppm/sppmphotonmap.h"
+#include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
@@ -55,6 +58,7 @@
 #include "foundation/math/population.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/bitmask.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/statistics.h"
 
@@ -63,9 +67,9 @@
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 
 // Forward declarations.
-namespace renderer  { class PixelContext; }
 namespace renderer  { class TextureCache; }
 
 using namespace foundation;
@@ -125,15 +129,16 @@ namespace
     {
       public:
         SPPMLightingEngine(
-            const SPPMPassCallback&         pass_callback,
+            SPPMPassCallback&               pass_callback,
             const ForwardLightSampler&      forward_light_sampler,
             const BackwardLightSampler&     backward_light_sampler,
-            const SPPMParameters&   params)
-          : m_params(params)
-          , m_pass_callback(pass_callback)
+            const SPPMParameters&           params)
+          : m_pass_callback(pass_callback)
           , m_forward_light_sampler(forward_light_sampler)
           , m_backward_light_sampler(backward_light_sampler)
+          , m_params(params)
           , m_path_count(0)
+          , m_working_set(pass_callback.acquire_working_set())
           , m_answer(m_params.m_max_photons_per_estimate)
         {
         }
@@ -149,12 +154,12 @@ namespace
         }
 
         void compute_lighting(
-            SamplingContext&            sampling_context,
-            const PixelContext&         pixel_context,
-            const ShadingContext&       shading_context,
-            const ShadingPoint&         shading_point,
-            ShadingComponents&          radiance,               // output radiance, in W.sr^-1.m^-2
-            AOVComponents&              aov_components) override
+            SamplingContext&                sampling_context,
+            const PixelContext&             pixel_context,
+            const ShadingContext&           shading_context,
+            const ShadingPoint&             shading_point,
+            ShadingComponents&              radiance,                       // output radiance, in W.sr^-1.m^-2
+            AOVComponents&                  aov_components) override
         {
             if (m_params.m_view_photons)
             {
@@ -168,26 +173,28 @@ namespace
                 m_forward_light_sampler,
                 m_backward_light_sampler,
                 sampling_context,
+                pixel_context,
                 shading_context,
                 shading_point.get_scene(),
+                m_working_set,
                 m_answer,
                 radiance);
 
             VolumeVisitor volume_visitor;
 
-            PathTracer<PathVisitor, VolumeVisitor, false> path_tracer(     // false = not adjoint
+            PathTracer<PathVisitor, VolumeVisitor, false> path_tracer(  // false = not adjoint
                 path_visitor,
                 volume_visitor,
                 m_params.m_path_tracing_rr_min_path_length,
                 m_params.m_path_tracing_max_bounces,
-                ~size_t(0), // max diffuse bounces
-                ~size_t(0), // max glossy bounces
-                ~size_t(0), // max specular bounces
-                ~size_t(0), // max volume bounces
-                false,      // don't clamp roughness
+                ~std::size_t(0),            // max diffuse bounces
+                ~std::size_t(0),            // max glossy bounces
+                ~std::size_t(0),            // max specular bounces
+                ~std::size_t(0),            // max volume bounces
+                false,                      // don't clamp roughness
                 shading_context.get_max_iterations());
 
-            const size_t path_length =
+            const std::size_t path_length =
                 path_tracer.trace(
                     sampling_context,
                     shading_context,
@@ -208,25 +215,29 @@ namespace
         }
 
       private:
-        const SPPMParameters            m_params;
-        const SPPMPassCallback&         m_pass_callback;
-        const ForwardLightSampler&      m_forward_light_sampler;
-        const BackwardLightSampler&     m_backward_light_sampler;
-        std::uint64_t                   m_path_count;
-        Population<std::uint64_t>       m_path_length;
-        knn::Answer<float>              m_answer;
+        const SPPMPassCallback&             m_pass_callback;
+        const ForwardLightSampler&          m_forward_light_sampler;
+        const BackwardLightSampler&         m_backward_light_sampler;
+        const SPPMParameters                m_params;
+        std::uint64_t                       m_path_count;
+        Population<std::uint64_t>           m_path_length;
+        SPPMLightingEngineWorkingSet&       m_working_set;
+        knn::Answer<float>                  m_answer;
 
+        // todo: move out of this class.
         struct PathVisitor
         {
-            const SPPMParameters&           m_params;
-            const SPPMPassCallback&         m_pass_callback;
-            const ForwardLightSampler&      m_forward_light_sampler;
-            const BackwardLightSampler&     m_backward_light_sampler;
-            SamplingContext&                m_sampling_context;
-            const ShadingContext&           m_shading_context;
-            const EnvironmentEDF*           m_env_edf;
-            knn::Answer<float>&             m_answer;
-            ShadingComponents&              m_path_radiance;
+            const SPPMParameters&               m_params;
+            const SPPMPassCallback&             m_pass_callback;
+            const ForwardLightSampler&          m_forward_light_sampler;
+            const BackwardLightSampler&         m_backward_light_sampler;
+            SamplingContext&                    m_sampling_context;
+            const PixelContext&                 m_pixel_context;
+            const ShadingContext&               m_shading_context;
+            const EnvironmentEDF*               m_env_edf;
+            SPPMLightingEngineWorkingSet&       m_working_set;
+            knn::Answer<float>&                 m_answer;
+            ShadingComponents&                  m_path_radiance;
 
             PathVisitor(
                 const SPPMParameters&           params,
@@ -234,8 +245,10 @@ namespace
                 const ForwardLightSampler&      forward_light_sampler,
                 const BackwardLightSampler&     backward_light_sampler,
                 SamplingContext&                sampling_context,
+                const PixelContext&             pixel_context,
                 const ShadingContext&           shading_context,
                 const Scene&                    scene,
+                SPPMLightingEngineWorkingSet&   working_set,
                 knn::Answer<float>&             answer,
                 ShadingComponents&              path_radiance)
               : m_params(params)
@@ -243,22 +256,24 @@ namespace
               , m_forward_light_sampler(forward_light_sampler)
               , m_backward_light_sampler(backward_light_sampler)
               , m_sampling_context(sampling_context)
+              , m_pixel_context(pixel_context)
               , m_shading_context(shading_context)
               , m_env_edf(scene.get_environment()->get_environment_edf())
+              , m_working_set(working_set)
               , m_answer(answer)
               , m_path_radiance(path_radiance)
             {
             }
 
             void on_first_diffuse_bounce(
-                const PathVertex&           vertex,
-                const Spectrum&             albedo)
+                const PathVertex&               vertex,
+                const Spectrum&                 albedo)
             {
             }
 
             bool accept_scattering(
-                const ScatteringMode::Mode  prev_mode,
-                const ScatteringMode::Mode  next_mode) const
+                const ScatteringMode::Mode      prev_mode,
+                const ScatteringMode::Mode      next_mode) const
             {
                 assert(next_mode != ScatteringMode::None);
 
@@ -273,68 +288,118 @@ namespace
             {
                 assert(vertex.m_prev_mode != ScatteringMode::None);
 
-                // Can't look up the environment if there's no environment EDF.
-                if (m_env_edf == nullptr)
-                    return;
+                // Don't compute lighting in the first pass if importons are enabled.
+                if (!m_params.m_enable_importons || m_pass_callback.get_pass_number() > 0)
+                {
+                    // Can't look up the environment if there's no environment EDF.
+                    if (m_env_edf == nullptr)
+                        return;
 
-                // When IBL is disabled, only specular reflections should contribute here.
-                if (!m_params.m_enable_ibl && vertex.m_prev_mode != ScatteringMode::Specular)
-                    return;
+                    // When IBL is disabled, only specular reflections should contribute here.
+                    if (!m_params.m_enable_ibl && vertex.m_prev_mode != ScatteringMode::Specular)
+                        return;
 
-                // Evaluate the environment EDF.
-                Spectrum env_radiance(Spectrum::Illuminance);
-                float env_prob;
-                m_env_edf->evaluate(
-                    m_shading_context,
-                    -Vector3f(vertex.m_outgoing.get_value()),
-                    env_radiance,
-                    env_prob);
+                    // Evaluate the environment EDF.
+                    Spectrum env_radiance(Spectrum::Illuminance);
+                    float env_prob;
+                    m_env_edf->evaluate(
+                        m_shading_context,
+                        -Vector3f(vertex.m_outgoing.get_value()),
+                        env_radiance,
+                        env_prob);
 
-                // Optionally clamp secondary rays contribution.
-                if (m_params.m_path_tracing_has_max_ray_intensity && vertex.m_path_length > 1 && vertex.m_prev_mode != ScatteringMode::Specular)
-                    clamp_contribution(env_radiance, m_params.m_path_tracing_max_ray_intensity);
+                    // Optionally clamp secondary rays contribution.
+                    if (m_params.m_path_tracing_has_max_ray_intensity &&
+                        vertex.m_path_length > 1 &&
+                        vertex.m_prev_mode != ScatteringMode::Specular)
+                        clamp_contribution(env_radiance, m_params.m_path_tracing_max_ray_intensity);
 
-                // Update the path radiance.
-                env_radiance *= vertex.m_throughput;
-                m_path_radiance.add_emission(
-                    vertex.m_path_length,
-                    vertex.m_aov_mode,
-                    env_radiance);
+                    // Update the path radiance.
+                    env_radiance *= vertex.m_throughput;
+                    m_path_radiance.add_emission(
+                        vertex.m_path_length,
+                        vertex.m_aov_mode,
+                        env_radiance);
+                }
             }
 
             void on_hit(const PathVertex& vertex)
             {
-                DirectShadingComponents vertex_radiance;
-
-                if (vertex.m_bsdf)
+                if (m_params.m_enable_importons && m_pass_callback.get_pass_number() == 0)
                 {
-                    // Direct lighting.
-                    if (m_params.m_dl_mode == SPPMParameters::RayTraced)
-                        add_direct_lighting_contribution(vertex, vertex_radiance);
-
-                    if (!vertex.m_bsdf->is_purely_specular())
+                    // Importons are enabled and this is the importon tracing pass: don't compute any lighting,
+                    // instead render a grid of dots to illustrate the fact that we are only tracing importons.
+                    if (vertex.m_path_length == 1)
                     {
-                        // Lighting from photon map.
-                        add_photon_map_lighting_contribution(vertex, vertex_radiance);
+                        // The point (pi.x, pi.y) is on the lattice with direction vectors (U, V)
+                        // if there is an integer solution (p, q) to the following linear system:
+                        //   U.x * p + V.x * q = pi.x
+                        //   U.y * p + V.y * q = pi.y
+                        const Vector2i U(2, 3);
+                        const Vector2i V(3, -2);
+                        constexpr int Scale = 1;
+                        const int denom = std::abs(U.x * V.y - U.y * V.x) * Scale;
+                        const Vector2i& pi = m_pixel_context.get_pixel_coords();
+                        const int p_num = std::abs(U.x * pi.y - U.y * pi.x);
+                        const int q_num = std::abs(V.y * pi.x - V.x * pi.y);
+                        const bool on_lattice = p_num % denom == 0 && q_num % denom == 0;
+                        m_path_radiance.m_beauty.set(on_lattice ? 0.8f : 0.0f);
                     }
                 }
-
-                // Emitted light.
-                if (vertex.m_edf && vertex.m_cos_on > 0.0)
+                else
                 {
-                    Spectrum emitted;
-                    vertex.compute_emitted_radiance(m_shading_context, emitted);
-                    vertex_radiance.m_emission += emitted;
-                    vertex_radiance.m_beauty += emitted;
+                    // Importons are disabled, or they are enabled and this is not the importon tracing pass:
+                    // perform lighting computations as usual.
+                    DirectShadingComponents vertex_radiance;
+
+                    if (vertex.m_bsdf)
+                    {
+                        // Direct lighting.
+                        if (m_params.m_dl_mode == SPPMParameters::RayTraced)
+                            add_direct_lighting_contribution(vertex, vertex_radiance);
+
+                        if (!vertex.m_bsdf->is_purely_specular())
+                        {
+                            // Lighting from photon map.
+                            add_photon_map_lighting_contribution(vertex, vertex_radiance);
+                        }
+                    }
+
+                    // Emitted light.
+                    if (vertex.m_edf && vertex.m_cos_on > 0.0)
+                    {
+                        Spectrum emitted;
+                        vertex.compute_emitted_radiance(m_shading_context, emitted);
+                        vertex_radiance.m_emission += emitted;
+                        vertex_radiance.m_beauty += emitted;
+                    }
+
+                    // Optionally clamp secondary rays contribution.
+                    if (m_params.m_path_tracing_has_max_ray_intensity &&
+                        vertex.m_path_length > 1 &&
+                        vertex.m_prev_mode != ScatteringMode::Specular)
+                        clamp_contribution(vertex_radiance, m_params.m_path_tracing_max_ray_intensity);
+
+                    // Update the path radiance.
+                    vertex_radiance *= vertex.m_throughput;
+                    m_path_radiance.add(vertex.m_path_length, vertex.m_aov_mode, vertex_radiance);
                 }
 
-                // Optionally clamp secondary rays contribution.
-                if (m_params.m_path_tracing_has_max_ray_intensity && vertex.m_path_length > 1 && vertex.m_prev_mode != ScatteringMode::Specular)
-                    clamp_contribution(vertex_radiance, m_params.m_path_tracing_max_ray_intensity);
-
-                // Update the path radiance.
-                vertex_radiance *= vertex.m_throughput;
-                m_path_radiance.add(vertex.m_path_length, vertex.m_aov_mode, vertex_radiance);
+                // Create and store an importon if importons are enabled and no importon has yet been created
+                // for that pixel. Storing importons even on all surfaces, including specular ones where no
+                // photon density estimation takes place, turns the importon cloud into a faithful and complete
+                // representation of the visible / reachable surfaces of the scene. This allows to use the
+                // bounding box of the importon cloud as an automatic photon target if the user doesn't provide
+                // any photon targets of his own.
+                if (m_params.m_enable_importons)
+                {
+                    const Vector2u pixel_coords(m_pixel_context.get_pixel_coords());
+                    if (!m_working_set.m_importon_mask->is_set(pixel_coords.x, pixel_coords.y))
+                    {
+                        m_working_set.m_importons.push_back(Vector3f(vertex.get_point()));
+                        m_working_set.m_importon_mask->set(pixel_coords.x, pixel_coords.y);
+                    }
+                }
             }
 
             void on_scatter(PathVertex& vertex)
@@ -342,20 +407,20 @@ namespace
             }
 
             void add_direct_lighting_contribution(
-                const PathVertex&           vertex,
-                DirectShadingComponents&    vertex_radiance)
+                const PathVertex&               vertex,
+                DirectShadingComponents&        vertex_radiance)
             {
                 DirectShadingComponents dl_radiance;
 
-                const size_t light_sample_count =
-                    stochastic_cast<size_t>(
+                const std::size_t light_sample_count =
+                    stochastic_cast<std::size_t>(
                         m_sampling_context,
                         m_params.m_dl_light_sample_count);
 
                 if (light_sample_count == 0)
                     return;
 
-                const size_t bsdf_sample_count = light_sample_count;
+                const std::size_t bsdf_sample_count = light_sample_count;
 
                 const BSDFSampler bsdf_sampler(
                     *vertex.m_bsdf,
@@ -392,8 +457,8 @@ namespace
             }
 
             void add_photon_map_lighting_contribution(
-                const PathVertex&           vertex,
-                DirectShadingComponents&    vertex_radiance)
+                const PathVertex&               vertex,
+                DirectShadingComponents&        vertex_radiance)
             {
                 const SPPMPhotonMap& photon_map = m_pass_callback.get_photon_map();
 
@@ -407,7 +472,7 @@ namespace
                 // Find the nearby photons around the path vertex.
                 const knn::Query3f query(photon_map, m_answer);
                 query.run(point, radius * radius);
-                const size_t photon_count = m_answer.size();
+                const std::size_t photon_count = m_answer.size();
 
                 // Compute the square radius of the lookup disk.
                 float max_square_dist;
@@ -416,7 +481,7 @@ namespace
                 else
                 {
                     max_square_dist = 0.0f;
-                    for (size_t i = 0; i < photon_count; ++i)
+                    for (std::size_t i = 0; i < photon_count; ++i)
                     {
                         const float square_dist = m_answer.get(i).m_square_dist;
                         if (max_square_dist < square_dist)
@@ -455,15 +520,15 @@ namespace
             }
 
             void accumulate_mono_photons(
-                const PathVertex&       vertex,
-                const size_t            photon_count,
-                const float             rcp_max_square_dist,
-                Spectrum&               radiance)
+                const PathVertex&               vertex,
+                const std::size_t               photon_count,
+                const float                     rcp_max_square_dist,
+                Spectrum&                       radiance)
             {
                 const SPPMPhotonMap& photon_map = m_pass_callback.get_photon_map();
                 const Vector3f normal(vertex.get_geometric_normal());
 
-                for (size_t i = 0; i < photon_count; ++i)
+                for (std::size_t i = 0; i < photon_count; ++i)
                 {
                     // Retrieve the i'th photon.
                     const knn::Answer<float>::Entry& entry = m_answer.get(i);
@@ -530,15 +595,15 @@ namespace
             }
 
             void accumulate_poly_photons(
-                const PathVertex&       vertex,
-                const size_t            photon_count,
-                const float             rcp_max_square_dist,
-                Spectrum&               radiance)
+                const PathVertex&               vertex,
+                const std::size_t               photon_count,
+                const float                     rcp_max_square_dist,
+                Spectrum&                       radiance)
             {
                 const SPPMPhotonMap& photon_map = m_pass_callback.get_photon_map();
                 const Vector3f normal(vertex.get_geometric_normal());
 
-                for (size_t i = 0; i < photon_count; ++i)
+                for (std::size_t i = 0; i < photon_count; ++i)
                 {
                     // Retrieve the i'th photon.
                     const knn::Answer<float>::Entry& entry = m_answer.get(i);
@@ -604,6 +669,7 @@ namespace
             }
         };
 
+        // todo: move out of this class.
         struct VolumeVisitor
         {
             bool accept_scattering(
@@ -634,11 +700,11 @@ namespace
 
             radiance.set(0.0f);
 
-            const size_t photon_count = m_answer.size();
+            const std::size_t photon_count = m_answer.size();
 
             if (m_params.m_photon_type == SPPMParameters::Monochromatic)
             {
-                for (size_t i = 0; i < photon_count; ++i)
+                for (std::size_t i = 0; i < photon_count; ++i)
                 {
                     const knn::Answer<float>::Entry& photon = m_answer.get(i);
                     const SpectrumLine& flux =
@@ -648,7 +714,7 @@ namespace
             }
             else
             {
-                for (size_t i = 0; i < photon_count; ++i)
+                for (std::size_t i = 0; i < photon_count; ++i)
                 {
                     const knn::Answer<float>::Entry& photon = m_answer.get(i);
                     radiance += m_pass_callback.get_poly_photon(photon_map.remap(photon.m_index)).m_flux;
@@ -735,6 +801,16 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
                         Dictionary()
                             .insert("label", "Disabled")
                             .insert("help", "Do not estimate direct lighting"))));
+
+    metadata.dictionaries().insert(
+        "enable_importons",
+        Dictionary()
+            .insert("type", "bool")
+            .insert("default", "true")
+            .insert("label", "Enable Importons")
+            .insert("help",
+                "When checked, \"importons\" are traced to identify important parts of the scene, "
+                "and later on photons are only stored in these important parts"));
 
     metadata.dictionaries().insert(
         "photon_tracing_max_bounces",
@@ -828,7 +904,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
 }
 
 SPPMLightingEngineFactory::SPPMLightingEngineFactory(
-    const SPPMPassCallback&         pass_callback,
+    SPPMPassCallback&               pass_callback,
     const ForwardLightSampler&      forward_light_sampler,
     const BackwardLightSampler&     backward_light_sampler,
     const SPPMParameters&           params)
