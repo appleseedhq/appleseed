@@ -45,34 +45,43 @@ using namespace foundation;
 namespace renderer
 {
 
-void PermanentShadingResultFrameBufferFactory::release()
-{
-    delete this;
-}
-
 PermanentShadingResultFrameBufferFactory::PermanentShadingResultFrameBufferFactory(
     const Frame&                frame)
 {
-    const size_t tile_count_x = frame.image().properties().m_tile_count_x;
-    const size_t tile_count_y = frame.image().properties().m_tile_count_y;
+    const CanvasProperties& props = frame.image().properties();
+    const std::size_t tile_count_x = props.m_tile_count_x;
+    const std::size_t tile_count_y = props.m_tile_count_y;
 
     m_framebuffers.resize(tile_count_x * tile_count_y, nullptr);
 }
 
 PermanentShadingResultFrameBufferFactory::~PermanentShadingResultFrameBufferFactory()
 {
-    for (size_t i = 0; i < m_framebuffers.size(); ++i)
+    clear();
+}
+
+void PermanentShadingResultFrameBufferFactory::release()
+{
+    delete this;
+}
+
+void PermanentShadingResultFrameBufferFactory::clear()
+{
+    for (std::size_t i = 0, e = m_framebuffers.size(); i < e; ++i)
+    {
         delete m_framebuffers[i];
+        m_framebuffers[i] = nullptr;
+    }
 }
 
 ShadingResultFrameBuffer* PermanentShadingResultFrameBufferFactory::create(
     const Frame&                frame,
-    const size_t                tile_x,
-    const size_t                tile_y,
+    const std::size_t           tile_x,
+    const std::size_t           tile_y,
     const AABB2u&               tile_bbox)
 {
-    const size_t tile_count_x = frame.image().properties().m_tile_count_x;
-    const size_t index = tile_y * tile_count_x + tile_x;
+    const std::size_t tile_count_x = frame.image().properties().m_tile_count_x;
+    const std::size_t index = tile_y * tile_count_x + tile_x;
 
     if (m_framebuffers[index] == nullptr)
     {

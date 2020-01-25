@@ -97,6 +97,7 @@ namespace
 SPPMParameters::SPPMParameters(const ParamArray& params)
   : m_spectrum_mode(get_spectrum_mode(params))
   , m_sampling_mode(get_sampling_context_mode(params))
+  , m_pass_count(params.get_optional<size_t>("passes", 1))
   , m_photon_type(get_photon_type(params, "photon_type", "poly"))
   , m_dl_mode(get_mode(params, "dl_mode", "rt"))
   , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
@@ -104,6 +105,7 @@ SPPMParameters::SPPMParameters(const ParamArray& params)
   , m_light_photon_count(params.get_optional<size_t>("light_photons_per_pass", 1000000))
   , m_env_photon_count(params.get_optional<size_t>("env_photons_per_pass", 1000000))
   , m_photon_packet_size(params.get_optional<size_t>("photon_packet_size", 100000))
+  , m_enable_importons(params.get_optional<bool>("enable_importons", true))
   , m_photon_tracing_max_bounces(fixup_bounces(params.get_optional<int>("photon_tracing_max_bounces", -1)))
   , m_photon_tracing_rr_min_path_length(fixup_path_length(params.get_optional<size_t>("photon_tracing_rr_min_path_length", 6)))
   , m_path_tracing_max_bounces(fixup_bounces(params.get_optional<int>("path_tracing_max_bounces", -1)))
@@ -133,11 +135,13 @@ void SPPMParameters::print() const
         "sppm settings:\n"
         "  photon type                   %s\n"
         "  dl                            %s\n"
-        "  ibl                           %s",
+        "  ibl                           %s\n"
+        "  importons                     %s",
         m_photon_type == Monochromatic ? "monochromatic" : "polychromatic",
         m_dl_mode == RayTraced ? "ray traced" :
         m_dl_mode == SPPM ? "sppm" : "off",
-        m_enable_ibl ? "on" : "off");
+        m_enable_ibl ? "on" : "off",
+        m_enable_importons ? "on" : "off");
 
     RENDERER_LOG_INFO(
         "sppm photon tracing settings:\n"

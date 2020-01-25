@@ -273,6 +273,7 @@ source_group ("foundation\\math\\intersection" FILES
 )
 
 set (foundation_math_knn_sources
+    foundation/math/knn/knn_anyquery.h
     foundation/math/knn/knn_answer.h
     foundation/math/knn/knn_builder.h
     foundation/math/knn/knn_node.h
@@ -1181,8 +1182,12 @@ source_group ("renderer\\kernel\\lighting\\pt" FILES
 )
 
 set (renderer_kernel_lighting_sppm_sources
+    renderer/kernel/lighting/sppm/sppmimporton.h
+    renderer/kernel/lighting/sppm/sppmimportonmap.cpp
+    renderer/kernel/lighting/sppm/sppmimportonmap.h
     renderer/kernel/lighting/sppm/sppmlightingengine.cpp
     renderer/kernel/lighting/sppm/sppmlightingengine.h
+    renderer/kernel/lighting/sppm/sppmlightingengineworkingset.h
     renderer/kernel/lighting/sppm/sppmparameters.cpp
     renderer/kernel/lighting/sppm/sppmparameters.h
     renderer/kernel/lighting/sppm/sppmpasscallback.cpp

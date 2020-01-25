@@ -1363,19 +1363,21 @@ namespace
 
             create_photon_type_settings(layout);
             create_components_settings(layout);
+            create_importon_tracing_settings(layout);
             create_photon_tracing_settings(layout);
             create_radiance_estimation_settings(layout);
             create_advanced_settings(layout);
 
-            create_direct_link("lighting_components.ibl",                        "sppm.enable_ibl");
-            create_direct_link("lighting_components.caustics",                   "sppm.enable_caustics");
-            create_direct_link("photon_tracing.bounces.rr_start_bounce",         "sppm.photon_tracing_rr_min_path_length");
-            create_direct_link("photon_tracing.light_photons",                   "sppm.light_photons_per_pass");
-            create_direct_link("photon_tracing.env_photons",                     "sppm.env_photons_per_pass");
-            create_direct_link("radiance_estimation.bounces.rr_start_bounce",    "sppm.path_tracing_rr_min_path_length");
-            create_direct_link("radiance_estimation.initial_radius",             "sppm.initial_radius");
-            create_direct_link("radiance_estimation.max_photons",                "sppm.max_photons_per_estimate");
-            create_direct_link("radiance_estimation.alpha",                      "sppm.alpha");
+            create_direct_link("lighting_components.ibl",                       "sppm.enable_ibl");
+            create_direct_link("lighting_components.caustics",                  "sppm.enable_caustics");
+            create_direct_link("photon_tracing.importons",                      "sppm.enable_importons");
+            create_direct_link("photon_tracing.bounces.rr_start_bounce",        "sppm.photon_tracing_rr_min_path_length");
+            create_direct_link("photon_tracing.light_photons",                  "sppm.light_photons_per_pass");
+            create_direct_link("photon_tracing.env_photons",                    "sppm.env_photons_per_pass");
+            create_direct_link("radiance_estimation.bounces.rr_start_bounce",   "sppm.path_tracing_rr_min_path_length");
+            create_direct_link("radiance_estimation.initial_radius",            "sppm.initial_radius");
+            create_direct_link("radiance_estimation.max_photons",               "sppm.max_photons_per_estimate");
+            create_direct_link("radiance_estimation.alpha",                     "sppm.alpha");
 
             load_directly_linked_values(config);
 
@@ -1465,6 +1467,19 @@ namespace
 
             layout->addWidget(create_checkbox("lighting_components.ibl", "Image-Based Lighting"));
             layout->addWidget(create_checkbox("lighting_components.caustics", "Caustics"));
+        }
+
+        void create_importon_tracing_settings(QVBoxLayout* parent)
+        {
+            QGroupBox* groupbox = new QGroupBox("Importon Tracing");
+            parent->addWidget(groupbox);
+
+            QVBoxLayout* layout = new QVBoxLayout();
+            groupbox->setLayout(layout);
+
+            QCheckBox* enable_importons = create_checkbox("photon_tracing.importons", "Enable Importons");
+            enable_importons->setToolTip(m_params_metadata.get_path("sppm.enable_importons.help"));
+            layout->addWidget(enable_importons);
         }
 
         void create_photon_tracing_settings(QVBoxLayout* parent)

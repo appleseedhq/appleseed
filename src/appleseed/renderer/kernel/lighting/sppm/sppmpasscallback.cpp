@@ -33,14 +33,18 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/rendering/ishadingresultframebufferfactory.h"
 #include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/texturing/oiiotexturesystem.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/canvasproperties.h"
+#include "foundation/image/image.h"
 #include "foundation/math/hash.h"
 #include "foundation/utility/job/iabortswitch.h"
+#include "foundation/utility/memory.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -59,13 +63,14 @@ namespace renderer
 //
 
 SPPMPassCallback::SPPMPassCallback(
-    const Scene&                    scene,
-    const ForwardLightSampler&      light_sampler,
-    const TraceContext&             trace_context,
-    TextureStore&                   texture_store,
-    OIIOTextureSystem&              oiio_texture_system,
-    OSLShadingSystem&               shading_system,
-    const SPPMParameters&           params)
+    const Scene&                        scene,
+    const ForwardLightSampler&          light_sampler,
+    const TraceContext&                 trace_context,
+    TextureStore&                       texture_store,
+    OIIOTextureSystem&                  oiio_texture_system,
+    OSLShadingSystem&                   shading_system,
+    IShadingResultFrameBufferFactory&   shading_result_framebuffer_factory,
+    const SPPMParameters&               params)
   : m_params(params)
   , m_photon_tracer(
         scene,
@@ -75,6 +80,7 @@ SPPMPassCallback::SPPMPassCallback(
         oiio_texture_system,
         shading_system,
         params)
+  , m_shading_result_framebuffer_factory(shading_result_framebuffer_factory)
   , m_pass_number(0)
 {
     // Compute the initial lookup radius.
@@ -93,46 +99,123 @@ void SPPMPassCallback::release()
 }
 
 void SPPMPassCallback::on_pass_begin(
-    const Frame&            frame,
-    JobQueue&               job_queue,
-    IAbortSwitch&           abort_switch)
+    const Frame&                        frame,
+    JobQueue&                           job_queue,
+    IAbortSwitch&                       abort_switch)
 {
-    if (m_initial_lookup_radius > 0.0f)
-    {
-        RENDERER_LOG_INFO(
-            "sppm lookup radius is %f (%s of initial radius).",
-            m_lookup_radius,
-            pretty_percent(m_lookup_radius, m_initial_lookup_radius, 3).c_str());
-    }
-
     m_stopwatch.start();
 
-    // Create a new set of photons.
-    const std::uint32_t pass_hash = mix_uint32(frame.get_noise_seed(), static_cast<std::uint32_t>(m_pass_number));
-    m_photons.clear_keep_memory();
-    m_photon_tracer.trace_photons(
-        m_photons,
-        pass_hash,
-        job_queue,
-        abort_switch);
+    if (m_params.m_enable_importons)
+    {
+        if (m_pass_number == 0)
+            RENDERER_LOG_INFO("pass #" FMT_SIZE_T " is a pure importon tracing pass.", m_pass_number + 1);
+        else RENDERER_LOG_INFO("pass #" FMT_SIZE_T " is a combined rendering + importon tracing pass.", m_pass_number + 1);
 
-    // Stop there if rendering was aborted.
-    if (abort_switch.is_aborted())
-        return;
+        // If importons are enabled, the first pass was a pure importon tracing pass and the framebuffers
+        // are black but with a weight of 1. Clear the framebuffers before starting rendering for real.
+        if (m_pass_number == 1)
+            m_shading_result_framebuffer_factory.clear();
 
-    // Build a new photon map.
-    m_photon_map.reset(new SPPMPhotonMap(m_photons));
+        // Reset working sets.
+        for (std::unique_ptr<SPPMLightingEngineWorkingSet>& working_set : m_working_sets)
+        {
+            // Clear importon vector.
+            clear_keep_memory(working_set->m_importons);
+
+            // Create importon mask if necessary.
+            if (!working_set->m_importon_mask)
+            {
+                const CanvasProperties& props = frame.image().properties();
+                working_set->m_importon_mask.reset(new BitMask2(props.m_canvas_width, props.m_canvas_height));
+            }
+
+            // Clear importon mask.
+            working_set->m_importon_mask->clear();
+        }
+    }
+
+    // Don't trace photons in the first pass if importons are enabled.
+    if (!m_params.m_enable_importons || m_pass_number > 0)
+    {
+        // Clear photons.
+        m_photons.clear_keep_memory();
+
+        // Create a new set of photons.
+        const std::size_t effective_pass_number =
+            m_params.m_enable_importons ? m_pass_number - 1 : m_pass_number;
+        const std::uint32_t pass_hash = mix_uint32(frame.get_noise_seed(), static_cast<std::uint32_t>(effective_pass_number));
+        m_photon_tracer.trace_photons(
+            m_photons,
+            m_params.m_enable_importons && m_pass_number > 0 ? m_importon_map.get() : nullptr,
+            m_initial_lookup_radius,    // todo: adjust (make user-settable?)
+            pass_hash,
+            job_queue,
+            abort_switch);
+
+        // Stop there if rendering was aborted.
+        if (abort_switch.is_aborted())
+            return;
+
+        // Build a new photon map.
+        m_photon_map.reset(new SPPMPhotonMap(m_photons));
+
+        if (m_initial_lookup_radius > 0.0f)
+        {
+            RENDERER_LOG_INFO(
+                "sppm lookup radius is %f (%s of initial radius).",
+                m_lookup_radius,
+                pretty_percent(m_lookup_radius, m_initial_lookup_radius, 3).c_str());
+        }
+    }
 }
 
 void SPPMPassCallback::on_pass_end(
-    const Frame&            frame,
-    JobQueue&               job_queue,
-    IAbortSwitch&           abort_switch)
+    const Frame&                        frame,
+    JobQueue&                           job_queue,
+    IAbortSwitch&                       abort_switch)
 {
-    // Shrink the lookup radius for the next pass.
-    const float k = (m_pass_number + m_params.m_alpha) / (m_pass_number + 1);
-    assert(k <= 1.0);
-    m_lookup_radius *= std::sqrt(k);
+    // Don't prepare for the next pass on the last pass.
+    if (m_pass_number < m_params.m_pass_count - 1)
+    {
+        // Don't shrink lookup radius after the first pass if importons are enabled.
+        if (!m_params.m_enable_importons || m_pass_number > 0)
+        {
+            // Shrink the lookup radius for the next pass.
+            const std::size_t effective_pass_number =
+                m_params.m_enable_importons ? m_pass_number - 1 : m_pass_number;
+            const float k = (effective_pass_number + m_params.m_alpha) / (effective_pass_number + 1);
+            assert(k <= 1.0);
+            m_lookup_radius *= std::sqrt(k);
+        }
+
+        // Merge importon vectors and build importon map.
+        if (m_params.m_enable_importons)
+        {
+            // Count the total number of created importons.
+            std::size_t importon_count = 0;
+            for (std::unique_ptr<SPPMLightingEngineWorkingSet>& working_set : m_working_sets)
+                importon_count += working_set->m_importons.size();
+
+            // Allocate the cumulated importon vector.
+            SPPMImportonVector importons;
+            importons.reserve(importon_count);
+
+            // Copy importons into cumulated importon vector.
+            for (std::unique_ptr<SPPMLightingEngineWorkingSet>& working_set : m_working_sets)
+                importons.insert(std::end(importons), std::begin(working_set->m_importons), std::end(working_set->m_importons));
+
+            assert(importons.size() == importon_count);
+
+            RENDERER_LOG_DEBUG(
+                "%s importon%s created (%s).",
+                pretty_uint(importons.size()).c_str(),
+                importons.size() > 1 ? "s" : "",
+                pretty_size(importons.capacity() * sizeof(SPPMImportonVector::value_type)).c_str());
+
+            // Build a new importon map.
+            m_importon_map.reset(new SPPMImportonMap(importons));
+        }
+    }
 
     m_stopwatch.measure();
 
@@ -142,6 +225,12 @@ void SPPMPassCallback::on_pass_end(
         pretty_time(m_stopwatch.get_seconds()).c_str());
 
     ++m_pass_number;
+}
+
+SPPMLightingEngineWorkingSet& SPPMPassCallback::acquire_working_set()
+{
+    m_working_sets.emplace_back(new SPPMLightingEngineWorkingSet());
+    return *m_working_sets.back();
 }
 
 }   // namespace renderer

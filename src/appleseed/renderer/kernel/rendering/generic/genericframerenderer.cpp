@@ -346,7 +346,7 @@ namespace
                     }
 
                     if (m_pass_count > 1)
-                        RENDERER_LOG_INFO("--- beginning rendering pass %s ---", pretty_uint(pass + 1).c_str());
+                        RENDERER_LOG_INFO("--- beginning rendering pass #%s ---", pretty_uint(pass + 1).c_str());
 
                     // Invoke on_pass_begin() on the pass callback if there is one.
                     if (m_pass_callback)

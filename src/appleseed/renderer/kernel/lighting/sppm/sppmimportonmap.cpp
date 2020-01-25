@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2020 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,11 +27,10 @@
 //
 
 // Interface header.
-#include "sppmphotonmap.h"
+#include "sppmimportonmap.h"
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
-#include "renderer/kernel/lighting/sppm/sppmphoton.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/defaulttimers.h"
@@ -48,34 +46,33 @@ using namespace foundation;
 namespace renderer
 {
 
-SPPMPhotonMap::SPPMPhotonMap(SPPMPhotonVector& photons)
+SPPMImportonMap::SPPMImportonMap(SPPMImportonVector& importons)
 {
-    const size_t photon_count = photons.size();
+    const size_t importon_count = importons.size();
 
-    if (photon_count > 0)
+    if (importon_count > 0)
     {
         RENDERER_LOG_INFO(
-            "building sppm photon map from %s %s...",
-            pretty_uint(photon_count).c_str(),
-            photon_count > 1 ? "photons" : "photon");
+            "building sppm importon map from %s %s...",
+            pretty_uint(importon_count).c_str(),
+            importon_count > 1 ? "importons" : "importon");
 
         knn::Builder3f builder(*this);
-        builder.build_move_points<DefaultWallclockTimer>(photons.m_positions);
+        builder.build_move_points<DefaultWallclockTimer>(importons);
 
         Statistics statistics;
         statistics.insert_time("build time", builder.get_build_time());
-        statistics.insert_size("size", photons.get_memory_size());  // size without the photon positions since they were moved out
         statistics.merge(knn::TreeStatistics<knn::Tree3f>(*this));
 
         RENDERER_LOG_DEBUG("%s",
             StatisticsVector::make(
-                "sppm photon map statistics",
+                "sppm importon map statistics",
                 statistics).to_string().c_str());
     }
     else
     {
         RENDERER_LOG_WARNING(
-            "cannot build sppm photon map because no photon were stored by the photon tracing pass.");
+            "cannot build sppm importon map because no importon were stored.");
     }
 }
 
