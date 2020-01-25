@@ -140,7 +140,7 @@ bool RendererComponents::create()
     if (!create_tile_renderer_factory())
         return false;
 
-    if (!create_frame_renderer_factory())
+    if (!create_frame_renderer())
         return false;
 
     return true;
@@ -519,7 +519,7 @@ bool RendererComponents::create_tile_renderer_factory()
     }
 }
 
-bool RendererComponents::create_frame_renderer_factory()
+bool RendererComponents::create_frame_renderer()
 {
     const std::string name = m_params.get_required<std::string>("frame_renderer", "generic");
 
