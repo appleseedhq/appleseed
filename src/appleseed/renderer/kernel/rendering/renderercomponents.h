@@ -137,7 +137,7 @@ class RendererComponents
     bool create_pixel_renderer_factory();
     bool create_shading_result_framebuffer_factory();
     bool create_tile_renderer_factory();
-    bool create_frame_renderer_factory();
+    bool create_frame_renderer();
 };
 
 
