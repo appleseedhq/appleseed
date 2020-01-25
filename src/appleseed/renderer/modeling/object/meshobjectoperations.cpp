@@ -157,7 +157,7 @@ void compute_smooth_vertex_tangents_base_pose(MeshObject& object)
         const GScalar dv0 = v0_uv[1] - v2_uv[1];
         const GScalar du1 = v1_uv[0] - v2_uv[0];
         const GScalar dv1 = v1_uv[1] - v2_uv[1];
-        const GScalar det = du0 * dv1 - dv0 * du1;
+        const GScalar det = dv1 * du0 - dv0 * du1;
 
         if (det == GScalar(0.0))
             continue;
@@ -214,7 +214,7 @@ void compute_smooth_vertex_tangents_pose(MeshObject& object, const size_t motion
         const GScalar dv0 = v0_uv[1] - v2_uv[1];
         const GScalar du1 = v1_uv[0] - v2_uv[0];
         const GScalar dv1 = v1_uv[1] - v2_uv[1];
-        const GScalar det = du0 * dv1 - dv0 * du1;
+        const GScalar det = dv1 * du0 - dv0 * du1;
 
         if (det == GScalar(0.0))
             continue;

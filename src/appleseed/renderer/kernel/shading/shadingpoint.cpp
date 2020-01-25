@@ -485,15 +485,15 @@ void ShadingPoint::compute_world_space_partial_derivatives() const
             const double dv0 = static_cast<double>(m_v0_uv[1] - m_v2_uv[1]);
             const double du1 = static_cast<double>(m_v1_uv[0] - m_v2_uv[0]);
             const double dv1 = static_cast<double>(m_v1_uv[1] - m_v2_uv[1]);
-            const double det = du0 * dv1 - dv0 * du1;
+            const double det = dv1 * du0 - dv0 * du1;
 
             if (det != 0.0)
             {
+                const double rcp_det = 1.0 / det;
+
                 const Vector3d& v2 = get_vertex(2);
                 const Vector3d dp0 = get_vertex(0) - v2;
                 const Vector3d dp1 = get_vertex(1) - v2;
-
-                const double rcp_det = 1.0 / det;
 
                 m_dpdu = (dv1 * dp0 - dv0 * dp1) * rcp_det;
                 m_dpdv = (du0 * dp1 - du1 * dp0) * rcp_det;
