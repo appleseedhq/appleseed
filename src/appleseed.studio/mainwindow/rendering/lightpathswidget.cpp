@@ -156,7 +156,6 @@ void LightPathsWidget::set_transform(const Transformd& transform)
 {
     m_camera_matrix = transform.get_parent_to_local();
     m_gl_view_matrix = transpose(m_camera_matrix);
-    m_camera_position = Vector3f(m_camera_matrix.extract_translation());
 }
 
 void LightPathsWidget::set_light_paths(const LightPathArray& light_paths)
@@ -615,7 +614,6 @@ void LightPathsWidget::initializeGL()
 
     m_scene_view_mat_location = m_gl->glGetUniformLocation(m_scene_shader_program, "u_view");
     m_scene_proj_mat_location = m_gl->glGetUniformLocation(m_scene_shader_program, "u_proj");
-    m_scene_camera_pos_location = m_gl->glGetUniformLocation(m_scene_shader_program, "u_camera_pos");
 
     m_light_paths_view_mat_location = m_gl->glGetUniformLocation(m_light_paths_shader_program, "u_view");
     m_light_paths_proj_mat_location = m_gl->glGetUniformLocation(m_light_paths_shader_program, "u_proj");
@@ -769,10 +767,6 @@ void LightPathsWidget::render_geometry()
         1,
         false,
         const_cast<const GLfloat*>(&m_gl_proj_matrix[0]));
-    m_gl->glUniform3fv(
-        m_scene_camera_pos_location,
-        1,
-        const_cast<const GLfloat*>(&m_camera_position[0]));
 
     for (size_t i = 0; i < m_scene_object_data_vbos.size(); i++)
     {

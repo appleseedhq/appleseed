@@ -28,37 +28,28 @@
 #version 330
 #extension GL_ARB_separate_shader_objects : enable
 
-layout(location = 0) in vec3 v_world_pos;
-layout(location = 1) in vec3 v_norm;
-
-uniform vec3 u_camera_pos;
-
-const vec3 LIGHT_POS = vec3(0.0, 0.0, 0.0);
-const vec3 LIGHT_COLOR = vec3(1.0);
-const vec3 AMBIENT_COLOR = vec3(0.05);
+layout(location = 0) in vec3 frag_pos;
+layout(location = 1) in vec3 frag_norm;
 
 const vec3 MATERIAL_BASE_COLOR = vec3(0.8, 0.8, 0.8);
 const float MATERIAL_DIFFUSE_FACTOR = 0.4;
 const float MATERIAL_SPECULAR_FACTOR = 0.15;
-const float MATERIAL_METALNESS_FACTOR = 0.0;
-const float MATERIAL_SHININESS = 80.0;
+const float MATERIAL_SHININESS = 32.0;
 
 out vec4 Target0;
 
 void main()
 {
-    vec3 acc = vec3(0.0);
+    vec3 norm = normalize(frag_norm);
 
-    vec3 N = normalize(v_norm);
-    vec3 L = normalize(LIGHT_POS - v_world_pos);
-    vec3 V = normalize(u_camera_pos - v_world_pos);
-    vec3 H = normalize(L + V);
+    vec3 view_dir = normalize(-frag_pos);
+    vec3 reflect_dir = reflect(-view_dir, norm);
 
-    vec3 specular_color = mix(vec3(1.0), MATERIAL_BASE_COLOR, MATERIAL_METALNESS_FACTOR);
+    float diffuse_ratio = max(0.0, dot(view_dir, norm));
+    float specular_ratio = pow(max(0.0, dot(view_dir, reflect_dir)), MATERIAL_SHININESS);
 
-    acc += AMBIENT_COLOR * MATERIAL_BASE_COLOR;
-    acc += LIGHT_COLOR * MATERIAL_DIFFUSE_FACTOR * MATERIAL_BASE_COLOR * clamp(dot(N, L), 0.0, 1.0);
-    acc += LIGHT_COLOR * specular_color * pow(clamp(dot(N, H), 0.0, 1.0), MATERIAL_SHININESS);
+    vec3 diffuse = MATERIAL_DIFFUSE_FACTOR * MATERIAL_BASE_COLOR * diffuse_ratio;
+    vec3 specular = MATERIAL_SPECULAR_FACTOR * MATERIAL_BASE_COLOR * specular_ratio;
 
-    Target0 = vec4(acc, 1.0);
+    Target0 = vec4(diffuse + specular, 1.0);
 }
