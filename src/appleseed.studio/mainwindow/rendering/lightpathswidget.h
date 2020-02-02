@@ -106,7 +106,6 @@ class LightPathsWidget
     const renderer::Project&                m_project;
     renderer::Camera&                       m_camera;
     foundation::Matrix4d                    m_camera_matrix;
-    foundation::Vector3f                    m_camera_position;
 
     bool                                    m_backface_culling_enabled;
 
@@ -125,7 +124,6 @@ class LightPathsWidget
     GLuint                                  m_scene_shader_program;
     GLint                                   m_scene_view_mat_location;
     GLint                                   m_scene_proj_mat_location;
-    GLint                                   m_scene_camera_pos_location;
     GLuint                                  m_light_paths_vbo;
     std::vector<GLsizei>                    m_light_paths_index_offsets;
     GLuint                                  m_light_paths_vao;
