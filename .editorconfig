@@ -9,8 +9,9 @@ root = true
 # C++
 # Python
 # CMake
+# OpenGL shaders
 
-[*.{cpp,h,py,txt}]
+[*.{cpp,h,py,txt,frag,vert}]
 charset = utf-8
 indent_style = space
 indent_size = 4
