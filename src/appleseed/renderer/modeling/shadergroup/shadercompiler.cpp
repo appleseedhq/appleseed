@@ -57,7 +57,6 @@ namespace renderer
 struct ShaderCompiler::Impl
 {
     std::string                         m_stdosl_path;
-    std::unique_ptr<OSL::OSLCompiler>   m_compiler;
     std::unique_ptr<OIIOErrorHandler>   m_error_handler;
     std::vector<std::string>            m_options;
 
@@ -68,8 +67,6 @@ struct ShaderCompiler::Impl
     #ifndef NDEBUG
         m_error_handler->verbosity(OIIO::ErrorHandler::VERBOSE);
     #endif
-
-        m_compiler.reset(new OSL::OSLCompiler(m_error_handler.get()));
     }
 };
 
@@ -102,14 +99,16 @@ bool ShaderCompiler::compile_buffer(
     const char* source_code,
     APIString&  result) const
 {
+
+    OSL::OSLCompiler compiler(impl->m_error_handler.get());
+
     std::string buffer;
     const bool ok =
-        impl->m_compiler->compile_buffer(
+        compiler.compile_buffer(
             source_code,
             buffer,
             impl->m_options,
             impl->m_stdosl_path.c_str());
-
     if (ok)
         result = APIString(buffer.c_str());
 
