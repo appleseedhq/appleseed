@@ -46,6 +46,7 @@ namespace renderer
 class TilePtr
 {
   public:
+    static TilePtr make_nullptr();
     static TilePtr make_owning(foundation::Tile* tile);
     static TilePtr make_non_owning(foundation::Tile* tile);
 
@@ -64,6 +65,13 @@ static_assert(sizeof(TilePtr) == sizeof(foundation::Tile*), "renderer::TilePtr s
 //
 // TilePtr class implementation.
 //
+
+inline TilePtr TilePtr::make_nullptr()
+{
+    TilePtr ptr;
+    ptr.m_tile = nullptr;       // non-owning
+    return ptr;
+}
 
 inline TilePtr TilePtr::make_owning(foundation::Tile* tile)
 {
