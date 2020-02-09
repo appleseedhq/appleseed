@@ -36,3 +36,4 @@
 #include "renderer/modeling/texture/texture.h"
 #include "renderer/modeling/texture/texturefactoryregistrar.h"
 #include "renderer/modeling/texture/texturetraits.h"
+#include "renderer/modeling/texture/tileptr.h"
