@@ -134,7 +134,7 @@ option (WITH_DISNEY_MATERIAL                "Build Disney material"             
 option (WITH_EMBREE                         "Include support for Embree intersection backend"           OFF)
 option (WITH_GPU                            "Build GPU support"                                         OFF)
 option (WITH_SPECTRAL_SUPPORT               "Include support for spectral colors"                       ON)
-option (WITH_DOXYGEN                        "Generate API reference with Doxygen"                       ON)
+option (WITH_DOXYGEN                        "Generate API reference with Doxygen"                       OFF)
 option (INSTALL_HEADERS                     "Install header files"                                      ON)
 option (INSTALL_TESTS                       "Install unit tests and benchmarks"                         ON)
 option (INSTALL_API_EXAMPLES                "Install API examples (requires header files)"              ON)
