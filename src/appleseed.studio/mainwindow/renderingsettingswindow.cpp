@@ -834,6 +834,7 @@ namespace
 
             if (!filepath.isEmpty())
             {
+                filepath = QDir::toNativeSeparators(filepath);
                 m_path_line_edit->setText(filepath);
             }
         }
