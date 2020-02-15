@@ -801,7 +801,7 @@ namespace
                 config, "pixel_renderer", default_pr_value);
 
             m_image_plane_sampler_combo->setCurrentIndex(
-                pr_value == "adaptive" ? 1 : 0);
+                pr_value == "texture" ? 2 : 0);
         }
 
       private slots:
