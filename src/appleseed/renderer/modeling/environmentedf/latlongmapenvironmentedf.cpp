@@ -246,10 +246,10 @@ namespace
             shift_angles(theta, phi, m_theta_shift, m_phi_shift);
 
             // Compute the local space emission direction.
-            const float cos_theta = cos(theta);
-            const float sin_theta = sin(theta);
-            const float cos_phi = cos(phi);
-            const float sin_phi = sin(phi);
+            const float cos_theta = std::cos(theta);
+            const float sin_theta = std::sin(theta);
+            const float cos_phi = std::cos(phi);
+            const float sin_phi = std::sin(phi);
             const Vector3f local_outgoing =
                 Vector3f::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
 
