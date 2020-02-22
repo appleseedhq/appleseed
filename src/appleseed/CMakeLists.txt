@@ -519,6 +519,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_hashtable.cpp
     foundation/meta/tests/test_iesparser.cpp
     foundation/meta/tests/test_image.cpp
+    foundation/meta/tests/test_imagefilewriter.cpp
     foundation/meta/tests/test_imageimportancesampler.cpp
     foundation/meta/tests/test_intersection_frustumaabb.cpp
     foundation/meta/tests/test_intersection_frustumsegment.cpp
