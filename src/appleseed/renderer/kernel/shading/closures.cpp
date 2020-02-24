@@ -948,6 +948,7 @@ namespace
 
             values->m_normal_reflectance.set(Color3f(p->normal_reflectance), g_std_lighting_conditions, Spectrum::Reflectance);
             values->m_edge_tint.set(Color3f(p->edge_tint), g_std_lighting_conditions, Spectrum::Reflectance);
+            values->m_edge_tint_weight = 1.0f;
             values->m_reflectance_multiplier = 1.0f;
             values->m_roughness = std::max(p->roughness, 0.0f);
             values->m_anisotropy = clamp(p->anisotropy, -1.0f, 1.0f);

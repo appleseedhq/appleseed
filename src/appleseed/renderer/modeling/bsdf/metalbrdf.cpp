@@ -99,6 +99,7 @@ namespace
         {
             m_inputs.declare("normal_reflectance", InputFormatSpectralReflectance);
             m_inputs.declare("edge_tint", InputFormatSpectralReflectance);
+            m_inputs.declare("edge_tint_weight", InputFormatFloat, "1.0");
             m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("roughness", InputFormatFloat, "0.15");
             m_inputs.declare("anisotropy", InputFormatFloat, "0.0");
@@ -130,17 +131,16 @@ namespace
 
             values->m_roughness = std::max(values->m_roughness, shading_point.get_ray().m_min_roughness);
 
-            artist_friendly_fresnel_conductor_reparameterization(
-                values->m_normal_reflectance,
-                values->m_edge_tint,
-                values->m_precomputed.m_n,
-                values->m_precomputed.m_k);
-            values->m_precomputed.m_outside_ior = shading_point.get_ray().get_current_ior();
-
-            average_artist_friendly_fresnel_reflectance_conductor(
-                values->m_normal_reflectance,
-                values->m_edge_tint,
-                values->m_precomputed.m_fresnel_average);
+            if (values->m_edge_tint_weight != 0.0f)
+            {
+                fresnel_lazanyi_schlick_a(
+                    values->m_precomputed.m_a,
+                    values->m_normal_reflectance,
+                    values->m_edge_tint,
+                    values->m_edge_tint_weight);
+            }
+            else
+                values->m_precomputed.m_a.set(0.0f);
         }
 
         void sample(
@@ -155,10 +155,9 @@ namespace
         {
             const InputValues* values = static_cast<const InputValues*>(data);
 
-            const FresnelConductorFun f(
-                values->m_precomputed.m_n,
-                values->m_precomputed.m_k,
-                values->m_precomputed.m_outside_ior,
+            const FresnelConductorSchlickLazanyi f(
+                values->m_normal_reflectance,
+                values->m_precomputed.m_a,
                 values->m_reflectance_multiplier);
 
             // If roughness is zero use reflection.
@@ -228,10 +227,9 @@ namespace
                 alpha_x,
                 alpha_y);
 
-            const FresnelConductorFun f(
-                values->m_precomputed.m_n,
-                values->m_precomputed.m_k,
-                values->m_precomputed.m_outside_ior,
+            const FresnelConductorSchlickLazanyi f(
+                values->m_normal_reflectance,
+                values->m_precomputed.m_a,
                 values->m_reflectance_multiplier);
 
             const float pdf =
@@ -299,25 +297,17 @@ namespace
         {
             if (values->m_energy_compensation != 0.0f)
             {
-                const float Ess =
-                    get_directional_albedo(
-                        std::abs(dot(outgoing, n)),
-                        values->m_roughness);
+                const float Ess = get_directional_albedo(
+                    std::abs(dot(outgoing, n)),
+                    values->m_roughness);
 
                 if (Ess == 0.0f)
                     return;
 
-                const float Eavg = get_average_albedo(values->m_roughness);
-                Spectrum fterm = values->m_precomputed.m_fresnel_average;
-                fterm *= fterm;
-                fterm *= Eavg;
-
-                const Spectrum one(1.0f);
-                fterm /= one - values->m_precomputed.m_fresnel_average * (1.0f - Eavg);
-
-                fterm *= values->m_energy_compensation * ((1.0f - Ess) / Ess);
-                fterm += one;
-                value *= fterm;
+                Spectrum fms = values->m_normal_reflectance;
+                fms *= values->m_energy_compensation * (1.0f - Ess) / Ess;
+                fms += Spectrum(1.0f);
+                value *= fms;
             }
         }
     };
@@ -375,6 +365,24 @@ DictionaryArray MetalBRDFFactory::get_input_metadata() const
                     .insert("texture_instance", "Texture Instances"))
             .insert("use", "required")
             .insert("default", "0.98"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "edge_tint_weight")
+            .insert("label", "Edge Tint Weight")
+            .insert("type", "colormap")
+            .insert("entity_types",
+                Dictionary().insert("texture_instance", "Texture Instances"))
+            .insert("use", "optional")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
+            .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()
