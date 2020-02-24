@@ -170,4 +170,34 @@ class FresnelConductorFun
     const float     m_reflectance_multiplier;
 };
 
+class FresnelConductorSchlickLazanyi
+{
+  public:
+    FresnelConductorSchlickLazanyi(
+        const Spectrum&             n,
+        const Spectrum&             a,
+        const float                 reflectance_multiplier)
+      : m_n(n)
+      , m_a(a)
+      , m_reflectance_multiplier(reflectance_multiplier)
+    {
+    }
+
+    void operator()(
+        const foundation::Vector3f& o,
+        const foundation::Vector3f& h,
+        const foundation::Vector3f& n,
+        Spectrum&                   value) const
+    {
+        const float cos_oh = std::min(std::abs(foundation::dot(o, h)), 1.0f);
+        foundation::fresnel_reflectance_lazanyi_schlick(value, m_n, cos_oh, m_a);
+        value *= m_reflectance_multiplier;
+    }
+
+  private:
+    const Spectrum& m_n;
+    const Spectrum& m_a;
+    const float     m_reflectance_multiplier;
+};
+
 }   // namespace renderer

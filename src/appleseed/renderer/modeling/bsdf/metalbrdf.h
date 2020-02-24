@@ -57,6 +57,7 @@ APPLESEED_DECLARE_INPUT_VALUES(MetalBRDFInputValues)
 {
     Spectrum    m_normal_reflectance;
     Spectrum    m_edge_tint;
+    float       m_edge_tint_weight;
     float       m_reflectance_multiplier;
     float       m_roughness;
     float       m_anisotropy;
@@ -64,10 +65,7 @@ APPLESEED_DECLARE_INPUT_VALUES(MetalBRDFInputValues)
 
     struct Precomputed
     {
-        Spectrum m_n;
-        Spectrum m_k;
-        Spectrum m_fresnel_average;
-        float    m_outside_ior;
+        Spectrum m_a;
     };
 
     Precomputed m_precomputed;
