@@ -49,7 +49,9 @@
 #include <lz4.h>
 
 // OpenColorIO headers.
+#ifdef APPLESEED_WITH_OCIO
 #include <OpenColorIO/OpenColorABI.h>
+#endif
 
 // OpenEXR headers.
 #include "foundation/platform/_beginexrheaders.h"
@@ -116,11 +118,14 @@ LibraryVersionArray ThirdParties::get_versions()
     }
 #endif
 
+#ifdef APPLESEED_WITH_OCIO
+    versions.push_back(APIStringPair("OpenColorIO", OCIO_VERSION));
+#endif
+
     versions.push_back(APIStringPair("IlmBase", ILMBASE_VERSION_STRING));
     versions.push_back(APIStringPair("libjpeg-turbo", LibJpegTurboVersion));
     versions.push_back(APIStringPair("LibTIFF", LibTIFFVersion));
     versions.push_back(APIStringPair("LZ4", format("{0}.{1}.{2}", LZ4_VERSION_MAJOR, LZ4_VERSION_MINOR, LZ4_VERSION_RELEASE)));
-    versions.push_back(APIStringPair("OpenColorIO", OCIO_VERSION));
     versions.push_back(APIStringPair("OpenEXR", OPENEXR_VERSION_STRING));
     versions.push_back(APIStringPair("OpenImageIO", OIIO_VERSION_STRING));
     versions.push_back(APIStringPair("OpenShadingLanguage", OSL_LIBRARY_VERSION_STRING));
