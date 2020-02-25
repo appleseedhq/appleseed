@@ -52,14 +52,16 @@ shader as_standard_surface
         float min = 0.0,
         float max = 1.0,
         string label = "Diffuse Weight",
-        string page = "Diffuse"
+        string page = "Diffuse",
+        int as_max_param_id = 0
     ]],
     color in_color = color(0.5)
     [[
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
         string label = "Diffuse Color",
-        string page = "Diffuse"
+        string page = "Diffuse",
+        int as_max_param_id = 2
     ]],
     float in_diffuse_roughness = 0.1
     [[
@@ -68,7 +70,8 @@ shader as_standard_surface
         float min = 0.0,
         float max = 1.0,
         string label = "Diffuse Roughness",
-        string page = "Diffuse"
+        string page = "Diffuse",
+        int as_max_param_id = 4
     ]],
     float in_subsurface_weight = 0.0
     [[
@@ -78,14 +81,16 @@ shader as_standard_surface
         float max = 1.0,
         string label = "Subsurface Weight",
         string page = "Subsurface",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 6
     ]],
     color in_sss_mfp = color(0)
     [[
         string as_maya_attribute_name = "subsurfaceMfp",
         string as_maya_attribute_short_name = "mfp",
         string label = "Depth",
-        string page = "Subsurface"
+        string page = "Subsurface",
+        int as_max_param_id = 8
     ]],
     float in_sss_mfp_scale = 1.0
     [[
@@ -100,7 +105,8 @@ shader as_standard_surface
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 10
     ]],
     int in_subsurface_profile = 2
     [[
@@ -115,7 +121,8 @@ shader as_standard_surface
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 11
     ]],
     int in_sss_maximum_ray_depth = 2
     [[
@@ -130,7 +137,8 @@ shader as_standard_surface
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 12
     ]],
     float in_sss_threshold = 0.001
     [[
@@ -146,7 +154,8 @@ shader as_standard_surface
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 13
     ]],
     float in_translucency_weight = 0.0
     [[
@@ -155,21 +164,24 @@ shader as_standard_surface
         float min = 0.0,
         float max = 1.0,
         string label = "Translucency Weight",
-        string page = "Translucency"
+        string page = "Translucency",
+        int as_max_param_id = 14
     ]],
     color in_translucency_color = color(0.0)
     [[
         string as_maya_attribute_name = "translucencyColor",
         string as_maya_attribute_short_name = "trc",
         string label = "Translucency Color",
-        string page = "Translucency"
+        string page = "Translucency",
+        int as_max_param_id = 16
     ]],
     color in_specular_color = color(1)
     [[
         string as_maya_attribute_name = "specularColor",
         string as_maya_attribute_short_name = "spc",
         string label = "Specular Color",
-        string page = "Specular"
+        string page = "Specular",
+        int as_max_param_id = 18
     ]],
     float in_specular_roughness = 0.1
     [[
@@ -178,7 +190,8 @@ shader as_standard_surface
         float min = 0.0,
         float max = 1.0,
         string label = "Specular Roughness",
-        string page = "Specular"
+        string page = "Specular",
+        int as_max_param_id = 20
     ]],
     float in_specular_spread = 0.25
     [[
@@ -190,7 +203,8 @@ shader as_standard_surface
         string page = "Specular",
         string help = "Specular spread, controls the tails of the highlights.",
         int divider = 1,
-        int as_deprecated = 1
+        int as_deprecated = 1,
+        int as_max_param_id = 22
     ]],
     int in_fresnel_type = 0
     [[
@@ -206,7 +220,8 @@ shader as_standard_surface
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 24
     ]],
     float in_ior = 1.37
     [[
@@ -222,7 +237,8 @@ shader as_standard_surface
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 25
     ]],
     color in_face_tint = color(0.85, 0.21, 0.05)
     [[
@@ -235,7 +251,8 @@ shader as_standard_surface
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 26
     ]],
     color in_edge_tint = color(1)
     [[
@@ -249,7 +266,8 @@ shader as_standard_surface
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 27
     ]],
     float in_anisotropy_amount = 0.0
     [[
@@ -258,7 +276,8 @@ shader as_standard_surface
         float min = 0.0,
         float max = 1.0,
         string label = "Anisotropy Amount",
-        string page = "Specular.Anisotropy"
+        string page = "Specular.Anisotropy",
+        int as_max_param_id = 28
     ]],
     float in_anisotropy_angle = 0.0
     [[
@@ -268,7 +287,8 @@ shader as_standard_surface
         float max = 1.0,
         string label = "Anisotropy Angle",
         string page = "Specular.Anisotropy",
-        string help = "Anisotropy angle in [0,1], mapping to [0,360] degrees."
+        string help = "Anisotropy angle in [0,1], mapping to [0,360] degrees.",
+        int as_max_param_id = 30
     ]],
     color in_anisotropy_map = color(0)
     [[
@@ -276,7 +296,8 @@ shader as_standard_surface
         string as_maya_attribute_short_name = "ama",
         string label = "Anisotropy Vector Map",
         string page = "Specular.Anisotropy",
-        string help = "Anisotropy vector map, with XY encoded in RG channels."
+        string help = "Anisotropy vector map, with XY encoded in RG channels.",
+        int as_max_param_id = 32
     ]],
     float in_refraction_amount = 0.0
     [[
@@ -286,7 +307,8 @@ shader as_standard_surface
         float max = 1.0,
         string label = "Refraction Weight",
         string page = "Specular.Refraction",
-        string help = "Refraction weight. Refraction inherits the IOR."
+        string help = "Refraction weight. Refraction inherits the IOR.",
+        int as_max_param_id = 34
     ]],
     color in_refraction_tint = color(1)
     [[
@@ -294,7 +316,8 @@ shader as_standard_surface
         string as_maya_attribute_short_name = "rti",
         string label = "Refraction Tint",
         string page = "Specular.Refraction",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 36
     ]],
     float in_absorption_depth = 0.0
     [[
@@ -309,14 +332,16 @@ shader as_standard_surface
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 38
     ]],
     color in_absorption_color = color(1)
     [[
         string as_maya_attribute_name = "absorptionColor",
         string as_maya_attribute_short_name = "rac",
         string label = "Absorption Color",
-        string page = "Specular.Refraction"
+        string page = "Specular.Refraction",
+        int as_max_param_id = 39
     ]],
     float in_coating_reflectivity = 0.0
     [[
@@ -326,7 +351,8 @@ shader as_standard_surface
         float max = 1.0,
         string label = "Coating Reflectivity",
         string page = "Coating",
-        string help = "Coating specular reflectivity."
+        string help = "Coating specular reflectivity.",
+        int as_max_param_id = 41
     ]],
     float in_coating_roughness = 0.0
     [[
@@ -335,7 +361,8 @@ shader as_standard_surface
         float min = 0.0,
         float max = 1.0,
         string label = "Coating Roughness",
-        string page = "Coating"
+        string page = "Coating",
+        int as_max_param_id = 43
     ]],
     float in_coating_ior = 1.42
     [[
@@ -352,7 +379,8 @@ shader as_standard_surface
         int as_maya_attribute_keyable = 1,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 45
     ]],
     float in_coating_depth = 0.0
     [[
@@ -363,14 +391,16 @@ shader as_standard_surface
         float softmax = 1.0,
         string label = "Coating Thickness",
         string page = "Coating",
-        string help = "Maps from [0,1] to [0,10] microns."
+        string help = "Maps from [0,1] to [0,10] microns.",
+        int as_max_param_id = 46
     ]],
     color in_coating_absorption = color(1)
     [[
         string as_maya_attribute_name = "coatingAbsorption",
         string as_maya_attribute_short_name = "coa",
         string label = "Coating Absorption",
-        string page = "Coating"
+        string page = "Coating",
+        int as_max_param_id = 48
     ]],
     float in_incandescence_amount = 0.0
     [[
@@ -379,7 +409,8 @@ shader as_standard_surface
         float min = 0.0,
         float softmax = 1.0,
         string label = "Emission Amount",
-        string page = "Emission"
+        string page = "Emission",
+        int as_max_param_id = 50
     ]],
     int in_incandescence_type = 0
     [[
@@ -395,7 +426,8 @@ shader as_standard_surface
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 52
     ]],
     color in_incandescence_color = color(0)
     [[
@@ -403,7 +435,8 @@ shader as_standard_surface
         string as_maya_attribute_short_name = "inc",
         string label = "Emission Color",
         string page = "Emission",
-        string help = "Emission color, only valid in constant mode."
+        string help = "Emission color, only valid in constant mode.",
+        int as_max_param_id = 53
     ]],
     int in_temperature = 4300
     [[
@@ -421,7 +454,8 @@ shader as_standard_surface
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 55
     ]],
 
     int in_area_normalize_edf = 0
@@ -435,7 +469,8 @@ shader as_standard_surface
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 56
     ]],
     int in_tonemap_edf = 1
     [[
@@ -449,14 +484,16 @@ shader as_standard_surface
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 57
     ]],
     color in_transparency = color(0)
     [[
         string as_maya_attribute_name = "transparency",
         string as_maya_attribute_short_name = "it",
         string label = "Transparency Color",
-        string page = "Transparency"
+        string page = "Transparency",
+        int as_max_param_id = 58
     ]],
     normal in_bump_normal_coating = N
     [[
@@ -464,7 +501,8 @@ shader as_standard_surface
         string as_maya_attribute_short_name = "ncn",
         string label = "Coating Normal",
         string page = "Bump",
-        string help = "The coating normal. If not set, the substrate normal is used for both layers."
+        string help = "The coating normal. If not set, the substrate normal is used for both layers.",
+        int as_max_param_id = 60
     ]],
     normal in_bump_normal_substrate = N
     [[
@@ -472,7 +510,8 @@ shader as_standard_surface
         string as_maya_attribute_short_name = "n",
         string label = "Substrate Normal",
         string page = "Bump",
-        string help = "The default bump normal."
+        string help = "The default bump normal.",
+        int as_max_param_id = 61
     ]],
     int in_enable_matte = 0
     [[
@@ -486,7 +525,8 @@ shader as_standard_surface
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 62
     ]],
     float in_matte_opacity = 0.0
     [[
@@ -497,7 +537,8 @@ shader as_standard_surface
         string label = "Matte Opacity",
         string page = "Matte Opacity",
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 63
     ]],
     color in_matte_opacity_color = color(1,0.5,0)
     [[
@@ -506,7 +547,8 @@ shader as_standard_surface
         string label = "Matte Opacity Color",
         string page = "Matte Opacity",
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 65
     ]],
     int in_maximum_ray_depth = 100
     [[
@@ -521,7 +563,8 @@ shader as_standard_surface
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 67
     ]],
     vector Tn = vector(0)
     [[
@@ -543,13 +586,15 @@ shader as_standard_surface
     [[
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 70
     ]],
     output closure color out_outTransparency = 0
     [[
         string as_maya_attribute_name = "outTransparency",
         string as_maya_attribute_short_name = "ot",
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 70
     ]],
     output closure color out_outMatteOpacity = 0
     [[
@@ -558,7 +603,8 @@ shader as_standard_surface
         string widget = "null",
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 70
     ]]
 )
 {
