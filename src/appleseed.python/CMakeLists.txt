@@ -238,8 +238,13 @@ if (WITH_PYTHON2_BINDINGS)
     target_link_libraries (appleseed.python
         appleseed
         ${Boost_PYTHON_LIBRARY}         # Only Boost.Python2 library
-        ${PYTHON_LIBRARIES}
     )
+
+    if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+        target_link_libraries (appleseed.python
+            ${PYTHON_LIBRARIES}
+        )
+    endif ()
 endif ()
 
 if (WITH_PYTHON3_BINDINGS)
@@ -249,8 +254,13 @@ if (WITH_PYTHON3_BINDINGS)
         appleseed
         glad
         ${Boost_PYTHON3_LIBRARY}        # Only Boost.Python3 library
-        ${PYTHON3_LIBRARY}
     )
+
+    if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
+        target_link_libraries (appleseed.python3
+            ${PYTHON3_LIBRARY}
+        )
+    endif ()
 
     if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
         target_link_libraries (appleseed.python3
