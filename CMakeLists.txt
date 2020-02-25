@@ -294,6 +294,8 @@ if (USE_FIND_PACKAGE_FOR_LZ4)
 endif ()
 
 if (WITH_STUDIO)
+    add_definitions (-DAPPLESEED_WITH_OCIO)
+
     if (USE_STATIC_OCIO)
         add_definitions (-DOCIO_STATIC_BUILD)
     endif ()
