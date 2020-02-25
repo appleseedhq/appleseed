@@ -38,7 +38,9 @@
 #include "foundation/platform/python.h"
 
 // Standard headers.
+#include <cstddef>
 #include <cstdint>
+#include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
@@ -115,26 +117,22 @@ namespace
     class BlTransformLibrary
     {
       public:
-        BlTransformLibrary() = default;
-
-        ~BlTransformLibrary() = default;
-
         void release()
         {
             delete this;
         }
 
-        int get_size() const
+        std::size_t get_size() const
         {
-            return static_cast<int>(m_xforms.size());
+            return m_xforms.size();
         }
 
         void add_xform_step(
-            float               time,
-            const std::string   instance_id,
+            const float         time,
+            const std::string&  instance_id,
             const bpy::list&    matrix)
         {
-            if (time == 0.0)
+            if (time == 0.0f)
                 m_xforms[instance_id] = TransformSequence();
 
             // Ignore any Blender instance that doesn't already have an associated TransformSequence
@@ -142,9 +140,9 @@ namespace
 
             if (instance != m_xforms.end())
             {
-                std::vector<double> temp;
+                double temp[16];
 
-                for (size_t index = 0; index < 16; ++index)
+                for (std::size_t index = 0; index < 16; ++index)
                 {
                     bpy::extract<float> ex(matrix[index]);
 
@@ -154,19 +152,21 @@ namespace
                         bpy::throw_error_already_set();
                     }
 
-                    temp.emplace_back(static_cast<double>(ex));
+                    temp[index] = static_cast<double>(ex);
                 }
 
-                instance->second.set_transform(time, Transformd(Matrix4d().from_array(temp.data())));
+                instance->second.set_transform(time, Transformd(Matrix4d().from_array(temp)));
             }
         }
 
-        bool needs_assembly()
+        void optimize_xforms()
         {
-            // Optimize all xform sequences first
-            for (auto xform = m_xforms.begin(); xform != m_xforms.end(); ++xform)
-                xform->second.optimize();
+            for (auto& xform : m_xforms)
+                xform.second.optimize();
+        }
 
+        bool needs_assembly() const
+        {
             return m_xforms.size() > 1 || m_xforms.begin()->second.size() > 1;
         }
 
@@ -180,19 +180,19 @@ namespace
             Assembly*           as_main_ass,
             const char*         ass_name)
         {
-            for (auto xform = m_xforms.begin(); xform != m_xforms.end(); ++xform)
+            for (auto& xform : m_xforms)
             {
-                auto_release_ptr<AssemblyInstance> ass_inst = AssemblyInstanceFactory().create(
-                    xform->first.c_str(),
+                auto_release_ptr<AssemblyInstance> ass_inst = AssemblyInstanceFactory::create(
+                    xform.first.c_str(),
                     ParamArray(),
                     ass_name);
 
-                ass_inst->transform_sequence() = xform->second;
-
-                as_main_ass->assembly_instances().insert(ass_inst);
+                ass_inst->transform_sequence() = xform.second;
 
                 // Store pointers to assembly instances in case updates are needed.
-                m_ass_insts[xform->first] = as_main_ass->assembly_instances().get_by_name(xform->first.c_str());
+                m_ass_insts.emplace_back(get_pointer(ass_inst));
+
+                as_main_ass->assembly_instances().insert(ass_inst);
             }
 
             m_xforms.clear();
@@ -200,17 +200,15 @@ namespace
 
         void clear_instances(Assembly* as_main_ass)
         {
-            for (auto xform = m_ass_insts.begin(); xform != m_ass_insts.end(); ++xform)
-            {
-                as_main_ass->assembly_instances().remove(xform->second);
-            }
+            for (auto& ass_inst : m_ass_insts)
+                as_main_ass->assembly_instances().remove(ass_inst);
 
             m_ass_insts.clear();
         }
 
       private:
         std::unordered_map<std::string, TransformSequence>      m_xforms;
-        std::unordered_map<std::string, AssemblyInstance*>      m_ass_insts;
+        std::vector<AssemblyInstance*>                          m_ass_insts;
     };
 
     auto_release_ptr<BlTransformLibrary> create_bl_transform_library()
@@ -454,6 +452,7 @@ void bind_blender_export()
         .def("__init__", bpy::make_constructor(create_bl_transform_library))
         .def("get_size", &BlTransformLibrary::get_size)
         .def("add_xform_step", &BlTransformLibrary::add_xform_step)
+        .def("optimize_xforms", &BlTransformLibrary::optimize_xforms)
         .def("needs_assembly", &BlTransformLibrary::needs_assembly)
         .def("get_single_transform", &BlTransformLibrary::get_single_transform)
         .def("flush_instances", &BlTransformLibrary::flush_instances)
