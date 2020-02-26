@@ -170,13 +170,14 @@ namespace
 
         bool needs_assembly() const
         {
-            assert(m_xforms.size > 0);
+            assert(!m_xforms.empty());
+
             return m_xforms.size() > 1 || m_xforms.at(0).size() > 1;
         }
 
         UnalignedTransformd get_single_transform() const
         {
-            assert(m_xforms.size > 0);
+            assert(m_xforms.size() == 1);
 
             const Transformd xform(m_xforms.at(0).get_earliest_transform());
             return UnalignedTransformd(xform);
