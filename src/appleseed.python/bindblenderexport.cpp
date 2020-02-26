@@ -38,6 +38,7 @@
 #include "foundation/platform/python.h"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -140,22 +141,24 @@ namespace
 
             if (instance != m_xforms.end())
             {
-                double temp[16];
+                assert(bpy::len(matrix) == 16);
+
+                Matrix4d temp;
 
                 for (std::size_t index = 0; index < 16; ++index)
                 {
-                    bpy::extract<float> ex(matrix[index]);
+                    bpy::extract<double> ex(matrix[index]);
 
                     if (!ex.check())
                     {
-                        PyErr_SetString(PyExc_TypeError, "Incompatible key type. Only floats accepted.");
+                        PyErr_SetString(PyExc_TypeError, "Incompatible key type.");
                         bpy::throw_error_already_set();
                     }
 
-                    temp[index] = static_cast<double>(ex);
+                    temp[index] = ex;
                 }
 
-                instance->second.set_transform(time, Transformd(Matrix4d().from_array(temp)));
+                instance->second.set_transform(time, Transformd(temp));
             }
         }
 
@@ -167,12 +170,15 @@ namespace
 
         bool needs_assembly() const
         {
-            return m_xforms.size() > 1 || m_xforms.begin()->second.size() > 1;
+            assert(m_xforms.size > 0);
+            return m_xforms.size() > 1 || m_xforms.at(0).size() > 1;
         }
 
         UnalignedTransformd get_single_transform() const
         {
-            const Transformd xform(m_xforms.begin()->second.get_earliest_transform());
+            assert(m_xforms.size > 0);
+
+            const Transformd xform(m_xforms.at(0).get_earliest_transform());
             return UnalignedTransformd(xform);
         }
 
