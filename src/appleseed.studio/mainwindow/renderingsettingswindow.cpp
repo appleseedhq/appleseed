@@ -41,6 +41,7 @@
 
 // appleseed.qtcommon headers.
 #include "project/projectmanager.h"
+#include "utility/interop.h"
 #include "utility/miscellaneous.h"
 #include "widgets/foldablepanelwidget.h"
 #include "widgets/mousewheelfocuseventfilter.h"
@@ -52,7 +53,6 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/system.h"
-#include "foundation/utility/foreach.h"
 #include "foundation/utility/string.h"
 
 // Qt headers.
@@ -81,6 +81,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <iterator>
 
 using namespace appleseed::qtcommon;
 using namespace foundation;
@@ -196,8 +197,8 @@ class RenderSettingsPanel
     {
         std::map<std::string, std::string> values;
 
-        for (const_each<WidgetProxyCollection> i = m_widget_proxies; i; ++i)
-            values[i->first] = i->second->get();
+        for (const auto& item : m_widget_proxies)
+            values[item.first] = item.second->get();
 
         return values;
     }
@@ -373,22 +374,22 @@ class RenderSettingsPanel
 
     void load_directly_linked_values(const Configuration& config)
     {
-        for (const_each<DirectLinkCollection> i = m_direct_links; i; ++i)
+        for (const DirectLink& link : m_direct_links)
         {
-            const std::string default_value_path = i->m_param_path + ".default";
+            const std::string default_value_path = link.m_param_path + ".default";
             const std::string default_value =
                 m_params_metadata.get_path_optional<std::string>(
                     default_value_path.c_str(),
-                    i->m_default_value);
-            const std::string value = get_config<std::string>(config, i->m_param_path, default_value);
-            set_widget(i->m_widget_key, value);
+                    link.m_default_value);
+            const std::string value = get_config<std::string>(config, link.m_param_path, default_value);
+            set_widget(link.m_widget_key, value);
         }
     }
 
     void save_directly_linked_values(Configuration& config) const
     {
-        for (const_each<DirectLinkCollection> i = m_direct_links; i; ++i)
-            set_config(config, i->m_param_path, get_widget<std::string>(i->m_widget_key));
+        for (const DirectLink& link : m_direct_links)
+            set_config(config, link.m_param_path, get_widget<std::string>(link.m_widget_key));
     }
 
     template <typename T>
@@ -621,19 +622,20 @@ namespace
                 "shading_result_framebuffer",
                 get_widget<size_t>("general.passes") > 1 ? "permanent" : "ephemeral");
 
-            // Set the pixel and tile renderer.
-            const QString sampler = m_image_plane_sampler_combo->itemData(
-                m_image_plane_sampler_combo->currentIndex()).value<QString>();
-
-            set_config(
-                config,
-                "pixel_renderer",
-                sampler == "adaptive_tile" ? "" : sampler.toUtf8().data());
-
-            set_config(
-                config,
-                "tile_renderer",
-                sampler == "adaptive_tile" ? "adaptive" : "generic");
+            // Set the pixel and tile renderers.
+            const QString sampler =
+                m_image_plane_sampler_combo->itemData(
+                    m_image_plane_sampler_combo->currentIndex()).value<QString>();
+            if (sampler == "adaptive_tile")
+            {
+                set_config(config, "tile_renderer", "adaptive");
+                config.get_parameters().remove_path("pixel_renderer");
+            }
+            else
+            {
+                set_config(config, "tile_renderer", "generic");
+                set_config(config, "pixel_renderer", sampler);
+            }
         }
 
       private:
@@ -787,24 +789,12 @@ namespace
 
         void load_general_sampler(const Configuration& config)
         {
-            const std::string default_tr_value = m_params_metadata.get_path_optional<std::string>(
-                "tile_renderer.default", "");
-            const std::string tr_value = get_config<std::string>(
-                config, "tile_renderer", default_tr_value);
-
-            if (tr_value == "adaptive")
-            {
-                m_image_plane_sampler_combo->setCurrentIndex(1);
-                return;
-            }
-
-            const std::string default_pr_value = m_params_metadata.get_path_optional<std::string>(
-                "pixel_renderer.default", "");
-            const std::string pr_value = get_config<std::string>(
-                config, "pixel_renderer", default_pr_value);
+            const std::string tile_renderer = get_config<std::string>(config, "tile_renderer", "generic");
+            const std::string pixel_renderer = get_config<std::string>(config, "pixel_renderer", "uniform");
 
             m_image_plane_sampler_combo->setCurrentIndex(
-                pr_value == "texture" ? 2 : 0);
+                tile_renderer == "adaptive" ? 1 :
+                pixel_renderer == "texture" ? 2 : 0);
         }
 
       private slots:
@@ -1727,7 +1717,7 @@ void RenderingSettingsWindow::reload()
     }
 
     // Sort configuration names alphabetically.
-    std::sort(config_names.begin(), config_names.end());
+    std::sort(std::begin(config_names), std::end(config_names));
 
     // This has the side effect of loading an empty configuration.
     m_current_configuration_name.clear();
@@ -1823,14 +1813,14 @@ void RenderingSettingsWindow::create_layout()
 
     root_layout->addItem(new QSpacerItem(470, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
 
-    for (const_each<PanelCollection> i = m_panels; i; ++i)
-        root_layout->addWidget(*i);
+    for (RenderSettingsPanel* panel : m_panels)
+        root_layout->addWidget(panel);
 }
 
 void RenderingSettingsWindow::set_panels_enabled(const bool enabled)
 {
-    for (const_each<PanelCollection> i = m_panels; i; ++i)
-        (*i)->container()->setEnabled(enabled);
+    for (RenderSettingsPanel* panel : m_panels)
+        panel->container()->setEnabled(enabled);
 }
 
 void RenderingSettingsWindow::load_configuration(const QString& name)
@@ -1860,8 +1850,8 @@ void RenderingSettingsWindow::save_current_configuration()
 
     Configuration& config = get_configuration(m_current_configuration_name);
 
-    for (const_each<PanelCollection> i = m_panels; i; ++i)
-        (*i)->save_config(config);
+    for (const RenderSettingsPanel* panel : m_panels)
+        panel->save_config(config);
 
     m_initial_values = get_widget_values();
 
@@ -1882,10 +1872,10 @@ std::map<std::string, std::string> RenderingSettingsWindow::get_widget_values() 
 {
     std::map<std::string, std::string> values;
 
-    for (const_each<PanelCollection> i = m_panels; i; ++i)
+    for (const RenderSettingsPanel* panel : m_panels)
     {
-        const std::map<std::string, std::string> panel_values = (*i)->get_widget_values();
-        values.insert(panel_values.begin(), panel_values.end());
+        const std::map<std::string, std::string> panel_values = panel->get_widget_values();
+        values.insert(std::begin(panel_values), std::end(panel_values));
     }
 
     return values;

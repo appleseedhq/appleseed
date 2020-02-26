@@ -177,6 +177,7 @@ namespace
                     return;
 
                 // Retrieve the coordinates of the pixel in the tile.
+                // todo: switch to Vector2u now that we no longer have pixels outside tiles.
                 const Vector2i pt(m_pixel_ordering[i].x, m_pixel_ordering[i].y);
 
                 // Skip pixels outside the intersection of the tile and the crop window.
