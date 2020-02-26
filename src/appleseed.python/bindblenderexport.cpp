@@ -179,7 +179,7 @@ namespace
         {
             assert(m_xforms.size() == 1);
 
-            const Transformd xform(m_xforms.at(0).get_earliest_transform());
+            const Transformd xform(m_xforms.begin()->second.get_earliest_transform());
             return UnalignedTransformd(xform);
         }
 
