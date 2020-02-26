@@ -64,15 +64,6 @@ namespace renderer
 //       https://www.arnoldrenderer.com/research/egsr2013_spherical_rectangle.pdf
 //
 
-namespace
-{
-    template <typename Shape>
-    double signed_plane_distance(const Shape& shape, const Vector3d& p)
-    {
-        return dot(p, shape.m_geometric_normal) + shape.m_plane_dist;
-    }
-}
-
 EmittingShape EmittingShape::create_triangle_shape(
     const AssemblyInstance*     assembly_instance,
     const size_t                object_instance_index,
@@ -111,12 +102,7 @@ EmittingShape EmittingShape::create_triangle_shape(
     shape.m_centroid = (v0 + v1 + v2) * (1.0 / 3.0);
 
     shape.m_area = static_cast<float>(area);
-
-    if (shape.m_area != 0.0f)
-        shape.m_rcp_area = 1.0f / shape.m_area;
-    else
-        shape.m_rcp_area = FP<float>().snan();
-
+    shape.m_rcp_area = shape.m_area != 0.0f ? 1.0f / shape.m_area : FP<float>().snan();
 
     return shape;
 }
@@ -147,11 +133,7 @@ EmittingShape EmittingShape::create_rectangle_shape(
     shape.m_geom.m_rectangle.m_plane_dist = -dot(o, n);
 
     shape.m_area = static_cast<float>(area);
-
-    if (shape.m_area != 0.0f)
-        shape.m_rcp_area = 1.0f / shape.m_area;
-    else
-        shape.m_rcp_area = FP<float>().snan();
+    shape.m_rcp_area = shape.m_area != 0.0f ? 1.0f / shape.m_area : FP<float>().snan();
 
     return shape;
 }
@@ -175,11 +157,7 @@ EmittingShape EmittingShape::create_sphere_shape(
     shape.m_geom.m_sphere.m_radius = radius;
 
     shape.m_area = static_cast<float>(area);
-
-    if (shape.m_area != 0.0f)
-        shape.m_rcp_area = 1.0f / shape.m_area;
-    else
-        shape.m_rcp_area = FP<float>().snan();
+    shape.m_rcp_area = shape.m_area != 0.0f ? 1.0f / shape.m_area : FP<float>().snan();
 
     return shape;
 }
@@ -209,21 +187,17 @@ EmittingShape EmittingShape::create_disk_shape(
     shape.m_geom.m_disk.m_y = y;
 
     shape.m_area = static_cast<float>(area);
-
-    if (shape.m_area != 0.0f)
-        shape.m_rcp_area = 1.0f / shape.m_area;
-    else
-        shape.m_rcp_area = FP<float>().snan();
+    shape.m_rcp_area = shape.m_area != 0.0f ? 1.0f / shape.m_area : FP<float>().snan();
 
     return shape;
 }
 
 EmittingShape::EmittingShape(
-    const ShapeType         shape_type,
-    const AssemblyInstance* assembly_instance,
-    const size_t            object_instance_index,
-    const size_t            primitive_index,
-    const Material*         material)
+    const ShapeType             shape_type,
+    const AssemblyInstance*     assembly_instance,
+    const size_t                object_instance_index,
+    const size_t                primitive_index,
+    const Material*             material)
 {
     m_assembly_instance_and_type.set(
         assembly_instance,
@@ -237,105 +211,111 @@ EmittingShape::EmittingShape(
 }
 
 void EmittingShape::sample_uniform(
-    const Vector2f&         s,
-    const float             shape_prob,
-    LightSample&            light_sample) const
+    const Vector2f&             s,
+    const float                 shape_prob,
+    LightSample&                light_sample) const
 {
     // Store a pointer to the emitting shape.
     light_sample.m_shape = this;
 
-    const auto shape_type = get_shape_type();
-
-    if (shape_type == TriangleShape)
+    switch (get_shape_type())
     {
-        // Uniformly sample the surface of the shape.
-        const Vector3d bary = sample_triangle_uniform(Vector2d(s));
+      case TriangleShape:
+        {
+            // Uniformly sample the surface of the shape.
+            const Vector3f bary = sample_triangle_uniform(s);
 
-        // Set the parametric coordinates.
-        light_sample.m_param_coords[0] = static_cast<float>(bary[0]);
-        light_sample.m_param_coords[1] = static_cast<float>(bary[1]);
+            // Set the parametric coordinates.
+            light_sample.m_param_coords[0] = bary[0];
+            light_sample.m_param_coords[1] = bary[1];
 
-        // Compute the world space position of the sample.
-        light_sample.m_point =
-              bary[0] * m_geom.m_triangle.m_v0
-            + bary[1] * m_geom.m_triangle.m_v1
-            + bary[2] * m_geom.m_triangle.m_v2;
+            // Compute the world space position of the sample.
+            light_sample.m_point =
+                  static_cast<double>(bary[0]) * m_geom.m_triangle.m_v0
+                + static_cast<double>(bary[1]) * m_geom.m_triangle.m_v1
+                + static_cast<double>(bary[2]) * m_geom.m_triangle.m_v2;
 
-        // Compute the world space shading normal at the position of the sample.
-        light_sample.m_shading_normal =
-              bary[0] * m_geom.m_triangle.m_n0
-            + bary[1] * m_geom.m_triangle.m_n1
-            + bary[2] * m_geom.m_triangle.m_n2;
-        light_sample.m_shading_normal = normalize(light_sample.m_shading_normal);
+            // Compute the world space shading normal at the position of the sample.
+            light_sample.m_shading_normal =
+                  static_cast<double>(bary[0]) * m_geom.m_triangle.m_n0
+                + static_cast<double>(bary[1]) * m_geom.m_triangle.m_n1
+                + static_cast<double>(bary[2]) * m_geom.m_triangle.m_n2;
+            light_sample.m_shading_normal = normalize(light_sample.m_shading_normal);
 
-        // Set the world space geometric normal.
-        light_sample.m_geometric_normal = m_geom.m_triangle.m_geometric_normal;
-    }
-    else if (shape_type == RectangleShape)
-    {
-        // Set the parametric coordinates.
-        light_sample.m_param_coords = s;
+            // Set the world space geometric normal.
+            light_sample.m_geometric_normal = m_geom.m_triangle.m_geometric_normal;
+        }
+        break;
 
-        light_sample.m_point =
-            m_geom.m_rectangle.m_origin +
-            static_cast<double>(s[0]) * m_geom.m_rectangle.m_x +
-            static_cast<double>(s[1]) * m_geom.m_rectangle.m_y;
+      case RectangleShape:
+        {
+            // Set the parametric coordinates.
+            light_sample.m_param_coords = s;
 
-        // Set the world space shading and geometric normals.
-        light_sample.m_shading_normal = m_geom.m_rectangle.m_geometric_normal;
-        light_sample.m_geometric_normal = m_geom.m_rectangle.m_geometric_normal;
-    }
-    else if (shape_type == SphereShape)
-    {
-        // Set the parametric coordinates.
-        light_sample.m_param_coords = s;
+            // Compute the world space position of the sample.
+            light_sample.m_point =
+                m_geom.m_rectangle.m_origin +
+                static_cast<double>(s[0]) * m_geom.m_rectangle.m_x +
+                static_cast<double>(s[1]) * m_geom.m_rectangle.m_y;
 
-        Vector3d n(sample_sphere_uniform(s));
+            // Set the world space shading and geometric normals.
+            light_sample.m_shading_normal = m_geom.m_rectangle.m_geometric_normal;
+            light_sample.m_geometric_normal = m_geom.m_rectangle.m_geometric_normal;
+        }
+        break;
 
-        // Set the world space shading and geometric normals.
-        light_sample.m_shading_normal = n;
-        light_sample.m_geometric_normal = n;
+      case SphereShape:
+        {
+            // Set the parametric coordinates.
+            light_sample.m_param_coords = s;
 
-        // Compute the world space position of the sample.
-        light_sample.m_point = m_geom.m_sphere.m_center + n * m_geom.m_sphere.m_radius;
-    }
-    else if (shape_type == DiskShape)
-    {
-        const Vector2f param_coords = sample_disk_uniform(s);
+            // Uniformly sample the surface of the shape.
+            const Vector3d n(sample_sphere_uniform(s));
 
-        // Compute the world space position of the sample.
-        light_sample.m_point =
-            m_geom.m_disk.m_center +
-            static_cast<double>(param_coords[0]) * m_geom.m_disk.m_x +
-            static_cast<double>(param_coords[1]) * m_geom.m_disk.m_y;
+            // Compute the world space position of the sample.
+            light_sample.m_point = m_geom.m_sphere.m_center + n * m_geom.m_sphere.m_radius;
 
-        // Set the parametric coordinates.
-        light_sample.m_param_coords = param_coords;
+            // Set the world space shading and geometric normals.
+            light_sample.m_shading_normal = n;
+            light_sample.m_geometric_normal = n;
+        }
+        break;
 
-        // Set the world space shading and geometric normals.
-        light_sample.m_shading_normal = m_geom.m_disk.m_geometric_normal;
-        light_sample.m_geometric_normal = m_geom.m_disk.m_geometric_normal;
-    }
-    else
-    {
-        assert(false && "Unknown emitter shape type");
+      case DiskShape:
+        {
+            // Uniformly sample the surface of the shape.
+            const Vector2f param_coords = sample_disk_uniform(s);
+
+            // Set the parametric coordinates.
+            light_sample.m_param_coords = param_coords;
+
+            // Compute the world space position of the sample.
+            light_sample.m_point =
+                m_geom.m_disk.m_center +
+                static_cast<double>(param_coords[0]) * m_geom.m_disk.m_x +
+                static_cast<double>(param_coords[1]) * m_geom.m_disk.m_y;
+
+            // Set the world space shading and geometric normals.
+            light_sample.m_shading_normal = m_geom.m_disk.m_geometric_normal;
+            light_sample.m_geometric_normal = m_geom.m_disk.m_geometric_normal;
+        }
+        break;
+
+      default:
+        assert(!"Unknown emitter shape type");
+        break;
     }
 
     // Compute the probability density of this sample.
-    light_sample.m_probability = shape_prob * get_rcp_area();
-}
-
-float EmittingShape::evaluate_pdf_uniform() const
-{
-    return get_shape_prob() * get_rcp_area();
+    light_sample.m_probability = shape_prob * m_rcp_area;
 }
 
 void EmittingShape::make_shading_point(
-    ShadingPoint&           shading_point,
-    const Vector3d&         point,
-    const Vector3d&         direction,
-    const Vector2f&         param_coords,
-    const Intersector&      intersector) const
+    ShadingPoint&               shading_point,
+    const Vector3d&             point,
+    const Vector3d&             direction,
+    const Vector2f&             param_coords,
+    const Intersector&          intersector) const
 {
     const ShadingRay ray(
         point,
@@ -345,87 +325,95 @@ void EmittingShape::make_shading_point(
         ShadingRay::Time(),
         VisibilityFlags::CameraRay, 0);
 
-    const auto shape_type = get_shape_type();
-
-    if (shape_type == TriangleShape)
+    switch (get_shape_type())
     {
-        intersector.make_triangle_shading_point(
-            shading_point,
-            ray,
-            param_coords,
-            get_assembly_instance(),
-            get_assembly_instance()->transform_sequence().get_earliest_transform(),
-            get_object_instance_index(),
-            get_primitive_index(),
-            m_shape_support_plane);
-    }
-    else if (shape_type == RectangleShape)
-    {
-        const Vector3d p =
-            m_geom.m_rectangle.m_origin +
-            static_cast<double>(param_coords[0]) * m_geom.m_rectangle.m_x +
-            static_cast<double>(param_coords[1]) * m_geom.m_rectangle.m_y;
+      case TriangleShape:
+        {
+            intersector.make_triangle_shading_point(
+                shading_point,
+                ray,
+                param_coords,
+                get_assembly_instance(),
+                get_assembly_instance()->transform_sequence().get_earliest_transform(),
+                get_object_instance_index(),
+                get_primitive_index(),
+                m_shape_support_plane);
+        }
+        break;
 
-        intersector.make_procedural_surface_shading_point(
-            shading_point,
-            ray,
-            param_coords,
-            get_assembly_instance(),
-            get_assembly_instance()->transform_sequence().get_earliest_transform(),
-            get_object_instance_index(),
-            get_primitive_index(),
-            p,
-            m_geom.m_rectangle.m_geometric_normal,
-            m_geom.m_rectangle.m_x,
-            cross(m_geom.m_rectangle.m_x, m_geom.m_rectangle.m_geometric_normal));
-    }
-    else if (shape_type == SphereShape)
-    {
-        const double theta = static_cast<double>(param_coords[0]);
-        const double phi = static_cast<double>(param_coords[1]);
+      case RectangleShape:
+        {
+            const Vector3d p =
+                m_geom.m_rectangle.m_origin +
+                static_cast<double>(param_coords[0]) * m_geom.m_rectangle.m_x +
+                static_cast<double>(param_coords[1]) * m_geom.m_rectangle.m_y;
 
-        const Vector3d n = Vector3d::make_unit_vector(theta, phi);
-        const Vector3d p = m_geom.m_sphere.m_center + m_geom.m_sphere.m_radius * n;
+            intersector.make_procedural_surface_shading_point(
+                shading_point,
+                ray,
+                param_coords,
+                get_assembly_instance(),
+                get_assembly_instance()->transform_sequence().get_earliest_transform(),
+                get_object_instance_index(),
+                get_primitive_index(),
+                p,
+                m_geom.m_rectangle.m_geometric_normal,
+                m_geom.m_rectangle.m_x,
+                cross(m_geom.m_rectangle.m_x, m_geom.m_rectangle.m_geometric_normal));
+        }
+        break;
 
-        const Vector3d dpdu(-TwoPi<double>() * n.y, TwoPi<double>() + n.x, 0.0);
-        const Vector3d dpdv = cross(dpdu, n);
+      case SphereShape:
+        {
+            const double theta = static_cast<double>(param_coords[0]);
+            const double phi = static_cast<double>(param_coords[1]);
 
-        intersector.make_procedural_surface_shading_point(
-            shading_point,
-            ray,
-            param_coords,
-            get_assembly_instance(),
-            get_assembly_instance()->transform_sequence().get_earliest_transform(),
-            get_object_instance_index(),
-            get_primitive_index(),
-            p,
-            n,
-            dpdu,
-            dpdv);
-    }
-    else if (shape_type == DiskShape)
-    {
-        const Vector3d p =
-            m_geom.m_disk.m_center +
-            static_cast<double>(param_coords[0]) * m_geom.m_disk.m_x +
-            static_cast<double>(param_coords[1]) * m_geom.m_disk.m_y;
+            const Vector3d n = Vector3d::make_unit_vector(theta, phi);
+            const Vector3d p = m_geom.m_sphere.m_center + m_geom.m_sphere.m_radius * n;
 
-        intersector.make_procedural_surface_shading_point(
-            shading_point,
-            ray,
-            param_coords,
-            get_assembly_instance(),
-            get_assembly_instance()->transform_sequence().get_earliest_transform(),
-            get_object_instance_index(),
-            get_primitive_index(),
-            p,
-            m_geom.m_disk.m_geometric_normal,
-            m_geom.m_disk.m_x,
-            cross(m_geom.m_disk.m_x, m_geom.m_disk.m_geometric_normal));
-    }
-    else
-    {
-        assert(false && "Unknown emitter shape type");
+            const Vector3d dpdu(-TwoPi<double>() * n.y, TwoPi<double>() + n.x, 0.0);
+            const Vector3d dpdv = cross(dpdu, n);
+
+            intersector.make_procedural_surface_shading_point(
+                shading_point,
+                ray,
+                param_coords,
+                get_assembly_instance(),
+                get_assembly_instance()->transform_sequence().get_earliest_transform(),
+                get_object_instance_index(),
+                get_primitive_index(),
+                p,
+                n,
+                dpdu,
+                dpdv);
+        }
+        break;
+
+      case DiskShape:
+        {
+            const Vector3d p =
+                m_geom.m_disk.m_center +
+                static_cast<double>(param_coords[0]) * m_geom.m_disk.m_x +
+                static_cast<double>(param_coords[1]) * m_geom.m_disk.m_y;
+
+            intersector.make_procedural_surface_shading_point(
+                shading_point,
+                ray,
+                param_coords,
+                get_assembly_instance(),
+                get_assembly_instance()->transform_sequence().get_earliest_transform(),
+                get_object_instance_index(),
+                get_primitive_index(),
+                p,
+                m_geom.m_disk.m_geometric_normal,
+                m_geom.m_disk.m_x,
+                cross(m_geom.m_disk.m_x, m_geom.m_disk.m_geometric_normal));
+        }
+        break;
+
+      default:
+        assert(!"Unknown emitter shape type");
+        break;
     }
 }
 

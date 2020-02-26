@@ -447,6 +447,7 @@ void DirectLightingIntegrator::add_emitting_shape_sample_contribution(
         -Vector3f(incoming),
         edf_value);
 
+    // Compute geometric term.
     const float g = static_cast<float>(cos_on * rcp_sample_square_distance);
 
     // Apply MIS weighting.

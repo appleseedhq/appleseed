@@ -300,6 +300,11 @@ inline const foundation::Vector3d& EmittingShape::get_centroid() const
     return m_centroid;
 }
 
+inline float EmittingShape::evaluate_pdf_uniform() const
+{
+    return m_shape_prob * m_rcp_area;
+}
+
 inline float EmittingShape::get_average_flux() const
 {
     return m_average_flux;

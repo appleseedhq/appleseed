@@ -470,6 +470,13 @@ inline Vector<T, 3> sample_triangle_uniform_heitz(const Vector<T, 2>& s)
 
     const T offset = t1 - t0;
 
+    //
+    // Potentially branchless version of the block below:
+    //
+    //   t0 -= std::min(offset, T(0.0));
+    //   t1 += std::max(offset, T(0.0));
+    //
+
     if (offset > T(0.0))
         t1 += offset;
     else t0 -= offset;
@@ -477,7 +484,7 @@ inline Vector<T, 3> sample_triangle_uniform_heitz(const Vector<T, 2>& s)
     Vector<T, 3> b;
     b[0] = t0;
     b[1] = t1;
-    b[2] = T(1.0) - b[0] - b[1];
+    b[2] = T(1.0) - t0 - t1;
 
     assert(feq(b[0] + b[1] + b[2], T(1.0)));
 
