@@ -573,7 +573,7 @@ namespace
 
             // Sample longitudinal function for given component of scattering.
 
-            float sin_theta_i = 0.0;
+            float sin_theta_i;
             if (p == 0)
             {
                 sin_theta_i = sample_longitudinal(
@@ -590,7 +590,7 @@ namespace
                     values->m_precomputed.m_v * 0.25f,
                     sample_M);
             }
-            else if (p == 2)
+            else
             {
                 sin_theta_i = sample_longitudinal(
                     std::sin(theta_o_TRT),
