@@ -74,6 +74,7 @@ shader as_metal_surface
         Tn,
         NormalReflectance,
         EdgeTint,
+        1.0,
         microfacet_roughness(Roughness, RoughnessDepthScale),
         Anisotropic);
 }

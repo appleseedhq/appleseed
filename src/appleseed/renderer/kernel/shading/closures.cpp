@@ -879,6 +879,7 @@ namespace
             OSL::Vec3       T;
             OSL::Color3     normal_reflectance;
             OSL::Color3     edge_tint;
+            float           edge_tint_weight;
             float           roughness;
             float           anisotropy;
             float           energy_compensation;
@@ -917,6 +918,7 @@ namespace
                 CLOSURE_VECTOR_PARAM(Params, T),
                 CLOSURE_COLOR_PARAM(Params, normal_reflectance),
                 CLOSURE_COLOR_PARAM(Params, edge_tint),
+                CLOSURE_FLOAT_PARAM(Params, edge_tint_weight),
                 CLOSURE_FLOAT_PARAM(Params, roughness),
                 CLOSURE_FLOAT_PARAM(Params, anisotropy),
                 CLOSURE_FLOAT_KEYPARAM(Params, energy_compensation, "energy_compensation"),
@@ -948,7 +950,7 @@ namespace
 
             values->m_normal_reflectance.set(Color3f(p->normal_reflectance), g_std_lighting_conditions, Spectrum::Reflectance);
             values->m_edge_tint.set(Color3f(p->edge_tint), g_std_lighting_conditions, Spectrum::Reflectance);
-            values->m_edge_tint_weight = 1.0f;
+            values->m_edge_tint_weight = saturate(p->edge_tint_weight);
             values->m_reflectance_multiplier = 1.0f;
             values->m_roughness = std::max(p->roughness, 0.0f);
             values->m_anisotropy = clamp(p->anisotropy, -1.0f, 1.0f);
