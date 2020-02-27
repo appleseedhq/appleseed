@@ -52,8 +52,6 @@
 #include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
-#include "foundation/platform/compiler.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/log/consolelogtarget.h"
 #include "foundation/utility/autoreleaseptr.h"
@@ -65,6 +63,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <iomanip>
 #include <memory>
 #include <sstream>
@@ -403,13 +402,13 @@ class SingleBakedMeshProjectBuilder
         for (size_t i = 0; i < m_cube->get_triangle_count(); ++i)
         {
             Triangle triangle = m_cube->get_triangle(i);
-            triangle.m_v0 += static_cast<uint32>(base_vertex_index);
-            triangle.m_v1 += static_cast<uint32>(base_vertex_index);
-            triangle.m_v2 += static_cast<uint32>(base_vertex_index);
-            triangle.m_n0 += static_cast<uint32>(base_vertex_normal_index);
-            triangle.m_n1 += static_cast<uint32>(base_vertex_normal_index);
-            triangle.m_n2 += static_cast<uint32>(base_vertex_normal_index);
-            triangle.m_a0 = triangle.m_a1 = triangle.m_a2 = static_cast<uint32>(tex_coords_index);
+            triangle.m_v0 += static_cast<uint32_t>(base_vertex_index);
+            triangle.m_v1 += static_cast<uint32_t>(base_vertex_index);
+            triangle.m_v2 += static_cast<uint32_t>(base_vertex_index);
+            triangle.m_n0 += static_cast<uint32_t>(base_vertex_normal_index);
+            triangle.m_n1 += static_cast<uint32_t>(base_vertex_normal_index);
+            triangle.m_n2 += static_cast<uint32_t>(base_vertex_normal_index);
+            triangle.m_a0 = triangle.m_a1 = triangle.m_a2 = static_cast<uint32_t>(tex_coords_index);
             m_mesh->push_triangle(triangle);
         }
     }
