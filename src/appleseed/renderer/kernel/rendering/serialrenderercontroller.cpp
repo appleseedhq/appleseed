@@ -129,13 +129,17 @@ void SerialRendererController::add_on_tiled_frame_end_callback(
 void SerialRendererController::add_on_tile_begin_callback(
     const Frame*            frame,
     const size_t            tile_x,
-    const size_t            tile_y)
+    const size_t            tile_y,
+    const size_t            thread_index,
+    const size_t            nb_threads)
 {
     PendingTileCallback callback = {};
     callback.m_type = PendingTileCallback::OnTileBegin;
     callback.m_frame = frame;
     callback.m_tile_x = tile_x;
     callback.m_tile_y = tile_y;
+    callback.m_thread_index = thread_index;
+    callback.m_nb_threads = nb_threads;
 
     boost::mutex::scoped_lock lock(m_mutex);
     m_pending_callbacks.push_back(callback);
@@ -199,7 +203,7 @@ void SerialRendererController::exec_callback(const PendingTileCallback& cb)
         break;
 
       case PendingTileCallback::OnTileBegin:
-        m_tile_callback->on_tile_begin(cb.m_frame, cb.m_tile_x, cb.m_tile_y);
+        m_tile_callback->on_tile_begin(cb.m_frame, cb.m_tile_x, cb.m_tile_y, cb.m_thread_index, cb.m_nb_threads);
         break;
 
       case PendingTileCallback::OnTileEnd:

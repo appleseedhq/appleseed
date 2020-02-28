@@ -109,7 +109,9 @@ namespace
         void on_tile_begin(
             const Frame*            /*frame*/,
             const size_t            /*tile_x*/,
-            const size_t            /*tile_y*/) override
+            const size_t            /*tile_y*/,
+            const size_t            /*thread_index*/,
+            const size_t            /*nb_threads*/) override
         {
             PyErr_SetString(PyExc_RuntimeError, "BlenderProgressiveTileCallback cannot be used for final renders");
             bpy::throw_error_already_set();

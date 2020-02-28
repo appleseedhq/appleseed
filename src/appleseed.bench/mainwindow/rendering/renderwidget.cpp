@@ -176,7 +176,9 @@ namespace
 void RenderWidget::highlight_tile(
     const Frame&    frame,
     const size_t    tile_x,
-    const size_t    tile_y)
+    const size_t    tile_y,
+    const size_t    thread_index,
+    const size_t    nb_threads)
 {
     QMutexLocker locker(&m_mutex);
 
@@ -205,7 +207,16 @@ void RenderWidget::highlight_tile(
 
     // Draw a bracket around the tile.
     const size_t BracketExtent = 5;
-    const std::uint8_t BracketColor[3] = { 255, 255, 255 };
+    std::uint8_t BracketColor[3] = { 255, 255, 255 }; // white
+    if (thread_index >= 0) {
+        // Choose one color per thread (see https://www.shadertoy.com/view/wlKXDm).
+        float t = TwoPi<float>() * (thread_index / static_cast<float>(nb_threads));
+        float cos_t = std::cos(t);
+        float sin_t = std::sin(t);
+        BracketColor[0] = 128 + static_cast<std::uint8_t>(127.5f * cos_t);
+        BracketColor[1] = 128 + static_cast<std::uint8_t>(127.5f * (-0.5f * cos_t - 0.866f * sin_t));
+        BracketColor[2] = 128 + static_cast<std::uint8_t>(127.5f * (-0.5f * cos_t + 0.866f * sin_t));
+    }
     draw_bracket(
         dest,
         width,

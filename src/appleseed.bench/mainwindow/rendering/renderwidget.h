@@ -88,7 +88,9 @@ class RenderWidget
     void highlight_tile(
         const renderer::Frame&  frame,
         const size_t            tile_x,
-        const size_t            tile_y);
+        const size_t            tile_y,
+        const size_t            thread_index,
+        const size_t            nb_threads);
 
     // Thread-safe.
     void blit_tile(
