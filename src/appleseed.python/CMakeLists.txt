@@ -245,6 +245,10 @@ if (WITH_PYTHON2_BINDINGS)
             ${PYTHON_LIBRARIES}
         )
     endif ()
+
+    if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+        set_target_properties(appleseed.python PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+    endif ()
 endif ()
 
 if (WITH_PYTHON3_BINDINGS)
@@ -260,6 +264,10 @@ if (WITH_PYTHON3_BINDINGS)
         target_link_libraries (appleseed.python3
             ${PYTHON3_LIBRARY}
         )
+    endif ()
+
+    if (CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+        set_target_properties(appleseed.python3 PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
     endif ()
 
     if (CMAKE_SYSTEM_NAME STREQUAL "Linux")
