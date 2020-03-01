@@ -467,7 +467,7 @@ namespace
                     return;
 
                 const Vector3f point(vertex.get_point());
-                const float radius = m_pass_callback.get_lookup_radius();
+                const float radius = m_pass_callback.get_photon_lookup_radius();
 
                 // Find the nearby photons around the path vertex.
                 const knn::Query3f query(photon_map, m_answer);
@@ -813,6 +813,17 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
                 "and later on photons are only stored in these important parts"));
 
     metadata.dictionaries().insert(
+        "importon_lookup_radius",
+        Dictionary()
+            .insert("type", "float")
+            .insert("default", "5.0")
+            .insert("unit", "percent")
+            .insert("min", "0.0")
+            .insert("max", "100.0")
+            .insert("label", "Importon Lookup Radius")
+            .insert("help", "Importon lookup radius (in percents of the scene diameter) when deciding whether to store or not a photon"));
+
+    metadata.dictionaries().insert(
         "photon_tracing_max_bounces",
         Dictionary()
             .insert("type", "int")
@@ -873,15 +884,15 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
             .insert("help", "Number of environment photons per render pass"));
 
     metadata.dictionaries().insert(
-        "initial_radius",
+        "initial_photon_lookup_radius",
         Dictionary()
             .insert("type", "float")
             .insert("default", "0.1")
             .insert("unit", "percent")
             .insert("min", "0.0")
             .insert("max", "100.0")
-            .insert("label", "Initial Radius")
-            .insert("help", "Initial photon gathering radius in percent of the scene diameter."));
+            .insert("label", "Initial Photon Lookup Radius")
+            .insert("help", "Initial photon lookup radius (in percents of the scene diameter)"));
 
     metadata.dictionaries().insert(
         "max_photons_per_estimate",
@@ -898,7 +909,7 @@ Dictionary SPPMLightingEngineFactory::get_params_metadata()
             .insert("type", "float")
             .insert("default", "0.7")
             .insert("label", "Alpha")
-            .insert("help", "Evolution rate of photon gathering radius"));
+            .insert("help", "Evolution rate of photon lookup radius"));
 
     return metadata;
 }

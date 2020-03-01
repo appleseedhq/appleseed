@@ -199,22 +199,36 @@ namespace
             }
         }
 
+        // Move a key from one dictionary to another at a given path.
+        static void move_if_exist(
+            ParamArray&         dest,
+            const char*         dest_path,
+            ParamArray&         src,
+            const char*         src_path)
+        {
+            if (src.exist_path(src_path))
+            {
+                dest.insert_path(dest_path, src.get_path(src_path));
+                src.remove_path(src_path);
+            }
+        }
+
         // Move a key to a new path in the same parameter array.
         static void move_if_exist(
             ParamArray&         params,
             const char*         dest_path,
-            const char*         src_key)
+            const char*         src_path)
         {
-            move_if_exist(params, dest_path, params, src_key);
+            move_if_exist(params, dest_path, params, src_path);
         }
 
         // Helper function, same functionality as above.
         static void move_if_exist(
             Entity&             entity,
             const char*         dest_path,
-            const char*         src_key)
+            const char*         src_path)
         {
-            move_if_exist(entity.get_parameters(), dest_path, src_key);
+            move_if_exist(entity.get_parameters(), dest_path, src_path);
         }
     };
 
@@ -2318,6 +2332,30 @@ namespace
             params.strings().remove("ray_bias_distance");
         }
     };
+
+
+    //
+    // Update from revision 33 to revision 34.
+    //
+
+    class UpdateFromRevision_33
+      : public Updater
+    {
+      public:
+        UpdateFromRevision_33(Project& project, EventCounters& event_counters)
+          : Updater(project, event_counters, 33)
+        {
+        }
+
+        void update() override
+        {
+            for (Configuration& configuration : m_project.configurations())
+            {
+                ParamArray& root = configuration.get_parameters();
+                move_if_exist(root, "sppm.initial_photon_lookup_radius", "sppm.initial_radius");
+            }
+        }
+    };
 }
 
 bool ProjectFileUpdater::update(
@@ -2383,6 +2421,7 @@ void ProjectFileUpdater::update(
       CASE_UPDATE_FROM_REVISION(30);
       CASE_UPDATE_FROM_REVISION(31);
       CASE_UPDATE_FROM_REVISION(32);
+      CASE_UPDATE_FROM_REVISION(33);
 
       case ProjectFormatRevision:
         // Project is up-to-date.

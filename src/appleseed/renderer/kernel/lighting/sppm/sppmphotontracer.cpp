@@ -99,7 +99,7 @@ namespace
         Spectrum                    m_initial_flux;     // initial particle flux (in W)
         const SPPMParameters&       m_params;
         const SPPMImportonMap*      m_importon_map;
-        const float                 m_lookup_radius;
+        const float                 m_importon_lookup_radius;
         const bool                  m_store_direct;
         const bool                  m_store_indirect;
         const bool                  m_store_caustics;
@@ -109,7 +109,7 @@ namespace
             const Spectrum&         initial_flux,
             const SPPMParameters&   params,
             const SPPMImportonMap*  importon_map,
-            const float             lookup_radius,
+            const float             importon_lookup_radius,
             const bool              store_direct,
             const bool              store_indirect,
             const bool              store_caustics,
@@ -117,7 +117,7 @@ namespace
           : m_initial_flux(initial_flux)
           , m_params(params)
           , m_importon_map(importon_map)
-          , m_lookup_radius(lookup_radius)
+          , m_importon_lookup_radius(importon_lookup_radius)
           , m_store_direct(store_direct)
           , m_store_indirect(store_indirect)
           , m_store_caustics(store_caustics)
@@ -174,7 +174,7 @@ namespace
                 if (m_importon_map != nullptr)
                 {
                     const knn::AnyQuery3f query(*m_importon_map);
-                    if (!query.run(point, square(m_lookup_radius * 50)))
+                    if (!query.run(point, square(m_importon_lookup_radius)))
                         return;
                 }
 
@@ -252,7 +252,7 @@ namespace
             const Scene&                    scene,
             const LightTargetArray&         photon_targets,
             const SPPMImportonMap*          importon_map,
-            const float                     lookup_radius,
+            const float                     importon_lookup_radius,
             const ForwardLightSampler&      light_sampler,
             const TraceContext&             trace_context,
             TextureStore&                   texture_store,
@@ -267,7 +267,7 @@ namespace
           : m_scene(scene)
           , m_photon_targets(photon_targets)
           , m_importon_map(importon_map)
-          , m_lookup_radius(lookup_radius)
+          , m_importon_lookup_radius(importon_lookup_radius)
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache)
@@ -334,7 +334,7 @@ namespace
         const Scene&                m_scene;
         const LightTargetArray&     m_photon_targets;
         const SPPMImportonMap*      m_importon_map;
-        const float                 m_lookup_radius;
+        const float                 m_importon_lookup_radius;
         const ForwardLightSampler&  m_light_sampler;
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
@@ -457,7 +457,7 @@ namespace
                 initial_flux,
                 m_params,
                 m_importon_map,
-                m_lookup_radius,
+                m_importon_lookup_radius,
                 m_params.m_dl_mode == SPPMParameters::SPPM, // store direct lighting photons?
                 cast_indirect_light,
                 m_params.m_enable_caustics,
@@ -522,7 +522,7 @@ namespace
                 initial_flux,
                 m_params,
                 m_importon_map,
-                m_lookup_radius,
+                m_importon_lookup_radius,
                 m_params.m_dl_mode == SPPMParameters::SPPM, // store direct lighting photons?
                 cast_indirect_light,
                 m_params.m_enable_caustics,
@@ -558,7 +558,7 @@ namespace
             const Scene&                scene,
             const LightTargetArray&     photon_targets,
             const SPPMImportonMap*      importon_map,
-            const float                 lookup_radius,
+            const float                 importon_lookup_radius,
             const TraceContext&         trace_context,
             TextureStore&               texture_store,
             OIIOTextureSystem&          oiio_texture_system,
@@ -572,7 +572,7 @@ namespace
           : m_scene(scene)
           , m_photon_targets(photon_targets)
           , m_importon_map(importon_map)
-          , m_lookup_radius(lookup_radius)
+          , m_importon_lookup_radius(importon_lookup_radius)
           , m_env_edf(*scene.get_environment()->get_environment_edf())
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache)
@@ -644,7 +644,7 @@ namespace
         const Scene&                m_scene;
         const LightTargetArray&     m_photon_targets;
         const SPPMImportonMap*      m_importon_map;
-        const float                 m_lookup_radius;
+        const float                 m_importon_lookup_radius;
         const EnvironmentEDF&       m_env_edf;
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
@@ -738,7 +738,7 @@ namespace
                 initial_flux,
                 m_params,
                 m_importon_map,
-                m_lookup_radius,
+                m_importon_lookup_radius,
                 true,
                 cast_indirect_light,
                 m_params.m_enable_caustics,
@@ -848,7 +848,7 @@ namespace
 void SPPMPhotonTracer::trace_photons(
     SPPMPhotonVector&       photons,
     const SPPMImportonMap*  importon_map,
-    const float             lookup_radius,
+    const float             importon_lookup_radius,
     const std::uint32_t     pass_hash,
     JobQueue&               job_queue,
     IAbortSwitch&           abort_switch)
@@ -872,7 +872,7 @@ void SPPMPhotonTracer::trace_photons(
         schedule_light_photon_tracing_jobs(
             photon_targets,
             importon_map,
-            lookup_radius,
+            importon_lookup_radius,
             pass_hash,
             photons,
             job_queue,
@@ -885,7 +885,7 @@ void SPPMPhotonTracer::trace_photons(
         schedule_environment_photon_tracing_jobs(
             photon_targets,
             importon_map,
-            lookup_radius,
+            importon_lookup_radius,
             pass_hash,
             photons,
             job_queue,
@@ -924,7 +924,7 @@ void SPPMPhotonTracer::trace_photons(
 void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
     const LightTargetArray& photon_targets,
     const SPPMImportonMap*  importon_map,
-    const float             lookup_radius,
+    const float             importon_lookup_radius,
     const std::uint32_t     pass_hash,
     SPPMPhotonVector&       photons,
     JobQueue&               job_queue,
@@ -947,7 +947,7 @@ void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
                 m_scene,
                 photon_targets,
                 importon_map,
-                lookup_radius,
+                importon_lookup_radius,
                 m_light_sampler,
                 m_trace_context,
                 m_texture_store,
@@ -968,7 +968,7 @@ void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
 void SPPMPhotonTracer::schedule_environment_photon_tracing_jobs(
     const LightTargetArray& photon_targets,
     const SPPMImportonMap*  importon_map,
-    const float             lookup_radius,
+    const float             importon_lookup_radius,
     const std::uint32_t     pass_hash,
     SPPMPhotonVector&       photons,
     JobQueue&               job_queue,
@@ -991,7 +991,7 @@ void SPPMPhotonTracer::schedule_environment_photon_tracing_jobs(
                 m_scene,
                 photon_targets,
                 importon_map,
-                lookup_radius,
+                importon_lookup_radius,
                 m_trace_context,
                 m_texture_store,
                 m_oiio_texture_system,
