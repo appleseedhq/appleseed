@@ -32,7 +32,6 @@ language: cpp
 
 os:
   - linux
-  - osx
 
 dist: xenial
 
@@ -54,7 +53,6 @@ install:
   - if [ -n "$GCC_VERSION" ]; then export CXX="${CXX}-${GCC_VERSION}"; fi
 
 compiler:
-  - clang
   - gcc
 
 matrix:
@@ -67,18 +65,7 @@ matrix:
       compiler: gcc
       env: GCC_VERSION=7
 
-  exclude:
-    - os: osx
-      compiler: gcc
-
-    - os: linux
-      compiler: clang
-
-    - os: linux
-      compiler: gcc
-
   fast_finish: true
 
 script:
   - if [ $TRAVIS_OS_NAME == linux ]; then chmod +x ./scripts/travis/build-linux.sh ; ./scripts/travis/build-linux.sh ; fi
-  - if [ $TRAVIS_OS_NAME == osx ]; then chmod +x ./scripts/travis/build-macos.sh ; ./scripts/travis/build-macos.sh ; fi
