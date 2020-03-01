@@ -71,7 +71,7 @@ class SPPMPhotonTracer
     void trace_photons(
         SPPMPhotonVector&           photons,
         const SPPMImportonMap*      importon_map,
-        const float                 lookup_radius,
+        const float                 importon_lookup_radius,
         const std::uint32_t         pass_hash,
         foundation::JobQueue&       job_queue,
         foundation::IAbortSwitch&   abort_switch);
@@ -90,7 +90,7 @@ class SPPMPhotonTracer
     void schedule_light_photon_tracing_jobs(
         const LightTargetArray&     photon_targets,
         const SPPMImportonMap*      importon_map,
-        const float                 lookup_radius,
+        const float                 importon_lookup_radius,
         const std::uint32_t         pass_hash,
         SPPMPhotonVector&           photons,
         foundation::JobQueue&       job_queue,
@@ -101,7 +101,7 @@ class SPPMPhotonTracer
     void schedule_environment_photon_tracing_jobs(
         const LightTargetArray&     photon_targets,
         const SPPMImportonMap*      importon_map,
-        const float                 lookup_radius,
+        const float                 importon_lookup_radius,
         const std::uint32_t         pass_hash,
         SPPMPhotonVector&           photons,
         foundation::JobQueue&       job_queue,

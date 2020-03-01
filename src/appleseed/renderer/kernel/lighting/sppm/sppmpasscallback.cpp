@@ -83,14 +83,14 @@ SPPMPassCallback::SPPMPassCallback(
   , m_shading_result_framebuffer_factory(shading_result_framebuffer_factory)
   , m_pass_number(0)
 {
-    // Compute the initial lookup radius.
+    // Compute lookup radii.
     const GAABB3 scene_bbox = scene.compute_bbox();
     const float scene_diameter = static_cast<float>(scene_bbox.diameter());
-    const float diameter_factor = m_params.m_initial_radius_percents / 100.0f;
-    m_initial_lookup_radius = scene_diameter * diameter_factor;
+    m_initial_photon_lookup_radius = scene_diameter * (m_params.m_initial_photon_lookup_radius_percents / 100.0f);
+    m_importon_lookup_radius = scene_diameter * (m_params.m_importon_lookup_radius_percents / 100.0f);
 
-    // Start with the initial lookup radius.
-    m_lookup_radius = m_initial_lookup_radius;
+    // Start with the initial photon lookup radius.
+    m_photon_lookup_radius = m_initial_photon_lookup_radius;
 }
 
 void SPPMPassCallback::release()
@@ -147,7 +147,7 @@ void SPPMPassCallback::on_pass_begin(
         m_photon_tracer.trace_photons(
             m_photons,
             m_params.m_enable_importons && m_pass_number > 0 ? m_importon_map.get() : nullptr,
-            m_initial_lookup_radius,    // todo: adjust (make user-settable?)
+            m_importon_lookup_radius,
             pass_hash,
             job_queue,
             abort_switch);
@@ -159,12 +159,12 @@ void SPPMPassCallback::on_pass_begin(
         // Build a new photon map.
         m_photon_map.reset(new SPPMPhotonMap(m_photons));
 
-        if (m_initial_lookup_radius > 0.0f)
+        if (m_initial_photon_lookup_radius > 0.0f)
         {
             RENDERER_LOG_INFO(
                 "sppm lookup radius is %f (%s of initial radius).",
-                m_lookup_radius,
-                pretty_percent(m_lookup_radius, m_initial_lookup_radius, 3).c_str());
+                m_photon_lookup_radius,
+                pretty_percent(m_photon_lookup_radius, m_initial_photon_lookup_radius, 3).c_str());
         }
     }
 }
@@ -185,7 +185,7 @@ void SPPMPassCallback::on_pass_end(
                 m_params.m_enable_importons ? m_pass_number - 1 : m_pass_number;
             const float k = (effective_pass_number + m_params.m_alpha) / (effective_pass_number + 1);
             assert(k <= 1.0);
-            m_lookup_radius *= std::sqrt(k);
+            m_photon_lookup_radius *= std::sqrt(k);
         }
 
         // Merge importon vectors and build importon map.

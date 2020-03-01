@@ -1358,16 +1358,17 @@ namespace
             create_radiance_estimation_settings(layout);
             create_advanced_settings(layout);
 
-            create_direct_link("lighting_components.ibl",                       "sppm.enable_ibl");
-            create_direct_link("lighting_components.caustics",                  "sppm.enable_caustics");
-            create_direct_link("photon_tracing.importons",                      "sppm.enable_importons");
-            create_direct_link("photon_tracing.bounces.rr_start_bounce",        "sppm.photon_tracing_rr_min_path_length");
-            create_direct_link("photon_tracing.light_photons",                  "sppm.light_photons_per_pass");
-            create_direct_link("photon_tracing.env_photons",                    "sppm.env_photons_per_pass");
-            create_direct_link("radiance_estimation.bounces.rr_start_bounce",   "sppm.path_tracing_rr_min_path_length");
-            create_direct_link("radiance_estimation.initial_radius",            "sppm.initial_radius");
-            create_direct_link("radiance_estimation.max_photons",               "sppm.max_photons_per_estimate");
-            create_direct_link("radiance_estimation.alpha",                     "sppm.alpha");
+            create_direct_link("lighting_components.ibl",                          "sppm.enable_ibl");
+            create_direct_link("lighting_components.caustics",                     "sppm.enable_caustics");
+            create_direct_link("photon_tracing.importons",                         "sppm.enable_importons");
+            create_direct_link("photon_tracing.importon_lookup_radius",            "sppm.importon_lookup_radius");
+            create_direct_link("photon_tracing.bounces.rr_start_bounce",           "sppm.photon_tracing_rr_min_path_length");
+            create_direct_link("photon_tracing.light_photons",                     "sppm.light_photons_per_pass");
+            create_direct_link("photon_tracing.env_photons",                       "sppm.env_photons_per_pass");
+            create_direct_link("radiance_estimation.bounces.rr_start_bounce",      "sppm.path_tracing_rr_min_path_length");
+            create_direct_link("radiance_estimation.initial_photon_lookup_radius", "sppm.initial_photon_lookup_radius");
+            create_direct_link("radiance_estimation.max_photons",                  "sppm.max_photons_per_estimate");
+            create_direct_link("radiance_estimation.alpha",                        "sppm.alpha");
 
             load_directly_linked_values(config);
 
@@ -1467,9 +1468,16 @@ namespace
             QVBoxLayout* layout = new QVBoxLayout();
             groupbox->setLayout(layout);
 
+            QFormLayout* sublayout = create_form_layout();
+            layout->addLayout(sublayout);
+
             QCheckBox* enable_importons = create_checkbox("photon_tracing.importons", "Enable Importons");
             enable_importons->setToolTip(m_params_metadata.get_path("sppm.enable_importons.help"));
-            layout->addWidget(enable_importons);
+            sublayout->addWidget(enable_importons);
+
+            QDoubleSpinBox* importon_lookup_radius = create_double_input("photon_tracing.importon_lookup_radius", 0.001, 100.0, 3, 0.1, "%");
+            importon_lookup_radius->setToolTip(m_params_metadata.get_path("sppm.importon_lookup_radius.help"));
+            sublayout->addRow("Importon Lookup Radius:", importon_lookup_radius);
         }
 
         void create_photon_tracing_settings(QVBoxLayout* parent)
@@ -1507,9 +1515,9 @@ namespace
 
             create_bounce_settings(sublayout, "radiance_estimation", "sppm.path_tracing_max_bounces");
 
-            QDoubleSpinBox* initial_radius = create_double_input("radiance_estimation.initial_radius", 0.001, 100.0, 2, 0.1, "%");
-            initial_radius->setToolTip(m_params_metadata.get_path("sppm.initial_radius.help"));
-            sublayout->addRow("Initial Radius:", initial_radius);
+            QDoubleSpinBox* initial_photon_lookup_radius = create_double_input("radiance_estimation.initial_photon_lookup_radius", 0.001, 100.0, 3, 0.1, "%");
+            initial_photon_lookup_radius->setToolTip(m_params_metadata.get_path("sppm.initial_photon_lookup_radius.help"));
+            sublayout->addRow("Initial Photon Lookup Radius:", initial_photon_lookup_radius);
 
             QSpinBox* max_photons = create_integer_input("radiance_estimation.max_photons", 8, 10000, 50);
             max_photons->setToolTip(m_params_metadata.get_path("sppm.max_photons_per_estimate.help"));

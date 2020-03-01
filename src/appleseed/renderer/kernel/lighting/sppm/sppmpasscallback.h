@@ -104,8 +104,8 @@ class SPPMPassCallback
     // Return the current photon map.
     const SPPMPhotonMap& get_photon_map() const;
 
-    // Return the current lookup radius.
-    float get_lookup_radius() const;
+    // Return the current photon lookup radius.
+    float get_photon_lookup_radius() const;
 
     // Return the i'th photon.
     const SPPMMonoPhoton& get_mono_photon(const std::size_t i) const;
@@ -121,13 +121,14 @@ class SPPMPassCallback
     std::size_t                             m_pass_number;
     SPPMPhotonVector                        m_photons;
     std::unique_ptr<SPPMPhotonMap>          m_photon_map;
-    float                                   m_initial_lookup_radius;
-    float                                   m_lookup_radius;
+    float                                   m_initial_photon_lookup_radius;
+    float                                   m_photon_lookup_radius;
     foundation::Stopwatch<foundation::DefaultWallclockTimer>
                                             m_stopwatch;
     std::vector<std::unique_ptr<SPPMLightingEngineWorkingSet>>
                                             m_working_sets;
     std::unique_ptr<SPPMImportonMap>        m_importon_map;
+    float                                   m_importon_lookup_radius;
 };
 
 
@@ -145,9 +146,9 @@ inline const SPPMPhotonMap& SPPMPassCallback::get_photon_map() const
     return *m_photon_map.get();
 }
 
-inline float SPPMPassCallback::get_lookup_radius() const
+inline float SPPMPassCallback::get_photon_lookup_radius() const
 {
-    return m_lookup_radius;
+    return m_photon_lookup_radius;
 }
 
 inline const SPPMMonoPhoton& SPPMPassCallback::get_mono_photon(const std::size_t i) const
