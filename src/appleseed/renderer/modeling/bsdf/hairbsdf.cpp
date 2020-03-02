@@ -582,7 +582,7 @@ namespace
                     values->m_precomputed.m_v,
                     sample_M);
             }
-            if (p == 1)
+            else if (p == 1)
             {
                 sin_theta_i = sample_longitudinal(
                     std::sin(theta_o_TT),
@@ -590,7 +590,7 @@ namespace
                     values->m_precomputed.m_v * 0.25f,
                     sample_M);
             }
-            if (p == 2)
+            else
             {
                 sin_theta_i = sample_longitudinal(
                     std::sin(theta_o_TRT),
