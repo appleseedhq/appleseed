@@ -26,14 +26,25 @@
 // THE SOFTWARE.
 //
 
+// appleseed.python headers.
+#include "dict2dict.h"
+#include "unalignedtransform.h"
+
 // appleseed.renderer headers.
 #include "renderer/api/object.h"
+#include "renderer/api/scene.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/python.h"
 
 // Standard headers.
+#include <cassert>
+#include <cstddef>
 #include <cstdint>
+#include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -48,23 +59,23 @@ namespace
     struct MFace
     {
         unsigned int v[4];
-        short mat_nr;
-        char edcode, flag;
+        short   mat_nr;
+        char    edcode, flag;
     };
 
     struct MVert
     {
-        float co[3];
-        short no[3];
-        char flag, bweight;
+        float   co[3];
+        short   no[3];
+        char    flag, bweight;
     };
 
     struct MTFace
     {
-        float uv[4][2];
-        void *tpage;
-        char flag, transp;
-        short mode, tile, unwrap;
+        float   uv[4][2];
+        void*   tpage;
+        char    flag, transp;
+        short   mode, tile, unwrap;
     };
 
     // Blender 2.8 structures.
@@ -84,17 +95,133 @@ namespace
 
     struct MLoopUV
     {
-        float uv[2];
-        int flag;
+        float   uv[2];
+        int     flag;
     };
 
     struct MPoly
     {
-        int loopstart;
-        int totloop;
-        short mat_nr;
-        char flag, pad;
+        int     loopstart;
+        int     totloop;
+        short   mat_nr;
+        char    flag, pad;
     };
+
+
+    //
+    // This class stores and manipulates an arbitrary number of appleseed transform sequences
+    // from Blender particle and dupli instances.  Storing them in a C++
+    // std::vector allows them to be processed and inserted into the appleseed scene
+    // without the overhead of Python.
+    //
+    
+    class BlTransformLibrary
+    {
+      public:
+        void release()
+        {
+            delete this;
+        }
+
+        std::size_t size() const
+        {
+            return m_xforms.size();
+        }
+
+        void add_xform_step(
+            const float         time,
+            const std::string&  instance_id,
+            const bpy::list&    matrix)
+        {
+            if (time == 0.0f)
+                m_xforms[instance_id] = TransformSequence();
+
+            // Ignore any Blender instance that doesn't already have an associated TransformSequence
+            auto instance = m_xforms.find(instance_id);
+
+            if (instance != m_xforms.end())
+            {
+                assert(bpy::len(matrix) == 16);
+
+                Matrix4d temp;
+
+                for (std::size_t index = 0; index < 16; ++index)
+                {
+                    bpy::extract<double> ex(matrix[index]);
+
+                    if (!ex.check())
+                    {
+                        PyErr_SetString(PyExc_TypeError, "Incompatible key type.");
+                        bpy::throw_error_already_set();
+                    }
+
+                    temp[index] = ex;
+                }
+
+                instance->second.set_transform(time, Transformd(temp));
+            }
+        }
+
+        void optimize_xforms()
+        {
+            for (auto& xform : m_xforms)
+                xform.second.optimize();
+        }
+
+        bool needs_assembly() const
+        {
+            assert(!m_xforms.empty());
+
+            return m_xforms.size() > 1 || m_xforms.begin()->second.size() > 1;
+        }
+
+        UnalignedTransformd get_single_transform() const
+        {
+            assert(m_xforms.size() == 1);
+
+            const Transformd xform(m_xforms.begin()->second.get_earliest_transform());
+            return UnalignedTransformd(xform);
+        }
+
+        void flush_instances(
+            Assembly*           as_main_ass,
+            const char*         ass_name)
+        {
+            for (auto& xform : m_xforms)
+            {
+                auto_release_ptr<AssemblyInstance> ass_inst = AssemblyInstanceFactory::create(
+                    xform.first.c_str(),
+                    ParamArray(),
+                    ass_name);
+
+                ass_inst->transform_sequence() = xform.second;
+
+                // Store pointers to assembly instances in case updates are needed.
+                m_ass_insts.emplace_back(get_pointer(ass_inst));
+
+                as_main_ass->assembly_instances().insert(ass_inst);
+            }
+
+            m_xforms.clear();
+        }
+
+        void clear_instances(Assembly* as_main_ass)
+        {
+            for (auto& ass_inst : m_ass_insts)
+                as_main_ass->assembly_instances().remove(ass_inst);
+
+            m_ass_insts.clear();
+        }
+
+      private:
+        std::unordered_map<std::string, TransformSequence>      m_xforms;
+        std::vector<AssemblyInstance*>                          m_ass_insts;
+    };
+
+    auto_release_ptr<BlTransformLibrary> create_bl_transform_library()
+    {
+        return auto_release_ptr<BlTransformLibrary>(new BlTransformLibrary());
+    }
 }
 
 
@@ -326,8 +453,18 @@ void export_mesh_blender80_pose(
     }
 }
 
-void bind_blender_mesh_converter()
+void bind_blender_export()
 {
+    bpy::class_<BlTransformLibrary, auto_release_ptr<BlTransformLibrary>, boost::noncopyable>("BlTransformLibrary", bpy::no_init)
+        .def("__init__", bpy::make_constructor(create_bl_transform_library))
+        .def("__len__", &BlTransformLibrary::size)
+        .def("add_xform_step", &BlTransformLibrary::add_xform_step)
+        .def("optimize_xforms", &BlTransformLibrary::optimize_xforms)
+        .def("needs_assembly", &BlTransformLibrary::needs_assembly)
+        .def("get_single_transform", &BlTransformLibrary::get_single_transform)
+        .def("flush_instances", &BlTransformLibrary::flush_instances)
+        .def("clear_instances", &BlTransformLibrary::clear_instances);
+
     bpy::def("export_mesh_blender79", &export_mesh_blender79);
     bpy::def("export_mesh_blender79_pose", &export_mesh_blender79_pose);
     bpy::def("export_mesh_blender80", &export_mesh_blender80);
