@@ -136,7 +136,7 @@ namespace
                 m_params.get_optional<std::string>(
                     "color_map",
                     "inferno",
-                    make_vector("inferno", "jet", "magma", "plasma", "viridis", "custom"),
+                    make_vector("inferno", "jet", "magma", "plasma", "viridis", "turbo", "custom"),
                     context);
 
             if (color_map == "inferno")
@@ -149,6 +149,8 @@ namespace
                 m_color_map.set_palette_from_array(PlasmaColorMapLinearRGB, countof(PlasmaColorMapLinearRGB) / 3);
             else if (color_map == "viridis")
                 m_color_map.set_palette_from_array(ViridisColorMapLinearRGB, countof(ViridisColorMapLinearRGB) / 3);
+            else if (color_map == "turbo")
+                m_color_map.set_palette_from_array(TurboColorMapLinearRGB, countof(TurboColorMapLinearRGB) / 3);
             else
             {
                 assert(color_map == "custom");
@@ -694,6 +696,7 @@ DictionaryArray ColorMapPostProcessingStageFactory::get_input_metadata() const
                     .insert("Magma", "magma")
                     .insert("Plasma", "plasma")
                     .insert("Viridis", "viridis")
+                    .insert("Turbo", "turbo")
                     .insert("Custom", "custom"))
             .insert("use", "required")
             .insert("default", "inferno")
