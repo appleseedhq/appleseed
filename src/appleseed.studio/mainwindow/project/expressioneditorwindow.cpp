@@ -258,7 +258,6 @@ void ExpressionEditorWindow::slot_save_script()
             if (QFileInfo(filepath).suffix().isEmpty())
                 filepath += ".se";
 
-            filepath = QDir::toNativeSeparators(filepath);
             m_script_filepath = filepath.toStdString();
         }
     }
@@ -292,8 +291,6 @@ void ExpressionEditorWindow::slot_load_script()
 
     if (!filepath.isEmpty())
     {
-        filepath = QDir::toNativeSeparators(filepath);
-
         // Open script file.
         std::ifstream script_file(filepath.toStdString().c_str());
         if (!script_file.is_open())

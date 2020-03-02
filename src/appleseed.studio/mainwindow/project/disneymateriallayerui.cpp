@@ -346,7 +346,7 @@ void DisneyMaterialLayerUI::slot_open_file_picker(const QString& widget_name)
         widget_proxy->set(
             texture_to_expression(
                 m_project.search_paths(),
-                QDir::toNativeSeparators(filepath)));
+                filepath));
         widget_proxy->emit_signal_changed();
     }
 }

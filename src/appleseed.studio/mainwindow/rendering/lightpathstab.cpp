@@ -162,8 +162,6 @@ void LightPathsTab::slot_save_light_paths()
     if (QFileInfo(filepath).suffix().isEmpty())
         filepath += ".aspaths";
 
-    filepath = QDir::toNativeSeparators(filepath);
-
     // Write light paths to disk.
     m_project.get_light_path_recorder().write(filepath.toUtf8().constData());
 }
