@@ -146,7 +146,7 @@ void ObjectCollectionItem::slot_import_objects()
 void ObjectCollectionItem::import_objects(const QStringList& filepaths)
 {
     for (int i = 0; i < filepaths.size(); ++i)
-        insert_objects(QDir::toNativeSeparators(filepaths[i]).toStdString());
+        insert_objects(filepaths[i].toStdString());
 }
 
 void ObjectCollectionItem::insert_objects(const std::string& path) const
