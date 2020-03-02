@@ -60,4 +60,17 @@ extern const float ViridisColorMapLinearRGB[3 * 256];
 
 extern const float JetColorMapLinearRGB[3 * 9];
 
+
+//
+// When perceptual uniformity is not critical, Google AI's Turbo is an alternate (improved) rainbow colormap.
+//
+// References:
+//
+//   https://ai.googleblog.com/2019/08/turbo-improved-rainbow-colormap-for.html
+//   https://gist.github.com/mikhailov-work/ee72ba4191942acecc03fe6da94fc73f
+//   https://gist.github.com/mikhailov-work/0d177465a8151eb6ede1768d51d476c7
+//
+
+extern const float TurboColorMapLinearRGB[3 * 256];
+
 }   // namespace foundation
