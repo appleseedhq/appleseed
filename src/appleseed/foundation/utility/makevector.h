@@ -49,6 +49,7 @@ std::vector<std::string> make_vector(const char* v1, const char* v2, const char*
 std::vector<std::string> make_vector(const char* v1, const char* v2, const char* v3, const char* v4);
 std::vector<std::string> make_vector(const char* v1, const char* v2, const char* v3, const char* v4, const char* v5);
 std::vector<std::string> make_vector(const char* v1, const char* v2, const char* v3, const char* v4, const char* v5, const char* v6);
+std::vector<std::string> make_vector(const char* v1, const char* v2, const char* v3, const char* v4, const char* v5, const char* v6, const char* v7);
 
 template <typename T> std::vector<T> make_vector(const T& v1);
 template <typename T> std::vector<T> make_vector(const T& v1, const T& v2);
@@ -56,6 +57,7 @@ template <typename T> std::vector<T> make_vector(const T& v1, const T& v2, const
 template <typename T> std::vector<T> make_vector(const T& v1, const T& v2, const T& v3, const T& v4);
 template <typename T> std::vector<T> make_vector(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5);
 template <typename T> std::vector<T> make_vector(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5, const T& v6);
+template <typename T> std::vector<T> make_vector(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5, const T& v6, const T& v7);
 
 std::vector<std::string> make_vector_n(const size_t n, const char* val, ...);
 
@@ -124,6 +126,19 @@ inline std::vector<std::string> make_vector(const char* v1, const char* v2, cons
     return vec;
 }
 
+inline std::vector<std::string> make_vector(const char* v1, const char* v2, const char* v3, const char* v4, const char* v5, const char* v6, const char* v7)
+{
+    std::vector<std::string> vec;
+    vec.emplace_back(v1);
+    vec.emplace_back(v2);
+    vec.emplace_back(v3);
+    vec.emplace_back(v4);
+    vec.emplace_back(v5);
+    vec.emplace_back(v6);
+    vec.emplace_back(v7);
+    return vec;
+}
+
 template <typename T>
 std::vector<T> make_vector(const T& v1)
 {
@@ -184,6 +199,20 @@ std::vector<T> make_vector(const T& v1, const T& v2, const T& v3, const T& v4, c
     vec.push_back(v4);
     vec.push_back(v5);
     vec.push_back(v6);
+    return vec;
+}
+
+template <typename T>
+std::vector<T> make_vector(const T& v1, const T& v2, const T& v3, const T& v4, const T& v5, const T& v6, const T& v7)
+{
+    std::vector<T> vec;
+    vec.push_back(v1);
+    vec.push_back(v2);
+    vec.push_back(v3);
+    vec.push_back(v4);
+    vec.push_back(v5);
+    vec.push_back(v6);
+    vec.push_back(v7);
     return vec;
 }
 
