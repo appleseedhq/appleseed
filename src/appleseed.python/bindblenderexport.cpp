@@ -123,7 +123,7 @@ namespace
             delete this;
         }
 
-        std::size_t get_size() const
+        std::size_t size() const
         {
             return m_xforms.size();
         }
@@ -172,7 +172,7 @@ namespace
         {
             assert(!m_xforms.empty());
 
-            return m_xforms.size() > 1 || m_xforms.at(0).size() > 1;
+            return m_xforms.size() > 1 || m_xforms.begin()->second.size() > 1;
         }
 
         UnalignedTransformd get_single_transform() const
@@ -457,7 +457,7 @@ void bind_blender_export()
 {
     bpy::class_<BlTransformLibrary, auto_release_ptr<BlTransformLibrary>, boost::noncopyable>("BlTransformLibrary", bpy::no_init)
         .def("__init__", bpy::make_constructor(create_bl_transform_library))
-        .def("get_size", &BlTransformLibrary::get_size)
+        .def("__len__", &BlTransformLibrary::size)
         .def("add_xform_step", &BlTransformLibrary::add_xform_step)
         .def("optimize_xforms", &BlTransformLibrary::optimize_xforms)
         .def("needs_assembly", &BlTransformLibrary::needs_assembly)
