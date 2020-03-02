@@ -65,8 +65,8 @@ class QtTileCallback
         const renderer::Frame*  frame,
         const size_t            tile_x,
         const size_t            tile_y,
-        const size_t            thread_index = -1,
-        const size_t            nb_threads = -1) override;
+        const size_t            thread_index = ~size_t(0),
+        const size_t            thread_count = ~size_t(0)) override;
 
     void on_tile_end(
         const renderer::Frame*  frame,

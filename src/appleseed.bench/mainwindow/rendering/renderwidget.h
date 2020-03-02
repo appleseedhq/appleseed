@@ -90,7 +90,7 @@ class RenderWidget
         const size_t            tile_x,
         const size_t            tile_y,
         const size_t            thread_index,
-        const size_t            nb_threads);
+        const size_t            thread_count);
 
     // Thread-safe.
     void blit_tile(

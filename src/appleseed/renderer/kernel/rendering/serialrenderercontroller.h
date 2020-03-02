@@ -83,7 +83,7 @@ class SerialRendererController
         const size_t            tile_x,
         const size_t            tile_y,
         const size_t            thread_index,
-        const size_t            nb_threads);
+        const size_t            thread_count);
 
     void add_on_tile_end_callback(
         const Frame*            frame,
@@ -120,7 +120,7 @@ class SerialRendererController
         double          m_samples_per_pixel;
         std::uint64_t   m_samples_per_second;
         size_t          m_thread_index;
-        size_t          m_nb_threads;
+        size_t          m_thread_count;
     };
 
     IRendererController*                m_controller;

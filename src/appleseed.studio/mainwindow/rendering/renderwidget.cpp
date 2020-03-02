@@ -204,7 +204,7 @@ void RenderWidget::highlight_tile(
     const size_t    tile_x,
     const size_t    tile_y,
     const size_t    thread_index,
-    const size_t    nb_threads)
+    const size_t    thread_count)
 {
     QMutexLocker locker(&m_mutex);
 
@@ -231,18 +231,17 @@ void RenderWidget::highlight_tile(
     // Get a pointer to the first destination pixel.
     std::uint8_t* dest = get_image_pointer(m_image, x, y);
 
+    // Choose one color per thread (see https://www.shadertoy.com/view/wlKXDm).
+    std::uint8_t BracketColor[3];
+    float t = TwoPi<float>() * (thread_index / static_cast<float>(thread_count));
+    float cos_t = std::cos(t);
+    float sin_t = std::sin(t);
+    BracketColor[0] = 128 + static_cast<std::uint8_t>(127.5f * cos_t);
+    BracketColor[1] = 128 + static_cast<std::uint8_t>(127.5f * (-0.5f * cos_t - 0.866f * sin_t));
+    BracketColor[2] = 128 + static_cast<std::uint8_t>(127.5f * (-0.5f * cos_t + 0.866f * sin_t));
+
     // Draw a bracket around the tile.
     const size_t BracketExtent = 5;
-    std::uint8_t BracketColor[3] = { 255, 255, 255 }; // white
-    if (thread_index >= 0) {
-        // Choose one color per thread (see https://www.shadertoy.com/view/wlKXDm).
-        float t = TwoPi<float>() * (thread_index / static_cast<float>(nb_threads));
-        float cos_t = std::cos(t);
-        float sin_t = std::sin(t);
-        BracketColor[0] = 128 + static_cast<std::uint8_t>(127.5f * cos_t);
-        BracketColor[1] = 128 + static_cast<std::uint8_t>(127.5f * (-0.5f * cos_t - 0.866f * sin_t));
-        BracketColor[2] = 128 + static_cast<std::uint8_t>(127.5f * (-0.5f * cos_t + 0.866f * sin_t));
-    }
     draw_bracket(
         dest,
         width,

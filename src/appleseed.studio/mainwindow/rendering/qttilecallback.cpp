@@ -79,10 +79,10 @@ namespace
             const size_t    tile_x,
             const size_t    tile_y,
             const size_t    thread_index,
-            const size_t    nb_threads) override
+            const size_t    thread_count) override
         {
             assert(m_render_widget);
-            m_render_widget->highlight_tile(*frame, tile_x, tile_y, thread_index, nb_threads);
+            m_render_widget->highlight_tile(*frame, tile_x, tile_y, thread_index, thread_count);
 
             emit signal_update();
         }
