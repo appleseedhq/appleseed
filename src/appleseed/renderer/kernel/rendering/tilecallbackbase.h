@@ -65,8 +65,8 @@ class TileCallbackBase
         const Frame*            frame,
         const size_t            tile_x,
         const size_t            tile_y,
-        const size_t            thread_index = ~size_t(0),
-        const size_t            thread_count = ~size_t(0)) override
+        const size_t            thread_index,
+        const size_t            thread_count) override
     {
     }
 

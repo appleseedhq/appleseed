@@ -72,8 +72,8 @@ class APPLESEED_DLLSYMBOL ITileCallback
         const Frame*            frame,
         const size_t            tile_x,
         const size_t            tile_y,
-        const size_t            thread_index = ~size_t(0),
-        const size_t            thread_count = ~size_t(0)) = 0;
+        const size_t            thread_index,
+        const size_t            thread_count) = 0;
 
     // This method is called after a tile is rendered.
     virtual void on_tile_end(
