@@ -276,10 +276,9 @@ QString get_open_filename(
         settings,
         settings_key + SettingsLastDirectory,
         QDir::toNativeSeparators(QFileInfo(filepath).path()));
-        
+
     return QDir::toNativeSeparators(filepath);
 }
-
 
 QStringList get_open_filenames(
     QWidget*                parent,
@@ -313,7 +312,7 @@ QStringList get_open_filenames(
 
     for (int i = 0; i < filepaths.size(); ++i) 
     {
-        filepaths[i].replace(0, filepaths[i].length(), QDir::toNativeSeparators(filepaths[i]));
+        filepaths[i] = QDir::toNativeSeparators(filepaths[i]);
     }
 
     return filepaths;
