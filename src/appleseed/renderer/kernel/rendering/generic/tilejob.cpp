@@ -136,9 +136,8 @@ void TileJob::execute(const size_t thread_index)
             : nullptr;
 
     // Call the pre-render tile callback.
-    if (tile_callback) {
+    if (tile_callback)
         tile_callback->on_tile_begin(&m_frame, m_tile_x, m_tile_y, thread_index, m_thread_count);
-    }
 
     try
     {
