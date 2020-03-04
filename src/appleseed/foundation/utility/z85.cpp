@@ -30,11 +30,11 @@
 #include "z85.h"
 
 // Standard headers.
-#include <cstdlib>
+#include <cassert>
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
-#include <cassert>
 
 namespace foundation
 {

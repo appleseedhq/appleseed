@@ -33,7 +33,7 @@
 #include "renderer/utility/testutils.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/utility/test.h"
 #include "foundation/utility/uid.h"
 

@@ -28,8 +28,8 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/memory/poolallocator.h"
 #include "foundation/utility/benchmark.h"
-#include "foundation/utility/poolallocator.h"
 
 // Standard headers.
 #include <cstddef>

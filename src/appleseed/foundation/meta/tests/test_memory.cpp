@@ -30,8 +30,8 @@
 // appleseed.foundation headers.
 #include "foundation/math/rng/distribution.h"
 #include "foundation/math/rng/mersennetwister.h"
-#include "foundation/utility/alignedallocator.h"
-#include "foundation/utility/memory.h"
+#include "foundation/memory/alignedallocator.h"
+#include "foundation/memory/memory.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.

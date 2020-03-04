@@ -42,7 +42,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
-#include "foundation/utility/arena.h"
+#include "foundation/memory/arena.h"
 
 // Standard headers.
 #include <cmath>

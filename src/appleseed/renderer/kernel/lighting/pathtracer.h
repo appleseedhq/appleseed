@@ -57,7 +57,7 @@
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/arena.h"
+#include "foundation/memory/arena.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
@@ -78,7 +78,7 @@ namespace renderer
 //       void on_first_diffuse_bounce(
 //           const PathVertex&              vertex,
 //           const Spectrum&                albedo);
-//   
+//
 //       bool accept_scattering(
 //           const ScatteringMode::Mode     prev_mode,
 //           const ScatteringMode::Mode     next_mode) const;
@@ -926,7 +926,7 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
             volume_ray,
             distance_sample,
             transmission);
-        
+
         // Compute MIS weight.
         // MIS terms are:
         //  - scattering albedo,

@@ -34,8 +34,8 @@
 #ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
+#include "foundation/memory/memory.h"
 #include "foundation/utility/casts.h"
-#include "foundation/utility/memory.h"
 
 // Standard headers.
 #include <cassert>

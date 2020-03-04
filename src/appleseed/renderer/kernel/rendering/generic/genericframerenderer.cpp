@@ -46,9 +46,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/hash.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
+#include "foundation/math/hash.h"
 #include "foundation/platform/thread.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"

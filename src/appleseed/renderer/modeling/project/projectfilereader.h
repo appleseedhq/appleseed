@@ -30,7 +30,7 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/utility/searchpaths.h"
 
 // appleseed.main headers.

@@ -37,7 +37,7 @@
 // appleseed.foundation headers.
 #include "foundation/platform/python.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/autoreleaseptr.h"
 
 // Standard headers.
 #include <cstddef>

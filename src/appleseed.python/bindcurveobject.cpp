@@ -37,8 +37,8 @@
 #include "foundation/curve/curvebasis.h"
 #include "foundation/image/color.h"
 #include "foundation/math/vector.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/platform/python.h"
-#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.

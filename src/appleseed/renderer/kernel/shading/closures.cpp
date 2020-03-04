@@ -57,8 +57,8 @@
 #include "foundation/math/cdf.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
-#include "foundation/utility/arena.h"
-#include "foundation/utility/memory.h"
+#include "foundation/memory/arena.h"
+#include "foundation/memory/memory.h"
 #include "foundation/utility/otherwise.h"
 
 // OSL headers.

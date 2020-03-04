@@ -36,8 +36,8 @@
 #include "renderer/modeling/input/sourceinputs.h"
 
 // appleseed.foundation headers.
+#include "foundation/memory/memory.h"
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/memory.h"
 #include "foundation/utility/otherwise.h"
 
 // Standard headers.

@@ -39,8 +39,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/minmax.h"
+#include "foundation/memory/arena.h"
 #include "foundation/utility/api/apistring.h"
-#include "foundation/utility/arena.h"
 
 // Standard headers.
 #include <cmath>

@@ -31,8 +31,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
+#include "foundation/memory/memory.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/memory.h"
 
 // Standard headers.
 #include <cassert>

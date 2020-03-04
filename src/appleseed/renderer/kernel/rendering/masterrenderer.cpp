@@ -52,8 +52,8 @@
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/otherwise.h"
 #include "foundation/utility/searchpaths.h"
@@ -63,8 +63,8 @@
 #include <algorithm>
 #include <cassert>
 #include <exception>
-#include <new>
 #include <memory>
+#include <new>
 #include <string>
 #include <vector>
 

@@ -46,7 +46,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/uid.h"

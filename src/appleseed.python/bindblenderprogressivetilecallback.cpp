@@ -37,8 +37,8 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/platform/python.h"
-#include "foundation/utility/autoreleaseptr.h"
 
 // OpenGL.
 #include <glad/glad.h>
@@ -219,7 +219,7 @@ namespace
                          1,  1,
                         -1,  1
                     };
-                    
+
                     // Get shader program set by Blender.
                     glGetIntegerv(GL_CURRENT_PROGRAM, &m_shader_program_id);
 

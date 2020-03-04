@@ -37,8 +37,8 @@
 #include "boost/algorithm/string.hpp"
 
 // Standard headers.
-#include <unordered_map>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 DECLARE_TEST_CASE(Foundation_Utility_Iesparser, ParseFormat);

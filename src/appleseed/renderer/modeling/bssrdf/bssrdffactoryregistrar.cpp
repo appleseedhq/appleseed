@@ -40,7 +40,7 @@
 #include "renderer/modeling/entity/entityfactoryregistrar.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/autoreleaseptr.h"
 
 using namespace foundation;
 

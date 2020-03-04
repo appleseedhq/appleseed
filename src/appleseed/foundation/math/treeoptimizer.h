@@ -30,7 +30,7 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/utility/memory.h"
+#include "foundation/memory/memory.h"
 
 // Standard headers.
 #include <cassert>

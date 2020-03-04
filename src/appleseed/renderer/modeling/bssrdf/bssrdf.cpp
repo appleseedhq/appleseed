@@ -38,7 +38,7 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/arena.h"
+#include "foundation/memory/arena.h"
 
 using namespace foundation;
 

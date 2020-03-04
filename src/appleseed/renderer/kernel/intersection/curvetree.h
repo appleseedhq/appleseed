@@ -39,9 +39,9 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/bvh.h"
+#include "foundation/memory/poolallocator.h"
 #include "foundation/utility/alignedvector.h"
 #include "foundation/utility/lazy.h"
-#include "foundation/utility/poolallocator.h"
 #include "foundation/utility/uid.h"
 
 // Standard headers.

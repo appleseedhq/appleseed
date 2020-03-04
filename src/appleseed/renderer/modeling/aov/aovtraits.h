@@ -34,7 +34,7 @@
 #include "renderer/modeling/entity/entitytraits.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/utility/containers/dictionary.h"
 
 // Forward declarations.

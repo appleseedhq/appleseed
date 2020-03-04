@@ -30,8 +30,8 @@
 #include "aovfactoryregistrar.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/aov/aovtraits.h"
 #include "renderer/modeling/aov/albedoaov.h"
+#include "renderer/modeling/aov/aovtraits.h"
 #include "renderer/modeling/aov/cryptomatteaov.h"
 #include "renderer/modeling/aov/depthaov.h"
 #include "renderer/modeling/aov/diffuseaov.h"
@@ -50,7 +50,7 @@
 #include "renderer/modeling/entity/entityfactoryregistrar.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/autoreleaseptr.h"
 
 using namespace foundation;
 

@@ -31,7 +31,7 @@
 #include "bufferedfile.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/memory.h"
+#include "foundation/memory/memory.h"
 #include "foundation/utility/otherwise.h"
 
 // LZ4 headers.

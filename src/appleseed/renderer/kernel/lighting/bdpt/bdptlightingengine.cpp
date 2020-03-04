@@ -43,7 +43,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/fp.h"
 #include "foundation/math/population.h"
-#include "foundation/utility/arena.h"
+#include "foundation/memory/arena.h"
 #include "foundation/utility/statistics.h"
 
 // Standard headers.
