@@ -32,8 +32,8 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/shading/oslshadingsystem.h"
-#include "renderer/modeling/shadergroup/shaderparamparser.h"
 #include "renderer/modeling/shadergroup/shadercompiler.h"
+#include "renderer/modeling/shadergroup/shaderparamparser.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.

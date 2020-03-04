@@ -37,10 +37,10 @@
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/texturing/oiiotexturesystem.h"
+#include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
-#include "renderer/kernel/texturing/texturestore.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/containers/dictionary.h"

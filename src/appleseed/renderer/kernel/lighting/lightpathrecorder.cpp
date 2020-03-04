@@ -38,11 +38,11 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionioerror.h"
+#include "foundation/memory/memory.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/thread.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/bufferedfile.h"
-#include "foundation/utility/memory.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
 

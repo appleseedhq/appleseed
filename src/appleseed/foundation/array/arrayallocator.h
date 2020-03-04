@@ -30,7 +30,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
-#include "foundation/utility/memory.h"
+#include "foundation/memory/memory.h"
 
 // Standard headers.
 #include <cstddef>

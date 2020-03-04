@@ -60,10 +60,10 @@
 #include "foundation/math/population.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/platform/arch.h"
 #include "foundation/platform/debugger.h"
 #include "foundation/platform/types.h"
-#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/job.h"
 #include "foundation/utility/statistics.h"
@@ -497,7 +497,7 @@ namespace
             size_t tile_converged_pixel_count = 0;
             float average_noise_level = 0.0f;
             const float normalizing_factor = 1.0f / m_params.m_noise_threshold;
-            
+
             for (size_t i = 0, n = rendering_blocks.size(); i < n; ++i)
             {
                 const PixelBlock& pb = rendering_blocks[i];

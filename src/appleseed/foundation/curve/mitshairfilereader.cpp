@@ -36,8 +36,8 @@
 #include "foundation/image/color.h"
 #include "foundation/math/fp.h"
 #include "foundation/math/vector.h"
+#include "foundation/memory/memory.h"
 #include "foundation/utility/bufferedfile.h"
-#include "foundation/utility/memory.h"
 #include "foundation/utility/otherwise.h"
 
 // Standard headers.

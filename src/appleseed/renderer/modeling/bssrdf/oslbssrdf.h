@@ -29,7 +29,7 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/autoreleaseptr.h"
 
 // Forward declarations.
 namespace renderer  { class BSSRDF; }

@@ -29,9 +29,9 @@
 #pragma once
 
 // appleseed.renderer headers.
-#include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/kernel/lighting/backwardlightsampler.h"
 #include "renderer/kernel/lighting/forwardlightsampler.h"
+#include "renderer/kernel/lighting/ilightingengine.h"
 #include "renderer/kernel/rendering/iframerenderer.h"
 #include "renderer/kernel/rendering/ipasscallback.h"
 #include "renderer/kernel/rendering/ipixelrenderer.h"
@@ -42,7 +42,7 @@
 #include "renderer/kernel/shading/shadingengine.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/autoreleaseptr.h"
 
 // Standard headers.
 #include <memory>

@@ -35,7 +35,7 @@
 #include "renderer/kernel/intersection/trianglevertexinfo.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/memory.h"
+#include "foundation/memory/memory.h"
 
 // Standard headers.
 #include <cstdint>

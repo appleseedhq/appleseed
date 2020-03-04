@@ -32,8 +32,8 @@
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 #include "foundation/math/vector.h"
+#include "foundation/memory/memory.h"
 #include "foundation/platform/types.h"
-#include "foundation/utility/memory.h"
 #include "foundation/utility/test.h"
 #include "foundation/utility/vpythonfile.h"
 

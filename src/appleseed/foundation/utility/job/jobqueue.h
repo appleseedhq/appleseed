@@ -31,7 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/utility/poolallocator.h"
+#include "foundation/memory/poolallocator.h"
 #include "foundation/utility/test.h"
 
 // appleseed.main headers.

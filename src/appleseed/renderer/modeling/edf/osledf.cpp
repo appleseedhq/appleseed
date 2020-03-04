@@ -44,8 +44,8 @@
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 #include "foundation/math/vector.h"
+#include "foundation/memory/arena.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/arena.h"
 
 // Standard headers.
 #include <cstdint>

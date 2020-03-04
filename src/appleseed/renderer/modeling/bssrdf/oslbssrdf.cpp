@@ -43,8 +43,8 @@
 #include "renderer/modeling/bssrdf/standarddipolebssrdf.h"
 
 // appleseed.foundation headers.
+#include "foundation/memory/arena.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/arena.h"
 #include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
@@ -97,7 +97,7 @@ namespace
                 create_and_register_bssrdf<StandardDipoleBSSRDFFactory>(
                     SubsurfaceStandardDipoleID,
                     "standard_dipole");
-            
+
             m_randomwalk =
                 create_and_register_randomwalk_bssrdf(
                     SubsurfaceRandomwalkID,

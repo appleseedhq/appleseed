@@ -30,7 +30,7 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/utility/alignedallocator.h"
+#include "foundation/memory/alignedallocator.h"
 
 // Standard headers.
 #include <vector>

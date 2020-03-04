@@ -33,8 +33,8 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/scalar.h"
+#include "foundation/memory/memory.h"
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/memory.h"
 
 // Standard headers.
 #include <algorithm>

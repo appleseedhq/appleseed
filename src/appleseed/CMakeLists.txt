@@ -411,6 +411,23 @@ source_group ("foundation\\math" FILES
     ${foundation_math_sources}
 )
 
+set (foundation_memory_sources
+    foundation/memory/alignedallocator.h
+    foundation/memory/arena.h
+    foundation/memory/autoreleaseptr.h
+    foundation/memory/copyonwrite.h
+    foundation/memory/memory.cpp
+    foundation/memory/memory.h
+    foundation/memory/poolallocator.h
+    foundation/memory/stampedptr.h
+)
+list (APPEND appleseed_sources
+    ${foundation_memory_sources}
+)
+source_group ("foundation\\memory" FILES
+    ${foundation_memory_sources}
+)
+
 set (foundation_mesh_sources
     foundation/mesh/binarymeshfilereader.cpp
     foundation/mesh/binarymeshfilereader.h
@@ -895,12 +912,9 @@ source_group ("foundation\\utility\\ui" FILES
 )
 
 set (foundation_utility_sources
-    foundation/utility/alignedallocator.h
     foundation/utility/alignedvector.h
-    foundation/utility/arena.h
     foundation/utility/attributeset.cpp
     foundation/utility/attributeset.h
-    foundation/utility/autoreleaseptr.h
     foundation/utility/benchmark.h
     foundation/utility/bitmask.h
     foundation/utility/bufferedfile.cpp
@@ -910,7 +924,6 @@ set (foundation_utility_sources
     foundation/utility/casts.h
     foundation/utility/cc.h
     foundation/utility/commandlineparser.h
-    foundation/utility/copyonwrite.h
     foundation/utility/countof.h
     foundation/utility/filter.h
     foundation/utility/foreach.h
@@ -927,14 +940,11 @@ set (foundation_utility_sources
     foundation/utility/lazy.h
     foundation/utility/log.h
     foundation/utility/makevector.h
-    foundation/utility/memory.cpp
-    foundation/utility/memory.h
     foundation/utility/murmurhash.cpp
     foundation/utility/murmurhash.h
     foundation/utility/numerictype.h
     foundation/utility/otherwise.h
     foundation/utility/poison.h
-    foundation/utility/poolallocator.h
     foundation/utility/preprocessor.cpp
     foundation/utility/preprocessor.h
     foundation/utility/registrar.h
@@ -943,7 +953,6 @@ set (foundation_utility_sources
     foundation/utility/settings.h
     foundation/utility/siphash.cpp
     foundation/utility/siphash.h
-    foundation/utility/stampedptr.h
     foundation/utility/statistics.cpp
     foundation/utility/statistics.h
     foundation/utility/stopwatch.h

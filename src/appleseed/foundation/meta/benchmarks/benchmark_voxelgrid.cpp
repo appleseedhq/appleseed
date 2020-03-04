@@ -32,9 +32,9 @@
 #include "foundation/math/rng/mersennetwister.h"
 #include "foundation/math/vector.h"
 #include "foundation/math/voxelgrid.h"
+#include "foundation/memory/memory.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/benchmark.h"
-#include "foundation/utility/memory.h"
 
 // Standard headers.
 #include <cstddef>

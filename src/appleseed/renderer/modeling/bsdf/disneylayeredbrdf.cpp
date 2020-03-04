@@ -41,7 +41,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
-#include "foundation/utility/arena.h"
+#include "foundation/memory/arena.h"
 
 // Standard headers.
 #include <cassert>

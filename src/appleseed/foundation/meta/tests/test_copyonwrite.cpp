@@ -27,7 +27,7 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/utility/copyonwrite.h"
+#include "foundation/memory/copyonwrite.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.

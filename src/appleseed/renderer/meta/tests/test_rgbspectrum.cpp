@@ -27,8 +27,8 @@
 //
 
 // appleseed.renderer headers.
-#include "renderer/utility/rgbspectrum.h"
 #include "renderer/utility/iostreamop.h"
+#include "renderer/utility/rgbspectrum.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"

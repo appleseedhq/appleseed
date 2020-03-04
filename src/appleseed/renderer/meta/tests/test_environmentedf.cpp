@@ -62,8 +62,8 @@
 #include "foundation/image/tile.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/arena.h"
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/arena.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/utility/test.h"
 #include "foundation/utility/uid.h"
 

@@ -35,7 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/thread.h"
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/utility/benchmark.h"
 #include "foundation/utility/string.h"
 

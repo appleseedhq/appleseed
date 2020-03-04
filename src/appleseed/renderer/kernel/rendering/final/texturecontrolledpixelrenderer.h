@@ -69,10 +69,10 @@ class TextureControlledPixelRendererFactory
         const Frame&                    frame,
         ISampleRendererFactory*         factory,
         const ParamArray&               params);
-    
+
     // Load a texture from a file.
     bool load_texture(const std::string& texture_path);
-    
+
     // Delete this instance.
     void release() override;
 

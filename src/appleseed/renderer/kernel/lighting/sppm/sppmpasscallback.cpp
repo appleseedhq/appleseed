@@ -43,14 +43,14 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/math/hash.h"
+#include "foundation/memory/memory.h"
 #include "foundation/utility/job/iabortswitch.h"
-#include "foundation/utility/memory.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>
-#include <cstdint>
 #include <cmath>
+#include <cstdint>
 #include <string>
 
 using namespace foundation;

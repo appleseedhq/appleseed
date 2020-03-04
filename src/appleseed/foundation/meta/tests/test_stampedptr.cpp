@@ -27,7 +27,7 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/utility/stampedptr.h"
+#include "foundation/memory/stampedptr.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.

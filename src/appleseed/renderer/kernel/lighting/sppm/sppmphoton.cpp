@@ -31,7 +31,7 @@
 #include "sppmphoton.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/memory.h"
+#include "foundation/memory/memory.h"
 
 using namespace foundation;
 

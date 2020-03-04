@@ -35,7 +35,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/stampedptr.h"
+#include "foundation/memory/stampedptr.h"
 
 // Standard headers.
 #include <cstddef>

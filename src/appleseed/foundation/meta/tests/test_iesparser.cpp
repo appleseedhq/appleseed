@@ -33,8 +33,8 @@
 #include "foundation/utility/test.h"
 
 // Standard headers.
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <sstream>
 
 using namespace foundation;

@@ -56,7 +56,7 @@
 #include "foundation/image/image.h"
 #include "foundation/image/regularspectrum.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/arena.h"
+#include "foundation/memory/arena.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 

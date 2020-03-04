@@ -34,7 +34,7 @@
 #include "foundation/platform/windows.h"
 #endif
 #include "foundation/utility/casts.h"
-#include "foundation/utility/memory.h"
+#include "foundation/memory/memory.h"
 
 // Boost headers.
 #include "boost/atomic/atomic.hpp"

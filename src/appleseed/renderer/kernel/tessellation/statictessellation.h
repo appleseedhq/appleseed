@@ -35,10 +35,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/memory/poolallocator.h"
 #include "foundation/utility/attributeset.h"
 #include "foundation/utility/lazy.h"
 #include "foundation/utility/numerictype.h"
-#include "foundation/utility/poolallocator.h"
 
 // Standard headers.
 #include <cassert>

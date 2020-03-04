@@ -51,9 +51,9 @@
 #include "foundation/math/ray.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
+#include "foundation/memory/alignedallocator.h"
 #include "foundation/platform/system.h"
 #include "foundation/platform/timers.h"
-#include "foundation/utility/alignedallocator.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/lazy.h"
 #include "foundation/utility/siphash.h"
@@ -815,7 +815,7 @@ bool AssemblyLeafVisitor::visit(
                 m_shading_point.m_object_instance_index = object_instance_index_pair.second;
                 m_shading_point.m_primitive_index = 0;
                 m_shading_point.m_primitive_pa = result.m_material_slot;
-                m_shading_point.m_geometric_normal = 
+                m_shading_point.m_geometric_normal =
                     normalize(
                         assembly_instance_transform.normal_to_parent(
                             object_instance_transform.normal_to_parent(

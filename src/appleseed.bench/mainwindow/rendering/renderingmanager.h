@@ -39,8 +39,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/platform/thread.h"
-#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/searchpaths.h"
 
@@ -119,7 +119,7 @@ class RenderingManager
     RenderingMode                               m_rendering_mode;
     RenderWidget*                               m_render_widget;
 
-    std::unique_ptr<renderer::TileCallbackCollectionFactory>      
+    std::unique_ptr<renderer::TileCallbackCollectionFactory>
                                                 m_tile_callback_factory;
     std::unique_ptr<renderer::MasterRenderer>   m_master_renderer;
     std::unique_ptr<QThread>                    m_master_renderer_thread;

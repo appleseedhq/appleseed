@@ -35,8 +35,8 @@
 #include "renderer/kernel/rendering/sampleaccumulationbuffer.h"
 
 // appleseed.foundation headers.
+#include "foundation/memory/memory.h"
 #include "foundation/utility/job.h"
-#include "foundation/utility/memory.h"
 
 // Standard headers.
 #include <cassert>
