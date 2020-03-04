@@ -35,13 +35,13 @@
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/image/color.h"
 #include "foundation/image/colormap.h"
 #include "foundation/image/colormapdata.h"
 #include "foundation/image/image.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
 #include <memory>
@@ -82,7 +82,7 @@ void PixelSampleCountAOV::post_process_image(const Frame& frame)
     // At this point, the AOV is filled with real sample/pixel count values.
     //
     // If the Uniform Pixel Renderer is used, the AOV should be empty and
-    // the exported AOV will be of a solid color depending on the used 
+    // the exported AOV will be of a solid color depending on the used
     // color map.
     //
     // Otherwise, if the Adaptive Tile Renderer is used, we use the user's

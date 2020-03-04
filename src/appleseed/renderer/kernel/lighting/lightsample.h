@@ -33,8 +33,8 @@
 #include "renderer/kernel/lighting/lighttypes.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/hashtable.h"
 #include "foundation/math/hash.h"
-#include "foundation/utility/containers/hashtable.h"
 #include "foundation/utility/uid.h"
 
 // Standard headers.

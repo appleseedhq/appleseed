@@ -30,8 +30,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
-#include "foundation/utility/api/apiarray.h"
 #include "foundation/memory/autoreleaseptr.h"
+#include "foundation/utility/api/apiarray.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"

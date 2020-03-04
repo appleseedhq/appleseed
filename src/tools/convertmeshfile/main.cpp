@@ -42,7 +42,7 @@
 #include "foundation/mesh/imeshbuilder.h"
 #include "foundation/mesh/imeshwalker.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/log.h"
 

@@ -37,6 +37,7 @@
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/image/color.h"
 #include "foundation/image/colormap.h"
 #include "foundation/image/colormapdata.h"
@@ -45,7 +46,6 @@
 #include "foundation/math/aabb.h"
 #include "foundation/platform/timers.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/stopwatch.h"
 
 // Standard headers.

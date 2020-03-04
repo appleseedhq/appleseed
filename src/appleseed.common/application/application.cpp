@@ -31,9 +31,9 @@
 #include "application.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/platform/path.h"
 #include "foundation/platform/system.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/log.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/settings.h"

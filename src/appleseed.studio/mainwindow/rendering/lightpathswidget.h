@@ -40,8 +40,8 @@
 #include "foundation/math/vector.h"
 
 // Qt headers.
-#include <QOpenGLWidget>
 #include <QObject>
+#include <QOpenGLWidget>
 
 // Standard headers.
 #include <cstddef>

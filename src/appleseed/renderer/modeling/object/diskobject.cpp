@@ -34,12 +34,12 @@
 #include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/intersection/raydisk.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/string.h"
@@ -190,7 +190,7 @@ void DiskObject::refine_and_offset(
         obj_inst_ray.m_dir.y < 0.0
             ? Vector3d(0.0, 1.0, 0.0)
             : Vector3d(0.0, -1.0, 0.0);
-            
+
     adaptive_offset(
         refined_intersection_point,
         obj_inst_geo_normal,

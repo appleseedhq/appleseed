@@ -33,9 +33,9 @@
 #include "renderer/kernel/lighting/lighttypes.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/alignedvector.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/bvh.h"
-#include "foundation/utility/alignedvector.h"
 #include "foundation/utility/statistics.h"
 
 // Standard headers.

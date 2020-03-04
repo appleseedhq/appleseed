@@ -30,8 +30,8 @@
 #pragma once
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/indenter.h"
 #include "foundation/utility/string.h"

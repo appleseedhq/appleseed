@@ -42,9 +42,9 @@
 #include "renderer/api/project.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/vector.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
+#include "foundation/math/vector.h"
 #include "foundation/utility/string.h"
 
 // Qt headers.

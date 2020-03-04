@@ -43,10 +43,10 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/alignedvector.h"
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/bvh.h"
-#include "foundation/utility/alignedvector.h"
 #include "foundation/utility/uid.h"
 #include "foundation/utility/version.h"
 

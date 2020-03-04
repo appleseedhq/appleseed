@@ -41,8 +41,8 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/color.h"
-#include "foundation/platform/compiler.h"
 #include "foundation/memory/autoreleaseptr.h"
+#include "foundation/platform/compiler.h"
 
 // Standard headers.
 #include <cstddef>

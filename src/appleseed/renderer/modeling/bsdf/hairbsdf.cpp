@@ -45,13 +45,13 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/minmax.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/specialfunctions.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/otherwise.h"
 
@@ -140,7 +140,7 @@ namespace
         const float exp_arg = sin_theta_i * sin_theta_o / v;
 
         // Low roughness values lead to precision issues
-        // in the longitudinal integral. 
+        // in the longitudinal integral.
         // https://publons.com/review/414383/
 
         if (v <= 0.1f)
@@ -159,7 +159,7 @@ namespace
     }
 
     //
-    // Sampling function for longitudinal scattering. 
+    // Sampling function for longitudinal scattering.
     //
 
     float sample_longitudinal(const float sin_tilt, const float cos_tilt, const float v, const Vector2f sample_M)
@@ -195,21 +195,21 @@ namespace
         const Spectrum&             T,
         std::array<Spectrum, 4>&    ret)
     {
-        
-        // R(Primary Specular). 
+
+        // R(Primary Specular).
         const float cosGammaO = std::sqrt(std::max(0.0f, 1.0f - h * h));
         const float cosTheta = cosGammaO * cos_theta_o;
         float f;
         fresnel_reflectance_dielectric(f, 1.0f / eta, cosTheta);
         ret[0] = Spectrum(f);
 
-        // TT(Transmitted component). 
+        // TT(Transmitted component).
         ret[1] = (1.0f - f) * (1.0f - f) * T;
 
-        // TRT(Total internally reflected component). 
+        // TRT(Total internally reflected component).
         ret[2] = ret[1] * T * f;
 
-        // Higher orders of scattering. 
+        // Higher orders of scattering.
         ret[3] = ret[2] * f * T / (Spectrum(1.0f) - T * f);
 
     }
@@ -304,7 +304,7 @@ namespace
 
         // TRRT+ contribution of scattering.
         bsdf_f +=
-            ap[3] * 
+            ap[3] *
             longitudinal(
                 cos_theta_i,
                 cos_theta_o,
@@ -604,7 +604,7 @@ namespace
             float dphi;
             dphi = calc_phi(p, gamma_o, gamma_t) +
             sample_trimmed_logistic(sample_N[1], values->m_precomputed.m_s);
-            
+
             // Compute wi from sampled hair scattering angles.
             const float phi_i = phi_o + dphi;
             const Vector3f wi = Vector3f(sin_theta_i, cos_theta_i * std::sin(phi_i), cos_theta_i * std::cos(phi_i));
@@ -758,7 +758,7 @@ namespace
                 gamma_t,
                 ap_pdf,
                 bsdf_pdf);
-            
+
             const float angle_bsdf = std::abs(wi.y);
 
             if (angle_bsdf > 0)

@@ -33,8 +33,8 @@
 #include "mainwindow/rendering/renderingmanager.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Qt headers.
 #include <QList>

@@ -31,7 +31,7 @@
 #ifdef _WIN32
 #include "foundation/platform/windows.h"
 #endif
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/log.h"
 #include "foundation/utility/settings.h"
 #include "foundation/utility/test.h"

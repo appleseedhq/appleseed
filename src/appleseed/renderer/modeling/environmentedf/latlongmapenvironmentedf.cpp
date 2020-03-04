@@ -48,6 +48,7 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/math/matrix.h"
@@ -59,7 +60,6 @@
 #include "foundation/platform/types.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/string.h"
@@ -585,7 +585,7 @@ DictionaryArray LatLongMapEnvironmentEDFFactory::get_input_metadata() const
             .insert("help", "Environment texture vertical shift in degrees"));
 
     add_common_input_metadata(metadata);
-    
+
     return metadata;
 }
 

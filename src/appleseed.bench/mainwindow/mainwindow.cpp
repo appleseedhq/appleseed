@@ -56,11 +56,11 @@
 #include "renderer/api/rendering.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/core/appleseed.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/path.h"
 #include "foundation/platform/system.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/log/logmessage.h"
 #include "foundation/utility/string.h"
 

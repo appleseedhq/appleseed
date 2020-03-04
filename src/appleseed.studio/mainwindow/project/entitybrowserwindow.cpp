@@ -38,7 +38,7 @@
 #include "utility/miscellaneous.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 
 // Qt headers.
