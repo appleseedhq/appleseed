@@ -54,12 +54,12 @@
 #include "renderer/utility/stochasticcast.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/knn.h"
 #include "foundation/math/population.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/bitmask.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/statistics.h"
 
 // Standard headers.

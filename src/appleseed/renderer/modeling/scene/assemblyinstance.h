@@ -36,8 +36,8 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 #include "foundation/memory/autoreleaseptr.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/uid.h"
 
 // appleseed.main headers.

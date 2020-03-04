@@ -62,6 +62,7 @@
 #include "renderer/api/surfaceshader.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/core/appleseed.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
@@ -69,7 +70,6 @@
 #include "foundation/platform/path.h"
 #include "foundation/platform/python.h"
 #include "foundation/platform/system.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/log/logmessage.h"
 

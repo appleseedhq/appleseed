@@ -28,11 +28,11 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/platform/datetime.h"
 #include "foundation/utility/benchmark/benchmarkaggregator.h"
 #include "foundation/utility/benchmark/benchmarkdatapoint.h"
 #include "foundation/utility/benchmark/benchmarkseries.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/test.h"
 #include "foundation/utility/uid.h"
 

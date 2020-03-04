@@ -34,8 +34,8 @@
 #include "renderer/modeling/light/light.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
 #include "foundation/memory/autoreleaseptr.h"
+#include "foundation/platform/compiler.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"

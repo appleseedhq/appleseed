@@ -50,6 +50,7 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/math/aabb.h"
@@ -60,7 +61,6 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/otherwise.h"
 
 // Standard headers.
@@ -597,7 +597,7 @@ void DiagnosticSurfaceShader::evaluate(
             shading_result,
             integer_to_color3<float>(shading_point.get_assembly_instance().get_uid()));
         break;
-      
+
       case Objects:
         set_shading_result(
             shading_result,

@@ -45,6 +45,7 @@
 #include "renderer/utility/settingsparsing.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/math/aabb.h"
@@ -54,7 +55,6 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/memory/autoreleaseptr.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/statistics.h"
 
 // OpenImageIO headers.

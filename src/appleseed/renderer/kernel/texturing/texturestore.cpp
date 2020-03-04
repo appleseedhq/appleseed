@@ -38,13 +38,13 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/image/tile.h"
 #include "foundation/memory/memory.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/api/apistring.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 

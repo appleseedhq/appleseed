@@ -37,6 +37,7 @@
 #include "renderer/utility/messagecontext.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/colormap.h"
@@ -53,7 +54,6 @@
 #include "foundation/platform/types.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/countof.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/otherwise.h"

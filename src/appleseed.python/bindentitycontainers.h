@@ -38,8 +38,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
-#include "foundation/platform/python.h"
 #include "foundation/memory/autoreleaseptr.h"
+#include "foundation/platform/python.h"
 
 // Standard headers.
 #include <cstddef>

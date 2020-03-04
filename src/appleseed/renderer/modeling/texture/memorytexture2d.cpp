@@ -38,6 +38,7 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
@@ -45,7 +46,6 @@
 #include "foundation/image/tile.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/uid.h"
 
@@ -142,7 +142,7 @@ namespace
             const size_t            tile_x,
             const size_t            tile_y) override
         {
-            Tile* tile = 
+            Tile* tile =
                 m_image.get()
                     ? &m_image->tile(tile_x, tile_y)
                     : &m_dummy_texture->m_tile;

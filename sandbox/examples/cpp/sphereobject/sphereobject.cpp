@@ -41,7 +41,7 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/string.h"

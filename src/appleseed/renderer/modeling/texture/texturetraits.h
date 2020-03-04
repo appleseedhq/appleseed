@@ -35,8 +35,8 @@
 #include "renderer/modeling/texture/texture.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/memory/autoreleaseptr.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Forward declarations.
 namespace renderer  { class TextureFactoryRegistrar; }

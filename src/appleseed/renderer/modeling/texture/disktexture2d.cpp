@@ -40,6 +40,7 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/image/genericprogressiveimagefilereader.h"
@@ -47,7 +48,6 @@
 #include "foundation/platform/thread.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/string.h"

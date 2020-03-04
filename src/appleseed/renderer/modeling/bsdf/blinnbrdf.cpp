@@ -42,6 +42,7 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/dual.h"
 #include "foundation/math/microfacet.h"
@@ -49,7 +50,6 @@
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/otherwise.h"
 

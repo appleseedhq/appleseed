@@ -39,8 +39,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
-#include "foundation/platform/thread.h"
 #include "foundation/memory/autoreleaseptr.h"
+#include "foundation/platform/thread.h"
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/searchpaths.h"
 

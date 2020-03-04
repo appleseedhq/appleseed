@@ -39,7 +39,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/memory/autoreleaseptr.h"
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/containers/dictionary.h"
 
 // Boost headers.
 #include "boost/filesystem/operations.hpp"

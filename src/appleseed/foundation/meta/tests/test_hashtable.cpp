@@ -27,10 +27,10 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/containers/hashtable.h"
 #include "foundation/math/hash.h"
 #include "foundation/math/rng/distribution.h"
 #include "foundation/math/rng/xoroshiro128plus.h"
-#include "foundation/utility/containers/hashtable.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
@@ -84,7 +84,7 @@ TEST_SUITE(Foundation_Utility_Containers_HashTable)
             for (size_t i = 0; i < N; ++i)
             {
                 const float* val_ptr = hash_table.get(i);
-                
+
                 ASSERT_NEQ(0, val_ptr);
                 EXPECT_EQ(static_cast<float>(2 * i), *val_ptr);
             }

@@ -101,6 +101,7 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/matrix.h"
@@ -113,7 +114,6 @@
 #include "foundation/platform/types.h"
 #include "foundation/utility/api/apiarray.h"
 #include "foundation/utility/api/apistring.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/iterators.h"
 #include "foundation/utility/log.h"

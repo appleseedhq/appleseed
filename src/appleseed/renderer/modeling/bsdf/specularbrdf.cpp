@@ -40,11 +40,11 @@
 #include "renderer/modeling/bsdf/specularhelper.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/dual.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 using namespace foundation;
 
@@ -102,7 +102,7 @@ namespace
                 return;
 
             const InputValues* values = static_cast<const InputValues*>(data);
-            
+
             const NoFresnelFun f(
                 values->m_reflectance,
                 values->m_reflectance_multiplier);

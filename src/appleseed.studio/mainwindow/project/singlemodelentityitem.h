@@ -44,8 +44,8 @@
 #include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
 #include <memory>

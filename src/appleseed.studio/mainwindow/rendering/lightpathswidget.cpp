@@ -52,8 +52,8 @@
 // Qt headers.
 #include <QKeyEvent>
 #include <QOpenGLFunctions_3_3_Core>
-#include <QSurfaceFormat>
 #include <QString>
+#include <QSurfaceFormat>
 
 // Standard headers.
 #include <algorithm>

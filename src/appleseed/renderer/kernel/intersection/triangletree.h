@@ -38,12 +38,12 @@
 #include "renderer/modeling/scene/visibilityflags.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/alignedvector.h"
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/bvh.h"
 #include "foundation/math/ray.h"
 #include "foundation/memory/poolallocator.h"
-#include "foundation/utility/alignedvector.h"
 #include "foundation/utility/lazy.h"
 #include "foundation/utility/uid.h"
 

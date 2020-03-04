@@ -81,6 +81,19 @@ source_group ("foundation\\core\\concepts" FILES
     ${foundation_core_concepts_sources}
 )
 
+set (foundation_containers_sources
+    foundation/containers/alignedvector.h
+    foundation/containers/dictionary.cpp
+    foundation/containers/dictionary.h
+    foundation/containers/hashtable.h
+)
+list (APPEND appleseed_sources
+    ${foundation_containers_sources}
+)
+source_group ("foundation\\containers" FILES
+    ${foundation_containers_sources}
+)
+
 set (foundation_core_exceptions_sources
     foundation/core/exceptions/exception.h
     foundation/core/exceptions/exceptionioerror.h
@@ -770,18 +783,6 @@ source_group ("foundation\\utility\\commandlineparser" FILES
     ${foundation_utility_commandlineparser_sources}
 )
 
-set (foundation_utility_containers_sources
-    foundation/utility/containers/dictionary.cpp
-    foundation/utility/containers/dictionary.h
-    foundation/utility/containers/hashtable.h
-)
-list (APPEND appleseed_sources
-    ${foundation_utility_containers_sources}
-)
-source_group ("foundation\\utility\\containers" FILES
-    ${foundation_utility_containers_sources}
-)
-
 set (foundation_utility_filter_sources
     foundation/utility/filter/ifilter.h
     foundation/utility/filter/passthroughfilter.h
@@ -912,7 +913,6 @@ source_group ("foundation\\utility\\ui" FILES
 )
 
 set (foundation_utility_sources
-    foundation/utility/alignedvector.h
     foundation/utility/attributeset.cpp
     foundation/utility/attributeset.h
     foundation/utility/benchmark.h

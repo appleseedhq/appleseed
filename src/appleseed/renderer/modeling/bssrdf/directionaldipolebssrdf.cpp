@@ -36,10 +36,10 @@
 #include "renderer/modeling/bssrdf/sss.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
 #include <algorithm>

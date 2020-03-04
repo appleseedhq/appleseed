@@ -38,7 +38,7 @@
 #include "widgets/doubleslider.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/containers/dictionary.h"
 
 // Qt headers.
 #include <QInputDialog>

@@ -45,10 +45,10 @@
 #include "renderer/api/texture.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/transform.h"
 #include "foundation/memory/autoreleaseptr.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Qt headers.
 #include <QObject>

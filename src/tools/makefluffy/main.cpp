@@ -48,7 +48,7 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/memory/autoreleaseptr.h"
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/filter.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"

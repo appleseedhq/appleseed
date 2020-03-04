@@ -43,7 +43,7 @@
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.

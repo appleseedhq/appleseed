@@ -43,8 +43,8 @@
 #include "renderer/utility/triangle.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/sampling/mappings.h"
-#include "foundation/utility/containers/dictionary.h"
 
 using namespace foundation;
 
@@ -356,7 +356,7 @@ void LightSamplerBase::collect_emitting_shapes(
             x = global_transform.vector_to_parent(x);
             y = global_transform.vector_to_parent(y);
             n = normalize(global_transform.normal_to_parent(n));
-            
+
             const double area = norm(x) * norm(y);
 
             if (area <= 0.0)
