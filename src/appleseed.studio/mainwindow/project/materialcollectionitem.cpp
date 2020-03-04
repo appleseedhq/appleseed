@@ -171,8 +171,6 @@ void MaterialCollectionItem::slot_import_disney()
 
     if (!filepath.isEmpty())
     {
-        filepath = QDir::toNativeSeparators(filepath);
-
         const bf::path root_path(Application::get_root_path());
         const bf::path schema_file_path = root_path / "schemas" / "settings.xsd";
 

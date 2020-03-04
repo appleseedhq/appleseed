@@ -1402,8 +1402,6 @@ void MainWindow::slot_open_project()
 
     if (!filepath.isEmpty())
     {
-        filepath = QDir::toNativeSeparators(filepath);
-
         open_project_async(filepath);
         update_recent_files_menu(filepath);
     }
@@ -1520,8 +1518,6 @@ void MainWindow::slot_save_project_as()
 
     if (!filepath.isEmpty())
     {
-        filepath = QDir::toNativeSeparators(filepath);
-
         save_project(filepath);
     }
 }

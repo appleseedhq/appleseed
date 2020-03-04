@@ -210,7 +210,6 @@ void PythonConsoleWidget::slot_open_file()
 
     if (!filepath.isEmpty())
     {
-        filepath = QDir::toNativeSeparators(filepath);
         open_file(filepath.toStdString());
     }
 }

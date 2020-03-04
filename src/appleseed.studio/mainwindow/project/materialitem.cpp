@@ -173,8 +173,6 @@ void MaterialItem::slot_export()
         if (QFileInfo(filepath).suffix().isEmpty())
             filepath += ".dmt";
 
-        filepath = QDir::toNativeSeparators(filepath);
-
         ParamArray parameters = m_entity->get_parameters();
         parameters.insert("__name", m_entity->get_name());
         parameters.insert("__model", m_entity->get_model());

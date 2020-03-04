@@ -1079,8 +1079,6 @@ void MainWindow::slot_save_render()
     if (QFileInfo(filepath).suffix().isEmpty())
         filepath += ".png";
 
-    filepath = QDir::toNativeSeparators(filepath);
-
     m_render_widget->save(filepath);
 
     RENDERER_LOG_INFO("wrote image file %s.", filepath.toStdString().c_str());
@@ -1116,8 +1114,6 @@ void MainWindow::slot_export_chart()
 
     if (QFileInfo(filepath).suffix().isEmpty())
         filepath += ".png";
-
-    filepath = QDir::toNativeSeparators(filepath);
 
     m_chart_widget->grab().save(filepath);
 

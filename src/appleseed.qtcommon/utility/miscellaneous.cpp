@@ -277,7 +277,7 @@ QString get_open_filename(
         settings_key + SettingsLastDirectory,
         QDir::toNativeSeparators(QFileInfo(filepath).path()));
 
-    return filepath;
+    return QDir::toNativeSeparators(filepath);
 }
 
 QStringList get_open_filenames(
@@ -291,7 +291,7 @@ QStringList get_open_filenames(
     const QString dir = get_value(settings, settings_key + SettingsLastDirectory);
     QString selected_filter = get_value(settings, settings_key + SettingsSelectedFilter);
 
-    const QStringList filepaths =
+    QStringList filepaths =
         QFileDialog::getOpenFileNames(
             parent,
             caption,
@@ -309,6 +309,11 @@ QStringList get_open_filenames(
         settings,
         settings_key + SettingsLastDirectory,
         QDir::toNativeSeparators(QFileInfo(filepaths.first()).path()));
+
+    for (int i = 0; i < filepaths.size(); ++i) 
+    {
+        filepaths[i] = QDir::toNativeSeparators(filepaths[i]);
+    }
 
     return filepaths;
 }
@@ -355,7 +360,7 @@ QString get_save_filename(
         filepath += selected_filter.mid(begin, end - begin);
     }
 
-    return filepath;
+    return QDir::toNativeSeparators(filepath);
 }
 
 void disable_osx_focus_rect(QWidget* widget)
