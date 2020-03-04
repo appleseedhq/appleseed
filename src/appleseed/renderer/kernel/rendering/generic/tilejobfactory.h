@@ -74,6 +74,7 @@ class TileJobFactory
         const TileOrdering                  tile_ordering,
         const TileJob::TileRendererVector&  tile_renderers,
         const TileJob::TileCallbackVector&  tile_callbacks,
+        const size_t                        thread_count,
         const std::uint32_t                 pass_hash,
         const Spectrum::Mode                spectrum_mode,
         TileJobVector&                      tile_jobs,

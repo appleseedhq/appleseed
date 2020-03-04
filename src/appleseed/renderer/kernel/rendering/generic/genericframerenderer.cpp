@@ -368,6 +368,7 @@ namespace
                         m_tile_ordering,
                         m_tile_renderers,
                         m_tile_callbacks,
+                        m_thread_count,
                         pass_hash,
                         m_spectrum_mode,
                         tile_jobs,
