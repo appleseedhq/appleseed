@@ -30,53 +30,32 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-#include "foundation/utility/log/ilogtarget.h"
-#include "foundation/utility/log/logmessage.h"
+#include "foundation/log/ilogtarget.h"
+#include "foundation/log/logmessage.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Standard headers.
-#include <cstddef>
+#include <cstdio>
 
 namespace foundation
 {
 
 //
-// A log target that outputs to a string.
+// A convenient base class for log targets that write to std::FILE.
 //
 
-class APPLESEED_DLLSYMBOL StringLogTarget
+class APPLESEED_DLLSYMBOL FileLogTargetBase
   : public ILogTarget
 {
-  public:
-    // Constructor.
-    StringLogTarget();
-
-    // Destructor.
-    ~StringLogTarget() override;
-
-    // Delete this instance.
-    void release() override;
-
-    // Write a message.
-    void write(
+  protected:
+    // Format and display the message.
+    void write_message(
+        std::FILE*                  file,
         const LogMessage::Category  category,
-        const char*                 file,
-        const size_t                line,
         const char*                 header,
-        const char*                 message) override;
-
-    // Retrieve the string so far.
-    const char* get_string() const;
-
-  private:
-    struct Impl;
-    Impl* impl;
+        const char*                 message) const;
 };
-
-// Create an instance of a log target that outputs to a string.
-APPLESEED_DLLSYMBOL StringLogTarget* create_string_log_target();
 
 }   // namespace foundation

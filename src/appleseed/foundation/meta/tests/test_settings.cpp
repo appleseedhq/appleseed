@@ -32,7 +32,7 @@
 #include "foundation/platform/windows.h"
 #endif
 #include "foundation/containers/dictionary.h"
-#include "foundation/utility/log.h"
+#include "foundation/log/log.h"
 #include "foundation/utility/settings.h"
 #include "foundation/utility/test.h"
 #include "foundation/utility/testutils.h"

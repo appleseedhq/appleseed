@@ -27,8 +27,8 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/platform/python.h"
 #include "foundation/hash/murmurhash.h"
+#include "foundation/platform/python.h"
 
 // Standard headers.
 #include <string>

@@ -31,9 +31,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/log/log.h"
 #include "foundation/math/population.h"
 #include "foundation/math/split.h"
-#include "foundation/utility/log.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.

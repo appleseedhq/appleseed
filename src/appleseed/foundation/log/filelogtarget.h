@@ -30,33 +30,66 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/iunknown.h"
-#include "foundation/utility/log/logmessage.h"
+#include "foundation/log/filelogtargetbase.h"
+#include "foundation/log/logmessage.h"
+#include "foundation/platform/compiler.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdio>
 
 namespace foundation
 {
 
 //
-// The log target interface.
+// A log target that outputs to a file.
 //
 
-class APPLESEED_DLLSYMBOL ILogTarget
-  : public IUnknown
+class APPLESEED_DLLSYMBOL FileLogTarget
+  : public FileLogTargetBase
 {
   public:
+    enum Options
+    {
+        Default                     = 0,            // none of the flags below
+        FlushAfterEveryMessage      = 1UL << 0      // call fflush() on the file after every message
+    };
+
+    // Delete this instance.
+    void release() override;
+
     // Write a message.
-    virtual void write(
+    void write(
         const LogMessage::Category  category,
         const char*                 file,
         const size_t                line,
         const char*                 header,
-        const char*                 message) = 0;
+        const char*                 message) override;
+
+    bool open(const char* filename);
+
+    void close();
+
+    bool is_open() const;
+
+  private:
+    friend APPLESEED_DLLSYMBOL FileLogTarget* create_file_log_target(const int options);
+
+    const int   m_options;
+    std::FILE*  m_file;
+
+    // Constructor.
+    explicit FileLogTarget(const int options);
+
+    // Destructor.
+    ~FileLogTarget() override;
 };
+
+// Create an instance of a log target that outputs to a file.
+APPLESEED_DLLSYMBOL FileLogTarget* create_file_log_target(
+    const int options = FileLogTarget::Options::Default);
 
 }   // namespace foundation

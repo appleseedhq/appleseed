@@ -27,13 +27,15 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "openfilelogtarget.h"
+#pragma once
 
 // appleseed.foundation headers.
+#include "foundation/log/ilogtarget.h"
+#include "foundation/log/logmessage.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/log/filelogtargetbase.h"
-#include "foundation/utility/log/logmessage.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstddef>
@@ -41,52 +43,40 @@
 namespace foundation
 {
 
-namespace
-{
-    //
-    // A log target that outputs to an open std::FILE.
-    //
-
-    class OpenFileLogTarget
-      : public FileLogTargetBase
-    {
-      public:
-        // Constructor.
-        explicit OpenFileLogTarget(FILE* file)
-          : m_file(file)
-        {
-        }
-
-        // Delete this instance.
-        void release() override
-        {
-            delete this;
-        }
-
-        // Write a message.
-        void write(
-            const LogMessage::Category  category,
-            const char*                 file,
-            const size_t                line,
-            const char*                 header,
-            const char*                 message) override
-        {
-            write_message(m_file, category, header, message);
-        }
-
-      private:
-        FILE* m_file;
-    };
-}
-
-
 //
-// Create an instance of a log target that outputs to an open std::FILE.
+// A log target that outputs to a string.
 //
 
-ILogTarget* create_open_file_log_target(FILE* file)
+class APPLESEED_DLLSYMBOL StringLogTarget
+  : public ILogTarget
 {
-    return new OpenFileLogTarget(file);
-}
+  public:
+    // Constructor.
+    StringLogTarget();
+
+    // Destructor.
+    ~StringLogTarget() override;
+
+    // Delete this instance.
+    void release() override;
+
+    // Write a message.
+    void write(
+        const LogMessage::Category  category,
+        const char*                 file,
+        const size_t                line,
+        const char*                 header,
+        const char*                 message) override;
+
+    // Retrieve the string so far.
+    const char* get_string() const;
+
+  private:
+    struct Impl;
+    Impl* impl;
+};
+
+// Create an instance of a log target that outputs to a string.
+APPLESEED_DLLSYMBOL StringLogTarget* create_string_log_target();
 
 }   // namespace foundation

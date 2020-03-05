@@ -43,7 +43,7 @@
 #include "foundation/platform/windows.h"
 #endif
 #include "foundation/utility/commandlineparser.h"
-#include "foundation/utility/log.h"
+#include "foundation/log/log.h"
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"

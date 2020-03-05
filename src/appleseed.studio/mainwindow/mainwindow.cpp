@@ -64,6 +64,7 @@
 // appleseed.foundation headers.
 #include "foundation/containers/dictionary.h"
 #include "foundation/core/appleseed.h"
+#include "foundation/log/logmessage.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
@@ -71,7 +72,6 @@
 #include "foundation/platform/python.h"
 #include "foundation/platform/system.h"
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/log/logmessage.h"
 
 // Qt headers.
 #include <QAction>

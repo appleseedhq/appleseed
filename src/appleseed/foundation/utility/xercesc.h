@@ -31,9 +31,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/log/log.h"
 #include "foundation/platform/thread.h"
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/log.h"
 
 // Xerces-C++ headers.
 #include "xercesc/sax/ErrorHandler.hpp"

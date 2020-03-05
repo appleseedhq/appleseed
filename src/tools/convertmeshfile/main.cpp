@@ -44,7 +44,7 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/log.h"
+#include "foundation/log/log.h"
 
 // Standard headers.
 #include <cstddef>

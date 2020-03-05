@@ -28,6 +28,7 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/log/log.h"
 #include "foundation/platform/atomic.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/timers.h"
@@ -36,7 +37,6 @@
 #include "foundation/utility/job/jobmanager.h"
 #include "foundation/utility/job/jobqueue.h"
 #include "foundation/utility/job/workerthread.h"
-#include "foundation/utility/log.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.

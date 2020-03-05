@@ -31,10 +31,10 @@
 #include "jobmanager.h"
 
 // appleseed.foundation headers.
+#include "foundation/log/log.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/job/jobqueue.h"
 #include "foundation/utility/job/workerthread.h"
-#include "foundation/utility/log.h"
 
 // Standard headers.
 #include <cassert>

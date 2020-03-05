@@ -34,7 +34,7 @@
 #include "application/superlogger.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/log.h"
+#include "foundation/log/log.h"
 #include "foundation/utility/makevector.h"
 
 using namespace appleseed::common;

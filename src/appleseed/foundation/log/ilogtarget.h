@@ -30,32 +30,33 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/utility/log/ilogtarget.h"
-#include "foundation/utility/log/logmessage.h"
+#include "foundation/core/concepts/iunknown.h"
+#include "foundation/log/logmessage.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Standard headers.
-#include <cstdio>
+#include <cstddef>
 
 namespace foundation
 {
 
 //
-// A convenient base class for log targets that write to std::FILE.
+// The log target interface.
 //
 
-class APPLESEED_DLLSYMBOL FileLogTargetBase
-  : public ILogTarget
+class APPLESEED_DLLSYMBOL ILogTarget
+  : public IUnknown
 {
-  protected:
-    // Format and display the message.
-    void write_message(
-        std::FILE*                  file,
+  public:
+    // Write a message.
+    virtual void write(
         const LogMessage::Category  category,
+        const char*                 file,
+        const size_t                line,
         const char*                 header,
-        const char*                 message) const;
+        const char*                 message) = 0;
 };
 
 }   // namespace foundation

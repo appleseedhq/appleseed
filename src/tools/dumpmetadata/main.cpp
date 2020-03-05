@@ -60,7 +60,7 @@
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/containers/dictionary.h"
 #include "foundation/utility/indenter.h"
-#include "foundation/utility/log.h"
+#include "foundation/log/log.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/xmlelement.h"
 

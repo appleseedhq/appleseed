@@ -48,13 +48,13 @@
 #include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
+#include "foundation/log/log.h"
 #include "foundation/memory/autoreleaseptr.h"
 #include "foundation/platform/console.h"
 #include "foundation/platform/debugger.h"
 #include "foundation/platform/thread.h"
 #include "foundation/utility/benchmark.h"
 #include "foundation/utility/filter.h"
-#include "foundation/utility/log.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/string.h"
 #include "foundation/utility/test.h"

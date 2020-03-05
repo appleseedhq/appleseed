@@ -30,8 +30,8 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/utility/log/logger.h"
-#include "foundation/utility/log/logmessage.h"
+#include "foundation/log/logger.h"
+#include "foundation/log/logmessage.h"
 
 namespace foundation
 {

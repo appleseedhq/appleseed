@@ -30,7 +30,7 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/utility/log.h"
+#include "foundation/log/log.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
