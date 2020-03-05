@@ -167,6 +167,20 @@ source_group ("foundation\\curve" FILES
     ${foundation_curve_sources}
 )
 
+set (foundation_hash_sources
+    foundation/hash/hash.h
+    foundation/hash/murmurhash.cpp
+    foundation/hash/murmurhash.h
+    foundation/hash/siphash.cpp
+    foundation/hash/siphash.h
+)
+list (APPEND appleseed_sources
+    ${foundation_hash_sources}
+)
+source_group ("foundation\\hash" FILES
+    ${foundation_hash_sources}
+)
+
 set (foundation_image_text_sources
     foundation/image/text/stb_truetype.cpp
     foundation/image/text/stb_truetype.h
@@ -379,7 +393,6 @@ set (foundation_math_sources
     foundation/math/frustum.h
     foundation/math/half.cpp
     foundation/math/half.h
-    foundation/math/hash.h
     foundation/math/knn.h
     foundation/math/matrix.h
     foundation/math/microfacet.cpp
@@ -940,8 +953,6 @@ set (foundation_utility_sources
     foundation/utility/lazy.h
     foundation/utility/log.h
     foundation/utility/makevector.h
-    foundation/utility/murmurhash.cpp
-    foundation/utility/murmurhash.h
     foundation/utility/numerictype.h
     foundation/utility/otherwise.h
     foundation/utility/poison.h
@@ -951,8 +962,6 @@ set (foundation_utility_sources
     foundation/utility/searchpaths.cpp
     foundation/utility/searchpaths.h
     foundation/utility/settings.h
-    foundation/utility/siphash.cpp
-    foundation/utility/siphash.h
     foundation/utility/statistics.cpp
     foundation/utility/statistics.h
     foundation/utility/stopwatch.h

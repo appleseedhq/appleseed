@@ -34,7 +34,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/containers/hashtable.h"
-#include "foundation/math/hash.h"
+#include "foundation/hash/hash.h"
 #include "foundation/utility/uid.h"
 
 // Standard headers.

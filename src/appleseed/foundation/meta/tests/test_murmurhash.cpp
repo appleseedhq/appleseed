@@ -27,12 +27,12 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/utility/murmurhash.h"
+#include "foundation/hash/murmurhash.h"
 #include "foundation/utility/test.h"
 
 using namespace foundation;
 
-TEST_SUITE(Foundation_Utility_MurmurHash)
+TEST_SUITE(Foundation_Hash_MurmurHash)
 {
     TEST_CASE(Append)
     {

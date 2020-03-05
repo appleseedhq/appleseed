@@ -30,8 +30,8 @@
 #pragma once
 
 // appleseed.foundation headers.
+#include "foundation/hash/hash.h"
 #include "foundation/math/fp.h"
-#include "foundation/math/hash.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
 #include "foundation/utility/poison.h"

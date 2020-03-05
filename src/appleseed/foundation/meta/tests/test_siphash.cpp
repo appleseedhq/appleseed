@@ -27,7 +27,7 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/utility/siphash.h"
+#include "foundation/hash/siphash.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
@@ -37,7 +37,7 @@
 
 using namespace foundation;
 
-TEST_SUITE(Foundation_Utility_SipHash)
+TEST_SUITE(Foundation_Hash_SipHash)
 {
     TEST_CASE(TestVectors)
     {

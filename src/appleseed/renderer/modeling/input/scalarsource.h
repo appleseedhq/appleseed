@@ -34,9 +34,9 @@
 #include "renderer/modeling/input/source.h"
 
 // appleseed.foundation headers.
+#include "foundation/hash/siphash.h"
 #include "foundation/image/color.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/siphash.h"
 
 // Standard headers.
 #include <cstdint>
