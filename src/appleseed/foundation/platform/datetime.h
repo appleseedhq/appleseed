@@ -30,7 +30,7 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/utility/string.h"
+#include "foundation/string/string.h"
 
 // Boost headers.
 #include "boost/date_time/gregorian/gregorian.hpp"

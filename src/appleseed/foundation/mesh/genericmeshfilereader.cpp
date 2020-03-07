@@ -34,7 +34,7 @@
 #include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
 #include "foundation/mesh/binarymeshfilereader.h"
 #include "foundation/mesh/objmeshfilereader.h"
-#include "foundation/utility/string.h"
+#include "foundation/string/string.h"
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"

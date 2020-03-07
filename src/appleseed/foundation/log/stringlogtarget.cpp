@@ -31,8 +31,8 @@
 #include "stringlogtarget.h"
 
 // appleseed.foundation headers.
+#include "foundation/string/string.h"
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <string>

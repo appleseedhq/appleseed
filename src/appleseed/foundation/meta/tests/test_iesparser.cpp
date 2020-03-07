@@ -27,9 +27,9 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/string/string.h"
 #include "foundation/utility/iesparser.h"
 #include "foundation/utility/iostreamop.h"
-#include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.

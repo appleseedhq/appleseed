@@ -33,7 +33,7 @@
 #include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
 #include "foundation/curve/binarycurvefilereader.h"
 #include "foundation/curve/mitshairfilereader.h"
-#include "foundation/utility/string.h"
+#include "foundation/string/string.h"
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"

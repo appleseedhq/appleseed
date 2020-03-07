@@ -58,8 +58,8 @@
 #include "foundation/math/mis.h"
 #include "foundation/math/population.h"
 #include "foundation/math/vector.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/statistics.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <algorithm>

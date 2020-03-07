@@ -44,8 +44,8 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/memory/memory.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/job/iabortswitch.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>

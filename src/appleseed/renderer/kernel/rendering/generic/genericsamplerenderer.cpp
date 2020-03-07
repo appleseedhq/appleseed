@@ -57,8 +57,8 @@
 #include "foundation/image/regularspectrum.h"
 #include "foundation/math/vector.h"
 #include "foundation/memory/arena.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/statistics.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cstddef>

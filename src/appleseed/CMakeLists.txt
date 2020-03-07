@@ -762,6 +762,17 @@ source_group ("foundation\\resources\\logo" FILES
     ${foundation_resources_logo_sources}
 )
 
+set (foundation_string_sources
+    foundation/string/string.cpp
+    foundation/string/string.h
+)
+list (APPEND appleseed_sources
+    ${foundation_string_sources}
+)
+source_group ("foundation\\string" FILES
+    ${foundation_string_sources}
+)
+
 set (foundation_utility_api_sources
     foundation/utility/api/apiarray.h
     foundation/utility/api/apistring.cpp
@@ -965,8 +976,6 @@ set (foundation_utility_sources
     foundation/utility/statistics.cpp
     foundation/utility/statistics.h
     foundation/utility/stopwatch.h
-    foundation/utility/string.cpp
-    foundation/utility/string.h
     foundation/utility/tea.h
     foundation/utility/test.h
     foundation/utility/testutils.cpp

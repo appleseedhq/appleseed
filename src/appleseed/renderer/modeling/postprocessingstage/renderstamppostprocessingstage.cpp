@@ -47,8 +47,8 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/system.h"
 #include "foundation/resources/logo/appleseed-seeds-256.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/string.h"
 
 // OpenImageIO headers.
 #include "foundation/platform/_beginoiioheaders.h"

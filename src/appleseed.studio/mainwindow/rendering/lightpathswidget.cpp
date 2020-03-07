@@ -46,8 +46,8 @@
 #include "foundation/image/colorspace.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/types.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/apistring.h"
-#include "foundation/utility/string.h"
 
 // Qt headers.
 #include <QKeyEvent>

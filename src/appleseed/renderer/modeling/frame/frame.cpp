@@ -64,11 +64,11 @@
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/path.h"
 #include "foundation/platform/types.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/stopwatch.h"
-#include "foundation/utility/string.h"
 
 // Boost headers.
 #include "boost/filesystem.hpp"

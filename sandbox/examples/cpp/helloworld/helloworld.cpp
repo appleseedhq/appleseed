@@ -46,14 +46,14 @@
 #include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/core/appleseed.h"
+#include "foundation/log/consolelogtarget.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/memory/autoreleaseptr.h"
-#include "foundation/containers/dictionary.h"
-#include "foundation/log/consolelogtarget.h"
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.

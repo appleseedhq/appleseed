@@ -40,9 +40,9 @@
 #include "foundation/containers/dictionary.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/image/regularspectrum.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/iostreamop.h"
-#include "foundation/utility/string.h"
 
 // Qt headers.
 #include <QCheckBox>

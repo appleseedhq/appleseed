@@ -64,10 +64,10 @@
 #include "foundation/platform/arch.h"
 #include "foundation/platform/debugger.h"
 #include "foundation/platform/types.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/job.h"
 #include "foundation/utility/statistics.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>

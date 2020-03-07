@@ -51,7 +51,7 @@
 #include "foundation/memory/autoreleaseptr.h"
 #include "foundation/containers/dictionary.h"
 #include "foundation/log/log.h"
-#include "foundation/utility/string.h"
+#include "foundation/string/string.h"
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"

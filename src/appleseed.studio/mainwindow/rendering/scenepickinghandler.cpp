@@ -53,9 +53,9 @@
 #include "foundation/math/basis.h"
 #include "foundation/math/fp.h"
 #include "foundation/math/vector.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/iostreamop.h"
-#include "foundation/utility/string.h"
 
 // Qt headers.
 #include <QComboBox>

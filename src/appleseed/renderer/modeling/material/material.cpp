@@ -51,9 +51,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/makevector.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <string>

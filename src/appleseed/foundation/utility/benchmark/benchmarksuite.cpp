@@ -35,6 +35,7 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/thread.h"
 #include "foundation/platform/timers.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/benchmark/benchmarkresult.h"
 #include "foundation/utility/benchmark/ibenchmarkcase.h"
 #include "foundation/utility/benchmark/ibenchmarkcasefactory.h"
@@ -42,7 +43,6 @@
 #include "foundation/utility/filter.h"
 #include "foundation/utility/gnuplotfile.h"
 #include "foundation/utility/stopwatch.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <algorithm>

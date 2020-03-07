@@ -31,7 +31,7 @@
 #include "xercesc.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/string.h"
+#include "foundation/string/string.h"
 
 // Xerces-C++ headers.
 #include "xercesc/util/PlatformUtils.hpp"
