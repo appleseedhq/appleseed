@@ -31,8 +31,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/log/log.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/log.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"

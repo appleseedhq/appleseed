@@ -31,13 +31,13 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/log/log.h"
 #include "foundation/utility/commandlineparser/flagoptionhandler.h"
 #include "foundation/utility/commandlineparser/messagelist.h"
 #include "foundation/utility/commandlineparser/optionhandler.h"
 #include "foundation/utility/commandlineparser/parseresults.h"
 #include "foundation/utility/commandlineparser/valueoptionhandler.h"
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/log.h"
 
 // Standard headers.
 #include <cassert>

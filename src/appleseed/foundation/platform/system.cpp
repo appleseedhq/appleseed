@@ -39,7 +39,7 @@
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/thread.h"
 #include "foundation/platform/types.h"
-#include "foundation/utility/log.h"
+#include "foundation/log/log.h"
 #include "foundation/utility/string.h"
 
 // Standard headers.

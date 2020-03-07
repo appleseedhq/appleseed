@@ -37,7 +37,7 @@
 #include "foundation/platform/windows.h"
 #endif
 #include "foundation/utility/job/iabortswitch.h"
-#include "foundation/utility/log.h"
+#include "foundation/log/log.h"
 
 // Boost headers.
 #include "boost/chrono.hpp"

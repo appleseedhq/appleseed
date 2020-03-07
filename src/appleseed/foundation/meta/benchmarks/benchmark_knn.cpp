@@ -28,6 +28,7 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/log/log.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/knn.h"
 #include "foundation/math/rng/distribution.h"
@@ -38,7 +39,6 @@
 #include "foundation/platform/timers.h"
 #include "foundation/utility/benchmark.h"
 #include "foundation/utility/bufferedfile.h"
-#include "foundation/utility/log.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/string.h"
 

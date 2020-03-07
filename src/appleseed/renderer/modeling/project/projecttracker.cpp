@@ -49,9 +49,9 @@
 #include "renderer/modeling/texture/texture.h"
 
 // appleseed.foundation headers.
+#include "foundation/log/log.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/api/apistring.h"
-#include "foundation/utility/log.h"
 #include "foundation/utility/uid.h"
 
 // Standard headers.
@@ -354,7 +354,7 @@ struct ProjectTracker::Impl
             LOG_INFO(logger, FMT_ENTITY " is referenced by:",
                 kv.first->get_path().c_str(),
                 kv.first->get_uid());
-            
+
             for (const auto& incoming_ref : kv.second)
             {
                 if (incoming_ref.m_input_name == nullptr)
@@ -401,7 +401,7 @@ struct ProjectTracker::Impl
             LOG_INFO(logger, FMT_ENTITY " has references to:",
                 kv.first->get_path().c_str(),
                 kv.first->get_uid());
-            
+
             for (const auto& outgoing_ref : kv.second)
             {
                 LOG_INFO(logger, "    " FMT_ENTITY,

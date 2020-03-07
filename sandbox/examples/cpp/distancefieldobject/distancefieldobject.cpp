@@ -37,7 +37,7 @@
 #include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/hash.h"
+#include "foundation/hash/hash.h"
 #include "foundation/math/intersection/rayaabb.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/rng/distribution.h"

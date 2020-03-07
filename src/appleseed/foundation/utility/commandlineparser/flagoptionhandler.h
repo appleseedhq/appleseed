@@ -30,11 +30,11 @@
 #pragma once
 
 // appleseed.foundation headers.
+#include "foundation/log/log.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/commandlineparser/messagelist.h"
 #include "foundation/utility/commandlineparser/optionhandler.h"
 #include "foundation/utility/commandlineparser/parseresults.h"
-#include "foundation/utility/log.h"
 
 // Standard headers.
 #include <cassert>

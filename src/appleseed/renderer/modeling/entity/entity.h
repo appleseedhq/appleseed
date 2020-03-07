@@ -34,8 +34,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
+#include "foundation/hash/siphash.h"
 #include "foundation/utility/job/iabortswitch.h"
-#include "foundation/utility/siphash.h"
 #include "foundation/utility/uid.h"
 #include "foundation/utility/version.h"
 

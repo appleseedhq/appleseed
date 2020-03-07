@@ -31,7 +31,7 @@
 #include "logformatter.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/log/logger.h"
+#include "foundation/log/logger.h"
 
 namespace foundation
 {

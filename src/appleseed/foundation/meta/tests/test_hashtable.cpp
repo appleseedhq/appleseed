@@ -28,7 +28,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/containers/hashtable.h"
-#include "foundation/math/hash.h"
+#include "foundation/hash/hash.h"
 #include "foundation/math/rng/distribution.h"
 #include "foundation/math/rng/xoroshiro128plus.h"
 #include "foundation/utility/test.h"
@@ -39,7 +39,7 @@
 
 using namespace foundation;
 
-TEST_SUITE(Foundation_Utility_Containers_HashTable)
+TEST_SUITE(Foundation_Containers_HashTable)
 {
     struct KeyHasher
     {

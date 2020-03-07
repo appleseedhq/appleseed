@@ -167,6 +167,20 @@ source_group ("foundation\\curve" FILES
     ${foundation_curve_sources}
 )
 
+set (foundation_hash_sources
+    foundation/hash/hash.h
+    foundation/hash/murmurhash.cpp
+    foundation/hash/murmurhash.h
+    foundation/hash/siphash.cpp
+    foundation/hash/siphash.h
+)
+list (APPEND appleseed_sources
+    ${foundation_hash_sources}
+)
+source_group ("foundation\\hash" FILES
+    ${foundation_hash_sources}
+)
+
 set (foundation_image_text_sources
     foundation/image/text/stb_truetype.cpp
     foundation/image/text/stb_truetype.h
@@ -225,6 +239,34 @@ list (APPEND appleseed_sources
 )
 source_group ("foundation\\image" FILES
     ${foundation_image_sources}
+)
+
+set (foundation_log_sources
+    foundation/log/consolelogtarget.cpp
+    foundation/log/consolelogtarget.h
+    foundation/log/filelogtarget.cpp
+    foundation/log/filelogtarget.h
+    foundation/log/filelogtargetbase.cpp
+    foundation/log/filelogtargetbase.h
+    foundation/log/helpers.h
+    foundation/log/ilogtarget.h
+    foundation/log/log.h
+    foundation/log/logformatter.cpp
+    foundation/log/logformatter.h
+    foundation/log/logger.cpp
+    foundation/log/logger.h
+    foundation/log/logmessage.cpp
+    foundation/log/logmessage.h
+    foundation/log/openfilelogtarget.cpp
+    foundation/log/openfilelogtarget.h
+    foundation/log/stringlogtarget.cpp
+    foundation/log/stringlogtarget.h
+)
+list (APPEND appleseed_sources
+    ${foundation_log_sources}
+)
+source_group ("foundation\\log" FILES
+    ${foundation_log_sources}
 )
 
 set (foundation_math_bsp_sources
@@ -379,7 +421,6 @@ set (foundation_math_sources
     foundation/math/frustum.h
     foundation/math/half.cpp
     foundation/math/half.h
-    foundation/math/hash.h
     foundation/math/knn.h
     foundation/math/matrix.h
     foundation/math/microfacet.cpp
@@ -815,33 +856,6 @@ source_group ("foundation\\utility\\job" FILES
     ${foundation_utility_job_sources}
 )
 
-set (foundation_utility_log_sources
-    foundation/utility/log/consolelogtarget.cpp
-    foundation/utility/log/consolelogtarget.h
-    foundation/utility/log/filelogtarget.cpp
-    foundation/utility/log/filelogtarget.h
-    foundation/utility/log/filelogtargetbase.cpp
-    foundation/utility/log/filelogtargetbase.h
-    foundation/utility/log/helpers.h
-    foundation/utility/log/ilogtarget.h
-    foundation/utility/log/logformatter.cpp
-    foundation/utility/log/logformatter.h
-    foundation/utility/log/logger.cpp
-    foundation/utility/log/logger.h
-    foundation/utility/log/logmessage.cpp
-    foundation/utility/log/logmessage.h
-    foundation/utility/log/openfilelogtarget.cpp
-    foundation/utility/log/openfilelogtarget.h
-    foundation/utility/log/stringlogtarget.cpp
-    foundation/utility/log/stringlogtarget.h
-)
-list (APPEND appleseed_sources
-    ${foundation_utility_log_sources}
-)
-source_group ("foundation\\utility\\log" FILES
-    ${foundation_utility_log_sources}
-)
-
 set (foundation_utility_minizip_sources
     foundation/utility/minizip/crypt.h
     foundation/utility/minizip/ioapi.c
@@ -938,10 +952,7 @@ set (foundation_utility_sources
     foundation/utility/job.h
     foundation/utility/kvpair.h
     foundation/utility/lazy.h
-    foundation/utility/log.h
     foundation/utility/makevector.h
-    foundation/utility/murmurhash.cpp
-    foundation/utility/murmurhash.h
     foundation/utility/numerictype.h
     foundation/utility/otherwise.h
     foundation/utility/poison.h
@@ -951,8 +962,6 @@ set (foundation_utility_sources
     foundation/utility/searchpaths.cpp
     foundation/utility/searchpaths.h
     foundation/utility/settings.h
-    foundation/utility/siphash.cpp
-    foundation/utility/siphash.h
     foundation/utility/statistics.cpp
     foundation/utility/statistics.h
     foundation/utility/stopwatch.h

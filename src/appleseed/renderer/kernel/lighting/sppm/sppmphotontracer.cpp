@@ -63,8 +63,8 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/hash/hash.h"
 #include "foundation/math/basis.h"
-#include "foundation/math/hash.h"
 #include "foundation/math/knn/knn_anyquery.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"

@@ -35,7 +35,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/hash.h"
+#include "foundation/hash/hash.h"
 #include "foundation/platform/atomic.h"
 #include "foundation/platform/thread.h"
 #include "foundation/utility/cache.h"

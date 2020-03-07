@@ -50,7 +50,7 @@
 #include "foundation/platform/types.h"
 #include "foundation/memory/autoreleaseptr.h"
 #include "foundation/containers/dictionary.h"
-#include "foundation/utility/log.h"
+#include "foundation/log/log.h"
 #include "foundation/utility/string.h"
 
 // Boost headers.

@@ -40,8 +40,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
+#include "foundation/log/log.h"
 #include "foundation/platform/path.h"
-#include "foundation/utility/log.h"
 #include "foundation/utility/preprocessor.h"
 
 // appleseed.main headers.

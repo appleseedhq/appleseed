@@ -30,7 +30,7 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/utility/log/logmessage.h"
+#include "foundation/log/logmessage.h"
 
 // Boost headers.
 #include "boost/filesystem/operations.hpp"

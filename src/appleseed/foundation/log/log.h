@@ -30,13 +30,13 @@
 #pragma once
 
 // Interface headers.
-#include "foundation/utility/log/consolelogtarget.h"
-#include "foundation/utility/log/filelogtarget.h"
-#include "foundation/utility/log/filelogtargetbase.h"
-#include "foundation/utility/log/helpers.h"
-#include "foundation/utility/log/ilogtarget.h"
-#include "foundation/utility/log/logformatter.h"
-#include "foundation/utility/log/logger.h"
-#include "foundation/utility/log/logmessage.h"
-#include "foundation/utility/log/openfilelogtarget.h"
-#include "foundation/utility/log/stringlogtarget.h"
+#include "foundation/log/consolelogtarget.h"
+#include "foundation/log/filelogtarget.h"
+#include "foundation/log/filelogtargetbase.h"
+#include "foundation/log/helpers.h"
+#include "foundation/log/ilogtarget.h"
+#include "foundation/log/logformatter.h"
+#include "foundation/log/logger.h"
+#include "foundation/log/logmessage.h"
+#include "foundation/log/openfilelogtarget.h"
+#include "foundation/log/stringlogtarget.h"

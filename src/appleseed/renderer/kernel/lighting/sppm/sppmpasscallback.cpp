@@ -40,9 +40,9 @@
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
+#include "foundation/hash/hash.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
-#include "foundation/math/hash.h"
 #include "foundation/memory/memory.h"
 #include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/string.h"

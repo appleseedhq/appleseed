@@ -56,7 +56,7 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/types.h"
 #include "foundation/containers/dictionary.h"
-#include "foundation/utility/log/consolelogtarget.h"
+#include "foundation/log/consolelogtarget.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/string.h"
 

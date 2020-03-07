@@ -27,7 +27,7 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/math/hash.h"
+#include "foundation/hash/hash.h"
 #include "foundation/utility/benchmark.h"
 
 // Standard headers.
@@ -35,7 +35,7 @@
 
 using namespace foundation;
 
-BENCHMARK_SUITE(Foundation_Math_Hash)
+BENCHMARK_SUITE(Foundation_Hash_Hash)
 {
     const std::uint32_t N = 1000;
 

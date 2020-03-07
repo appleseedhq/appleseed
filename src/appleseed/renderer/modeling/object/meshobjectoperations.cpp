@@ -36,8 +36,8 @@
 #include "renderer/utility/triangle.h"
 
 // appleseed.foundation headers.
+#include "foundation/hash/murmurhash.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/murmurhash.h"
 
 // Standard headers.
 #include <cassert>
