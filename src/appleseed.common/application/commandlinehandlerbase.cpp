@@ -36,6 +36,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
 #include "foundation/core/thirdparties.h"
+#include "foundation/log/log.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/system.h"
 #include "foundation/platform/types.h"
@@ -43,7 +44,6 @@
 #include "foundation/platform/windows.h"
 #endif
 #include "foundation/utility/commandlineparser.h"
-#include "foundation/log/log.h"
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"
