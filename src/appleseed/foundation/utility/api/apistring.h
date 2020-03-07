@@ -30,7 +30,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/string.h"
+#include "foundation/string/string.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"

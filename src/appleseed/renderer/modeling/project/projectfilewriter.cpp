@@ -75,11 +75,11 @@
 #include "foundation/core/appleseed.h"
 #include "foundation/math/transform.h"
 #include "foundation/platform/defaulttimers.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/indenter.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/stopwatch.h"
-#include "foundation/utility/string.h"
 #include "foundation/utility/xmlelement.h"
 #include "foundation/utility/zip.h"
 

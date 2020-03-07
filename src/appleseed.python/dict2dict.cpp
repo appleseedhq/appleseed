@@ -36,10 +36,10 @@
 // appleseed.foundation headers.
 #include "foundation/containers/dictionary.h"
 #include "foundation/math/vector.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/iostreamop.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cstdint>

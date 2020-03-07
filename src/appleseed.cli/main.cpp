@@ -53,10 +53,10 @@
 #include "foundation/platform/console.h"
 #include "foundation/platform/debugger.h"
 #include "foundation/platform/thread.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/benchmark.h"
 #include "foundation/utility/filter.h"
 #include "foundation/utility/searchpaths.h"
-#include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 
 // appleseed.main headers.

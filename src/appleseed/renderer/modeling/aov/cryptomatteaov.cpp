@@ -51,12 +51,12 @@
 #include "foundation/math/vector.h"
 #include "foundation/memory/memory.h"
 #include "foundation/platform/defaulttimers.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/otherwise.h"
 #include "foundation/utility/stopwatch.h"
-#include "foundation/utility/string.h"
 
 // Boost headers.
 #include "boost/filesystem.hpp"

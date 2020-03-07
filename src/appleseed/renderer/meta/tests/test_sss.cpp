@@ -56,9 +56,9 @@
 #include "foundation/math/scalar.h"
 #include "foundation/memory/arena.h"
 #include "foundation/memory/autoreleaseptr.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/gnuplotfile.h"
 #include "foundation/utility/poison.h"
-#include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.

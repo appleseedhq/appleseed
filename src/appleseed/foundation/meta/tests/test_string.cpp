@@ -32,9 +32,9 @@
 #include "foundation/math/rng/mersennetwister.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/arch.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/makevector.h"
-#include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
@@ -48,7 +48,7 @@
 
 using namespace foundation;
 
-TEST_SUITE(Foundation_Utility_String)
+TEST_SUITE(Foundation_String_String)
 {
     TEST_CASE(ToString_GivenZeroAsInt_ReturnsCorrespondingString)
     {

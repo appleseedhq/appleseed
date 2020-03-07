@@ -40,9 +40,9 @@
 #include "foundation/curve/icurvewalker.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/defaulttimers.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/otherwise.h"
 #include "foundation/utility/stopwatch.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>

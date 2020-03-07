@@ -58,7 +58,7 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/memory/arena.h"
-#include "foundation/utility/string.h"
+#include "foundation/string/string.h"
 
 // Standard headers.
 #include <algorithm>

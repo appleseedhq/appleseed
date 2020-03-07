@@ -38,12 +38,12 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/path.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/otherwise.h"
 #include "foundation/utility/searchpaths.h"
-#include "foundation/utility/string.h"
 
 // Boost headers.
 #include "boost/filesystem/operations.hpp"

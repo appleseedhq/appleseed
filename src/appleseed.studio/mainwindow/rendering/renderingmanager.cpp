@@ -52,9 +52,9 @@
 // appleseed.foundation headers.
 #include "foundation/image/analysis.h"
 #include "foundation/image/image.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/job/iabortswitch.h"
-#include "foundation/utility/string.h"
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"
@@ -202,7 +202,7 @@ void RenderingManager::start_rendering(
 
     m_render_tab->get_render_widget()->start_render();
 
-    TileCallbackCollectionFactory* tile_callback_collection_factory = 
+    TileCallbackCollectionFactory* tile_callback_collection_factory =
         new TileCallbackCollectionFactory();
 
     tile_callback_collection_factory->insert(

@@ -36,8 +36,8 @@
 #include "renderer/utility/settingsparsing.h"
 
 // appleseed.foundation headers.
+#include "foundation/string/string.h"
 #include "foundation/utility/makevector.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <string>

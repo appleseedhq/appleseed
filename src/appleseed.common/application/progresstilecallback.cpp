@@ -40,8 +40,8 @@
 #include "foundation/log/log.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/thread.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/stopwatch.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <memory>

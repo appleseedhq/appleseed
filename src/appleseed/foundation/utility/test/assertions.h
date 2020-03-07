@@ -31,8 +31,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/countof.h"
-#include "foundation/utility/string.h"
 #include "foundation/utility/test/exceptionassertionfailure.h"
 #include "foundation/utility/test/testlistenerhelper.h"
 #include "foundation/utility/test/testmessage.h"

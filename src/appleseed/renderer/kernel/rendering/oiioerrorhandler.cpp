@@ -33,7 +33,7 @@
 #include "renderer/global/globallogger.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/string.h"
+#include "foundation/string/string.h"
 
 using namespace foundation;
 

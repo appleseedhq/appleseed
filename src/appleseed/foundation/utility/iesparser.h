@@ -30,7 +30,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
-#include "foundation/utility/string.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/test.h"
 
 // Boost headers.

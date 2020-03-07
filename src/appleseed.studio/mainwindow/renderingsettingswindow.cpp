@@ -53,7 +53,7 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/system.h"
-#include "foundation/utility/string.h"
+#include "foundation/string/string.h"
 
 // Qt headers.
 #include <QButtonGroup>

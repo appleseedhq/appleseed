@@ -37,8 +37,8 @@
 #include "foundation/image/imageattributes.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/iostreamop.h"
-#include "foundation/utility/string.h"
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"

@@ -37,10 +37,10 @@
 #include "foundation/math/vector.h"
 #include "foundation/memory/autoreleaseptr.h"
 #include "foundation/platform/timers.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/benchmark.h"
 #include "foundation/utility/bufferedfile.h"
 #include "foundation/utility/statistics.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>

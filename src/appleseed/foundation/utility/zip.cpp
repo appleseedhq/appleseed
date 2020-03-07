@@ -30,10 +30,10 @@
 #include "zip.h"
 
 // appleseed.foundation headers.
+#include "foundation/string/string.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/minizip/unzip.h"
 #include "foundation/utility/minizip/zip.h"
-#include "foundation/utility/string.h"
 
 // Boost headers.
 #include "boost/filesystem.hpp"

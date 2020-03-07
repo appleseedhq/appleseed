@@ -40,7 +40,7 @@
 #include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/string.h"
+#include "foundation/string/string.h"
 
 // OpenImageIO headers.
 #include "foundation/platform/_beginoiioheaders.h"
@@ -310,7 +310,7 @@ QStringList get_open_filenames(
         settings_key + SettingsLastDirectory,
         QDir::toNativeSeparators(QFileInfo(filepaths.first()).path()));
 
-    for (int i = 0; i < filepaths.size(); ++i) 
+    for (int i = 0; i < filepaths.size(); ++i)
     {
         filepaths[i] = QDir::toNativeSeparators(filepaths[i]);
     }

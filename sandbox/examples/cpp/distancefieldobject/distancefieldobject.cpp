@@ -37,6 +37,7 @@
 #include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/hash/hash.h"
 #include "foundation/math/intersection/rayaabb.h"
 #include "foundation/math/ray.h"
@@ -45,12 +46,11 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/containers/dictionary.h"
-#include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/casts.h"
+#include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/searchpaths.h"
-#include "foundation/utility/string.h"
 
 // appleseed.main headers.
 #include "main/dllvisibility.h"

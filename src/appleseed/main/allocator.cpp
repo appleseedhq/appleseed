@@ -47,8 +47,8 @@
 // appleseed.foundation headers.
 #include "foundation/memory/memory.h"
 #include "foundation/platform/win32stackwalker.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/string.h"
 
 // Boost headers.
 #include "boost/thread/recursive_mutex.hpp"

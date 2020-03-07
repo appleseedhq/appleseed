@@ -65,12 +65,12 @@
 #include "foundation/platform/system.h"
 #include "foundation/platform/timers.h"
 #include "foundation/platform/types.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/stopwatch.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <algorithm>

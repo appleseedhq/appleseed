@@ -36,8 +36,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/defaulttimers.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/statistics.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cstddef>

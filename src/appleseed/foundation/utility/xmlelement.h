@@ -32,9 +32,9 @@
 // appleseed.foundation headers.
 #include "foundation/containers/dictionary.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/indenter.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>

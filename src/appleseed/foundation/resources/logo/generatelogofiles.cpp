@@ -35,7 +35,7 @@
 #include "foundation/image/genericimagefilereader.h"
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
-#include "foundation/utility/string.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/test.h"
 
 // Boost headers.
