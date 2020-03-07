@@ -368,6 +368,7 @@ namespace
                         m_tile_ordering,
                         m_tile_renderers,
                         m_tile_callbacks,
+                        m_thread_count,
                         pass_hash,
                         m_spectrum_mode,
                         tile_jobs,
@@ -453,7 +454,7 @@ namespace
                     for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
                     {
                         for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
-                            tile_callback->on_tile_begin(&m_frame, tx, ty);
+                            tile_callback->on_tile_begin(&m_frame, tx, ty, 0, 1);
                     }
                 }
             }

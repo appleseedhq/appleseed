@@ -87,19 +87,23 @@ namespace
         void on_tile_begin(
             const Frame*            frame,
             const size_t            tile_x,
-            const size_t            tile_y) override
+            const size_t            tile_y,
+            const size_t            thread_index,
+            const size_t            thread_count) override
         {
             // Lock Python's global interpreter lock (it was released in MasterRenderer.render).
             ScopedGILLock lock;
 
             if (bpy::override f = this->get_override("on_tile_begin"))
-                f(bpy::ptr(frame), tile_x, tile_y);
+                f(bpy::ptr(frame), tile_x, tile_y, thread_index, thread_count);
         }
 
         void default_on_tile_begin(
             const Frame*            frame,
             const size_t            tile_x,
-            const size_t            tile_y)
+            const size_t            tile_y,
+            const size_t            thread_index,
+            const size_t            thread_count)
         {
         }
 

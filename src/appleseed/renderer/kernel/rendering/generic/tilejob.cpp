@@ -59,6 +59,7 @@ TileJob::TileJob(
     const Frame&                frame,
     const size_t                tile_x,
     const size_t                tile_y,
+    const size_t                thread_count,
     const std::uint32_t         pass_hash,
     const Spectrum::Mode        spectrum_mode,
     IAbortSwitch&               abort_switch)
@@ -67,6 +68,7 @@ TileJob::TileJob(
   , m_frame(frame)
   , m_tile_x(tile_x)
   , m_tile_y(tile_y)
+  , m_thread_count(thread_count)
   , m_pass_hash(pass_hash)
   , m_spectrum_mode(spectrum_mode)
   , m_abort_switch(abort_switch)
@@ -135,7 +137,7 @@ void TileJob::execute(const size_t thread_index)
 
     // Call the pre-render tile callback.
     if (tile_callback)
-        tile_callback->on_tile_begin(&m_frame, m_tile_x, m_tile_y);
+        tile_callback->on_tile_begin(&m_frame, m_tile_x, m_tile_y, thread_index, m_thread_count);
 
     try
     {

@@ -69,9 +69,11 @@ namespace
         void on_tile_begin(
             const Frame*            frame,
             const size_t            tile_x,
-            const size_t            tile_y) override
+            const size_t            tile_y,
+            const size_t            thread_index,
+            const size_t            thread_count) override
         {
-            m_controller->add_on_tile_begin_callback(frame, tile_x, tile_y);
+            m_controller->add_on_tile_begin_callback(frame, tile_x, tile_y, thread_index, thread_count);
         }
 
         void on_tile_end(
