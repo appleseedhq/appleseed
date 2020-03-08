@@ -101,6 +101,13 @@ namespace
                     "this may lead to unexpected or unphysical results.",
                     context.get());
             }
+            if  (m_render_data.m_volume && has_alpha_map())
+            {
+                RENDERER_LOG_WARNING(
+                    "%smaterial is assigned with alpha map and volume at the same time: "
+                    "this may lead to unexpected or unphysical results.",
+                    context.get());
+            }
 
             return true;
         }
