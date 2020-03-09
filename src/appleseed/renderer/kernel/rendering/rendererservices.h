@@ -45,11 +45,9 @@
 #include "OpenImageIO/texture.h"
 #include "foundation/platform/_endoiioheaders.h"
 
-// Boost headers.
-#include "boost/unordered_map.hpp"
-
 // Standard headers.
 #include <string>
+#include <unordered_map>
 
 // Forward declarations.
 namespace renderer  { class Camera; }
@@ -267,7 +265,7 @@ class RendererServices
         OIIO::ustring               name,
         void*                       val) const;
 
-    typedef boost::unordered_map<OIIO::ustring, AttrGetterFun, OIIO::ustringHash> AttrGetterMapType;
+    typedef std::unordered_map<OIIO::ustring, AttrGetterFun, OIIO::ustringHash> AttrGetterMapType;
 
     typedef bool (RendererServices::*UserDataGetterFun)(
         bool                        derivatives,
@@ -276,7 +274,7 @@ class RendererServices
         OSL::ShaderGlobals*         sg,
         void*                       val) const;
 
-    typedef boost::unordered_map<OIIO::ustring, UserDataGetterFun, OIIO::ustringHash> UserDataGetterMapType;
+    typedef std::unordered_map<OIIO::ustring, UserDataGetterFun, OIIO::ustringHash> UserDataGetterMapType;
 
     OIIO::TextureSystem&            m_texture_sys;
     AttrGetterMapType               m_global_attr_getters;
