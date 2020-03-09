@@ -101,6 +101,7 @@ namespace
                     "this may lead to unexpected or unphysical results.",
                     context.get());
             }
+
             if  (m_render_data.m_volume && has_alpha_map())
             {
                 RENDERER_LOG_WARNING(
