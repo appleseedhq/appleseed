@@ -700,7 +700,7 @@ namespace
                 if (m_invalid_sample_count <= MaxWarningsPerThread)
                 {
                     RENDERER_LOG_WARNING(
-                        "%s sample%s at pixel (%d, %d) had nan, negative or infinite components and %s ignored.",
+                        "%s sample%s at pixel (%d, %d) had NaN, negative or infinite components and %s ignored.",
                         pretty_uint(m_invalid_sample_count).c_str(),
                         m_invalid_sample_count > 1 ? "s" : "",
                         pi.x, pi.y,
