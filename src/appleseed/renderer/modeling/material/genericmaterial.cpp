@@ -92,6 +92,7 @@ namespace
             m_render_data.m_bssrdf = get_uncached_bssrdf();
             m_render_data.m_edf = get_uncached_edf();
             m_render_data.m_volume = get_uncached_volume();
+            m_render_data.m_alpha_map = get_uncached_alpha_map();
             m_render_data.m_basis_modifier = create_basis_modifier(context);
 
             if (m_render_data.m_edf && m_render_data.m_alpha_map)
@@ -102,10 +103,10 @@ namespace
                     context.get());
             }
 
-            if  (m_render_data.m_volume && has_alpha_map())
+            if  (m_render_data.m_volume && m_render_data.m_alpha_map)
             {
                 RENDERER_LOG_WARNING(
-                    "%smaterial is assigned with alpha map and volume at the same time: "
+                    "%smaterial is assigned with an alpha map and a volume at the same time; "
                     "this may lead to unexpected or unphysical results.",
                     context.get());
             }
