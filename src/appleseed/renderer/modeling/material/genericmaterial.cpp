@@ -92,7 +92,6 @@ namespace
             m_render_data.m_bssrdf = get_uncached_bssrdf();
             m_render_data.m_edf = get_uncached_edf();
             m_render_data.m_volume = get_uncached_volume();
-            m_render_data.m_alpha_map = get_uncached_alpha_map();
             m_render_data.m_basis_modifier = create_basis_modifier(context);
 
             if (m_render_data.m_edf && m_render_data.m_alpha_map)
