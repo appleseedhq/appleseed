@@ -105,7 +105,7 @@ namespace
             if  (m_render_data.m_volume && m_render_data.m_alpha_map)
             {
                 RENDERER_LOG_WARNING(
-                    "%smaterial is assigned with an alpha map and a volume at the same time; "
+                    "%smaterial is assigned an alpha map and a volume at the same time; "
                     "this may lead to unexpected or unphysical results.",
                     context.get());
             }
