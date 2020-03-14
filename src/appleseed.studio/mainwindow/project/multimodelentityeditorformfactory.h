@@ -131,7 +131,7 @@ std::string MultiModelEntityEditorFormFactory<FactoryRegistrar>::add_model_widge
 
     metadata.push_back(
         foundation::Dictionary()
-            .insert("name", ModelParameter)
+            .insert("name", ModelParameter.c_str())
             .insert("label", "Model")
             .insert("type", "enumeration")
             .insert("items", model_items)

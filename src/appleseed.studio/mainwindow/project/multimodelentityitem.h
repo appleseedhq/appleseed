@@ -105,7 +105,7 @@ foundation::Dictionary MultiModelEntityItem<Entity, ParentEntity, CollectionItem
         renderer::EntityTraits<Entity>::get_entity_values(Base::m_entity);
 
     values.insert(
-        EntityEditorFormFactoryBase::ModelParameter,
+        EntityEditorFormFactoryBase::ModelParameter.c_str(),
         Base::m_entity->get_model());
 
     return values;

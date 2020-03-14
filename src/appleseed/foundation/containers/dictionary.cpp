@@ -36,6 +36,7 @@
 // Standard headers.
 #include <cassert>
 #include <map>
+#include <string>
 
 namespace foundation
 {

@@ -747,7 +747,7 @@ namespace
                 const std::string material_name = mappings.begin().value();
 
                 mappings.clear();
-                mappings.insert(slot_name, material_name);
+                mappings.insert(slot_name.c_str(), material_name);
             }
         }
     };

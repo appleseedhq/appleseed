@@ -168,7 +168,7 @@ void DisneyMaterialLayerUI::create_input_widgets(const Dictionary& values)
         const std::string input_type = im.get<std::string>("type");
 
         im.insert("value",
-            values.strings().exist(input_name) ? values.get<std::string>(input_name) :
+            values.strings().exist(input_name.c_str()) ? values.get<std::string>(input_name.c_str()) :
             im.strings().exist("default") ? im.get<std::string>("default") :
             "");
 

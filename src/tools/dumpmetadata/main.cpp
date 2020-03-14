@@ -102,7 +102,7 @@ namespace
             metadata.strings().remove("name");
 
             Dictionary wrapped_metadata;
-            wrapped_metadata.insert(name, metadata);
+            wrapped_metadata.insert(name.c_str(), metadata);
 
             write_dictionary(wrapped_metadata, file, indenter);
         }

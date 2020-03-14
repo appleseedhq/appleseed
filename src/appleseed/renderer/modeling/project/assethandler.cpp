@@ -151,7 +151,7 @@ bool AssetHandler::handle_assets() const
             success = false;
 
         // Update mapping from old asset paths to new ones.
-        mappings.insert(unique_paths[i], asset_path);
+        mappings.insert(unique_paths[i].c_str(), asset_path);
     }
 
     if (!success)

@@ -80,7 +80,7 @@ namespace
                     build_dictionary(node, child_dictionary);
 
                     dictionary.insert(
-                        transcode(name_attribute->getNodeValue()),
+                        transcode(name_attribute->getNodeValue()).c_str(),
                         child_dictionary);
                 }
                 else if (element_name == "parameter")
@@ -92,13 +92,13 @@ namespace
                     if (value_attribute)
                     {
                         dictionary.insert(
-                            transcode(name_attribute->getNodeValue()),
+                            transcode(name_attribute->getNodeValue()).c_str(),
                             transcode(value_attribute->getNodeValue()));
                     }
                     else
                     {
                         dictionary.insert(
-                            transcode(name_attribute->getNodeValue()),
+                            transcode(name_attribute->getNodeValue()).c_str(),
                             transcode(node->getTextContent()));
                     }
                 }

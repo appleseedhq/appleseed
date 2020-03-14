@@ -81,8 +81,8 @@ class EntityEditor
             const std::string&              name,
             const std::string&              default_value)
         {
-            return values.strings().exist(name)
-                ? values.strings().get<std::string>(name)
+            return values.strings().exist(name.c_str())
+                ? values.strings().get<std::string>(name.c_str())
                 : default_value;
         }
     };
