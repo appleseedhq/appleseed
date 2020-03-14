@@ -297,7 +297,7 @@ namespace
             const std::string value = s.substr(equal_pos + 1);
 
             // Insert the parameter.
-            params.insert_path(path, value);
+            params.insert_path(path.c_str(), value);
         }
     }
 

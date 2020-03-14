@@ -425,7 +425,7 @@ class RenderSettingsPanel
         const std::string&      param_path,
         const T&                value)
     {
-        configuration.get_parameters().insert_path(param_path, value);
+        configuration.get_parameters().insert_path(param_path.c_str(), value);
     }
 };
 
