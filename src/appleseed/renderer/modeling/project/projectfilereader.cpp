@@ -556,7 +556,7 @@ namespace
                 ParameterElementHandler* param_handler =
                     static_cast<ParameterElementHandler*>(handler);
                 m_params.insert_path(
-                    param_handler->get_name(),
+                    param_handler->get_name().c_str(),
                     param_handler->get_value());
             }
             break;
