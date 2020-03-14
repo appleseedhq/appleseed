@@ -84,12 +84,12 @@ namespace
                 Dictionary im = m_input_metadata[i];
                 const std::string input_name = im.get<std::string>("name");
 
-                // Don't expose the order input either. 
+                // Don't expose the order input either.
                 if (input_name == "order")
                     continue;
 
                 im.insert("value",
-                    values.strings().exist(input_name) ? values.get<std::string>(input_name) :
+                    values.strings().exist(input_name.c_str()) ? values.get<std::string>(input_name.c_str()) :
                     im.strings().exist("default") ? im.get<std::string>("default") :
                     "");
 

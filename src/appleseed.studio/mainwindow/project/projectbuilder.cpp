@@ -59,7 +59,7 @@ Frame* ProjectBuilder::edit_frame(
     const std::string name = get_entity_name(values);
 
     Dictionary clean_values(values);
-    clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
+    clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter.c_str());
 
     Frame* old_frame = m_project.get_frame();
     const size_t old_canvas_width = old_frame->image().properties().m_canvas_width;
@@ -88,11 +88,11 @@ void ProjectBuilder::slot_notify_project_modification() const
 
 std::string ProjectBuilder::get_entity_name(const Dictionary& values)
 {
-    if (!values.strings().exist(EntityEditorFormFactoryBase::NameParameter))
+    if (!values.strings().exist(EntityEditorFormFactoryBase::NameParameter.c_str()))
         throw ExceptionInvalidEntityName();
 
     const std::string name = trim_both(
-        values.get<std::string>(EntityEditorFormFactoryBase::NameParameter));
+        values.get<std::string>(EntityEditorFormFactoryBase::NameParameter.c_str()));
 
     if (!is_valid_entity_name(name))
         throw ExceptionInvalidEntityName();

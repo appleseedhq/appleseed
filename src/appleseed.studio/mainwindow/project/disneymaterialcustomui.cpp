@@ -139,7 +139,7 @@ Dictionary DisneyMaterialCustomUI::get_values() const
         Dictionary layer_values = m_layers[i]->get_values();
 
         values.insert(
-            layer_values.get<std::string>("layer_name"),
+            layer_values.get<std::string>("layer_name").c_str(),
             layer_values.insert("layer_number", i));
     }
 

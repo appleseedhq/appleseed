@@ -269,14 +269,14 @@ inline ParamArray& ParamArray::insert(const char* key, const ParamArray& value)
 template <typename T>
 inline ParamArray& ParamArray::insert(const std::string& key, const T& value)
 {
-    foundation::Dictionary::insert(key, value);
+    foundation::Dictionary::insert(key.c_str(), value);
     return *this;
 }
 
 template <>
 inline ParamArray& ParamArray::insert(const std::string& key, const ParamArray& value)
 {
-    dictionaries().insert(key, value);
+    dictionaries().insert(key.c_str(), value);
     return *this;
 }
 

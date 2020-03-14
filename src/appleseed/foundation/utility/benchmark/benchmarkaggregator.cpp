@@ -67,10 +67,10 @@ namespace
 {
     Dictionary& push(Dictionary& dictionary, const std::string& name)
     {
-        if (!dictionary.dictionaries().exist(name))
-            dictionary.dictionaries().insert(name, Dictionary());
+        if (!dictionary.dictionaries().exist(name.c_str()))
+            dictionary.dictionaries().insert(name.c_str(), Dictionary());
 
-        return dictionary.dictionaries().get(name);
+        return dictionary.dictionaries().get(name.c_str());
     }
 
     const DOMNode* find_next_element_node(const DOMNode* node)
@@ -175,12 +175,12 @@ struct BenchmarkAggregator::Impl
 
                     UniqueID series_uid;
 
-                    if (cases_dic.strings().exist(name))
-                        series_uid = cases_dic.get<UniqueID>(name);
+                    if (cases_dic.strings().exist(name.c_str()))
+                        series_uid = cases_dic.get<UniqueID>(name.c_str());
                     else
                     {
                         series_uid = new_guid();
-                        cases_dic.insert(name, series_uid);
+                        cases_dic.insert(name.c_str(), series_uid);
                     }
 
                     scan_results(node, date, m_series[series_uid]);

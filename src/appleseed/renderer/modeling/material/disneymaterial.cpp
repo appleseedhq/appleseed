@@ -552,7 +552,7 @@ Dictionary DisneyMaterialLayer::get_default_values()
         if (im.strings().exist("default"))
         {
             const std::string input_value = im.get<std::string>("default");
-            values.insert(input_name, input_value);
+            values.insert(input_name.c_str(), input_value);
         }
     }
 
@@ -728,7 +728,7 @@ void DisneyMaterial::add_layer(Dictionary layer_values)
 
     // Insert the layer into the material.
     const std::string& layer_name = layer_values.get<std::string>("layer_name");
-    m_params.insert(layer_name, layer_values);
+    m_params.insert(layer_name.c_str(), layer_values);
 }
 
 void DisneyMaterial::add_new_default_layer()

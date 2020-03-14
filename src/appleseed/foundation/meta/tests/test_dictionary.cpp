@@ -123,32 +123,12 @@ TEST_SUITE(Foundation_Utility_StringDictionary)
         });
     }
 
-    TEST_CASE(GetAsInt_GivenStdStringKeyOfNonExistingItem_ThrowsExceptionDictionaryKeyNotFound)
-    {
-        StringDictionary sd;
-
-        EXPECT_EXCEPTION(ExceptionDictionaryKeyNotFound,
-        {
-            APPLESEED_UNUSED const int item = sd.get<int>(std::string("key"));
-        });
-    }
-
     TEST_CASE(Remove_GivenCStringKeyOfExistingItem_RemovesItem)
     {
         StringDictionary sd;
         sd.insert("key", "value");
 
         sd.remove("key");
-
-        EXPECT_FALSE(sd.exist("key"));
-    }
-
-    TEST_CASE(Remove_GivenStdStringKeyOfExistingItem_RemovesItem)
-    {
-        StringDictionary sd;
-        sd.insert("key", "value");
-
-        sd.remove(std::string("key"));
 
         EXPECT_FALSE(sd.exist("key"));
     }
@@ -311,28 +291,6 @@ TEST_SUITE(Foundation_Utility_Dictionary)
         EXPECT_EQ(42, dic.get<int>("key"));
     }
 
-    TEST_CASE(Insert_GivenStdStringKeyAndCStringValue_InsertsValue)
-    {
-        Dictionary dic;
-
-        dic.insert(std::string("key"), "value");
-
-        EXPECT_EQ(1, dic.size());
-        EXPECT_FALSE(dic.empty());
-        EXPECT_EQ("value", dic.get<std::string>("key"));
-    }
-
-    TEST_CASE(Insert_GivenStdStringKeyAndIntegerValue_InsertsValue)
-    {
-        Dictionary dic;
-
-        dic.insert(std::string("key"), 42);
-
-        EXPECT_EQ(1, dic.size());
-        EXPECT_FALSE(dic.empty());
-        EXPECT_EQ(42, dic.get<int>("key"));
-    }
-
     TEST_CASE(Insert_GivenDictionary_ReturnsThisPointer)
     {
         Dictionary dic;
@@ -358,16 +316,6 @@ TEST_SUITE(Foundation_Utility_Dictionary)
         EXPECT_EXCEPTION(ExceptionDictionaryKeyNotFound,
         {
             APPLESEED_UNUSED const int item = dic.get<int>("key");
-        });
-    }
-
-    TEST_CASE(GetAsInt_GivenStdStringKeyOfNonExistingItem_ThrowsExceptionDictionaryKeyNotFound)
-    {
-        Dictionary dic;
-
-        EXPECT_EXCEPTION(ExceptionDictionaryKeyNotFound,
-        {
-            APPLESEED_UNUSED const int item = dic.get<int>(std::string("key"));
         });
     }
 

@@ -86,13 +86,13 @@ ParamArray& ParamArray::insert_path(const char* path, const char* value)
     {
         const std::string& part = parts[i];
 
-        if (!leaf->dictionaries().exist(part))
-            leaf->insert(part, Dictionary());
+        if (!leaf->dictionaries().exist(part.c_str()))
+            leaf->insert(part.c_str(), Dictionary());
 
-        leaf = &leaf->dictionary(part);
+        leaf = &leaf->dictionary(part.c_str());
     }
 
-    leaf->insert(parts.back(), value);
+    leaf->insert(parts.back().c_str(), value);
 
     return *this;
 }
@@ -110,10 +110,10 @@ bool ParamArray::exist_path(const char* path) const
 
     for (size_t i = 0; i < parts.size() - 1; ++i)
     {
-        if (!leaf->dictionaries().exist(parts[i]))
+        if (!leaf->dictionaries().exist(parts[i].c_str()))
             return false;
 
-        leaf = &leaf->dictionary(parts[i]);
+        leaf = &leaf->dictionary(parts[i].c_str());
     }
 
     return leaf->strings().exist(parts.back().c_str());
@@ -131,7 +131,7 @@ const char* ParamArray::get_path(const char* path) const
     const Dictionary* leaf = this;
 
     for (size_t i = 0; i < parts.size() - 1; ++i)
-        leaf = &leaf->dictionary(parts[i]);
+        leaf = &leaf->dictionary(parts[i].c_str());
 
     return leaf->strings().get(parts.back().c_str());
 }
@@ -149,10 +149,10 @@ ParamArray& ParamArray::remove_path(const char* path)
 
     for (size_t i = 0; i < parts.size() - 1; ++i)
     {
-        if (!leaf->dictionaries().exist(parts[i]))
+        if (!leaf->dictionaries().exist(parts[i].c_str()))
             return *this;
 
-        leaf = &leaf->dictionary(parts[i]);
+        leaf = &leaf->dictionary(parts[i].c_str());
     }
 
     leaf->strings().remove(parts.back().c_str());

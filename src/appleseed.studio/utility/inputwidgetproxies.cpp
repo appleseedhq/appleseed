@@ -440,7 +440,7 @@ Dictionary InputWidgetProxyCollection::get_values() const
         const std::string value = i->second->get();
 
         if (!value.empty())
-            values.insert(i->first, value);
+            values.insert(i->first.c_str(), value);
     }
 
     return values;

@@ -566,7 +566,7 @@ namespace
                 ParametersElementHandler* params_handler =
                     static_cast<ParametersElementHandler*>(handler);
                 m_params.dictionaries().insert(
-                    params_handler->get_name(),
+                    params_handler->get_name().c_str(),
                     params_handler->get_parameters());
             }
             break;
@@ -1719,13 +1719,13 @@ namespace
                     const std::string& material_name = assign_mat_handler->get_material_name();
 
                     if (material_side == "front")
-                        m_front_material_mappings.insert(material_slot, material_name);
+                        m_front_material_mappings.insert(material_slot.c_str(), material_name);
                     else if (material_side == "back")
-                        m_back_material_mappings.insert(material_slot, material_name);
+                        m_back_material_mappings.insert(material_slot.c_str(), material_name);
                     else if (material_side == "both")
                     {
-                        m_front_material_mappings.insert(material_slot, material_name);
-                        m_back_material_mappings.insert(material_slot, material_name);
+                        m_front_material_mappings.insert(material_slot.c_str(), material_name);
+                        m_back_material_mappings.insert(material_slot.c_str(), material_name);
                     }
                 }
                 break;
