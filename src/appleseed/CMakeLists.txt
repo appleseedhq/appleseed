@@ -592,6 +592,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_iesparser.cpp
     foundation/meta/tests/test_image.cpp
     foundation/meta/tests/test_imageimportancesampler.cpp
+    foundation/meta/tests/test_internedstring.cpp
     foundation/meta/tests/test_intersection_frustumaabb.cpp
     foundation/meta/tests/test_intersection_frustumsegment.cpp
     foundation/meta/tests/test_intersection_planesegment.cpp
@@ -763,6 +764,8 @@ source_group ("foundation\\resources\\logo" FILES
 )
 
 set (foundation_string_sources
+    foundation/string/internedstring.cpp
+    foundation/string/internedstring.h
     foundation/string/string.cpp
     foundation/string/string.h
 )
