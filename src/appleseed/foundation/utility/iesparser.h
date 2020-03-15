@@ -40,8 +40,9 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-
+// Declaration of Test Cases
 DECLARE_TEST_CASE(Foundation_Utility_Iesparser, ParseFormat);
+DECLARE_TEST_CASE(Foundation_Utility_Iesparser, ParseSize);
 DECLARE_TEST_CASE(Foundation_Utility_Iesparser, ReadLine_IgnoreEmptyLines);
 DECLARE_TEST_CASE(Foundation_Utility_Iesparser, ReadLine_DoNotIgnoreEmptyLines);
 DECLARE_TEST_CASE(Foundation_Utility_Iesparser, CheckEmpty);
@@ -75,7 +76,7 @@ class IESParser
         {
             return m_line_number;
         }
-
+// Defining the variable inside a protected class
       protected:
         int m_line_number;
     };
@@ -195,8 +196,7 @@ class IESParser
 
     //
     // Getters.
-    //
-
+    // Returning the variables  
     Format get_format() const
     {
         return m_format;
@@ -301,7 +301,7 @@ class IESParser
     {
         return m_keywords_dictionary.at(keyword);
     }
-
+// private declaration to grant access to all the test cases
   private:
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Iesparser, ParseFormat);
     GRANT_ACCESS_TO_TEST_CASE(Foundation_Utility_Iesparser, ReadLine_IgnoreEmptyLines);
