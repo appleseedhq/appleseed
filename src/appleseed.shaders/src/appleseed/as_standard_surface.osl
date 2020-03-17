@@ -722,8 +722,9 @@ shader as_standard_surface
         in_subsurface_weight == 0.0 || max(in_sss_mfp) <= in_sss_threshold)
         ? 0 : 1;
 
-    int compute_edf =
-        (in_incandescence_amount * max(in_incandescence_color) > 0.0) ? 1 : 0;
+    int compute_edf = (in_incandescence_type == 0)
+            ? ((in_incandescence_amount * max(in_incandescence_color) > 0.0) ? 1 : 0)
+            : ((in_incandescence_amount > 0.0) ? 1 : 0);
 
     // Specular first, to get the transmittance amount and bailout earlier.
 
