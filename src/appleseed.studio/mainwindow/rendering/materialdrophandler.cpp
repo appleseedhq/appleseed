@@ -49,6 +49,11 @@ MaterialDropHandler::MaterialDropHandler(
 {
 }
 
+void MaterialDropHandler::reset_scene_picker()
+{
+    m_scene_picker = nullptr;
+}
+
 void MaterialDropHandler::slot_material_dropped(
     const foundation::Vector2d& drop_pos,
     const QString&          material_name)
@@ -61,6 +66,9 @@ void MaterialDropHandler::slot_material_dropped(
         RENDERER_LOG_INFO("the scene must be rendering or must have been rendered at least once for drag and drop to be available.");
         return;
     }
+
+    if (!m_scene_picker)
+        m_scene_picker = std::make_unique<renderer::ScenePicker>(m_project);
 
     QMenu* selection_menu = new QMenu();
     connect(selection_menu->addAction("Front Side"), SIGNAL(triggered()), SLOT(slot_apply_to_front()));
@@ -111,8 +119,7 @@ namespace
 
 void MaterialDropHandler::assign_material(const renderer::ObjectInstance::Side side)
 {
-    const renderer::ScenePicker scene_picker(m_project);
-    const renderer::ScenePicker::PickingResult result = scene_picker.pick(m_drop_pos);
+    const renderer::ScenePicker::PickingResult result = m_scene_picker->pick(m_drop_pos);
     renderer::ObjectInstance* instance = result.m_object_instance;
 
     std::vector<MaterialSlot> material_slots;

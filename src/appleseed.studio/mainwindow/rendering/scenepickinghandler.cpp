@@ -118,6 +118,11 @@ void ScenePickingHandler::set_enabled(const bool enabled)
     m_enabled = enabled;
 }
 
+void ScenePickingHandler::reset_scene_picker()
+{
+    m_scene_picker = nullptr;
+}
+
 bool ScenePickingHandler::eventFilter(QObject* object, QEvent* event)
 {
     if (m_enabled)
@@ -231,11 +236,13 @@ ItemBase* ScenePickingHandler::pick(const QPoint& point)
         return nullptr;
     }
 
+    if (!m_scene_picker)
+        m_scene_picker = std::make_unique<ScenePicker>(m_project);
+
     const Vector2i pix = m_mouse_tracker.widget_to_pixel(point);
     const Vector2d ndc = m_mouse_tracker.widget_to_ndc(point);
 
-    const ScenePicker scene_picker(m_project);
-    const ScenePicker::PickingResult result = scene_picker.pick(ndc);
+    const ScenePicker::PickingResult result = m_scene_picker->pick(ndc);
 
     std::stringstream sstr;
 

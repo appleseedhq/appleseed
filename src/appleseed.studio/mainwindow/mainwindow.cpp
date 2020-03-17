@@ -1450,6 +1450,11 @@ void MainWindow::slot_open_cornellbox_builtin_project()
     if (!can_close_project())
         return;
 
+    // Reset the ScenePickers for certain handlers, so that they don't hold a reference to
+    // Lazy<Tree> and consequently it can be destroyed without obstruction.
+    for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+        i->second->update_handlers();
+
     APPLESEED_UNUSED const bool successful = m_project_manager.load_builtin_project("cornell_box");
     assert(successful);
 

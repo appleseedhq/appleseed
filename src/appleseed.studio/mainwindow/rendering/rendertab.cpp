@@ -160,6 +160,15 @@ void RenderTab::update_size()
     recreate_handlers();
 }
 
+void RenderTab::update_handlers()
+{
+    if (m_scene_picking_handler)
+        m_scene_picking_handler->reset_scene_picker();
+
+    if (m_material_drop_handler)
+        m_material_drop_handler->reset_scene_picker();
+}
+
 RenderTab::State RenderTab::save_state() const
 {
     State state;

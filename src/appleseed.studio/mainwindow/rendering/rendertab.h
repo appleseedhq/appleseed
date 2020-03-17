@@ -99,6 +99,7 @@ class RenderTab
 
     void update();
     void update_size();
+    void update_handlers();
 
     struct State
     {

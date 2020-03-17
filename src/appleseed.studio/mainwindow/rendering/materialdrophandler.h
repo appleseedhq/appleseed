@@ -29,6 +29,7 @@
 #pragma once
 
 // appleseed.renderer headers.
+#include "renderer/api/scenepicker.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/objectinstance.h"
 
@@ -58,16 +59,19 @@ class MaterialDropHandler
         const renderer::Project&    project,
         RenderingManager&           rendering_manager);
 
+    void reset_scene_picker();
+
   public slots:
     void slot_material_dropped(
         const foundation::Vector2d& drop_pos,
         const QString&          material_name);
 
   private:
-    const renderer::Project&  m_project;
-    RenderingManager&         m_rendering_manager;
-    foundation::Vector2d      m_drop_pos;
-    std::string               m_material_name;
+    const renderer::Project&                    m_project;
+    RenderingManager&                           m_rendering_manager;
+    foundation::Vector2d                        m_drop_pos;
+    std::string                                 m_material_name;
+    std::unique_ptr<renderer::ScenePicker>      m_scene_picker = nullptr;
 
     void assign_material(const renderer::ObjectInstance::Side side);
 

@@ -72,6 +72,8 @@ class ScenePickingHandler
 
     void set_enabled(const bool enabled);
 
+    void reset_scene_picker();
+
   signals:
     void signal_entity_picked(renderer::ScenePicker::PickingResult result);
 
@@ -82,6 +84,7 @@ class ScenePickingHandler
     const ProjectExplorer&                          m_project_explorer;
     const renderer::Project&                        m_project;
     bool                                            m_enabled;
+    std::unique_ptr<renderer::ScenePicker>          m_scene_picker = nullptr;
 
     bool eventFilter(QObject* object, QEvent* event) override;
 
