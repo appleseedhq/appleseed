@@ -117,6 +117,7 @@ write_compiler_detection_header (
         cxx_defaulted_functions
         cxx_deleted_functions
         cxx_generalized_initializers
+        cxx_attribute_deprecated
 )
 
 
