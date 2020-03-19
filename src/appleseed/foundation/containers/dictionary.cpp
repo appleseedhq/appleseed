@@ -41,8 +41,8 @@
 namespace foundation
 {
 
-typedef std::map<std::string, std::string> StringMap;
-typedef std::map<std::string, Dictionary> DictionaryMap;
+typedef std::map<InternedString, std::string> StringMap;
+typedef std::map<InternedString, Dictionary> DictionaryMap;
 
 
 //
@@ -185,7 +185,7 @@ StringDictionary& StringDictionary::insert(const char* key, const char* value)
     assert(key);
     assert(value);
 
-    impl->m_strings[key] = value;
+    impl->m_strings[InternedString(key)] = value;
 
     return *this;
 }
@@ -195,7 +195,7 @@ StringDictionary& StringDictionary::set(const char* key, const char* value)
     assert(key);
     assert(value);
 
-    const StringMap::iterator i = impl->m_strings.find(key);
+    const StringMap::iterator i = impl->m_strings.find(InternedString(key));
 
     if (i == impl->m_strings.end())
         throw ExceptionDictionaryKeyNotFound(key);
@@ -209,7 +209,7 @@ const char* StringDictionary::get(const char* key) const
 {
     assert(key);
 
-    const StringMap::const_iterator i = impl->m_strings.find(key);
+    const StringMap::const_iterator i = impl->m_strings.find(InternedString(key));
 
     if (i == impl->m_strings.end())
         throw ExceptionDictionaryKeyNotFound(key);
@@ -221,14 +221,14 @@ bool StringDictionary::exist(const char* key) const
 {
     assert(key);
 
-    return impl->m_strings.find(key) != impl->m_strings.end();
+    return impl->m_strings.find(InternedString(key)) != impl->m_strings.end();
 }
 
 StringDictionary& StringDictionary::remove(const char* key)
 {
     assert(key);
 
-    const StringMap::iterator i = impl->m_strings.find(key);
+    const StringMap::iterator i = impl->m_strings.find(InternedString(key));
 
     if (i != impl->m_strings.end())
         impl->m_strings.erase(i);
@@ -465,7 +465,7 @@ DictionaryDictionary& DictionaryDictionary::insert(const char* key, const Dictio
 {
     assert(key);
 
-    impl->m_dictionaries[key] = value;
+    impl->m_dictionaries[InternedString(key)] = value;
 
     return *this;
 }
@@ -474,7 +474,7 @@ DictionaryDictionary& DictionaryDictionary::set(const char* key, const Dictionar
 {
     assert(key);
 
-    const DictionaryMap::iterator i = impl->m_dictionaries.find(key);
+    const DictionaryMap::iterator i = impl->m_dictionaries.find(InternedString(key));
 
     if (i == impl->m_dictionaries.end())
         throw ExceptionDictionaryKeyNotFound(key);
@@ -488,7 +488,7 @@ Dictionary& DictionaryDictionary::get(const char* key)
 {
     assert(key);
 
-    const DictionaryMap::iterator i = impl->m_dictionaries.find(key);
+    const DictionaryMap::iterator i = impl->m_dictionaries.find(InternedString(key));
 
     if (i == impl->m_dictionaries.end())
         throw ExceptionDictionaryKeyNotFound(key);
@@ -500,7 +500,7 @@ const Dictionary& DictionaryDictionary::get(const char* key) const
 {
     assert(key);
 
-    const DictionaryMap::const_iterator i = impl->m_dictionaries.find(key);
+    const DictionaryMap::const_iterator i = impl->m_dictionaries.find(InternedString(key));
 
     if (i == impl->m_dictionaries.end())
         throw ExceptionDictionaryKeyNotFound(key);
@@ -512,14 +512,14 @@ bool DictionaryDictionary::exist(const char* key) const
 {
     assert(key);
 
-    return impl->m_dictionaries.find(key) != impl->m_dictionaries.end();
+    return impl->m_dictionaries.find(InternedString(key)) != impl->m_dictionaries.end();
 }
 
 DictionaryDictionary& DictionaryDictionary::remove(const char* key)
 {
     assert(key);
 
-    const DictionaryMap::iterator i = impl->m_dictionaries.find(key);
+    const DictionaryMap::iterator i = impl->m_dictionaries.find(InternedString(key));
 
     if (i != impl->m_dictionaries.end())
         impl->m_dictionaries.erase(i);
