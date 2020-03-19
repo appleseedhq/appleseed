@@ -59,7 +59,7 @@ namespace
     const float MaxIntensity = 1.0f;
 
     class VignettePostProcessingStage
-        : PostProcessingStage
+        : public PostProcessingStage
     {
       public:
         VignettePostProcessingStage(
@@ -94,7 +94,7 @@ namespace
         void execute(Frame& frame) const override
         {
             const CanvasProperties& props = frame.image().properties();
-            const Vector2f resolution(props.m_canvas_width, props.m_canvas_height);
+            const Vector2f resolution(static_cast<float>(props.m_canvas_width), static_cast<float>(props.m_canvas_height));
             const Vector2f aspect(resolution.x / resolution.y, 1);
 
             Image& image = frame.image();
@@ -103,7 +103,7 @@ namespace
             {
                 for (size_t x = 0; x <= resolution.x - 1; ++x)
                 {
-                    Vector2f coord = (2.0f * Vector2f(x, y) - resolution) / resolution.y;
+                    Vector2f coord = (2.0f * Vector2f(static_cast<float>(x), static_cast<float>(y)) - resolution) / resolution.y;
 
                     //
                     // Port of Keijiro Takahashi's natural vignetting effect for Unity.
@@ -114,8 +114,8 @@ namespace
                     //
 
                     float rf = norm(coord) * m_intensity;
-                    float rf2_1 = rf * rf + 1.0;
-                    float e = 1.0 / (rf2_1 * rf2_1);
+                    float rf2_1 = rf * rf + 1.0f;
+                    float e = 1.0f / (rf2_1 * rf2_1);
 
                     Color4f background_premult;
                     image.get_pixel(x, y, background_premult);
