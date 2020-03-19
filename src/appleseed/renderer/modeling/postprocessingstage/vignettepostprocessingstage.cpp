@@ -63,8 +63,8 @@ namespace
     {
       public:
         VignettePostProcessingStage(
-            const char*				name,
-            const ParamArray&		params)
+            const char*             name,
+            const ParamArray&       params)
           : PostProcessingStage(name, params)
         {
         }
@@ -79,10 +79,10 @@ namespace
         }
 
         bool on_frame_begin(
-            const Project&			project,
-            const BaseGroup*		parent,
-            OnFrameBeginRecorder&	recorder,
-            IAbortSwitch*			abort_switch) override
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
+            IAbortSwitch*           abort_switch) override
         {
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
@@ -120,9 +120,13 @@ namespace
                     Color4f background_premult;
                     image.get_pixel(x, y, background_premult);
 
+                    background_premult.r *= e;
+                    background_premult.g *= e;
+                    background_premult.b *= e;
+
                     image.set_pixel(
                         x, y,
-                        e * background_premult);
+                        background_premult);
                 }
             }
         }

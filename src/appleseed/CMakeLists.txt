@@ -2021,6 +2021,8 @@ set (renderer_modeling_postprocessingstage_sources
     renderer/modeling/postprocessingstage/postprocessingstagetraits.h
     renderer/modeling/postprocessingstage/renderstamppostprocessingstage.cpp
     renderer/modeling/postprocessingstage/renderstamppostprocessingstage.h
+    renderer/modeling/postprocessingstage/vignettepostprocessingstage.cpp
+    renderer/modeling/postprocessingstage/vignettepostprocessingstage.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_postprocessingstage_sources}
