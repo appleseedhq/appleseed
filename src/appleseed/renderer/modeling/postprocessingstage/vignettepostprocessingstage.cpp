@@ -99,9 +99,9 @@ namespace
 
             Image& image = frame.image();
 
-            for (size_t y = 0; y <= resolution.y - 1; ++y)
+            for (size_t y = 0; y < resolution.y; ++y)
             {
-                for (size_t x = 0; x <= resolution.x - 1; ++x)
+                for (size_t x = 0; x < resolution.x; ++x)
                 {
                     Vector2f coord = (2.0f * Vector2f(static_cast<float>(x), static_cast<float>(y)) - resolution) / resolution.y;
 
@@ -111,11 +111,13 @@ namespace
                     // Reference:
                     //
                     //   https://github.com/keijiro/KinoVignette
+                    //   https://en.wikipedia.org/wiki/Vignetting#Natural_vignetting
                     //
 
-                    float rf = norm(coord) * m_intensity;
+                    // Recreates natural illumination falloff, which is approximated by the "cosine fourth" law of illumination falloff.
+                    float rf = norm(coord) * m_intensity; // radial falloff
                     float rf2_1 = rf * rf + 1.0f;
-                    float e = 1.0f / (rf2_1 * rf2_1);
+                    float e = 1.0f / (rf2_1 * rf2_1); // inversely proportional to the fourth power of the distance to the center
 
                     Color4f background_premult;
                     image.get_pixel(x, y, background_premult);
