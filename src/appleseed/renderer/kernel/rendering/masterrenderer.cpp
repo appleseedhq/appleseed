@@ -392,6 +392,8 @@ struct MasterRenderer::Impl
             return IRendererController::AbortRendering;
         }
 
+        renderer_controller.on_assembly_tree_built();
+
         // Load the checkpoint if any.
         Frame& frame = *m_project.get_frame();
         const size_t pass_count = m_params.get_optional<size_t>("passes", 1);

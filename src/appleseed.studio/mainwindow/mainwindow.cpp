@@ -300,6 +300,7 @@ bool MainWindow::pack_project(QString filepath)
 
 void MainWindow::close_project()
 {
+    remove_render_tabs();
     m_project_manager.close_project();
     on_project_change();
 }
@@ -899,10 +900,6 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const Rend
             // Set/clear rendering region.
             render_tab->set_render_region_buttons_enabled(
                 is_enabled && is_project_open && rendering_mode != RenderingMode::FinalRendering);
-
-            // Scene picker.
-            render_tab->get_scene_picking_handler()->set_enabled(
-                is_enabled && is_project_open && rendering_mode != RenderingMode::FinalRendering);
         }
     }
 }
@@ -1450,10 +1447,7 @@ void MainWindow::slot_open_cornellbox_builtin_project()
     if (!can_close_project())
         return;
 
-    // Reset the ScenePickers for certain handlers, so that they don't hold a reference to
-    // Lazy<Tree> and consequently it can be destroyed without obstruction.
-    for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
-        i->second->update_handlers();
+    remove_render_tabs();
 
     APPLESEED_UNUSED const bool successful = m_project_manager.load_builtin_project("cornell_box");
     assert(successful);

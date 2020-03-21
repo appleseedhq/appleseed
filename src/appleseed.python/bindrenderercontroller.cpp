@@ -177,6 +177,22 @@ namespace
             }
         }
 
+        void on_assembly_tree_built() override
+        {
+            // Lock Python's global interpreter lock (GIL),
+            // it was released in MasterRenderer.render.
+            ScopedGILLock lock;
+
+            try
+            {
+                get_override("on_assembly_tree_built")();
+            }
+            catch (bpy::error_already_set)
+            {
+                PyErr_Print();
+            }
+        }
+
         Status get_status() const override
         {
             // Lock Python's global interpreter lock (GIL),

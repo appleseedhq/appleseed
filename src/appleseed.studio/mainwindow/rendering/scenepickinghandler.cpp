@@ -84,13 +84,15 @@ ScenePickingHandler::ScenePickingHandler(
     QComboBox*                      picking_mode_combo,
     const MouseCoordinatesTracker&  mouse_tracker,
     const ProjectExplorer&          project_explorer,
-    const Project&                  project)
+    Project&                        project,
+    const ScenePicker&              scene_picker)
   : m_widget(widget)
   , m_picking_mode_combo(picking_mode_combo)
   , m_mouse_tracker(mouse_tracker)
   , m_project_explorer(project_explorer)
   , m_project(project)
-  , m_enabled(true)
+  , m_enabled(false)
+  , m_scene_picker(scene_picker)
 {
     m_widget->installEventFilter(this);
 
@@ -116,11 +118,8 @@ ScenePickingHandler::~ScenePickingHandler()
 void ScenePickingHandler::set_enabled(const bool enabled)
 {
     m_enabled = enabled;
-}
 
-void ScenePickingHandler::reset_scene_picker()
-{
-    m_scene_picker = nullptr;
+    m_project.update_trace_context();
 }
 
 bool ScenePickingHandler::eventFilter(QObject* object, QEvent* event)
@@ -230,19 +229,10 @@ namespace
 
 ItemBase* ScenePickingHandler::pick(const QPoint& point)
 {
-    if (!m_project.has_trace_context())
-    {
-        RENDERER_LOG_INFO("the scene must be rendering or must have been rendered at least once for picking to be available.");
-        return nullptr;
-    }
-
-    if (!m_scene_picker)
-        m_scene_picker = std::make_unique<ScenePicker>(m_project);
-
     const Vector2i pix = m_mouse_tracker.widget_to_pixel(point);
     const Vector2d ndc = m_mouse_tracker.widget_to_ndc(point);
 
-    const ScenePicker::PickingResult result = m_scene_picker->pick(ndc);
+    const ScenePicker::PickingResult result = m_scene_picker.pick(ndc);
 
     std::stringstream sstr;
 

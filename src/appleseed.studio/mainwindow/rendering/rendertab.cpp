@@ -83,6 +83,7 @@ RenderTab::RenderTab(
   : m_project_explorer(project_explorer)
   , m_project(project)
   , m_rendering_manager(rendering_manager)
+  , m_scene_picker(project)
   , m_ocio_config(ocio_config)
 {
     setObjectName("render_widget_tab");
@@ -137,6 +138,12 @@ void RenderTab::darken()
     m_render_widget->multiply(0.2f);
 }
 
+void RenderTab::enable_scene_picking()
+{
+    m_scene_picking_handler->set_enabled(true);
+    m_material_drop_handler->set_enabled(true);
+}
+
 void RenderTab::reset_zoom()
 {
     m_zoom_handler->reset_zoom();
@@ -158,15 +165,6 @@ void RenderTab::update_size()
         props.m_canvas_height);
 
     recreate_handlers();
-}
-
-void RenderTab::update_handlers()
-{
-    if (m_scene_picking_handler)
-        m_scene_picking_handler->reset_scene_picker();
-
-    if (m_material_drop_handler)
-        m_material_drop_handler->reset_scene_picker();
 }
 
 RenderTab::State RenderTab::save_state() const
@@ -472,7 +470,8 @@ void RenderTab::recreate_handlers()
             m_picking_mode_combo,
             *m_mouse_tracker.get(),
             m_project_explorer,
-            m_project));
+            m_project,
+            m_scene_picker));
     connect(
         m_scene_picking_handler.get(), SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
         SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)));
@@ -499,7 +498,8 @@ void RenderTab::recreate_handlers()
     m_material_drop_handler.reset(
         new MaterialDropHandler(
             m_project,
-            m_rendering_manager));
+            m_rendering_manager,
+            m_scene_picker));
     connect(
         m_render_widget, SIGNAL(signal_material_dropped(const foundation::Vector2d&, const QString&)),
         m_material_drop_handler.get(), SLOT(slot_material_dropped(const foundation::Vector2d&, const QString&)));
@@ -507,7 +507,6 @@ void RenderTab::recreate_handlers()
     // Set initial state.
     m_pixel_inspector_handler->set_enabled(false);
     m_camera_controller->set_enabled(false);
-    m_scene_picking_handler->set_enabled(true);
 }
 
 }   // namespace studio

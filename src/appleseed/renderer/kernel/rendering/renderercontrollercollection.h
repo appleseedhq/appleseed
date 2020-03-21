@@ -59,6 +59,7 @@ class APPLESEED_DLLSYMBOL RendererControllerCollection
     void on_frame_begin() override;
     void on_frame_end() override;
     void on_progress() override;
+    void on_assembly_tree_built() override;
     Status get_status() const override;
 
     // Insert a renderer controller into the collection.

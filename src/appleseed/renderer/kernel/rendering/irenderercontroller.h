@@ -73,6 +73,9 @@ class APPLESEED_DLLSYMBOL IRendererController
     // This method is called continuously during rendering.
     virtual void on_progress() = 0;
 
+    // This method is called after assembly tree is built.
+    virtual void on_assembly_tree_built() = 0;
+
     enum Status
     {
         // Continue/resume rendering.

@@ -72,6 +72,9 @@ class QtRendererController
     // This method is called after rendering a single frame.
     void on_frame_end() override;
 
+    // This method is called after the assembly tree is built.
+    void on_assembly_tree_built() override;
+
     // Store a new status value.
     void set_status(const Status status);
 
@@ -86,6 +89,7 @@ class QtRendererController
     void signal_rendering_resume();
     void signal_frame_begin();
     void signal_frame_end();
+    void signal_assembly_tree_built();
 
   private:
     boost::atomic<Status> m_status;

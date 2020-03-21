@@ -43,32 +43,29 @@ namespace appleseed {
 namespace studio {
 
 MaterialDropHandler::MaterialDropHandler(
-    const renderer::Project&    project,
-    RenderingManager&           rendering_manager)
-  : m_project(project), m_rendering_manager(rendering_manager)
+    renderer::Project&              project,
+    RenderingManager&               rendering_manager,
+    const renderer::ScenePicker&    scene_picker)
+  : m_project(project), m_rendering_manager(rendering_manager), m_enabled(false), m_scene_picker(scene_picker)
 {
 }
 
-void MaterialDropHandler::reset_scene_picker()
+void MaterialDropHandler::set_enabled(const bool enabled)
 {
-    m_scene_picker = nullptr;
+    m_enabled = enabled;
+
+    m_project.update_trace_context();
 }
 
 void MaterialDropHandler::slot_material_dropped(
-    const foundation::Vector2d& drop_pos,
-    const QString&          material_name)
+    const foundation::Vector2d&     drop_pos,
+    const QString&                  material_name)
 {
     m_drop_pos = drop_pos;
     m_material_name = material_name.toStdString();
 
-    if (!m_project.has_trace_context())
-    {
-        RENDERER_LOG_INFO("the scene must be rendering or must have been rendered at least once for drag and drop to be available.");
+    if (!m_enabled)
         return;
-    }
-
-    if (!m_scene_picker)
-        m_scene_picker = std::make_unique<renderer::ScenePicker>(m_project);
 
     QMenu* selection_menu = new QMenu();
     connect(selection_menu->addAction("Front Side"), SIGNAL(triggered()), SLOT(slot_apply_to_front()));
@@ -119,7 +116,7 @@ namespace
 
 void MaterialDropHandler::assign_material(const renderer::ObjectInstance::Side side)
 {
-    const renderer::ScenePicker::PickingResult result = m_scene_picker->pick(m_drop_pos);
+    const renderer::ScenePicker::PickingResult result = m_scene_picker.pick(m_drop_pos);
     renderer::ObjectInstance* instance = result.m_object_instance;
 
     std::vector<MaterialSlot> material_slots;

@@ -73,6 +73,9 @@ class APPLESEED_DLLSYMBOL DefaultRendererController
     // This method is called continuously during rendering.
     void on_progress() override;
 
+    // This method is called after assembly tree is built.
+    void on_assembly_tree_built() override;
+
     // Return the current rendering status.
     Status get_status() const override;
 };

@@ -86,6 +86,11 @@ void QtRendererController::on_frame_end()
     emit signal_frame_end();
 }
 
+void QtRendererController::on_assembly_tree_built()
+{
+    emit signal_assembly_tree_built();
+}
+
 void QtRendererController::set_status(const Status status)
 {
     m_status = status;
