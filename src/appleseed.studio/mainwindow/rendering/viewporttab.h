@@ -45,10 +45,6 @@
 #include "widgets/scrollareapanhandler.h"
 #include "widgets/widgetzoomhandler.h"
 
-// OpenColorIO headers.
-#include <OpenColorIO/OpenColorIO.h>
-namespace OCIO = OCIO_NAMESPACE;
-
 // Qt headers.
 #include <QObject>
 #include <QWidget>
@@ -80,9 +76,7 @@ class ViewportTab
     Q_OBJECT
 
   public:
-    ViewportTab(
-        renderer::Project&                  project,
-        OCIO::ConstConfigRcPtr              ocio_config);
+    ViewportTab(renderer::Project& project);
 
     virtual ViewportCanvas* get_viewport_canvas() const = 0;
 
@@ -107,7 +101,6 @@ class ViewportTab
 
   protected:
     renderer::Project&                                  m_project;
-    OCIO::ConstConfigRcPtr                              m_ocio_config;
 
     std::unique_ptr<qtcommon::WidgetZoomHandler>        m_zoom_handler;
     std::unique_ptr<qtcommon::ScrollAreaPanHandler>     m_pan_handler;

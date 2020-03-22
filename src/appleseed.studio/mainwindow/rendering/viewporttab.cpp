@@ -41,9 +41,6 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 
-// OpenColorIO headers.
-#include <OpenColorIO/OpenColorIO.h>
-
 // Qt headers.
 #include <QComboBox>
 #include <QGridLayout>
@@ -62,7 +59,6 @@
 using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
-namespace OCIO = OCIO_NAMESPACE;
 
 namespace appleseed {
 namespace studio {
@@ -71,11 +67,8 @@ namespace studio {
 // ViewportTab class implementation.
 //
 
-ViewportTab::ViewportTab(
-    Project&                            project,
-    OCIO::ConstConfigRcPtr              ocio_config)
+ViewportTab::ViewportTab(Project& project)
   : m_project(project)
-  , m_ocio_config(ocio_config)
 {
 }
 

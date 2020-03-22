@@ -98,6 +98,9 @@ class OpenGLViewportTab
     void slot_toggle_light_paths(const bool checked);
 
   private:
+    LightPathsManager&                                  m_light_paths_manager;
+    OCIO::ConstConfigRcPtr                              m_ocio_config;
+
     ViewportCanvas*                                     m_viewport_canvas;
     QScrollArea*                                        m_scroll_area;
     QToolBar*                                           m_toolbar;
@@ -106,7 +109,6 @@ class OpenGLViewportTab
     std::unique_ptr<CameraController>                   m_camera_controller;
     std::unique_ptr<RenderClipboardHandler>             m_clipboard_handler;
 
-    LightPathsManager&                                  m_light_paths_manager;
     std::unique_ptr<LightPathsViewportToolbar>          m_light_paths_viewport_toolbar;
 
     void create_viewport_canvas();

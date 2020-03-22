@@ -67,12 +67,11 @@ FinalRenderViewportTab::FinalRenderViewportTab(
     RenderingManager&                   rendering_manager,
     LightPathsManager&                  light_paths_manager,
     OCIO::ConstConfigRcPtr              ocio_config)
-    : ViewportTab(
-        project,
-        ocio_config)
+    : ViewportTab(project)
     , m_project_explorer(project_explorer)
     , m_rendering_manager(rendering_manager)
     , m_light_paths_manager(light_paths_manager)
+    , m_ocio_config(ocio_config)
 {
     setObjectName("final_render_viewport_tab");
     setLayout(new QGridLayout());

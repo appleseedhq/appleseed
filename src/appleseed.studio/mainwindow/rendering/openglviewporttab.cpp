@@ -60,10 +60,9 @@ OpenGLViewportTab::OpenGLViewportTab(
     Project&                            project,
     LightPathsManager&                  light_paths_manager,
     OCIO::ConstConfigRcPtr              ocio_config)
-    : ViewportTab(
-        project,
-        ocio_config)
+    : ViewportTab(project)
     , m_light_paths_manager(light_paths_manager)
+    , m_ocio_config(ocio_config)
 {
     setObjectName("opengl_viewport_tab");
     setLayout(new QGridLayout());

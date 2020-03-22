@@ -102,6 +102,7 @@ class FinalRenderViewportTab
     ProjectExplorer&                                    m_project_explorer;
     RenderingManager&                                   m_rendering_manager;
     LightPathsManager&                                  m_light_paths_manager;
+    OCIO::ConstConfigRcPtr                              m_ocio_config;
 
     ViewportCanvas*                                     m_viewport_canvas;
     QToolButton*                                        m_set_render_region_button;
