@@ -900,6 +900,10 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const Rend
             // Set/clear rendering region.
             render_tab->set_render_region_buttons_enabled(
                 is_enabled && is_project_open && rendering_mode != RenderingMode::FinalRendering);
+
+            // Scene picker.
+            render_tab->get_scene_picking_handler()->set_enabled(
+                is_enabled && is_project_open && rendering_mode != RenderingMode::FinalRendering);
         }
     }
 }
