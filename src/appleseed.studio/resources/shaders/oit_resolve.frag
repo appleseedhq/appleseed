@@ -25,7 +25,7 @@
 // THE SOFTWARE.
 //
 
-#version 410
+#version 420
 
 uniform sampler2D u_accum_tex;
 uniform sampler2D u_revealage_tex;
@@ -47,6 +47,6 @@ void main() {
         accum.rgb = vec3(accum.a);
     }
     vec3 averageColor = accum.rgb / max(accum.a, 0.00001);
- 
+
     Target0 = vec4(averageColor, 1.0 - revealage);
 }
