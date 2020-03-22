@@ -32,19 +32,10 @@
 #include "mainwindow/rendering/cameracontroller.h"
 #include "mainwindow/rendering/lightpathsmanager.h"
 #include "mainwindow/rendering/lightpathsviewporttoolbar.h"
-#include "mainwindow/rendering/materialdrophandler.h"
-#include "mainwindow/rendering/pixelcolortracker.h"
-#include "mainwindow/rendering/pixelinspectorhandler.h"
 #include "mainwindow/rendering/renderclipboardhandler.h"
-#include "mainwindow/rendering/scenepickinghandler.h"
 #include "mainwindow/rendering/viewportcanvas.h"
 #include "mainwindow/rendering/viewportregionselectionhandler.h"
 #include "mainwindow/rendering/viewporttab.h"
-
-// appleseed.qtcommon headers.
-#include "widgets/mousecoordinatestracker.h"
-#include "widgets/scrollareapanhandler.h"
-#include "widgets/widgetzoomhandler.h"
 
 // OpenColorIO headers.
 #include <OpenColorIO/OpenColorIO.h>
@@ -119,3 +110,4 @@ class OpenGLViewportTab
 
 }   // namespace studio
 }   // namespace appleseed
+

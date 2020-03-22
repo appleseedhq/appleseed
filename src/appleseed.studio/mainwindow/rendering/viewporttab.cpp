@@ -30,31 +30,12 @@
 // Interface header.
 #include "viewporttab.h"
 
-// appleseed.qtcommon headers.
-#include "utility/miscellaneous.h"
-
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
 #include "renderer/api/project.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
-#include "foundation/image/image.h"
-
-// Qt headers.
-#include <QComboBox>
-#include <QGridLayout>
-#include <QLabel>
-#include <QLayout>
-#include <QScrollArea>
-#include <QSize>
-#include <QString>
-#include <Qt>
-#include <QToolBar>
-#include <QToolButton>
-
-// Standard headers.
-#include <string>
 
 using namespace appleseed::qtcommon;
 using namespace foundation;
@@ -126,8 +107,6 @@ void ViewportTab::load_state(const State& state)
     m_pan_handler->load_state(state.m_pan_handler_state);
 }
 
-
 }   // namespace studio
 }   // namespace appleseed
 
-#include "mainwindow/rendering/moc_cpp_viewporttab.cxx"

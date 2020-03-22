@@ -30,18 +30,9 @@
 #pragma once
 
 // appleseed.studio headers.
-#include "mainwindow/rendering/cameracontroller.h"
-#include "mainwindow/rendering/lightpathsviewporttoolbar.h"
-#include "mainwindow/rendering/materialdrophandler.h"
-#include "mainwindow/rendering/pixelcolortracker.h"
-#include "mainwindow/rendering/pixelinspectorhandler.h"
-#include "mainwindow/rendering/renderclipboardhandler.h"
-#include "mainwindow/rendering/scenepickinghandler.h"
 #include "mainwindow/rendering/viewportcanvas.h"
-#include "mainwindow/rendering/viewportregionselectionhandler.h"
 
 // appleseed.qtcommon headers.
-#include "widgets/mousecoordinatestracker.h"
 #include "widgets/scrollareapanhandler.h"
 #include "widgets/widgetzoomhandler.h"
 
@@ -53,15 +44,7 @@
 #include <memory>
 
 // Forward declarations.
-namespace renderer  { class Entity; }
 namespace renderer  { class Project; }
-class QComboBox;
-class QLabel;
-class QPoint;
-class QRect;
-class QScrollArea;
-class QToolBar;
-class QToolButton;
 
 namespace appleseed {
 namespace studio {

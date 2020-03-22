@@ -40,6 +40,7 @@
 
 // appleseed.qtcommon headers.
 #include "utility/miscellaneous.h"
+#include "widgets/mousecoordinatestracker.h"
 
 // Qt headers.
 #include <QComboBox>
@@ -540,4 +541,3 @@ void FinalRenderViewportTab::set_light_paths_toggle_enabled(const bool enabled)
 }   // namespace studio
 }   // namespace appleseed
 
-#include "mainwindow/rendering/moc_cpp_finalrenderviewporttab.cxx"

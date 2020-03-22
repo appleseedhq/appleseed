@@ -29,14 +29,22 @@
 #pragma once
 
 // appleseed.studio headers.
+#include "mainwindow/rendering/cameracontroller.h"
 #include "mainwindow/rendering/lightpathsmanager.h"
+#include "mainwindow/rendering/lightpathsviewporttoolbar.h"
+#include "mainwindow/rendering/materialdrophandler.h"
+#include "mainwindow/rendering/pixelcolortracker.h"
+#include "mainwindow/rendering/pixelinspectorhandler.h"
+#include "mainwindow/rendering/scenepickinghandler.h"
 #include "mainwindow/rendering/viewporttab.h"
+#include "mainwindow/rendering/viewportregionselectionhandler.h"
 
 // OpenColorIO headers.
 #include <OpenColorIO/OpenColorIO.h>
 namespace OCIO = OCIO_NAMESPACE;
 
 // Forward declarations.
+namespace appleseed { namespace qtcommon { class MouseCoordinatesTracker; } }
 namespace appleseed { namespace studio { class LightPathsPickingHandler; } }
 namespace appleseed { namespace studio { class ProjectExplorer; } }
 namespace appleseed { namespace studio { class RenderingManager; } }
