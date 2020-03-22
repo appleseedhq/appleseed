@@ -34,9 +34,9 @@
 #include "debug/tests/testwindow.h"
 #include "mainwindow/applicationsettingswindow.h"
 #include "mainwindow/falsecolorswindow.h"
-#include "mainwindow/rendering/renderingmanager.h"
 #include "mainwindow/rendering/finalrenderviewporttab.h"
 #include "mainwindow/rendering/openglviewporttab.h"
+#include "mainwindow/rendering/renderingmanager.h"
 #include "mainwindow/rendering/viewporttab.h"
 #include "mainwindow/renderingsettingswindow.h"
 #include "mainwindow/statusbar.h"
@@ -64,8 +64,8 @@ namespace OCIO = OCIO_NAMESPACE;
 
 // Forward declarations.
 namespace appleseed { namespace studio { class AttributeEditor; } }
-namespace appleseed { namespace studio { class MinimizeButton; } }
 namespace appleseed { namespace studio { class LightPathsManager; } }
+namespace appleseed { namespace studio { class MinimizeButton; } }
 namespace appleseed { namespace studio { class ProjectExplorer; } }
 namespace renderer  { class Project; }
 namespace Ui        { class MainWindow; }
@@ -220,7 +220,7 @@ class MainWindow
     void create_final_render_tab();
     void create_opengl_tab();
     int add_viewport_tab(ViewportTab* viewport_tab, const QString& label);
-    void connect_tabs();
+    void connect_viewport_tabs();
 
     // Project file handling.
     renderer::ParamArray get_project_params(const char* configuration_name) const;
@@ -313,7 +313,7 @@ class MainWindow
     // General UI actions.
     void slot_fullscreen();
     void slot_check_fullscreen();
-    void slot_current_tab_changed(int index);
+    void slot_current_viewport_tab_changed(int index);
 
     // Child windows.
     void slot_show_application_settings_window();

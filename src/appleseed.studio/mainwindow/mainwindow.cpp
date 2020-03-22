@@ -733,7 +733,7 @@ void MainWindow::build_connections()
 
     connect(
         m_ui->tab_render_channels, &QTabWidget::currentChanged,
-        this, &MainWindow::slot_current_tab_changed);
+        this, &MainWindow::slot_current_viewport_tab_changed);
 }
 
 void MainWindow::update_workspace()
@@ -957,7 +957,7 @@ void MainWindow::recreate_viewport_tabs()
         create_opengl_tab();
 
         // Connect tabs together once they are all created.
-        connect_tabs();
+        connect_viewport_tabs();
     }
 }
 
@@ -1071,7 +1071,7 @@ int MainWindow::add_viewport_tab(ViewportTab* viewport_tab, const QString& label
     return final_tab_index;
 }
 
-void MainWindow::connect_tabs()
+void MainWindow::connect_viewport_tabs()
 {
     assert(m_final_render_viewport_tab);
     assert(m_opengl_viewport_tab);
@@ -2177,7 +2177,7 @@ void MainWindow::slot_check_fullscreen()
     m_action_fullscreen->setChecked(is_fullscreen);
 }
 
-void MainWindow::slot_current_tab_changed(int index)
+void MainWindow::slot_current_viewport_tab_changed(int index)
 {
     if (index == -1) return;
 
