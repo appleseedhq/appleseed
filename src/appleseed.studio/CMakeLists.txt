@@ -284,12 +284,12 @@ set (mainwindow_rendering_sources
     mainwindow/rendering/renderlayer.h
     mainwindow/rendering/scenepickinghandler.cpp
     mainwindow/rendering/scenepickinghandler.h
+    mainwindow/rendering/viewportcanvas.cpp
+    mainwindow/rendering/viewportcanvas.h
     mainwindow/rendering/viewportregionselectionhandler.cpp
     mainwindow/rendering/viewportregionselectionhandler.h
     mainwindow/rendering/viewporttab.cpp
     mainwindow/rendering/viewporttab.h
-    mainwindow/rendering/viewportcanvas.cpp
-    mainwindow/rendering/viewportcanvas.h
 )
 list (APPEND appleseed.studio_sources
     ${mainwindow_rendering_sources}
