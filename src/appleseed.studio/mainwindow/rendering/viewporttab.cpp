@@ -30,9 +30,6 @@
 // Interface header.
 #include "viewporttab.h"
 
-// appleseed.studio headers.
-#include "mainwindow/rendering/renderingmanager.h"
-
 // appleseed.qtcommon headers.
 #include "utility/miscellaneous.h"
 
@@ -76,10 +73,8 @@ namespace studio {
 
 ViewportTab::ViewportTab(
     Project&                            project,
-    RenderingManager&                   rendering_manager,
     OCIO::ConstConfigRcPtr              ocio_config)
   : m_project(project)
-  , m_rendering_manager(rendering_manager)
   , m_ocio_config(ocio_config)
 {
 }

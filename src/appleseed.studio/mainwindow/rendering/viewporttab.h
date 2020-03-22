@@ -57,7 +57,6 @@ namespace OCIO = OCIO_NAMESPACE;
 #include <memory>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class RenderingManager; } }
 namespace renderer  { class Entity; }
 namespace renderer  { class Project; }
 class QComboBox;
@@ -83,7 +82,6 @@ class ViewportTab
   public:
     ViewportTab(
         renderer::Project&                  project,
-        RenderingManager&                   rendering_manager,
         OCIO::ConstConfigRcPtr              ocio_config);
 
     virtual ViewportCanvas* get_viewport_canvas() const = 0;
@@ -109,7 +107,6 @@ class ViewportTab
 
   protected:
     renderer::Project&                                  m_project;
-    RenderingManager&                                   m_rendering_manager;
     OCIO::ConstConfigRcPtr                              m_ocio_config;
 
     std::unique_ptr<qtcommon::WidgetZoomHandler>        m_zoom_handler;

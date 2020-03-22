@@ -29,9 +29,6 @@
 // Interface header.
 #include "openglviewporttab.h"
 
-// appleseed.studio headers.
-#include "mainwindow/rendering/renderingmanager.h"
-
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"
 #include "renderer/api/project.h"
@@ -61,12 +58,10 @@ namespace studio {
 
 OpenGLViewportTab::OpenGLViewportTab(
     Project&                            project,
-    RenderingManager&                   rendering_manager,
     LightPathsManager&                  light_paths_manager,
     OCIO::ConstConfigRcPtr              ocio_config)
     : ViewportTab(
         project,
-        rendering_manager,
         ocio_config)
     , m_light_paths_manager(light_paths_manager)
 {

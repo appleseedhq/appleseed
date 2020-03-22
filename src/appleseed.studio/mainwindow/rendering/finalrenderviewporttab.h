@@ -100,6 +100,7 @@ class FinalRenderViewportTab
 
   private:
     ProjectExplorer&                                    m_project_explorer;
+    RenderingManager&                                   m_rendering_manager;
     LightPathsManager&                                  m_light_paths_manager;
 
     ViewportCanvas*                                     m_viewport_canvas;

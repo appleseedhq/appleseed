@@ -58,7 +58,6 @@ namespace OCIO = OCIO_NAMESPACE;
 #include <memory>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class RenderingManager; } }
 namespace renderer  { class Entity; }
 namespace renderer  { class Project; }
 class QComboBox;
@@ -80,7 +79,6 @@ class OpenGLViewportTab
   public:
     OpenGLViewportTab(
         renderer::Project&                  project,
-        RenderingManager&                   rendering_manager,
         LightPathsManager&                  light_paths_manager,
         OCIO::ConstConfigRcPtr              ocio_config);
 
