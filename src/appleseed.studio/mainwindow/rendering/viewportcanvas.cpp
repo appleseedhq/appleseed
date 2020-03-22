@@ -208,9 +208,8 @@ void ViewportCanvas::initializeGL() {
     auto vertex_shader = load_gl_shader("fullscreen_tri.vert");
     auto fragment_shader = load_gl_shader("oit_resolve.frag");
 
-    create_shader_program(
+    m_resolve_program = create_shader_program(
         m_gl,
-        m_resolve_program,
         &vertex_shader,
         &fragment_shader);
 

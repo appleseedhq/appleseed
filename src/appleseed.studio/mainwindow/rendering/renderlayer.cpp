@@ -127,9 +127,8 @@ void RenderLayer::init_gl(QSurfaceFormat format)
     auto vertex_shader = load_gl_shader("fullscreen_tri.vert");
     auto fragment_shader = load_gl_shader("final_render.frag");
 
-    create_shader_program(
+    m_shader_program = create_shader_program(
         m_gl,
-        m_shader_program,
         &vertex_shader,
         &fragment_shader);
 

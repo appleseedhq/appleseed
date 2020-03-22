@@ -48,13 +48,12 @@ namespace studio {
 
 const string shader_kind_to_string(const GLint shader_kind)
 {
-    switch (shader_kind) {
-        case GL_VERTEX_SHADER:
-            return "Vertex";
-        case GL_FRAGMENT_SHADER:
-            return "Fragment";
+    switch (shader_kind)
+    {
+        case GL_VERTEX_SHADER:      return "Vertex";
+        case GL_FRAGMENT_SHADER:    return "Fragment";
+        default:                    return "Unknown Kind";
     }
-    return "Unknown Kind";
 }
 
 void compile_shader(
@@ -106,14 +105,13 @@ void link_shader_program(
     }
 }
 
-void create_shader_program(
+GLuint create_shader_program(
     QOpenGLFunctions_4_1_Core*  f,
-    GLuint&                     program,
     const QByteArray*           vert_source,
     const QByteArray*           frag_source)
 {
-    assert(vert_source != nullptr);
-    bool has_frag_shader = frag_source != nullptr;
+    assert(vert_source != 0);
+    const bool has_frag_shader = frag_source != 0;
 
     GLuint vert = f->glCreateShader(GL_VERTEX_SHADER);
     GLuint frag = has_frag_shader ? f->glCreateShader(GL_FRAGMENT_SHADER) : 0;
@@ -130,12 +128,14 @@ void create_shader_program(
         compile_shader(f, frag, 1, &gl_frag_source, &gl_frag_source_length);
     }
 
-    program = f->glCreateProgram();
+    const GLuint program = f->glCreateProgram();
     link_shader_program(f, program, vert, frag);
 
     f->glDeleteShader(vert);
     if (has_frag_shader)
         f->glDeleteShader(frag);
+
+    return program;
 }
 
 QByteArray load_gl_shader(const QString& base_name)

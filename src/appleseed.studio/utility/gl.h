@@ -32,7 +32,7 @@
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions_4_1_Core>
 
-// standard headers.
+// Standard headers.
 #include <string>
 
 // Forward declarations.
@@ -45,7 +45,7 @@ namespace studio {
 // Get a string from an OpenGL shader kind value.
 const std::string shader_kind_to_string(const GLint shader_kind);
 
-// Compile a GL shader.
+// Compile an OpenGL shader.
 void compile_shader(
     QOpenGLFunctions_4_1_Core* f,
     const GLuint               shader,
@@ -53,19 +53,18 @@ void compile_shader(
     const GLchar**             src_string,
     const GLint*               length);
 
-// Link a GL shader program.
+// Linke an OpenlGL shader program with a vertex and optional fragment shader object.
 void link_shader_program(
     QOpenGLFunctions_4_1_Core*  f,
     const GLuint                program,
     const GLuint                vert,
-    const GLuint                frag);
+    const GLuint                frag = 0);
 
-// Create a GL shader program with a vertex and optional fragment shader.
-void create_shader_program(
+// Create an OpenlGL shader program with a vertex and optional fragment shader source code.
+GLuint create_shader_program(
     QOpenGLFunctions_4_1_Core*  f,
-    GLuint&                     program,
     const QByteArray*           vert_source,
-    const QByteArray*           frag_source);
+    const QByteArray*           frag_source = 0);
 
 // Load a GLSL shader from file into a QByteArray.
 QByteArray load_gl_shader(const QString& base_name);

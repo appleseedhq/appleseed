@@ -383,20 +383,17 @@ void GLSceneLayer::init_gl(QSurfaceFormat format)
     auto vertex_shader = load_gl_shader("scene.vert");
     auto fragment_shader = load_gl_shader("scene.frag");
 
-    create_shader_program(
+    m_scene_shader_program = create_shader_program(
         m_gl,
-        m_scene_shader_program,
         &vertex_shader,
         &fragment_shader);
 
     m_scene_view_mat_location = m_gl->glGetUniformLocation(m_scene_shader_program, "u_view");
     m_scene_proj_mat_location = m_gl->glGetUniformLocation(m_scene_shader_program, "u_proj");
 
-    create_shader_program(
+    m_depthonly_shader_program = create_shader_program(
         m_gl,
-        m_depthonly_shader_program,
-        &vertex_shader,
-        nullptr);
+        &vertex_shader);
 
     m_depthonly_view_mat_location = m_gl->glGetUniformLocation(m_depthonly_shader_program, "u_view");
     m_depthonly_proj_mat_location = m_gl->glGetUniformLocation(m_depthonly_shader_program, "u_proj");

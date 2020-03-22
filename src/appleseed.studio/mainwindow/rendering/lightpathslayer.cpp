@@ -294,9 +294,8 @@ void LightPathsLayer::init_gl(QSurfaceFormat format)
     auto vertex_shader = load_gl_shader("lightpaths.vert");
     auto fragment_shader = load_gl_shader("lightpaths.frag");
 
-    create_shader_program(
+    m_shader_program = create_shader_program(
         m_gl,
-        m_shader_program,
         &vertex_shader,
         &fragment_shader);
 
