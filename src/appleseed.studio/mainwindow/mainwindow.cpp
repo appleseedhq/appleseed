@@ -2087,7 +2087,7 @@ void MainWindow::slot_save_render_widget_content()
         return;
 
     // todo: this is sketchy. The render tab should be retrieved from the signal.
-    m_viewport_tabs["Beauty"]->get_viewport_canvas()->get_render_layer()->capture().save(filepath);
+    m_final_render_viewport_tab->get_viewport_canvas()->get_render_layer()->capture().save(filepath);
 
     RENDERER_LOG_INFO("wrote image file %s.", filepath.toStdString().c_str());
 }
