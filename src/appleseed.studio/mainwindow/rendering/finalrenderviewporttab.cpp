@@ -68,10 +68,10 @@ FinalRenderViewportTab::FinalRenderViewportTab(
     LightPathsManager&                  light_paths_manager,
     OCIO::ConstConfigRcPtr              ocio_config)
     : ViewportTab(
-        project_explorer,
         project,
         rendering_manager,
         ocio_config)
+    , m_project_explorer(project_explorer)
     , m_light_paths_manager(light_paths_manager)
 {
     setObjectName("final_render_viewport_tab");

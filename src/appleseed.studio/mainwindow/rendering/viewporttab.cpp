@@ -31,7 +31,6 @@
 #include "viewporttab.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/rendering/renderingmanager.h"
 
 // appleseed.qtcommon headers.
@@ -76,12 +75,10 @@ namespace studio {
 //
 
 ViewportTab::ViewportTab(
-    ProjectExplorer&                    project_explorer,
     Project&                            project,
     RenderingManager&                   rendering_manager,
     OCIO::ConstConfigRcPtr              ocio_config)
-  : m_project_explorer(project_explorer)
-  , m_project(project)
+  : m_project(project)
   , m_rendering_manager(rendering_manager)
   , m_ocio_config(ocio_config)
 {

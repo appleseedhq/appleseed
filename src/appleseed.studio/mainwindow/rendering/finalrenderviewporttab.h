@@ -99,6 +99,7 @@ class FinalRenderViewportTab
     void slot_clear_frame();
 
   private:
+    ProjectExplorer&                                    m_project_explorer;
     LightPathsManager&                                  m_light_paths_manager;
 
     ViewportCanvas*                                     m_viewport_canvas;

@@ -57,7 +57,6 @@ namespace OCIO = OCIO_NAMESPACE;
 #include <memory>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class ProjectExplorer; } }
 namespace appleseed { namespace studio { class RenderingManager; } }
 namespace renderer  { class Entity; }
 namespace renderer  { class Project; }
@@ -83,7 +82,6 @@ class ViewportTab
 
   public:
     ViewportTab(
-        ProjectExplorer&                    project_explorer,
         renderer::Project&                  project,
         RenderingManager&                   rendering_manager,
         OCIO::ConstConfigRcPtr              ocio_config);
@@ -110,7 +108,6 @@ class ViewportTab
     void load_state(const State& state);
 
   protected:
-    ProjectExplorer&                                    m_project_explorer;
     renderer::Project&                                  m_project;
     RenderingManager&                                   m_rendering_manager;
     OCIO::ConstConfigRcPtr                              m_ocio_config;

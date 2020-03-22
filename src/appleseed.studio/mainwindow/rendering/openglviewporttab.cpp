@@ -30,7 +30,6 @@
 #include "openglviewporttab.h"
 
 // appleseed.studio headers.
-#include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/rendering/renderingmanager.h"
 
 // appleseed.renderer headers.
@@ -61,13 +60,11 @@ namespace appleseed {
 namespace studio {
 
 OpenGLViewportTab::OpenGLViewportTab(
-    ProjectExplorer&                    project_explorer,
     Project&                            project,
     RenderingManager&                   rendering_manager,
     LightPathsManager&                  light_paths_manager,
     OCIO::ConstConfigRcPtr              ocio_config)
     : ViewportTab(
-        project_explorer,
         project,
         rendering_manager,
         ocio_config)

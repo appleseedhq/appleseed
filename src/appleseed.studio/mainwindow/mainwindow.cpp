@@ -1029,7 +1029,6 @@ void MainWindow::create_opengl_tab()
 {
     m_opengl_viewport_tab =
         new OpenGLViewportTab(
-            *m_project_explorer,
             *m_project_manager.get_project(),
             m_rendering_manager,
             *m_light_paths_manager,
