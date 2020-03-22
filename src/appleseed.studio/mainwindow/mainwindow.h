@@ -220,7 +220,6 @@ class MainWindow
     void create_final_render_tab();
     void create_opengl_tab();
     int add_viewport_tab(ViewportTab* viewport_tab, const QString& label);
-    void connect_viewport_tabs();
 
     // Project file handling.
     renderer::ParamArray get_project_params(const char* configuration_name) const;

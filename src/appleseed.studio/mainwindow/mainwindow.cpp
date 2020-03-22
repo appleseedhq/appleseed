@@ -955,9 +955,6 @@ void MainWindow::recreate_viewport_tabs()
 
         create_final_render_tab();
         create_opengl_tab();
-
-        // Connect tabs together once they are all created.
-        connect_viewport_tabs();
     }
 }
 
@@ -1069,17 +1066,6 @@ int MainWindow::add_viewport_tab(ViewportTab* viewport_tab, const QString& label
     assert(final_tab_index == tab_index);
 
     return final_tab_index;
-}
-
-void MainWindow::connect_viewport_tabs()
-{
-    assert(m_final_render_viewport_tab);
-    assert(m_opengl_viewport_tab);
-
-    // Connect final render tab light paths selection to opengl tab.
-    //connect(
-        //m_final_render_viewport_tab, &FinalRenderViewportTab::signal_entity_picked,
-        //m_opengl_viewport_tab, &OpenGLViewportTab::slot_entity_picked);
 }
 
 ParamArray MainWindow::get_project_params(const char* configuration_name) const
