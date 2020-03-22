@@ -84,8 +84,7 @@ class OpenGLViewportTab
         renderer::Project&                  project,
         RenderingManager&                   rendering_manager,
         LightPathsManager&                  light_paths_manager,
-        OCIO::ConstConfigRcPtr              ocio_config,
-        renderer::ParamArray                application_settings);
+        OCIO::ConstConfigRcPtr              ocio_config);
 
     ViewportCanvas* get_viewport_canvas() const override;
 

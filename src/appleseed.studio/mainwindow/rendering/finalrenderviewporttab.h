@@ -57,8 +57,7 @@ class FinalRenderViewportTab
         renderer::Project&                  project,
         RenderingManager&                   rendering_manager,
         LightPathsManager&                  light_paths_manager,
-        OCIO::ConstConfigRcPtr              ocio_config,
-        renderer::ParamArray                application_settings);
+        OCIO::ConstConfigRcPtr              ocio_config);
 
     ViewportCanvas* get_viewport_canvas() const override;
 
@@ -100,6 +99,8 @@ class FinalRenderViewportTab
     void slot_clear_frame();
 
   private:
+    LightPathsManager&                                  m_light_paths_manager;
+
     ViewportCanvas*                                     m_viewport_canvas;
     QToolButton*                                        m_set_render_region_button;
     QToolButton*                                        m_clear_render_region_button;
@@ -125,7 +126,6 @@ class FinalRenderViewportTab
     std::unique_ptr<ViewportRegionSelectionHandler>     m_viewport_selection_handler;
     std::unique_ptr<RenderClipboardHandler>             m_clipboard_handler;
 
-    LightPathsManager&                                  m_light_paths_manager;
     std::unique_ptr<LightPathsViewportToolbar>          m_light_paths_viewport_toolbar;
     std::unique_ptr<LightPathsPickingHandler>           m_light_paths_picking_handler;
 

@@ -79,10 +79,8 @@ ViewportTab::ViewportTab(
     ProjectExplorer&                    project_explorer,
     Project&                            project,
     RenderingManager&                   rendering_manager,
-    OCIO::ConstConfigRcPtr              ocio_config,
-    renderer::ParamArray                application_settings)
-  : m_application_settings(application_settings)
-  , m_project_explorer(project_explorer)
+    OCIO::ConstConfigRcPtr              ocio_config)
+  : m_project_explorer(project_explorer)
   , m_project(project)
   , m_rendering_manager(rendering_manager)
   , m_ocio_config(ocio_config)

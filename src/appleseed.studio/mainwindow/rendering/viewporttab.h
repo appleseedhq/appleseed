@@ -86,8 +86,7 @@ class ViewportTab
         ProjectExplorer&                    project_explorer,
         renderer::Project&                  project,
         RenderingManager&                   rendering_manager,
-        OCIO::ConstConfigRcPtr              ocio_config,
-        renderer::ParamArray                application_settings);
+        OCIO::ConstConfigRcPtr              ocio_config);
 
     virtual ViewportCanvas* get_viewport_canvas() const = 0;
 
@@ -111,7 +110,6 @@ class ViewportTab
     void load_state(const State& state);
 
   protected:
-    renderer::ParamArray                                m_application_settings;
     ProjectExplorer&                                    m_project_explorer;
     renderer::Project&                                  m_project;
     RenderingManager&                                   m_rendering_manager;

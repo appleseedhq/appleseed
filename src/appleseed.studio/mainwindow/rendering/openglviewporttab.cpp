@@ -65,14 +65,12 @@ OpenGLViewportTab::OpenGLViewportTab(
     Project&                            project,
     RenderingManager&                   rendering_manager,
     LightPathsManager&                  light_paths_manager,
-    OCIO::ConstConfigRcPtr              ocio_config,
-    renderer::ParamArray                application_settings)
+    OCIO::ConstConfigRcPtr              ocio_config)
     : ViewportTab(
         project_explorer,
         project,
         rendering_manager,
-        ocio_config,
-        application_settings)
+        ocio_config)
     , m_light_paths_manager(light_paths_manager)
 {
     setObjectName("opengl_viewport_tab");

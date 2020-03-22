@@ -985,8 +985,7 @@ void MainWindow::create_final_render_tab()
             *m_project_manager.get_project(),
             m_rendering_manager,
             *m_light_paths_manager,
-            m_ocio_config,
-            m_application_settings);
+            m_ocio_config);
 
     // Connect the beauty viewport tab to the main window and the rendering manager.
     connect(
@@ -1034,8 +1033,7 @@ void MainWindow::create_opengl_tab()
             *m_project_manager.get_project(),
             m_rendering_manager,
             *m_light_paths_manager,
-            m_ocio_config,
-            m_application_settings);
+            m_ocio_config);
 
     // Connect the opengl viewport tab to the main window and the rendering manager.
     connect(
