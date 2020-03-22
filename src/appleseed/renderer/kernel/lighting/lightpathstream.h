@@ -162,7 +162,7 @@ class LightPathStream
         const Entity*               m_entity;                   // object instance or non-physical light
         foundation::Vector3f        m_position;                 // world space position of this vertex
         foundation::Color3f         m_radiance;                 // radiance arriving at this vertex, in W.sr^-1.m^-2
-        foundation::Vector3f        m_surface_normal;
+        foundation::Vector3f        m_surface_normal;           // world space normal of the surface at this vertex
     };
 
     // Scene.
