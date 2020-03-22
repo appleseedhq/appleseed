@@ -26,6 +26,7 @@
 // THE SOFTWARE.
 //
 
+// Interface header.
 #include "gl.h"
 
 // appleseed.studio headers.
@@ -40,13 +41,12 @@
 #include <QString>
 
 using namespace appleseed::qtcommon;
-using namespace std;
 using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
-const string shader_kind_to_string(const GLint shader_kind)
+const std::string shader_kind_to_string(const GLint shader_kind)
 {
     switch (shader_kind)
     {
@@ -65,6 +65,8 @@ void compile_shader(
 {
     f->glShaderSource(shader, count, src_string, length);
     f->glCompileShader(shader);
+
+    // Check compilation status.
     GLint success;
     f->glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 
@@ -75,9 +77,13 @@ void compile_shader(
 
         GLint shader_kind;
         f->glGetShaderiv(shader, GL_SHADER_TYPE, &shader_kind);
-        string shader_kind_string = shader_kind_to_string(shader_kind);
 
-        RENDERER_LOG_ERROR("opengl: %s shader compilation failed:\n%s", shader_kind_string.c_str(), info_log);
+        const std::string shader_kind_string = shader_kind_to_string(shader_kind);
+
+        RENDERER_LOG_ERROR(
+            "opengl: %s shader compilation failed:\n%s",
+            shader_kind_string.c_str(),
+            info_log);
     }
 }
 
@@ -94,6 +100,7 @@ void link_shader_program(
 
     f->glLinkProgram(program);
 
+    // Check linking status.
     GLint success;
     f->glGetProgramiv(program, GL_LINK_STATUS, &success);
 
@@ -101,7 +108,10 @@ void link_shader_program(
     {
         char info_log[1024];
         f->glGetProgramInfoLog(program, 1024, NULL, info_log);
-        RENDERER_LOG_ERROR("opengl: shader program linking failed:\n%s", info_log);
+
+        RENDERER_LOG_ERROR(
+            "opengl: shader program linking failed:\n%s",
+            info_log);
     }
 }
 
@@ -113,25 +123,29 @@ GLuint create_shader_program(
     assert(vert_source != 0);
     const bool has_frag_shader = frag_source != 0;
 
-    GLuint vert = f->glCreateShader(GL_VERTEX_SHADER);
-    GLuint frag = has_frag_shader ? f->glCreateShader(GL_FRAGMENT_SHADER) : 0;
+    const GLuint vert = f->glCreateShader(GL_VERTEX_SHADER);
+    const GLuint frag = has_frag_shader ? f->glCreateShader(GL_FRAGMENT_SHADER) : 0;
 
-    auto gl_vert_source = static_cast<const GLchar*>(vert_source->constData());
-    auto gl_vert_source_length = static_cast<const GLint>(vert_source->size());
+    // Compile the vertex shader.
+    const GLchar* gl_vert_source = static_cast<const GLchar*>(vert_source->constData());
+    const GLint gl_vert_source_length = static_cast<const GLint>(vert_source->size());
 
     compile_shader(f, vert, 1, &gl_vert_source, &gl_vert_source_length);
 
+    // Compile the fragment shader.
     if (has_frag_shader)
     {
-        auto gl_frag_source = static_cast<const GLchar*>(frag_source->constData());
-        auto gl_frag_source_length = static_cast<const GLint>(frag_source->size());
+        const GLchar* gl_frag_source = static_cast<const GLchar*>(frag_source->constData());
+        const GLint gl_frag_source_length = static_cast<const GLint>(frag_source->size());
         compile_shader(f, frag, 1, &gl_frag_source, &gl_frag_source_length);
     }
 
+    // Compile both shaders together.
     const GLuint program = f->glCreateProgram();
     link_shader_program(f, program, vert, frag);
 
     f->glDeleteShader(vert);
+
     if (has_frag_shader)
         f->glDeleteShader(frag);
 

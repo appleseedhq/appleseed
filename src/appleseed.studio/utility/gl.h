@@ -29,8 +29,8 @@
 #pragma once
 
 // Qt headers.
-#include <QOpenGLWidget>
 #include <QOpenGLFunctions_4_1_Core>
+#include <QOpenGLWidget>
 
 // Standard headers.
 #include <string>
