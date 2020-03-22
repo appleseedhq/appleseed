@@ -72,9 +72,6 @@ class QtRendererController
     // This method is called after rendering a single frame.
     void on_frame_end() override;
 
-    // This method is called after assembly tree is built.
-    void on_assembly_tree_built() override;
-
     // Store a new status value.
     void set_status(const Status status);
 

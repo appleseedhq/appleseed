@@ -86,7 +86,6 @@ class QtRendererController
     void signal_rendering_resume();
     void signal_frame_begin();
     void signal_frame_end();
-    void signal_assembly_tree_built();
 
   private:
     boost::atomic<Status> m_status;
