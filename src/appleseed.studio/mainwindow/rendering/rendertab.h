@@ -95,7 +95,6 @@ class RenderTab
 
     void clear();
     void darken();
-    void enable_scene_picking();
     void reset_zoom();
 
     void update();

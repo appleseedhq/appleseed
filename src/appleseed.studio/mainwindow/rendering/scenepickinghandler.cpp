@@ -48,6 +48,8 @@
 #include "renderer/api/project.h"
 #include "renderer/api/scene.h"
 #include "renderer/api/surfaceshader.h"
+#include "renderer/kernel/intersection/assemblytree.h"
+#include "renderer/kernel/intersection/tracecontext.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
@@ -84,14 +86,14 @@ ScenePickingHandler::ScenePickingHandler(
     QComboBox*                      picking_mode_combo,
     const MouseCoordinatesTracker&  mouse_tracker,
     const ProjectExplorer&          project_explorer,
-    Project&                        project,
+    const Project&                  project,
     const ScenePicker&              scene_picker)
   : m_widget(widget)
   , m_picking_mode_combo(picking_mode_combo)
   , m_mouse_tracker(mouse_tracker)
   , m_project_explorer(project_explorer)
   , m_project(project)
-  , m_enabled(false)
+  , m_enabled(true)
   , m_scene_picker(scene_picker)
 {
     m_widget->installEventFilter(this);
@@ -118,8 +120,6 @@ ScenePickingHandler::~ScenePickingHandler()
 void ScenePickingHandler::set_enabled(const bool enabled)
 {
     m_enabled = enabled;
-
-    m_project.update_trace_context();
 }
 
 bool ScenePickingHandler::eventFilter(QObject* object, QEvent* event)
@@ -229,6 +229,13 @@ namespace
 
 ItemBase* ScenePickingHandler::pick(const QPoint& point)
 {
+    // Tell the user to render once, if assembly tree hasn't been built yet.
+    if (m_project.get_trace_context().get_assembly_tree().get_nodes().size() == 0)
+    {
+        RENDERER_LOG_INFO("the scene must be rendering or must have been rendered at least once for picking to be available.");
+        return nullptr;
+    }
+
     const Vector2i pix = m_mouse_tracker.widget_to_pixel(point);
     const Vector2d ndc = m_mouse_tracker.widget_to_ndc(point);
 

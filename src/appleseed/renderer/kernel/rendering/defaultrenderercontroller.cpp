@@ -69,10 +69,6 @@ void DefaultRendererController::on_progress()
 {
 }
 
-void DefaultRendererController::on_assembly_tree_built()
-{
-}
-
 IRendererController::Status DefaultRendererController::get_status() const
 {
     return ContinueRendering;

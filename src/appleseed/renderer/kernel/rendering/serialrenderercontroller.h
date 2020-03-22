@@ -70,7 +70,6 @@ class SerialRendererController
     void on_frame_begin() override;
     void on_frame_end() override;
     void on_progress() override;
-    void on_assembly_tree_built() override;
     Status get_status() const override;
 
     void add_on_tiled_frame_begin_callback(

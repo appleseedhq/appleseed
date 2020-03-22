@@ -175,11 +175,6 @@ RenderingManager::RenderingManager(StatusBar& status_bar)
         Qt::BlockingQueuedConnection);
 
     connect(
-        &m_renderer_controller, SIGNAL(signal_assembly_tree_built()),
-        SLOT(slot_assembly_tree_built()),
-        Qt::BlockingQueuedConnection);
-
-    connect(
         &m_renderer_controller, SIGNAL(signal_rendering_success()),
         SIGNAL(signal_rendering_end()));
 
@@ -526,11 +521,6 @@ void RenderingManager::slot_camera_changed()
 
 void RenderingManager::slot_camera_change_end()
 {
-}
-
-void RenderingManager::slot_assembly_tree_built()
-{
-    m_render_tab->enable_scene_picking();
 }
 
 void RenderingManager::slot_master_renderer_thread_finished()

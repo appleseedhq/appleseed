@@ -33,6 +33,8 @@
 #include "mainwindow/rendering/renderingmanager.h"
 
 // appleseed.renderer headers.
+#include "renderer/kernel/intersection/assemblytree.h"
+#include "renderer/kernel/intersection/tracecontext.h"
 #include "renderer/kernel/rendering/scenepicker.h"
 
 // Qt headers.
@@ -43,18 +45,11 @@ namespace appleseed {
 namespace studio {
 
 MaterialDropHandler::MaterialDropHandler(
-    renderer::Project&              project,
+    const renderer::Project&        project,
     RenderingManager&               rendering_manager,
     const renderer::ScenePicker&    scene_picker)
-  : m_project(project), m_rendering_manager(rendering_manager), m_enabled(false), m_scene_picker(scene_picker)
+  : m_project(project), m_rendering_manager(rendering_manager), m_scene_picker(scene_picker)
 {
-}
-
-void MaterialDropHandler::set_enabled(const bool enabled)
-{
-    m_enabled = enabled;
-
-    m_project.update_trace_context();
 }
 
 void MaterialDropHandler::slot_material_dropped(
@@ -64,8 +59,12 @@ void MaterialDropHandler::slot_material_dropped(
     m_drop_pos = drop_pos;
     m_material_name = material_name.toStdString();
 
-    if (!m_enabled)
+    // Tell the user to render once, if assembly tree hasn't been built yet.
+    if (m_project.get_trace_context().get_assembly_tree().get_nodes().size() == 0)
+    {
+        RENDERER_LOG_INFO("the scene must be rendering or must have been rendered at least once for drag and drop to be available.");
         return;
+    }
 
     QMenu* selection_menu = new QMenu();
     connect(selection_menu->addAction("Front Side"), SIGNAL(triggered()), SLOT(slot_apply_to_front()));

@@ -99,11 +99,6 @@ void SerialRendererController::on_progress()
     m_controller->on_progress();
 }
 
-void SerialRendererController::on_assembly_tree_built()
-{
-    m_controller->on_assembly_tree_built();
-}
-
 IRendererController::Status SerialRendererController::get_status() const
 {
     return m_controller->get_status();

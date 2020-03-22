@@ -102,12 +102,6 @@ void RendererControllerCollection::on_progress()
         i->on_progress();
 }
 
-void RendererControllerCollection::on_assembly_tree_built()
-{
-    for (auto i : impl->m_renderer_controller)
-        i->on_assembly_tree_built();
-}
-
 IRendererController::Status RendererControllerCollection::get_status() const
 {
     for (auto i : impl->m_renderer_controller)

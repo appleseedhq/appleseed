@@ -138,12 +138,6 @@ void RenderTab::darken()
     m_render_widget->multiply(0.2f);
 }
 
-void RenderTab::enable_scene_picking()
-{
-    m_scene_picking_handler->set_enabled(true);
-    m_material_drop_handler->set_enabled(true);
-}
-
 void RenderTab::reset_zoom()
 {
     m_zoom_handler->reset_zoom();
