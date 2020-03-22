@@ -30,10 +30,6 @@
 
 // Qt headers.
 #include <QOpenGLFunctions_4_1_Core>
-#include <QOpenGLWidget>
-
-// Standard headers.
-#include <string>
 
 // Forward declarations.
 class QByteArray;
@@ -41,24 +37,6 @@ class QString;
 
 namespace appleseed {
 namespace studio {
-
-// Get a string from an OpenGL shader kind value.
-const std::string shader_kind_to_string(const GLint shader_kind);
-
-// Compile an OpenGL shader.
-void compile_shader(
-    QOpenGLFunctions_4_1_Core* f,
-    const GLuint               shader,
-    const GLsizei              count,
-    const GLchar**             src_string,
-    const GLint*               length);
-
-// Linke an OpenlGL shader program with a vertex and optional fragment shader object.
-void link_shader_program(
-    QOpenGLFunctions_4_1_Core*  f,
-    const GLuint                program,
-    const GLuint                vert,
-    const GLuint                frag = 0);
 
 // Create an OpenlGL shader program with a vertex and optional fragment shader source code.
 GLuint create_shader_program(

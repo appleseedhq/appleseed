@@ -40,78 +40,87 @@
 #include <QFile>
 #include <QString>
 
+// Standard headers.
+#include <string>
+
 using namespace appleseed::qtcommon;
 using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
-const std::string shader_kind_to_string(const GLint shader_kind)
-{
-    switch (shader_kind)
+namespace
+{ 
+    // Get a string from an OpenGL shader kind value.
+    const std::string shader_kind_to_string(const GLint shader_kind)
     {
-        case GL_VERTEX_SHADER:      return "Vertex";
-        case GL_FRAGMENT_SHADER:    return "Fragment";
-        default:                    return "Unknown Kind";
+        switch (shader_kind)
+        {
+            case GL_VERTEX_SHADER:      return "Vertex";
+            case GL_FRAGMENT_SHADER:    return "Fragment";
+            default:                    return "Unknown Kind";
+        }
     }
-}
 
-void compile_shader(
-    QOpenGLFunctions_4_1_Core* f,
-    const GLuint               shader,
-    const GLsizei              count,
-    const GLchar**             src_string,
-    const GLint*               length)
-{
-    f->glShaderSource(shader, count, src_string, length);
-    f->glCompileShader(shader);
-
-    // Check compilation status.
-    GLint success;
-    f->glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-
-    if (!success)
+    // Compile an OpenGL shader.
+    void compile_shader(
+        QOpenGLFunctions_4_1_Core* f,
+        const GLuint               shader,
+        const GLsizei              count,
+        const GLchar**             src_string,
+        const GLint*               length)
     {
-        char info_log[1024];
-        f->glGetShaderInfoLog(shader, 1024, NULL, info_log);
+        f->glShaderSource(shader, count, src_string, length);
+        f->glCompileShader(shader);
 
-        GLint shader_kind;
-        f->glGetShaderiv(shader, GL_SHADER_TYPE, &shader_kind);
+        // Check compilation status.
+        GLint success;
+        f->glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 
-        const std::string shader_kind_string = shader_kind_to_string(shader_kind);
+        if (!success)
+        {
+            char info_log[1024];
+            f->glGetShaderInfoLog(shader, 1024, NULL, info_log);
 
-        RENDERER_LOG_ERROR(
-            "opengl: %s shader compilation failed:\n%s",
-            shader_kind_string.c_str(),
-            info_log);
+            GLint shader_kind;
+            f->glGetShaderiv(shader, GL_SHADER_TYPE, &shader_kind);
+
+            const std::string shader_kind_string = shader_kind_to_string(shader_kind);
+
+            RENDERER_LOG_ERROR(
+                "opengl: %s shader compilation failed:\n%s",
+                shader_kind_string.c_str(),
+                info_log);
+        }
     }
-}
 
-void link_shader_program(
-    QOpenGLFunctions_4_1_Core*  f,
-    const GLuint                program,
-    const GLuint                vert,
-    const GLuint                frag)
-{
-    f->glAttachShader(program, vert);
-
-    if (frag != 0)
-        f->glAttachShader(program, frag);
-
-    f->glLinkProgram(program);
-
-    // Check linking status.
-    GLint success;
-    f->glGetProgramiv(program, GL_LINK_STATUS, &success);
-
-    if (!success)
+    // Link an OpenlGL shader program with a vertex and optional fragment shader object.
+    void link_shader_program(
+        QOpenGLFunctions_4_1_Core*  f,
+        const GLuint                program,
+        const GLuint                vert,
+        const GLuint                frag)
     {
-        char info_log[1024];
-        f->glGetProgramInfoLog(program, 1024, NULL, info_log);
+        f->glAttachShader(program, vert);
 
-        RENDERER_LOG_ERROR(
-            "opengl: shader program linking failed:\n%s",
-            info_log);
+        if (frag != 0)
+            f->glAttachShader(program, frag);
+
+        f->glLinkProgram(program);
+
+        // Check linking status.
+        GLint success;
+        f->glGetProgramiv(program, GL_LINK_STATUS, &success);
+
+        if (!success)
+        {
+            char info_log[1024];
+            f->glGetProgramInfoLog(program, 1024, NULL, info_log);
+
+            RENDERER_LOG_ERROR(
+                "opengl: shader program linking failed:\n%s",
+                info_log);
+        }
     }
 }
 
