@@ -32,21 +32,26 @@ uniform sampler2D u_revealage_tex;
 
 out vec4 Target0;
 
-float max4(vec4 v) {
-  return max(max(max(v.x, v.y), v.z), v.w);
+float max4(vec4 v)
+{
+    return max(max(max(v.x, v.y), v.z), v.w);
 }
 
-void main() {
-    ivec2 coord = ivec2(gl_FragCoord.xy);
+void main()
+{
+    const ivec2 coord = ivec2(gl_FragCoord.xy);
 
-    float revealage = texelFetch(u_revealage_tex, coord, 0).r;
+    const float revealage = texelFetch(u_revealage_tex, coord, 0).r;
 
     vec4 accum = texelFetch(u_accum_tex, coord, 0);
-    // Suppress overflow
-    if (isinf(max4(abs(accum)))) {
+
+    // Suppress overflow.
+    if (isinf(max4(abs(accum))))
+    {
         accum.rgb = vec3(accum.a);
     }
-    vec3 averageColor = accum.rgb / max(accum.a, 0.00001);
+
+    const vec3 averageColor = accum.rgb / max(accum.a, 0.00001);
 
     Target0 = vec4(averageColor, 1.0 - revealage);
 }

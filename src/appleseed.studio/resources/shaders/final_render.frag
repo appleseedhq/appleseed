@@ -34,8 +34,9 @@ uniform float u_mult;
 
 out vec4 Target0;
 
-void main() {
-    vec3 col = texture(u_render_tex, f_uv, 0).rgb;
+void main()
+{
+    const vec3 col = texture(u_render_tex, f_uv, 0).rgb;
 
     Target0 = vec4(col * u_mult, 1.0);
 }
