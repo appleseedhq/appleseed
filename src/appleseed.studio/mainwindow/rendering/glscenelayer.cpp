@@ -53,10 +53,10 @@
 #include "foundation/utility/api/apistring.h"
 
 // Qt headers.
+#include <QByteArray>
 #include <QKeyEvent>
-#include <QOpenGLFunctions_4_1_Core>
 #include <QGLFormat>
-#include <QSurfaceFormat>
+#include <QOpenGLFunctions_4_1_Core>
 #include <QString>
 #include <QSurfaceFormat>
 
@@ -72,39 +72,39 @@ namespace studio {
 
 namespace
 {
-    // Number of floats per OpenGL vertex for a piece of scene geometry
+    // Number of floats per OpenGL vertex for a piece of scene geometry.
     // Vector3 position and Vector3 normal.
-    const size_t SceneVertexFloatStride = 6;
+    const std::size_t SceneVertexFloatStride = 6;
 
     // Number of bytes per OpenGL vertex for a piece of scene geometry.
-    const size_t SceneVertexByteStride = SceneVertexFloatStride * sizeof(float);
+    const std::size_t SceneVertexByteStride = SceneVertexFloatStride * sizeof(float);
 
     // Number of floats per triangle for a piece of scene geometry.
-    const size_t SceneTriangleFloatStride = SceneVertexFloatStride * 3;
+    const std::size_t SceneTriangleFloatStride = SceneVertexFloatStride * 3;
 
-    // Number of floats per OpenGL vertex for a light path
+    // Number of floats per OpenGL vertex for a light path.
     // Vector3 position and Vector3 color.
-    const size_t LightPathVertexFloatStride = 6;
+    const std::size_t LightPathVertexFloatStride = 6;
 
     // Number of bytes per OpenGL vertex for a piece of scene geometry.
-    const size_t LightPathVertexByteStride = LightPathVertexFloatStride * sizeof(float);
+    const std::size_t LightPathVertexByteStride = LightPathVertexFloatStride * sizeof(float);
 
     // Number of floats per line for a light path.
-    const size_t LightPathVertexLineFloatStride = LightPathVertexFloatStride * 2;
+    const std::size_t LightPathVertexLineFloatStride = LightPathVertexFloatStride * 2;
 
     // Number of floats per OpenGL transform matrix.
-    const size_t TransformFloatStride = 16;
+    const std::size_t TransformFloatStride = 16;
 
     // Number of bytes per OpenGL transform matrix.
-    const size_t TransformByteStride = TransformFloatStride * sizeof(float);
+    const std::size_t TransformByteStride = TransformFloatStride * sizeof(float);
 
     struct OpenGLRasterizer
       : public ObjectRasterizer
     {
         std::vector<float>   m_buffer;
-        size_t               m_prim_count;
+        std::size_t          m_prim_count;
 
-        void begin_object(const size_t triangle_count_hint) override
+        void begin_object(const std::size_t triangle_count_hint) override
         {
             m_buffer.clear();
             m_buffer.reserve(triangle_count_hint * SceneTriangleFloatStride);
@@ -126,6 +126,7 @@ namespace
                 static_cast<float>(triangle.m_v2[0]), static_cast<float>(triangle.m_v2[1]), static_cast<float>(triangle.m_v2[2]),
                 static_cast<float>(triangle.m_n2[0]), static_cast<float>(triangle.m_n2[1]), static_cast<float>(triangle.m_n2[2]),
             };
+
             m_buffer.reserve(m_buffer.size() + SceneTriangleFloatStride);
             m_buffer.insert(m_buffer.end(), temp_store, temp_store + SceneTriangleFloatStride);
             m_prim_count++;
@@ -166,15 +167,17 @@ void GLSceneLayer::set_transform(const Transformd& transform)
 void GLSceneLayer::slot_synchronize_camera()
 {
     m_camera.transform_sequence().clear();
-    m_camera.transform_sequence().set_transform(0.0f,
-        Transformd::from_local_to_parent(inverse(m_camera_matrix)));
+    m_camera.transform_sequence()
+        .set_transform(
+            0.0f,
+            Transformd::from_local_to_parent(inverse(m_camera_matrix)));
 }
 
 void GLSceneLayer::load_object_instance(
     const ObjectInstance&   object_instance,
     const Matrix4f&         assembly_transform_matrix)
 {
-    Object* object = object_instance.find_object();
+    const Object* object = object_instance.find_object();
 
     // This would already be logged in GLSceneLayer::load_scene_data
     if (object == nullptr)
@@ -184,17 +187,18 @@ void GLSceneLayer::load_object_instance(
     const Matrix4f& object_transform_matrix(transform.get_local_to_parent());
     const Matrix4f model_matrix = assembly_transform_matrix * object_transform_matrix;
 
-    // Object vertex buffer data has already been loaded; just add an instance
+    // Object vertex buffer data has already been loaded, just add an instance.
     const std::string obj_name = std::string(object->get_name());
-    size_t buf_idx = m_scene_object_index_map.at(obj_name);
+    const std::size_t buffer_index = m_scene_object_index_map.at(obj_name);
 
-    const GLuint object_instances_vbo = m_scene_object_instance_vbos[buf_idx];
-    const GLuint object_vao = m_scene_object_vaos[buf_idx];
-    const GLsizei current_instance = m_scene_object_current_instances[buf_idx];
-    m_scene_object_current_instances[buf_idx] += 1;
+    const GLuint object_instances_vbo = m_scene_object_instance_vbos[buffer_index];
+    const GLuint object_vao = m_scene_object_vaos[buffer_index];
+    const GLsizei current_instance = m_scene_object_current_instances[buffer_index];
+    m_scene_object_current_instances[buffer_index] += 1;
 
     m_gl->glBindVertexArray(object_vao);
     m_gl->glBindBuffer(GL_ARRAY_BUFFER, object_instances_vbo);
+
     const Matrix4f gl_matrix = transpose(model_matrix);
     m_gl->glBufferSubData(
         GL_ARRAY_BUFFER,
@@ -214,7 +218,6 @@ void GLSceneLayer::load_assembly_instance(
         return;
 
     const Transformd transform = assembly_instance.transform_sequence().evaluate(time);
-
     const Matrix4f transform_matrix(transform.get_local_to_parent());
 
     for (const auto& object_instance : assembly->object_instances())
@@ -227,14 +230,17 @@ void GLSceneLayer::load_assembly_instance(
 void GLSceneLayer::load_object_data(const Object& object)
 {
     const std::string obj_name = std::string(object.get_name());
+
     RENDERER_LOG_DEBUG("opengl: uploading mesh data for object \"%s\"...", obj_name.c_str());
 
     if (m_scene_object_index_map.count(obj_name) == 0)
     {
-        // Object vertex buffer data has not been loaded; load it
-        const size_t buf_idx = m_scene_object_data_vbos.size();
+        // Object vertex buffer data has not been loaded, load it.
+        const size_t buffer_index = m_scene_object_data_vbos.size();
+
         GLuint object_vao;
         m_gl->glGenVertexArrays(1, &object_vao);
+
         GLuint object_data_vbo;
         m_gl->glGenBuffers(1, &object_data_vbo);
         m_gl->glBindVertexArray(object_vao);
@@ -242,7 +248,7 @@ void GLSceneLayer::load_object_data(const Object& object)
 
         m_scene_object_vaos.push_back(object_vao);
         m_scene_object_data_vbos.push_back(object_data_vbo);
-        m_scene_object_index_map[obj_name] = buf_idx;
+        m_scene_object_index_map[obj_name] = buffer_index;
 
         OpenGLRasterizer rasterizer;
         object.rasterize(rasterizer);
@@ -268,6 +274,7 @@ void GLSceneLayer::load_object_data(const Object& object)
             GL_FALSE,
             SceneVertexByteStride,
             reinterpret_cast<const GLvoid*>(SceneVertexByteStride / 2));
+
         m_gl->glEnableVertexAttribArray(0);
         m_gl->glEnableVertexAttribArray(1);
     }
@@ -275,10 +282,10 @@ void GLSceneLayer::load_object_data(const Object& object)
 
 void GLSceneLayer::load_assembly_data(const Assembly& assembly)
 {
-    for (const auto& object : assembly.objects())
+    for (const Object& object : assembly.objects())
         load_object_data(object);
 
-    for (const auto& child_assembly : assembly.assemblies())
+    for (const Assembly& child_assembly : assembly.assemblies())
         load_assembly_data(child_assembly);
 }
 
@@ -293,7 +300,7 @@ void GLSceneLayer::load_scene_data()
         load_assembly_data(assembly);
 
     // Create space for per-instance data
-    for (size_t i = 0; i < m_scene_object_index_map.size(); i++)
+    for (std::size_t i = 0; i < m_scene_object_index_map.size(); i++)
     {
         m_scene_object_instance_vbos.push_back(0);
         m_scene_object_instance_counts.push_back(0);
@@ -307,7 +314,7 @@ void GLSceneLayer::load_scene_data()
             &m_scene_object_instance_vbos[0]);
 
     // Figure out how many instances of each mesh are required for all assembly instances
-    for (const auto& assembly_instance : m_project.get_scene()->assembly_instances())
+    for (const AssemblyInstance& assembly_instance : m_project.get_scene()->assembly_instances())
     {
         const Assembly* assembly = assembly_instance.find_assembly();
 
@@ -319,9 +326,9 @@ void GLSceneLayer::load_scene_data()
             continue;
         }
 
-        for (const auto& object_instance : assembly->object_instances())
+        for (const ObjectInstance& object_instance : assembly->object_instances())
         {
-            Object* object = object_instance.find_object();
+            const Object* object = object_instance.find_object();
 
             if (object == nullptr)
             {
@@ -332,14 +339,14 @@ void GLSceneLayer::load_scene_data()
             }
 
             const std::string obj_name = std::string(object->get_name());
-            const size_t buf_idx = m_scene_object_index_map[obj_name];
+            const std::size_t buf_idx = m_scene_object_index_map[obj_name];
             m_scene_object_instance_counts[buf_idx] += 1;
         }
     }
 
     // Setup instance buffers by allocating a buffer big enough for the number
-    // of required instances and setting up vertex attributes
-    for (size_t i = 0; i < m_scene_object_instance_vbos.size(); i++)
+    // of required instances and setting up vertex attributes.
+    for (std::size_t i = 0; i < m_scene_object_instance_vbos.size(); i++)
     {
         const GLuint object_vao = m_scene_object_vaos[i];
         const GLuint object_instance_vbo = m_scene_object_instance_vbos[i];
@@ -353,7 +360,7 @@ void GLSceneLayer::load_scene_data()
             NULL,
             GL_DYNAMIC_DRAW);
 
-        // Attributes for a 4x4 model matrix; requires four separate attributes
+        // Attributes for a 4x4 model matrix requires four separate attributes
         // to be setup, one for each column of the matrix.
         for (int i = 0; i < 4; i++)
         {
@@ -369,19 +376,19 @@ void GLSceneLayer::load_scene_data()
         }
     }
 
-    // Actually load the transform data for each instance into the allocated instance buffers
-    for (const auto& assembly_instance : m_project.get_scene()->assembly_instances())
+    // Actually load the transform data for each instance into the allocated instance buffers.
+    for (const AssemblyInstance& assembly_instance : m_project.get_scene()->assembly_instances())
         load_assembly_instance(assembly_instance, time);
 }
 
 
 void GLSceneLayer::init_gl(QSurfaceFormat format)
 {
-    // If there was already previous data, clean up
-    GLSceneLayer::cleanup_gl_data();
+    // If there was already previous data, clean up.
+    cleanup_gl_data();
 
-    auto vertex_shader = load_gl_shader("scene.vert");
-    auto fragment_shader = load_gl_shader("scene.frag");
+    const QByteArray vertex_shader = load_gl_shader("scene.vert");
+    const QByteArray fragment_shader = load_gl_shader("scene.frag");
 
     m_scene_shader_program = create_shader_program(
         m_gl,
@@ -401,7 +408,7 @@ void GLSceneLayer::init_gl(QSurfaceFormat format)
     const float z_near = 0.01f;
     const float z_far = 1000.0f;
 
-    const auto& rc = m_camera.get_rasterization_camera();
+    const RasterizationCamera& rc = m_camera.get_rasterization_camera();
 
     const float fy = std::tan(rc.m_hfov / rc.m_aspect_ratio * 0.5) * z_near;
     const float fx = fy * rc.m_aspect_ratio;
@@ -432,6 +439,7 @@ void GLSceneLayer::cleanup_gl_data()
             &m_scene_object_vaos[0]);
         m_scene_object_vaos.clear();
     }
+
     if (!m_scene_object_data_vbos.empty())
     {
         m_gl->glDeleteBuffers(
@@ -439,6 +447,7 @@ void GLSceneLayer::cleanup_gl_data()
             &m_scene_object_data_vbos[0]);
         m_scene_object_data_vbos.clear();
     }
+
     if (!m_scene_object_instance_vbos.empty())
     {
         m_gl->glDeleteBuffers(
@@ -446,14 +455,17 @@ void GLSceneLayer::cleanup_gl_data()
             &m_scene_object_instance_vbos[0]);
         m_scene_object_instance_vbos.clear();
     }
+
     if (m_scene_shader_program != 0)
     {
         m_gl->glDeleteProgram(m_scene_shader_program);
     }
+
     if (m_depthonly_shader_program != 0)
     {
         m_gl->glDeleteProgram(m_depthonly_shader_program);
     }
+
     m_scene_object_index_map.clear();
     m_scene_object_data_index_counts.clear();
     m_scene_object_instance_counts.clear();
@@ -472,7 +484,8 @@ void GLSceneLayer::draw()
 
     if (m_backface_culling_enabled)
         glEnable(GL_CULL_FACE);
-    else glDisable(GL_CULL_FACE);
+    else
+        glDisable(GL_CULL_FACE);
 
     m_gl->glDepthMask(GL_FALSE);
     m_gl->glEnable(GL_DEPTH_TEST);
@@ -532,11 +545,11 @@ void GLSceneLayer::draw_depth_only()
 
 void GLSceneLayer::render_scene()
 {
-    for (size_t i = 0; i < m_scene_object_data_vbos.size(); i++)
+    for (std::size_t i = 0; i < m_scene_object_data_vbos.size(); i++)
     {
-        GLuint vao = m_scene_object_vaos[i];
-        int index_count = m_scene_object_data_index_counts[i];
-        int instance_count = m_scene_object_instance_counts[i];
+        const GLuint vao = m_scene_object_vaos[i];
+        const int index_count = m_scene_object_data_index_counts[i];
+        const int instance_count = m_scene_object_instance_counts[i];
 
         m_gl->glBindVertexArray(vao);
         m_gl->glDrawArraysInstanced(
@@ -549,3 +562,4 @@ void GLSceneLayer::render_scene()
 
 }   // namespace studio
 }   // namespace appleseed
+

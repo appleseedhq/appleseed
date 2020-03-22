@@ -81,14 +81,11 @@ class GLSceneLayer
 
     ~GLSceneLayer();
 
-    void init_gl(
-        QSurfaceFormat                      format);
+    void init_gl(QSurfaceFormat format);
 
-    void set_transform(
-        const foundation::Transformd&       transform);
+    void set_transform(const foundation::Transformd& transform);
 
-    void set_gl_functions(
-        QOpenGLFunctions_4_1_Core*          functions);
+    void set_gl_functions(QOpenGLFunctions_4_1_Core* functions);
 
     void toggle_backface_culling(const bool checked);
 
@@ -132,14 +129,13 @@ class GLSceneLayer
     void load_scene_data();
 
     void load_assembly_data(
-        const renderer::Assembly&           object);
+        const renderer::Assembly& object);
 
     void load_assembly_instance(
         const renderer::AssemblyInstance&   assembly_instance,
         const float                         time);
 
-    void load_object_data(
-        const renderer::Object&             object);
+    void load_object_data(const renderer::Object& object);
 
     void load_object_instance(
         const renderer::ObjectInstance&     object_instance,
@@ -148,3 +144,4 @@ class GLSceneLayer
 
 }   // namespace studio
 }   // namespace appleseed
+
