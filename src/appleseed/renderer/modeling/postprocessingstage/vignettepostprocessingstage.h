@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2020 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2020 Tiago Chaves, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -35,9 +35,9 @@
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace foundation { class Dictionary; }
-namespace foundation { class DictionaryArray; }
-namespace renderer { class ParamArray; }
+namespace foundation    { class Dictionary; }
+namespace foundation    { class DictionaryArray; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
@@ -47,7 +47,7 @@ namespace renderer
 //
 
 class APPLESEED_DLLSYMBOL VignettePostProcessingStageFactory
-    : public IPostProcessingStageFactory
+  : public IPostProcessingStageFactory
 {
   public:
     // Delete this instance.

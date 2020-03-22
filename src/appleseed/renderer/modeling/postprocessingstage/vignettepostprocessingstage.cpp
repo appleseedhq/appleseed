@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2020 Tiago Chaves, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -54,12 +54,12 @@ namespace
 
     const char* Model = "vignette_post_processing_stage";
 
-    const float DefaultIntensity = 0.5f;
-    const float MinIntensity = 0.0f;
-    const float MaxIntensity = 1.0f;
+    static constexpr float DefaultIntensity = 0.5f;
+    static constexpr float MinIntensity = 0.0f;
+    static constexpr float MaxIntensity = 1.0f;
 
     class VignettePostProcessingStage
-        : public PostProcessingStage
+      : public PostProcessingStage
     {
       public:
         VignettePostProcessingStage(
@@ -74,7 +74,8 @@ namespace
             delete this;
         }
 
-        const char* get_model() const override {
+        const char* get_model() const override
+        {
             return Model;
         }
 
@@ -95,36 +96,36 @@ namespace
         {
             const CanvasProperties& props = frame.image().properties();
             const Vector2f resolution(static_cast<float>(props.m_canvas_width), static_cast<float>(props.m_canvas_height));
-            const Vector2f aspect(resolution.x / resolution.y, 1);
 
             Image& image = frame.image();
 
-            for (size_t y = 0; y < resolution.y; ++y)
+            for (size_t y = 0; y < props.m_canvas_height; ++y)
             {
-                for (size_t x = 0; x < resolution.x; ++x)
+                for (size_t x = 0; x < props.m_canvas_width; ++x)
                 {
-                    Vector2f coord = (2.0f * Vector2f(static_cast<float>(x), static_cast<float>(y)) - resolution) / resolution.y;
+                    // Pixel coordinate normalized to be in the [-1, 1] range vertically.
+                    const Vector2f coord = (2.0f * Vector2f(static_cast<float>(x), static_cast<float>(y)) - resolution) / resolution.y;
 
                     //
                     // Port of Keijiro Takahashi's natural vignetting effect for Unity.
+                    // Recreates natural illumination falloff, which is approximated by the "cosine fourth" law of illumination falloff.
                     //
-                    // Reference:
+                    // References:
                     //
                     //   https://github.com/keijiro/KinoVignette
                     //   https://en.wikipedia.org/wiki/Vignetting#Natural_vignetting
                     //
 
-                    // Recreates natural illumination falloff, which is approximated by the "cosine fourth" law of illumination falloff.
-                    float rf = norm(coord) * m_intensity; // radial falloff
-                    float rf2_1 = rf * rf + 1.0f;
-                    float e = 1.0f / (rf2_1 * rf2_1); // inversely proportional to the fourth power of the distance to the center
+                    const float linear_radial_falloff = norm(coord) * m_intensity;
+                    const float quadratic_radial_falloff = linear_radial_falloff * linear_radial_falloff + 1.0f;
+
+                    // Inversely proportional to the fourth power of the distance from the pixel to the image center.
+                    const float inverse_biquadratic_radial_falloff = 1.0f / (quadratic_radial_falloff * quadratic_radial_falloff);
 
                     Color4f background_premult;
                     image.get_pixel(x, y, background_premult);
 
-                    background_premult.r *= e;
-                    background_premult.g *= e;
-                    background_premult.b *= e;
+                    background_premult.rgb() *= inverse_biquadratic_radial_falloff;
 
                     image.set_pixel(
                         x, y,
@@ -134,9 +135,8 @@ namespace
         }
 
       private:
-          float m_intensity;
+        float m_intensity;
     };
-
 }
 
 
@@ -158,8 +158,8 @@ Dictionary VignettePostProcessingStageFactory::get_model_metadata() const
 {
     return
         Dictionary()
-        .insert("name", Model)
-        .insert("label", "Vignette");
+            .insert("name", Model)
+            .insert("label", "Vignette");
 }
 
 DictionaryArray VignettePostProcessingStageFactory::get_input_metadata() const
