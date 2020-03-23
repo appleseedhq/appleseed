@@ -38,6 +38,7 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
+#include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 
@@ -57,6 +58,10 @@ namespace
     static constexpr float DefaultIntensity = 0.5f;
     static constexpr float MinIntensity = 0.0f;
     static constexpr float MaxIntensity = 1.0f;
+
+    static constexpr float DefaultAnisotropy = 0.0f;
+    static constexpr float MinAnisotropy = 0.0f;
+    static constexpr float MaxAnisotropy = 1.0f;
 
     class VignettePostProcessingStage
       : public PostProcessingStage
@@ -88,6 +93,7 @@ namespace
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
             m_intensity = m_params.get_optional("intensity", DefaultIntensity, context);
+            m_anisotropy = m_params.get_optional("anisotropy", DefaultAnisotropy, context);
 
             return true;
         }
@@ -96,15 +102,16 @@ namespace
         {
             const CanvasProperties& props = frame.image().properties();
             const Vector2f resolution(static_cast<float>(props.m_canvas_width), static_cast<float>(props.m_canvas_height));
+            const Vector2f normalization_factor(lerp(resolution.y, resolution.x, m_anisotropy), resolution.y);
 
             Image& image = frame.image();
 
-            for (size_t y = 0; y < props.m_canvas_height; ++y)
+            for (std::size_t y = 0; y < props.m_canvas_height; ++y)
             {
-                for (size_t x = 0; x < props.m_canvas_width; ++x)
+                for (std::size_t x = 0; x < props.m_canvas_width; ++x)
                 {
                     // Pixel coordinate normalized to be in the [-1, 1] range vertically.
-                    const Vector2f coord = (2.0f * Vector2f(static_cast<float>(x), static_cast<float>(y)) - resolution) / resolution.y;
+                    const Vector2f coord = (2.0f * Vector2f(static_cast<float>(x), static_cast<float>(y)) - resolution) / normalization_factor;
 
                     //
                     // Port of Keijiro Takahashi's natural vignetting effect for Unity.
@@ -122,20 +129,19 @@ namespace
                     // Inversely proportional to the fourth power of the distance from the pixel to the image center.
                     const float inverse_biquadratic_radial_falloff = 1.0f / (quadratic_radial_falloff * quadratic_radial_falloff);
 
-                    Color4f background_premult;
-                    image.get_pixel(x, y, background_premult);
+                    Color4f pixel;
+                    image.get_pixel(x, y, pixel);
 
-                    background_premult.rgb() *= inverse_biquadratic_radial_falloff;
+                    pixel.rgb() *= inverse_biquadratic_radial_falloff;
 
-                    image.set_pixel(
-                        x, y,
-                        background_premult);
+                    image.set_pixel(x, y, pixel);
                 }
             }
         }
 
       private:
         float m_intensity;
+        float m_anisotropy;
     };
 }
 
@@ -183,6 +189,22 @@ DictionaryArray VignettePostProcessingStageFactory::get_input_metadata() const
                         .insert("type", "hard"))
             .insert("use", "optional")
             .insert("default", "0.5"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "anisotropy")
+            .insert("label", "Anisotropy")
+            .insert("type", "numeric")
+            .insert("min",
+                    Dictionary()
+                        .insert("value", "0.0")
+                        .insert("type", "hard"))
+            .insert("max",
+                    Dictionary()
+                        .insert("value", "1.0")
+                        .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "0.0"));
 
     return metadata;
 }
