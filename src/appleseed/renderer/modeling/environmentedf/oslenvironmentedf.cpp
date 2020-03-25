@@ -88,6 +88,7 @@ namespace
 {
     typedef ImageImportanceSampler<Color3f, float> ImageImportanceSamplerType;
 
+
     //
     // OSL environment sampler.
     //
@@ -104,7 +105,8 @@ namespace
           , m_osl_shadergroup_exec(osl_shadergroup_exec)
           , m_rcp_width(1.0f / width)
           , m_rcp_height(1.0f / height)
-        {}
+        {
+        }
 
         void sample(const std::size_t x, const std::size_t y, Color3f& payload, float& importance)
         {
@@ -135,10 +137,10 @@ namespace
       private:
         const ShaderGroup*          m_shader_group;
         const OSLShaderGroupExec&   m_osl_shadergroup_exec;
-
         const float                 m_rcp_width;
         const float                 m_rcp_height;
     };
+
 
     //
     // OSL environment EDF.
@@ -335,7 +337,7 @@ namespace
             assert(probability >= 0.0f);
         }
 
-        float evaluate_pdf(const Vector3f&   outgoing) const override
+        float evaluate_pdf(const Vector3f& outgoing) const override
         {
             assert(is_normalized(outgoing));
 
@@ -367,7 +369,6 @@ namespace
       private:
         ShaderGroup*                                  m_shader_group;
         VersionID                                     m_shader_group_version_id;
-
         std::size_t                                   m_importance_map_size;
         float                                         m_rcp_importance_map_width;
         float                                         m_rcp_importance_map_height;
@@ -433,8 +434,8 @@ namespace
             // Create OSL shadergroup exec.
             Arena arena;
             OSLShaderGroupExec osl_shadergroup_exec(
-                    osl_shading_system.ref(),
-                    arena);
+                osl_shading_system.ref(),
+                arena);
 
             // Create OSL environment sampler.
             OSLEnvironmentSampler osl_environment_sampler(
@@ -472,6 +473,7 @@ namespace
         }
     };
 }
+
 
 //
 // OSLEnvironmentEDFFactory class implementation.
