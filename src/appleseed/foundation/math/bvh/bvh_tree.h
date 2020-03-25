@@ -58,9 +58,6 @@ class Tree
     // Return the size (in bytes) of this object in memory.
     size_t get_memory_size() const;
 
-    // Return the nodes in the tree.
-    const NodeVector& get_nodes() const;
-
   protected:
     template <typename Tree, typename Partitioner>
     friend class Builder;
@@ -105,12 +102,6 @@ size_t Tree<NodeVector>::get_memory_size() const
     return
           sizeof(*this)
         + m_nodes.capacity() * sizeof(NodeType);
-}
-
-template <typename NodeVector>
-const NodeVector& Tree<NodeVector>::get_nodes() const
-{
-    return m_nodes;
 }
 
 }   // namespace bvh

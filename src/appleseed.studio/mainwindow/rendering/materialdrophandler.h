@@ -29,7 +29,6 @@
 #pragma once
 
 // appleseed.renderer headers.
-#include "renderer/api/scenepicker.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/objectinstance.h"
 

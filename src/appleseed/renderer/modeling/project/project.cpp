@@ -127,7 +127,7 @@ struct Project::Impl
     LightPathRecorder                   m_light_path_recorder;
     std::unique_ptr<TraceContext>       m_trace_context;
     RenderingTimer                      m_rendering_timer;
-    std::unique_ptr<TextureStore>       m_texture_store = nullptr;
+    std::unique_ptr<TextureStore>       m_texture_store;
 
     explicit Impl(const Project& project)
       : m_format_revision(ProjectFormatRevision)
@@ -435,13 +435,21 @@ void Project::on_frame_end(
     impl->m_rendering_timer.measure();
 }
 
-TextureStore& Project::get_texture_store(const ParamArray& params) const
+void Project::initialize_texture_store(const ParamArray& params)
 {
-    if (!impl->m_texture_store)
-    {
-        assert(impl->m_scene.get());
-        impl->m_texture_store.reset(new TextureStore(*impl->m_scene, params));
-    }
+    assert(impl->m_scene.get());
+
+    impl->m_texture_store.reset(new TextureStore(*impl->m_scene, params));
+}
+
+bool Project::has_texture_store() const
+{
+    return impl->m_texture_store.get() != nullptr;
+}
+
+TextureStore& Project::get_texture_store() const
+{
+    assert(impl->m_texture_store);
 
     return *impl->m_texture_store;
 }

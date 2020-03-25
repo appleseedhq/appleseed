@@ -33,8 +33,6 @@
 #include "mainwindow/rendering/renderingmanager.h"
 
 // appleseed.renderer headers.
-#include "renderer/kernel/intersection/assemblytree.h"
-#include "renderer/kernel/intersection/tracecontext.h"
 #include "renderer/kernel/rendering/scenepicker.h"
 
 // Qt headers.

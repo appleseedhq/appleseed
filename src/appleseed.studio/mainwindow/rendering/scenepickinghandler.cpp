@@ -48,8 +48,6 @@
 #include "renderer/api/project.h"
 #include "renderer/api/scene.h"
 #include "renderer/api/surfaceshader.h"
-#include "renderer/kernel/intersection/assemblytree.h"
-#include "renderer/kernel/intersection/tracecontext.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"

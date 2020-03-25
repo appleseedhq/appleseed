@@ -194,8 +194,14 @@ class APPLESEED_DLLSYMBOL Project
         const Project&                  project,
         const BaseGroup*                parent) override;
 
+    // Initialize the texture store.
+    void initialize_texture_store(const ParamArray& params);
+
+    // Return true if the texture store has already been initialized.
+    bool has_texture_store() const;
+
     // Get the texture store.
-    TextureStore& get_texture_store(const ParamArray& params = ParamArray()) const;
+    TextureStore& get_texture_store() const;
 
   private:
     friend class ProjectFactory;
