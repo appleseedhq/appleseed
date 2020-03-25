@@ -66,8 +66,7 @@ class ScenePickingHandler
         QComboBox*                                  picking_mode_combo,
         const qtcommon::MouseCoordinatesTracker&    mouse_tracker,
         const ProjectExplorer&                      project_explorer,
-        const renderer::Project&                    project,
-        const renderer::ScenePicker&                scene_picker);
+        const renderer::Project&                    project);
 
     ~ScenePickingHandler() override;
 
@@ -83,7 +82,6 @@ class ScenePickingHandler
     const ProjectExplorer&                          m_project_explorer;
     const renderer::Project&                        m_project;
     bool                                            m_enabled;
-    const renderer::ScenePicker&                    m_scene_picker;
 
     bool eventFilter(QObject* object, QEvent* event) override;
 

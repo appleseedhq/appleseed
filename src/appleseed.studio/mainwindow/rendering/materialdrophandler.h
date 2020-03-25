@@ -57,8 +57,7 @@ class MaterialDropHandler
   public:
     MaterialDropHandler(
         const renderer::Project&        project,
-        RenderingManager&               rendering_manager,
-        const renderer::ScenePicker&    scene_picker);
+        RenderingManager&               rendering_manager);
 
   public slots:
     void slot_material_dropped(
@@ -70,7 +69,6 @@ class MaterialDropHandler
     RenderingManager&                           m_rendering_manager;
     foundation::Vector2d                        m_drop_pos;
     std::string                                 m_material_name;
-    const renderer::ScenePicker&                m_scene_picker;
 
     void assign_material(const renderer::ObjectInstance::Side side);
 

@@ -58,7 +58,7 @@
 // Forward declarations.
 namespace foundation    { class Statistics; }
 namespace renderer      { class AssemblyInstance; }
-namespace renderer      { class Scene; }
+namespace renderer      { class Project; }
 namespace renderer      { class ShadingPoint; }
 
 namespace renderer
@@ -77,7 +77,7 @@ class AssemblyTree
 {
   public:
     // Constructor, builds the tree for a given scene.
-    explicit AssemblyTree(const Scene& scene);
+    explicit AssemblyTree(const Project& project);
 
     // Destructor.
     ~AssemblyTree();
@@ -126,7 +126,7 @@ class AssemblyTree
     typedef std::vector<const Assembly*> AssemblyVector;
     typedef std::map<foundation::UniqueID, foundation::VersionID> AssemblyVersionMap;
 
-    const Scene&                    m_scene;
+    const Project&                  m_project;
     ItemVector                      m_items;
     AssemblyVersionMap              m_assembly_versions;
 

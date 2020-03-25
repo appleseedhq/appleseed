@@ -216,7 +216,7 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
       : public StaticTestSceneContext<typename FixtureParams::FixtureBaseClass>
     {
         TraceContext                            m_trace_context;
-        TextureStore                            m_texture_store;
+        TextureStore&                           m_texture_store;
         TextureCache                            m_texture_cache;
         Intersector                             m_intersector;
         std::shared_ptr<OIIOTextureSystem>      m_texture_system;
@@ -228,8 +228,8 @@ TEST_SUITE(Renderer_Kernel_Lighting_Tracer)
         Tracer                                  m_tracer;
 
         Fixture()
-          : m_trace_context(FixtureParams::FixtureBaseClass::m_scene)
-          , m_texture_store(FixtureParams::FixtureBaseClass::m_scene)
+          : m_trace_context(FixtureParams::FixtureBaseClass::m_project)
+          , m_texture_store(FixtureParams::FixtureBaseClass::m_project.get_texture_store())
           , m_texture_cache(m_texture_store)
           , m_intersector(m_trace_context, m_texture_cache)
           , m_texture_system(

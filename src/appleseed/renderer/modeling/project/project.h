@@ -49,6 +49,7 @@
 #include "renderer/modeling/surfaceshader/surfaceshadertraits.h"
 #include "renderer/modeling/texture/texturetraits.h"
 #include "renderer/modeling/volume/volumetraits.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/memory/autoreleaseptr.h"
@@ -85,6 +86,7 @@ namespace renderer      { class PostProcessingStage; }
 namespace renderer      { class Scene; }
 namespace renderer      { class SurfaceShader; }
 namespace renderer      { class Texture; }
+namespace renderer      { class TextureStore; }
 namespace renderer      { class TraceContext; }
 namespace renderer      { class Volume; }
 
@@ -191,6 +193,9 @@ class APPLESEED_DLLSYMBOL Project
     void on_frame_end(
         const Project&                  project,
         const BaseGroup*                parent) override;
+
+    // Get the texture store.
+    TextureStore& get_texture_store(const ParamArray& params = ParamArray()) const;
 
   private:
     friend class ProjectFactory;

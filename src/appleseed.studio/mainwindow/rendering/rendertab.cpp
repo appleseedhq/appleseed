@@ -83,7 +83,6 @@ RenderTab::RenderTab(
   : m_project_explorer(project_explorer)
   , m_project(project)
   , m_rendering_manager(rendering_manager)
-  , m_scene_picker(project)
   , m_ocio_config(ocio_config)
 {
     setObjectName("render_widget_tab");
@@ -464,8 +463,7 @@ void RenderTab::recreate_handlers()
             m_picking_mode_combo,
             *m_mouse_tracker.get(),
             m_project_explorer,
-            m_project,
-            m_scene_picker));
+            m_project));
     connect(
         m_scene_picking_handler.get(), SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)),
         SIGNAL(signal_entity_picked(renderer::ScenePicker::PickingResult)));
@@ -492,8 +490,7 @@ void RenderTab::recreate_handlers()
     m_material_drop_handler.reset(
         new MaterialDropHandler(
             m_project,
-            m_rendering_manager,
-            m_scene_picker));
+            m_rendering_manager));
     connect(
         m_render_widget, SIGNAL(signal_material_dropped(const foundation::Vector2d&, const QString&)),
         m_material_drop_handler.get(), SLOT(slot_material_dropped(const foundation::Vector2d&, const QString&)));

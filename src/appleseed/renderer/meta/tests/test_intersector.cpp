@@ -96,13 +96,13 @@ TEST_SUITE(Renderer_Kernel_Intersection_Intersector)
       : public StaticTestSceneContext<TestScene>
     {
         TraceContext    m_trace_context;
-        TextureStore    m_texture_store;
+        TextureStore&   m_texture_store;
         TextureCache    m_texture_cache;
         Intersector     m_intersector;
 
         Fixture()
-          : m_trace_context(m_scene)
-          , m_texture_store(m_scene)
+          : m_trace_context(m_project)
+          , m_texture_store(m_project.get_texture_store())
           , m_texture_cache(m_texture_store)
           , m_intersector(m_trace_context, m_texture_cache)
         {

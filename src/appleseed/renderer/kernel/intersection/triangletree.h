@@ -35,6 +35,7 @@
 #include "renderer/kernel/intersection/probevisitorbase.h"
 #include "renderer/kernel/intersection/trianglekey.h"
 #include "renderer/kernel/intersection/trianglevertexinfo.h"
+#include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/visibilityflags.h"
 
 // appleseed.foundation headers.
@@ -59,7 +60,7 @@ namespace foundation    { class Statistics; }
 namespace renderer      { class Assembly; }
 namespace renderer      { class IntersectionFilter; }
 namespace renderer      { class ParamArray; }
-namespace renderer      { class Scene; }
+namespace renderer      { class Project; }
 namespace renderer      { class ShadingPoint; }
 
 namespace renderer
@@ -83,14 +84,14 @@ class TriangleTree
     // Construction arguments.
     struct Arguments
     {
-        const Scene&                            m_scene;
+        const Project&                          m_project;
         const foundation::UniqueID              m_triangle_tree_uid;
         const GAABB3                            m_bbox;
         const Assembly&                         m_assembly;
 
         // Constructor.
         Arguments(
-            const Scene&                        scene,
+            const Project&                      project,
             const foundation::UniqueID          triangle_tree_uid,
             const GAABB3&                       bbox,
             const Assembly&                     assembly);

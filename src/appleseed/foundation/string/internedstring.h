@@ -49,7 +49,7 @@ namespace foundation
 //
 // There are also some disadvantages:
 //
-//  - Constructing an interned string can be slower that a normal string.
+//  - Constructing an interned string can be slower than a normal string.
 //  - Memory for the string characters is never freed.
 //
 // This implementation relies internally on OpenImageIO's ustring class.

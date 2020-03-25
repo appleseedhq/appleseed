@@ -99,7 +99,7 @@ class CPURenderDevice
     RendererServices*                               m_renderer_services;
     OSLShadingSystem*                               m_shading_system;
     foundation::auto_release_ptr<ShaderCompiler>    m_osl_compiler;
-    TextureStore                                    m_texture_store;
+    TextureStore&                                   m_texture_store;
     std::unique_ptr<RendererComponents>             m_components;
 };
 

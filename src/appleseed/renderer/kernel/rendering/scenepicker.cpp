@@ -66,14 +66,14 @@ struct ScenePicker::Impl
 {
     const Project&      m_project;
     const TraceContext& m_trace_context;
-    TextureStore        m_texture_store;
+    TextureStore&       m_texture_store;
     TextureCache        m_texture_cache;
     Intersector         m_intersector;
 
     explicit Impl(const Project& project)
       : m_project(project)
       , m_trace_context(m_project.get_trace_context())
-      , m_texture_store(m_trace_context.get_scene())
+      , m_texture_store(m_project.get_texture_store())
       , m_texture_cache(m_texture_store)
       , m_intersector(m_trace_context, m_texture_cache)
     {

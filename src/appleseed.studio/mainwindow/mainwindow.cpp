@@ -300,7 +300,6 @@ bool MainWindow::pack_project(QString filepath)
 
 void MainWindow::close_project()
 {
-    remove_render_tabs();
     m_project_manager.close_project();
     on_project_change();
 }
@@ -1450,8 +1449,6 @@ void MainWindow::slot_open_cornellbox_builtin_project()
 {
     if (!can_close_project())
         return;
-
-    remove_render_tabs();
 
     APPLESEED_UNUSED const bool successful = m_project_manager.load_builtin_project("cornell_box");
     assert(successful);

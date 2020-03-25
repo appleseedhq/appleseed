@@ -148,7 +148,6 @@ class RenderTab
     ProjectExplorer&                                    m_project_explorer;
     renderer::Project&                                  m_project;
     RenderingManager&                                   m_rendering_manager;
-    renderer::ScenePicker                               m_scene_picker;
 
     std::unique_ptr<qtcommon::WidgetZoomHandler>        m_zoom_handler;
     std::unique_ptr<qtcommon::ScrollAreaPanHandler>     m_pan_handler;

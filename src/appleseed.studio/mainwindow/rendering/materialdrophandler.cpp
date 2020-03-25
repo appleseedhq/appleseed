@@ -46,9 +46,8 @@ namespace studio {
 
 MaterialDropHandler::MaterialDropHandler(
     const renderer::Project&        project,
-    RenderingManager&               rendering_manager,
-    const renderer::ScenePicker&    scene_picker)
-  : m_project(project), m_rendering_manager(rendering_manager), m_scene_picker(scene_picker)
+    RenderingManager&               rendering_manager)
+  : m_project(project), m_rendering_manager(rendering_manager)
 {
 }
 
@@ -59,8 +58,7 @@ void MaterialDropHandler::slot_material_dropped(
     m_drop_pos = drop_pos;
     m_material_name = material_name.toStdString();
 
-    // Tell the user to render once, if assembly tree hasn't been built yet.
-    if (m_project.get_trace_context().get_assembly_tree().get_nodes().size() == 0)
+    if (!m_project.has_trace_context())
     {
         RENDERER_LOG_INFO("the scene must be rendering or must have been rendered at least once for drag and drop to be available.");
         return;
@@ -115,7 +113,8 @@ namespace
 
 void MaterialDropHandler::assign_material(const renderer::ObjectInstance::Side side)
 {
-    const renderer::ScenePicker::PickingResult result = m_scene_picker.pick(m_drop_pos);
+    const renderer::ScenePicker scene_picker(m_project);
+    const renderer::ScenePicker::PickingResult result = scene_picker.pick(m_drop_pos);
     renderer::ObjectInstance* instance = result.m_object_instance;
 
     std::vector<MaterialSlot> material_slots;
