@@ -107,7 +107,7 @@ struct MasterRenderer::Impl
 {
     Project&                            m_project;
     ParamArray                          m_params;
-    const SearchPaths&                  m_resource_search_paths;
+    SearchPaths                         m_resource_search_paths;
     ITileCallbackFactory*               m_tile_callback_factory;
     ITileCallback*                      m_tile_callback;
 
