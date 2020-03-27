@@ -188,7 +188,7 @@ void OpenGLViewportTab::create_toolbar()
     backface_culling_button->setChecked(false);
     connect(
         backface_culling_button, &QToolButton::toggled ,
-        m_viewport_canvas, &ViewportCanvas::slot_toggle_backface_culling);
+        this, &OpenGLViewportTab::slot_toggle_backface_culling);
     m_toolbar->addWidget(backface_culling_button);
 
     // Synchronize Camera button.
@@ -249,6 +249,12 @@ void OpenGLViewportTab::slot_toggle_light_paths(const bool checked)
 {
     m_light_paths_viewport_toolbar->set_enabled(checked);
     m_light_paths_manager.display_light_paths(checked);
+}
+
+void OpenGLViewportTab::slot_toggle_backface_culling(const bool checked)
+{
+    m_viewport_canvas->get_gl_scene_layer()->toggle_backface_culling(checked);
+    m_viewport_canvas->update();
 }
 
 }   // namespace studio

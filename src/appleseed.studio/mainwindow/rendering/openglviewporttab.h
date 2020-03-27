@@ -87,6 +87,7 @@ class OpenGLViewportTab
     void slot_camera_changed();
     void slot_viewport_canvas_context_menu(const QPoint& point);
     void slot_toggle_light_paths(const bool checked);
+    void slot_toggle_backface_culling(const bool checked);
 
   private:
     LightPathsManager&                                  m_light_paths_manager;
