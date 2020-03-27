@@ -70,8 +70,8 @@ namespace studio {
 //
 
 RenderLayer::RenderLayer(
-    const size_t            width,
-    const size_t            height,
+    const std::size_t       width,
+    const std::size_t       height,
     OCIO::ConstConfigRcPtr  ocio_config,
     QWidget*                parent)
   : QWidget(parent)
@@ -155,8 +155,8 @@ void RenderLayer::darken()
 }
 
 void RenderLayer::resize(
-    const size_t    width,
-    const size_t    height)
+    const std::size_t   width,
+    const std::size_t   height)
 {
     QMutexLocker locker(&m_mutex);
 
@@ -188,9 +188,9 @@ namespace
     }
 
     inline std::uint8_t* get_image_pointer(
-        QImage&         image,
-        const size_t    x,
-        const size_t    y)
+        QImage&             image,
+        const std::size_t   x,
+        const std::size_t   y)
     {
         std::uint8_t* scanline = static_cast<std::uint8_t*>(image.scanLine(static_cast<int>(y)));
         return scanline + x * image.depth() / 8;
@@ -210,17 +210,17 @@ void RenderLayer::multiply(const float multiplier)
 
     assert(multiplier >= 0.0f && multiplier <= 1.0f);
 
-    const size_t image_width = static_cast<size_t>(m_image.width());
-    const size_t image_height = static_cast<size_t>(m_image.height());
-    const size_t dest_stride = static_cast<size_t>(m_image.bytesPerLine());
+    const auto image_width = static_cast<std::size_t>(m_image.width());
+    const auto image_height = static_cast<std::size_t>(m_image.height());
+    const auto dest_stride = static_cast<std::size_t>(m_image.bytesPerLine());
 
     std::uint8_t* dest = get_image_pointer(m_image);
 
-    for (size_t y = 0; y < image_height; ++y)
+    for (std::size_t y = 0; y < image_height; ++y)
     {
         std::uint8_t* row = dest + y * dest_stride;
 
-        for (size_t x = 0; x < image_width * 3; ++x)
+        for (std::size_t x = 0; x < image_width * 3; ++x)
             row[x] = truncate<std::uint8_t>(row[x] * multiplier);
     }
 }
@@ -229,18 +229,18 @@ namespace
 {
     void draw_bracket(
         std::uint8_t*           dest,
-        const size_t            dest_width,
-        const size_t            dest_height,
-        const size_t            dest_stride,
-        const size_t            bracket_extent,
+        const std::size_t       dest_width,
+        const std::size_t       dest_height,
+        const std::size_t       dest_stride,
+        const std::size_t       bracket_extent,
         const std::uint8_t*     pixel,
-        const size_t            pixel_size)
+        const std::size_t       pixel_size)
     {
         const int w = static_cast<int>(std::min(bracket_extent, dest_width));
         const int h = static_cast<int>(std::min(bracket_extent, dest_height));
 
-        const size_t right = (dest_width - 1) * pixel_size;
-        const size_t bottom = (dest_height - 1) * dest_stride;
+        const std::size_t right = (dest_width - 1) * pixel_size;
+        const std::size_t bottom = (dest_height - 1) * dest_stride;
 
         // Top-left corner.
         NativeDrawing::draw_hline(dest, w, pixel, pixel_size);
@@ -261,27 +261,27 @@ namespace
 }
 
 void RenderLayer::highlight_tile(
-    const Frame&    frame,
-    const size_t    tile_x,
-    const size_t    tile_y,
-    const size_t    thread_index,
-    const size_t    thread_count)
+    const Frame&        frame,
+    const std::size_t   tile_x,
+    const std::size_t   tile_y,
+    const std::size_t   thread_index,
+    const std::size_t   thread_count)
 {
     QMutexLocker locker(&m_mutex);
 
     // Retrieve tile bounds.
     const Image& frame_image = frame.image();
     const CanvasProperties& frame_props = frame_image.properties();
-    const size_t x = tile_x * frame_props.m_tile_width;
-    const size_t y = tile_y * frame_props.m_tile_height;
+    const std::size_t x = tile_x * frame_props.m_tile_width;
+    const std::size_t y = tile_y * frame_props.m_tile_height;
     const Tile& tile = frame_image.tile(tile_x, tile_y);
-    const size_t width = tile.get_width();
-    const size_t height = tile.get_height();
+    const std::size_t width = tile.get_width();
+    const std::size_t height = tile.get_height();
 
     // Retrieve destination image information.
-    APPLESEED_UNUSED const size_t image_width = static_cast<size_t>(m_image.width());
-    APPLESEED_UNUSED const size_t image_height = static_cast<size_t>(m_image.height());
-    const size_t dest_stride = static_cast<size_t>(m_image.bytesPerLine());
+    APPLESEED_UNUSED const auto image_width = static_cast<std::size_t>(m_image.width());
+    APPLESEED_UNUSED const auto image_height = static_cast<std::size_t>(m_image.height());
+    const auto dest_stride = static_cast<std::size_t>(m_image.bytesPerLine());
 
     // Clipping is not supported.
     assert(x < image_width);
@@ -302,7 +302,7 @@ void RenderLayer::highlight_tile(
     BracketColor[2] = 128 + static_cast<std::uint8_t>(127.5f * (-0.5f * cos_t + 0.866f * sin_t));
 
     // Draw a bracket around the tile.
-    const size_t BracketExtent = 5;
+    const std::size_t BracketExtent = 5;
     draw_bracket(
         dest,
         width,
@@ -314,9 +314,9 @@ void RenderLayer::highlight_tile(
 }
 
 void RenderLayer::blit_tile(
-    const Frame&    frame,
-    const size_t    tile_x,
-    const size_t    tile_y)
+    const Frame&        frame,
+    const std::size_t   tile_x,
+    const std::size_t   tile_y)
 {
     QMutexLocker locker(&m_mutex);
 
@@ -334,9 +334,9 @@ void RenderLayer::blit_frame(const Frame& frame)
 
     allocate_working_storage(frame_props);
 
-    for (size_t y = 0; y < frame_props.m_tile_count_y; ++y)
+    for (std::size_t y = 0; y < frame_props.m_tile_count_y; ++y)
     {
-        for (size_t x = 0; x < frame_props.m_tile_count_x; ++x)
+        for (std::size_t x = 0; x < frame_props.m_tile_count_x; ++x)
         {
             blit_tile_no_lock(frame, x, y);
             update_tile_no_lock(x, y);
@@ -359,9 +359,9 @@ void RenderLayer::set_display_transform(const QString& transform)
     if (m_image_storage)
     {
         const CanvasProperties& frame_props = m_image_storage->properties();
-        for (size_t y = 0; y < frame_props.m_tile_count_y; ++y)
+        for (std::size_t y = 0; y < frame_props.m_tile_count_y; ++y)
         {
-            for (size_t x = 0; x < frame_props.m_tile_count_x; ++x)
+            for (std::size_t x = 0; x < frame_props.m_tile_count_x; ++x)
                 update_tile_no_lock(x, y);
         }
     }
@@ -423,9 +423,9 @@ void RenderLayer::allocate_working_storage(const CanvasProperties& frame_props)
 }
 
 void RenderLayer::blit_tile_no_lock(
-    const Frame&    frame,
-    const size_t    tile_x,
-    const size_t    tile_y)
+    const Frame&        frame,
+    const std::size_t   tile_x,
+    const std::size_t   tile_y)
 {
     // Retrieve the source tile.
     const Tile& src_tile = frame.image().tile(tile_x, tile_y);
@@ -435,7 +435,7 @@ void RenderLayer::blit_tile_no_lock(
     dst_tile.copy_from(src_tile);
 }
 
-void RenderLayer::update_tile_no_lock(const size_t tile_x, const size_t tile_y)
+void RenderLayer::update_tile_no_lock(const std::size_t tile_x, const std::size_t tile_y)
 {
     // Retrieve the source tile.
     const Tile& src_tile = m_image_storage->tile(tile_x, tile_y);
@@ -455,7 +455,7 @@ void RenderLayer::update_tile_no_lock(const size_t tile_x, const size_t tile_y)
     m_ocio_processor->apply(image_desc);
 
     // Convert the tile to 8-bit RGB for display.
-    static const size_t shuffle_table[4] = { 0, 1, 2, Pixel::SkipChannel };
+    static const std::size_t shuffle_table[4] = { 0, 1, 2, Pixel::SkipChannel };
     Tile uint8_rgb_tile(
         float_tile,
         PixelFormatUInt8,
@@ -463,14 +463,14 @@ void RenderLayer::update_tile_no_lock(const size_t tile_x, const size_t tile_y)
         m_uint8_tile_storage->get_storage());
 
     // Retrieve destination image information.
-    APPLESEED_UNUSED const size_t image_width = static_cast<size_t>(m_image.width());
-    APPLESEED_UNUSED const size_t image_height = static_cast<size_t>(m_image.height());
-    const size_t dest_stride = static_cast<size_t>(m_image.bytesPerLine());
+    APPLESEED_UNUSED const auto image_width = static_cast<std::size_t>(m_image.width());
+    APPLESEED_UNUSED const auto image_height = static_cast<std::size_t>(m_image.height());
+    const auto dest_stride = static_cast<std::size_t>(m_image.bytesPerLine());
 
     // Compute the coordinates of the first destination pixel.
     const CanvasProperties& frame_props = m_image_storage->properties();
-    const size_t x = tile_x * frame_props.m_tile_width;
-    const size_t y = tile_y * frame_props.m_tile_height;
+    const std::size_t x = tile_x * frame_props.m_tile_width;
+    const std::size_t y = tile_y * frame_props.m_tile_height;
 
     // Clipping is not supported.
     assert(x < image_width);

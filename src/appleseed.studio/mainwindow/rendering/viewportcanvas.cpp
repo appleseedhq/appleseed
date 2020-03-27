@@ -401,7 +401,6 @@ void ViewportCanvas::dropEvent(QDropEvent* event)
         event->mimeData()->text());
 }
 
-
 void ViewportCanvas::slot_light_path_selection_changed(
     const bool      display_light_paths,
     const int       selected_light_path_index,

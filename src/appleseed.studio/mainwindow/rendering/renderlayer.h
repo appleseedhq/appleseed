@@ -80,8 +80,8 @@ class RenderLayer
   public:
     // Constructor.
     RenderLayer(
-        const size_t                width,
-        const size_t                height,
+        const std::size_t           width,
+        const std::size_t           height,
         OCIO::ConstConfigRcPtr      ocio_config,
         QWidget*                    parent = nullptr);
 
@@ -93,8 +93,8 @@ class RenderLayer
 
     // Thread-safe.
     void resize(
-        const size_t            width,
-        const size_t            height);
+        const std::size_t           width,
+        const std::size_t           height);
 
     // Thread-safe.
     void clear();
@@ -107,17 +107,17 @@ class RenderLayer
 
     // Thread-safe.
     void highlight_tile(
-        const renderer::Frame&  frame,
-        const size_t            tile_x,
-        const size_t            tile_y,
-        const size_t            thread_index,
-        const size_t            thread_count);
+        const renderer::Frame&      frame,
+        const std::size_t           tile_x,
+        const std::size_t           tile_y,
+        const std::size_t           thread_index,
+        const std::size_t           thread_count);
 
     // Thread-safe.
     void blit_tile(
         const renderer::Frame&      frame,
-        const size_t                tile_x,
-        const size_t                tile_y);
+        const std::size_t           tile_x,
+        const std::size_t           tile_y);
 
     // Thread-safe.
     void blit_frame(
@@ -137,11 +137,6 @@ class RenderLayer
     // Direct access to internals for high-performance drawing.
     QMutex& mutex();
     QImage& image();
-
-  signals:
-    void signal_material_dropped(
-        const foundation::Vector2d& drop_pos,
-        const QString&              material_name);
 
   private:
     mutable QMutex                      m_mutex;
@@ -163,12 +158,12 @@ class RenderLayer
 
     void blit_tile_no_lock(
         const renderer::Frame&      frame,
-        const size_t                tile_x,
-        const size_t                tile_y);
+        const std::size_t           tile_x,
+        const std::size_t           tile_y);
 
     void update_tile_no_lock(
-        const size_t                tile_x,
-        const size_t                tile_y);
+        const std::size_t           tile_x,
+        const std::size_t           tile_y);
 };
 
 
