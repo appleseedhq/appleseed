@@ -40,6 +40,7 @@
 #include "renderer/api/rasterization.h"
 #include "renderer/api/scene.h"
 #include "renderer/api/utility.h"
+#include "renderer/kernel/lighting/lightpathrecorder.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
@@ -56,8 +57,8 @@
 
 // Standard headers.
 #include <algorithm>
-#include <cmath>
 #include <array>
+#include <cmath>
 
 using namespace foundation;
 using namespace renderer;
@@ -178,23 +179,24 @@ void LightPathsLayer::load_light_paths_data()
         others_buffer.reserve(total_gl_vertex_count);
         std::array<OtherAttributes, 4> others;
 
-        for (size_t light_path_idx = 0; light_path_idx < light_paths.size(); light_path_idx++)
+        for (std::size_t light_path_idx = 0; light_path_idx < light_paths.size(); light_path_idx++)
         {
-            const auto& path = light_paths[light_path_idx];
+            const LightPath& path = light_paths[light_path_idx];
             assert(path.m_vertex_end_index - path.m_vertex_begin_index >= 2);
 
             LightPathVertex prev;
             light_path_recorder.get_light_path_vertex(path.m_vertex_begin_index, prev);
 
-            for (size_t vertex_idx = path.m_vertex_begin_index + 1; vertex_idx < path.m_vertex_end_index; vertex_idx++)
+            for (std::size_t vertex_idx = path.m_vertex_begin_index + 1; vertex_idx < path.m_vertex_end_index; vertex_idx++)
             {
                 LightPathVertex vert;
                 light_path_recorder.get_light_path_vertex(vertex_idx, vert);
 
-                auto piece_radiance = Color3f::from_array(vert.m_radiance);
-                piece_radiance = linear_rgb_to_srgb(piece_radiance);
-                auto piece_luminance = luminance(piece_radiance);
-                piece_radiance /= piece_luminance;
+                const Color3f piece_radiance =
+                    linear_rgb_to_srgb(
+                        Color3f::from_array(vert.m_radiance));
+                const float piece_luminance = luminance(piece_radiance);
+                const Color3f normalized_piece_radiance = piece_radiance / piece_luminance;
 
                 std::array<GLfloat, 12> positions_temp_store = {
                     prev.m_position[0], prev.m_position[1], prev.m_position[2],
@@ -207,29 +209,27 @@ void LightPathsLayer::load_light_paths_data()
                     positions_temp_store.begin(),
                     positions_temp_store.end());
 
-                unsigned int start_index = static_cast<unsigned int>(others_buffer.size());
+                const auto start_index = static_cast<unsigned int>(others_buffer.size());
                 
-                GLint end = 2;
-
                 others = {{
                     {
                         0,
-                        {piece_radiance[0], piece_radiance[1], piece_radiance[2]},
+                        {normalized_piece_radiance[0], normalized_piece_radiance[1], normalized_piece_radiance[2]},
                         {prev.m_surface_normal[0], prev.m_surface_normal[1], prev.m_surface_normal[2]}
                     },
                     {
                         1,
-                        {piece_radiance[0], piece_radiance[1], piece_radiance[2]},
+                        {normalized_piece_radiance[0], normalized_piece_radiance[1], normalized_piece_radiance[2]},
                         {prev.m_surface_normal[0], prev.m_surface_normal[1], prev.m_surface_normal[2]}
                     },
                     {
-                        end,
-                        {piece_radiance[0], piece_radiance[1], piece_radiance[2]},
+                        2,
+                        {normalized_piece_radiance[0], normalized_piece_radiance[1], normalized_piece_radiance[2]},
                         {vert.m_surface_normal[0], vert.m_surface_normal[1], vert.m_surface_normal[2]}
                     },
                     {
-                        1 | end,
-                        {piece_radiance[0], piece_radiance[1], piece_radiance[2]},
+                        3,
+                        {normalized_piece_radiance[0], normalized_piece_radiance[1], normalized_piece_radiance[2]},
                         {vert.m_surface_normal[0], vert.m_surface_normal[1], vert.m_surface_normal[2]}
                     },
                 }};
