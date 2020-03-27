@@ -187,7 +187,8 @@ void LightPathsManager::set_selected_light_path_index(int index)
 {
     m_selected_light_path_index = index;
 
-    print_selected_light_paths();
+    if (m_display_light_paths)
+        print_selected_light_paths();
     
     emit signal_light_path_selection_changed(
         m_display_light_paths,
