@@ -43,10 +43,14 @@ import urllib
 # Constants.
 # --------------------------------------------------------------------------------------------------
 
+VERSION = "1.0"
+
 APPLESEED_BASE_ARGS = ""
 
 VALUE_THRESHOLD = 2                 # max allowed absolute diff between two pixel components, in [0, 255]
 MAX_DIFFERING_COMPONENTS = 4 * 2    # max number of pixel components that are allowed to differ significantly
+
+CURRENT_TIME = datetime.datetime.now()
 
 
 # --------------------------------------------------------------------------------------------------
@@ -108,6 +112,11 @@ def write_rgba_png_file(filepath, rows):
     writer = png.Writer(width=width, height=height, alpha=True)
     with open(filepath, 'wb') as file:
         writer.write(file, rows)
+
+
+def get_python_version():
+    return "{version.major}.{version.minor}.{version.micro}-{version.releaselevel}.{version.serial}" \
+        .format(version=sys.version_info)
 
 
 # --------------------------------------------------------------------------------------------------
@@ -228,8 +237,13 @@ class ReportWriter:
         self.file.flush()
 
     def __write_header(self, args):
+        script_path = os.path.realpath(__file__)
+
         self.file.write(self.__render(self.header_template,
-                                      {'test-date': datetime.datetime.now(),
+                                      {'test-date': CURRENT_TIME,
+                                       'python-version': get_python_version(),
+                                       'script-path': script_path,
+                                       'script-version': VERSION,
                                        'appleseed-binary-path': args.tool_path,
                                        'max-abs-diff-allowed': VALUE_THRESHOLD,
                                        'max-diff-comps-count-allowed': MAX_DIFFERING_COMPONENTS}))
@@ -498,6 +512,12 @@ def main():
     appleseed_args = APPLESEED_BASE_ARGS
     if args.args:
         appleseed_args += " {0}".format(" ".join(args.args))
+
+    print("Current Time    : {0}".format(CURRENT_TIME))
+    print("Python Version  : {0}".format(get_python_version()))
+    print("Script Path     : {0}".format(os.path.realpath(__file__)))
+    print("Script Version  : {0}".format(VERSION))
+    print()
 
     print("Configuration:")
     print("  Binary        : {0}".format(args.tool_path))
