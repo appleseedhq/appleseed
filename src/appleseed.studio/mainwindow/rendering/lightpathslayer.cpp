@@ -153,9 +153,9 @@ void LightPathsLayer::load_light_paths_data()
 
         m_total_triangle_count = 0;
 
-        // Vertex count * 4 since we will be adding two vertices for each point along the line and will
-        // be adding each point twice for the beginning and end parts of each segment
-        // Add two because we need extra at the front and back for the extra 'previous' and 'next' attributes
+        // Vertex count * 4 since we will be adding two vertices for each point along the line and
+        // will be adding each point twice for the beginning and end parts of each segment.
+        // Add two because we need extra at the front and back for the extra 'previous' and 'next' attributes.
         const std::size_t total_gl_vertex_count = 2 * (light_path_recorder.get_vertex_count() + 2);
 
         std::vector<unsigned int> indices;
@@ -164,7 +164,7 @@ void LightPathsLayer::load_light_paths_data()
         positions_buffer.reserve(total_gl_vertex_count * 3);
         indices.reserve(total_gl_vertex_count);
 
-        // Add an empty vertex at the beginning to serve as first 'previous'
+        // Add an empty vertex at the beginning to serve as first 'previous'.
         std::array<float, 6> empty_positions =
         {
             0.0, 0.0, 0.0,
@@ -254,13 +254,13 @@ void LightPathsLayer::load_light_paths_data()
             m_path_terminator_vertex_indices.push_back(static_cast<GLsizei>(others_buffer.size() - 1));
         }
 
-        // Add an empty vertex at the end to serve as last 'next'
+        // Add an empty vertex at the end to serve as last 'next'.
         positions_buffer.insert(
             positions_buffer.end(),
             empty_positions.begin(),
             empty_positions.end());
         
-        // Upload the data to the buffers
+        // Upload the data to the buffers.
         m_gl->glBindBuffer(GL_ARRAY_BUFFER, m_positions_vbo);
         m_gl->glBufferData(
             GL_ARRAY_BUFFER,
@@ -284,15 +284,15 @@ void LightPathsLayer::load_light_paths_data()
 
 void LightPathsLayer::init_gl(QSurfaceFormat format)
 {
-    // If there was already previous data, clean up
-    LightPathsLayer::cleanup_gl_data();
+    // If there was already previous data, clean up.
+    cleanup_gl_data();
 
     glEnable(GL_DEPTH_TEST);
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-    auto vertex_shader = load_gl_shader("lightpaths.vert");
-    auto fragment_shader = load_gl_shader("lightpaths.frag");
+    const QByteArray vertex_shader = load_gl_shader("lightpaths.vert");
+    const QByteArray fragment_shader = load_gl_shader("lightpaths.frag");
 
     m_shader_program = create_shader_program(
         m_gl,
@@ -308,7 +308,7 @@ void LightPathsLayer::init_gl(QSurfaceFormat format)
     const float z_near = 0.01f;
     const float z_far = 1000.0f;
 
-    const auto& rc = m_camera.get_rasterization_camera();
+    const RasterizationCamera& rc = m_camera.get_rasterization_camera();
 
     const float fy = tan(rc.m_hfov / rc.m_aspect_ratio * 0.5) * z_near;
     const float fx = fy * rc.m_aspect_ratio;
@@ -429,22 +429,18 @@ void LightPathsLayer::init_gl(QSurfaceFormat format)
 void LightPathsLayer::cleanup_gl_data()
 {
     if (m_shader_program != 0)
-    {
         m_gl->glDeleteProgram(m_shader_program);
-    }
 }
 
 void LightPathsLayer::draw_render_camera() const
 {
-    auto gl_view_matrix = const_cast<const GLfloat*>(&m_gl_render_view_matrix[0]);
-
+    const auto gl_view_matrix = const_cast<const GLfloat*>(&m_gl_render_view_matrix[0]);
     render_scene(gl_view_matrix);
 }
 
 void LightPathsLayer::draw() const
 {
-    auto gl_view_matrix = const_cast<const GLfloat*>(&m_gl_view_matrix[0]);
-
+    const auto gl_view_matrix = const_cast<const GLfloat*>(&m_gl_view_matrix[0]);
     render_scene(gl_view_matrix);
 }
 
