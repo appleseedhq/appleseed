@@ -57,7 +57,6 @@ namespace
     {
       public:
         bpy::object                     m_project_object;       // unreferenced but necessary
-        SearchPaths                     m_resource_search_paths;
         std::unique_ptr<MasterRenderer> m_renderer;
 
         MasterRendererWrapper(
@@ -67,14 +66,12 @@ namespace
             ITileCallbackFactory*       tile_callback_factory = nullptr)
           : m_project_object(project_object)
         {
-            init_search_paths(m_resource_search_paths, resource_search_paths);
-
             Project* project = bpy::extract<Project*>(project_object);
             m_renderer.reset(
                 new MasterRenderer(
                     *project,
                     params,
-                    m_resource_search_paths,
+                    init_search_paths(resource_search_paths),
                     tile_callback_factory));
         }
 
@@ -85,22 +82,19 @@ namespace
             ITileCallback*              tile_callback)
           : m_project_object(project_object)
         {
-            init_search_paths(m_resource_search_paths, resource_search_paths);
-
             Project* project = bpy::extract<Project*>(project_object);
             m_renderer.reset(
                 new MasterRenderer(
                     *project,
                     params,
-                    m_resource_search_paths,
+                    init_search_paths(resource_search_paths),
                     tile_callback));
         }
 
       private:
-        static void init_search_paths(
-            SearchPaths&                search_paths,
-            const bpy::list&            paths)
+        static SearchPaths init_search_paths(const bpy::list& paths)
         {
+            SearchPaths search_paths;
             for (bpy::ssize_t i = 0, e = bpy::len(paths); i < e; ++i)
             {
                 const bpy::extract<const char*> extractor(paths[i]);
@@ -112,6 +106,8 @@ namespace
                     bpy::throw_error_already_set();
                 }
             }
+
+            return search_paths;
         }
     };
 
