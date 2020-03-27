@@ -106,7 +106,6 @@ class ViewportCanvas
         const size_t            width,
         const size_t            height);
 
-    BaseLayer get_active_layer() const;
     RenderLayer* get_render_layer();
     GLSceneLayer* get_gl_scene_layer();
     LightPathsLayer* get_light_paths_layer();

@@ -155,11 +155,6 @@ void ViewportCanvas::create_light_paths_layer(
             height));
 }
 
-ViewportCanvas::BaseLayer ViewportCanvas::get_active_layer() const
-{
-    return m_active_base_layer;
-}
-
 RenderLayer* ViewportCanvas::get_render_layer()
 {
     return m_render_layer.get();
