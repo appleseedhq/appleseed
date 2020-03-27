@@ -54,7 +54,7 @@ FoldablePanelWidget::FoldablePanelWidget(const QString& title, QWidget* parent)
 
     m_container->setProperty("hasFrame", true);
 
-    connect(m_button, SIGNAL(clicked()), this, SLOT(slot_fold_unfold()));
+    connect(m_button, &QPushButton::clicked, this, &FoldablePanelWidget::slot_fold_unfold);
 }
 
 QFrame* FoldablePanelWidget::container()

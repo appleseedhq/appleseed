@@ -52,7 +52,7 @@ LogWidget::LogWidget(QWidget* parent)
 {
     m_action_clear_all = new QAction("Clear All", this);
     m_action_clear_all->setShortcut(QKeySequence("Ctrl+K"));
-    connect(m_action_clear_all, SIGNAL(triggered()), this, SLOT(slot_clear_all()));
+    connect(m_action_clear_all, &QAction::triggered, this, &LogWidget::slot_clear_all);
     addAction(m_action_clear_all);
 }
 

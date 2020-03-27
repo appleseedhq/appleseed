@@ -47,6 +47,7 @@
 #include <QString>
 #include <Qt>
 #include <QtGlobal>
+#include <QDialogButtonBox>
 
 // Standard headers.
 #include <algorithm>
@@ -73,11 +74,11 @@ AboutWindow::AboutWindow(QWidget* parent)
 
     setFixedSize(width(), sizeHint().height());
 
-    connect(m_ui->dialogbuttonbox, SIGNAL(accepted()), this, SLOT(close()));
+    connect(m_ui->dialogbuttonbox, &QDialogButtonBox::accepted, this, &QWidget::close);
 
     connect(
-        new QShortcut(QKeySequence(Qt::Key_Escape), this), SIGNAL(activated()),
-        this, SLOT(close()));
+        new QShortcut(QKeySequence(Qt::Key_Escape), this), &QShortcut::activated),
+        this, &QWidget::close);
 
     WindowBase::load_settings();
 }

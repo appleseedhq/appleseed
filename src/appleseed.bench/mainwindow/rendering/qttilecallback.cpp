@@ -53,8 +53,8 @@ QtTileCallback::QtTileCallback(RenderWidget* render_widget)
   : m_render_widget(render_widget)
 {
     connect(
-        this, SIGNAL(signal_update()),
-        m_render_widget, SLOT(update()),
+        this, &QtTileCallback::signal_update,
+        m_render_widget, &QWidget::update,
         Qt::QueuedConnection);
 }
 

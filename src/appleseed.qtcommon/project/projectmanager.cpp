@@ -41,6 +41,7 @@
 
 // Qt headers.
 #include <QtConcurrent>
+#include <QFutureWatcher>
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"
@@ -66,9 +67,10 @@ ProjectManager::ProjectManager()
   : m_is_loading(false)
   , m_dirty_flag(false)
 {
+
     connect(
-        &m_async_io_future_watcher, SIGNAL(finished()),
-        this, SLOT(slot_load_project_async_complete()));
+        &m_async_io_future_watcher, &QFutureWatcher<bool>::finished,
+        this, &ProjectManager::slot_load_project_async_complete);
 }
 
 void ProjectManager::create_project()

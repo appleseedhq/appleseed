@@ -50,8 +50,8 @@ namespace qtcommon {
 QtLogTarget::QtLogTarget(LogWidget* log_widget)
 {
     connect(
-        this, SIGNAL(signal_append_item(const QColor&, const QString&)),
-        log_widget, SLOT(slot_append_item(const QColor&, const QString&)));
+        this, &QtLogTarget::signal_append_item,
+        log_widget, &LogWidget::slot_append_item);
 }
 
 void QtLogTarget::release()

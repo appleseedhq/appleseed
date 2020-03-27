@@ -139,37 +139,37 @@ RenderingManager::RenderingManager(RenderingTimeDisplay& rendering_time_display)
     //
 
     connect(
-        &m_renderer_controller, SIGNAL(signal_frame_begin()),
-        SLOT(slot_frame_begin()),
+        &m_renderer_controller, &QtRendererController::signal_frame_begin,
+        &RenderingManager::slot_frame_begin,
         Qt::BlockingQueuedConnection);
 
     connect(
-        &m_renderer_controller, SIGNAL(signal_frame_end()),
-        SLOT(slot_frame_end()),
+        &m_renderer_controller, &QtRendererController::signal_frame_end,
+        &RenderingManager::slot_frame_end,
         Qt::BlockingQueuedConnection);
 
     connect(
-        &m_renderer_controller, SIGNAL(signal_rendering_begin()),
-        SLOT(slot_rendering_begin()),
+        &m_renderer_controller, &QtRendererController::signal_rendering_begin,
+        &RenderingManager::slot_rendering_begin,
         Qt::BlockingQueuedConnection);
 
     connect(
-        &m_renderer_controller, SIGNAL(signal_rendering_success()),
-        SLOT(slot_rendering_end()),
+        &m_renderer_controller, &QtRendererController::signal_rendering_success,
+        &RenderingManager::slot_rendering_end,
         Qt::BlockingQueuedConnection);
 
     connect(
-        &m_renderer_controller, SIGNAL(signal_rendering_abort()),
-        SLOT(slot_rendering_end()),
+        &m_renderer_controller, &QtRendererController::signal_rendering_abort,
+        &RenderingManager::slot_rendering_end,
         Qt::BlockingQueuedConnection);
 
     connect(
-        &m_renderer_controller, SIGNAL(signal_rendering_success()),
-        SIGNAL(signal_rendering_success()));
+        &m_renderer_controller, &QtRendererController::signal_rendering_success,
+        &QtRendererController::signal_rendering_success);
 
     connect(
-        &m_renderer_controller, SIGNAL(signal_rendering_abort()),
-        SIGNAL(signal_rendering_abort()));
+        &m_renderer_controller, &QtRendererController::signal_rendering_abort,
+        &QtRendererController::signal_rendering_abort);
 }
 
 void RenderingManager::start_rendering(
@@ -213,16 +213,16 @@ void RenderingManager::start_rendering(
             m_renderer_controller));
 
     connect(
-        m_master_renderer_thread.get(), SIGNAL(signal_rendering_failed()),
-        SLOT(slot_frame_end()));
+        m_master_renderer_thread.get(), &MasterRendererThread::signal_rendering_failed,
+        &RenderingManager::slot_frame_end);
 
     connect(
-        m_master_renderer_thread.get(), SIGNAL(signal_rendering_failed()),
-        SLOT(slot_rendering_failed()));
+        m_master_renderer_thread.get(), &MasterRendererThread::signal_rendering_failed,
+        &RenderingManager::slot_rendering_failed);
 
     connect(
-        m_master_renderer_thread.get(), SIGNAL(finished()),
-        SLOT(slot_master_renderer_thread_finished()));
+        m_master_renderer_thread.get(), &QThread::finished,
+        &RenderingManager::slot_master_renderer_thread_finished);
 
     m_master_renderer_thread->start();
 }
