@@ -136,8 +136,8 @@ namespace
 
 GLSceneLayer::GLSceneLayer(
     const Project&                  project,
-    const size_t                    width,
-    const size_t                    height)
+    const std::size_t               width,
+    const std::size_t               height)
   : m_project(project)
   , m_camera(*m_project.get_uncached_active_camera())
   , m_backface_culling_enabled(false)
@@ -236,7 +236,7 @@ void GLSceneLayer::load_object_data(const Object& object)
     if (m_scene_object_index_map.count(obj_name) == 0)
     {
         // Object vertex buffer data has not been loaded, load it.
-        const size_t buffer_index = m_scene_object_data_vbos.size();
+        const std::size_t buffer_index = m_scene_object_data_vbos.size();
 
         GLuint object_vao;
         m_gl->glGenVertexArrays(1, &object_vao);
