@@ -88,8 +88,6 @@ FinalRenderViewportTab::FinalRenderViewportTab(
     layout()->addWidget(m_toolbar);
     layout()->addWidget(m_light_paths_viewport_toolbar->toolbar());
     layout()->addWidget(m_scroll_area);
-
-    get_viewport_canvas()->set_base_layer(ViewportCanvas::BaseLayer::FinalRender);
 }
 
 ViewportCanvas* FinalRenderViewportTab::get_viewport_canvas() const
@@ -205,6 +203,7 @@ void FinalRenderViewportTab::create_viewport_canvas()
             props.m_canvas_height,
             m_ocio_config,
             m_light_paths_manager,
+            ViewportCanvas::BaseLayer::FinalRender,
             this);
 
     m_viewport_canvas->setContextMenuPolicy(Qt::CustomContextMenu);

@@ -80,6 +80,12 @@ class ViewportCanvas
     Q_OBJECT
 
   public:
+    enum BaseLayer {
+        FinalRender,
+        OpenGL,
+        BASE_LAYER_MAX_VALUE
+    };
+
     // Constructor.
     ViewportCanvas(
         const renderer::Project&    project,
@@ -87,15 +93,10 @@ class ViewportCanvas
         const size_t                height,
         OCIO::ConstConfigRcPtr      ocio_config,
         const LightPathsManager&    lith_paths_manager,
+        const BaseLayer             layer,
         QWidget*                    parent = nullptr);
 
     ~ViewportCanvas();
-
-    enum BaseLayer {
-        FinalRender,
-        OpenGL,
-        BASE_LAYER_MAX_VALUE
-    };
 
     // Thread-safe.
     QImage capture() override;
@@ -104,8 +105,6 @@ class ViewportCanvas
     void resize(
         const size_t            width,
         const size_t            height);
-
-    void set_base_layer(const BaseLayer base_layer);
 
     BaseLayer get_active_layer() const;
     RenderLayer* get_render_layer();

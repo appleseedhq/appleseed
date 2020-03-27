@@ -80,8 +80,6 @@ OpenGLViewportTab::OpenGLViewportTab(
     layout()->addWidget(m_scroll_area);
 
     m_camera_controller->set_enabled(true);
-
-    get_viewport_canvas()->set_base_layer(ViewportCanvas::BaseLayer::OpenGL);
 }
 
 ViewportCanvas* OpenGLViewportTab::get_viewport_canvas() const
@@ -133,6 +131,7 @@ void OpenGLViewportTab::create_viewport_canvas()
             props.m_canvas_height,
             m_ocio_config,
             m_light_paths_manager,
+            ViewportCanvas::BaseLayer::OpenGL,
             this);
 
     m_viewport_canvas->setContextMenuPolicy(Qt::CustomContextMenu);

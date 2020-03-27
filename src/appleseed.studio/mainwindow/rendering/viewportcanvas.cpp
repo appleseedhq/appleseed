@@ -71,16 +71,17 @@ namespace studio {
 //
 
 ViewportCanvas::ViewportCanvas(
-    const renderer::Project&    project,
-    const size_t                width,
-    const size_t                height,
-    OCIO::ConstConfigRcPtr      ocio_config,
-    const LightPathsManager&    light_paths_manager,
-    QWidget*                    parent)
+    const renderer::Project&        project,
+    const size_t                    width,
+    const size_t                    height,
+    OCIO::ConstConfigRcPtr          ocio_config,
+    const LightPathsManager&        light_paths_manager,
+    const ViewportCanvas::BaseLayer layer,
+    QWidget*                        parent)
   : QOpenGLWidget(parent)
   , m_project(project)
   , m_draw_light_paths(false)
-  , m_active_base_layer(static_cast<BaseLayer>(0))
+  , m_active_base_layer(layer)
   , m_resolve_program(0)
   , m_accum_loc(0)
   , m_accum_tex(0)
@@ -261,12 +262,6 @@ void ViewportCanvas::resize(
 {
     m_render_layer->resize(width, height);
     m_light_paths_layer->resize(width, height);
-}
-
-void ViewportCanvas::set_base_layer(const BaseLayer base_layer)
-{
-    m_active_base_layer = base_layer;
-    update();
 }
 
 void ViewportCanvas::resizeGL(
