@@ -77,7 +77,7 @@ AboutWindow::AboutWindow(QWidget* parent)
     connect(m_ui->dialogbuttonbox, &QDialogButtonBox::accepted, this, &QWidget::close);
 
     connect(
-        new QShortcut(QKeySequence(Qt::Key_Escape), this), &QShortcut::activated),
+        new QShortcut(QKeySequence(Qt::Key_Escape), this), &QShortcut::activated,
         this, &QWidget::close);
 
     WindowBase::load_settings();
