@@ -47,9 +47,9 @@
 #include "foundation/string/string.h"
 
 // Qt headers.
+#include <QDialogButtonBox>
 #include <QKeySequence>
 #include <QShortcut>
-#include <QDialogButtonBox>
 #include <Qt>
 
 // Standard headers.

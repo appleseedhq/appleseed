@@ -42,12 +42,12 @@
 #include "foundation/utility/api/apistringpair.h"
 
 // Qt headers.
+#include <QDialogButtonBox>
 #include <QKeySequence>
 #include <QShortcut>
 #include <QString>
 #include <Qt>
 #include <QtGlobal>
-#include <QDialogButtonBox>
 
 // Standard headers.
 #include <algorithm>

@@ -191,6 +191,7 @@ void RenderingManager::start_rendering(
     connect(
         tile_callback_factory, &QtTileCallbackFactory::signal_progressive_frame_update,
         this, &RenderingManager::signal_progressive_frame_update);
+    
     tile_callback_collection_factory->insert(tile_callback_factory);
 
     tile_callback_collection_factory->insert(

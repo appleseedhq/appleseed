@@ -40,8 +40,8 @@
 #include "foundation/platform/compiler.h"
 
 // Qt headers.
-#include <QtConcurrent>
 #include <QFutureWatcher>
+#include <QtConcurrent>
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"
