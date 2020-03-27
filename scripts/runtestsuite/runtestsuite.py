@@ -38,6 +38,10 @@ import subprocess
 import sys
 import urllib
 
+# We can't import modules from parent directories without modifying sys.path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
+import utils
+
 
 # --------------------------------------------------------------------------------------------------
 # Constants.
@@ -112,11 +116,6 @@ def write_rgba_png_file(filepath, rows):
     writer = png.Writer(width=width, height=height, alpha=True)
     with open(filepath, 'wb') as file:
         writer.write(file, rows)
-
-
-def get_python_version():
-    return "{version.major}.{version.minor}.{version.micro}-{version.releaselevel}.{version.serial}" \
-        .format(version=sys.version_info)
 
 
 # --------------------------------------------------------------------------------------------------
@@ -241,7 +240,7 @@ class ReportWriter:
 
         self.file.write(self.__render(self.header_template,
                                       {'test-date': CURRENT_TIME,
-                                       'python-version': get_python_version(),
+                                       'python-version': utils.get_python_version(),
                                        'script-path': script_path,
                                        'script-version': VERSION,
                                        'appleseed-binary-path': args.tool_path,
@@ -489,6 +488,13 @@ def render_test_scenes(script_directory, args):
 # Entry point.
 # --------------------------------------------------------------------------------------------------
 
+def print_configuration(appleseed_path, appleseed_args):
+    print("Configuration:")
+    print("  Binary         : {0}".format(appleseed_path))
+    print("  Arguments      : {0}".format(appleseed_args))
+    print()
+
+
 def main():
     colorama.init()
 
@@ -513,16 +519,8 @@ def main():
     if args.args:
         appleseed_args += " {0}".format(" ".join(args.args))
 
-    print("Current Time    : {0}".format(CURRENT_TIME))
-    print("Python Version  : {0}".format(get_python_version()))
-    print("Script Path     : {0}".format(os.path.realpath(__file__)))
-    print("Script Version  : {0}".format(VERSION))
-    print()
-
-    print("Configuration:")
-    print("  Binary        : {0}".format(args.tool_path))
-    print("  Arguments     : {0}".format(appleseed_args))
-    print()
+    utils.print_runtime_details("runtestsuite", VERSION, os.path.realpath(__file__), CURRENT_TIME)
+    print_configuration(args.tool_path, appleseed_args)
 
     start_time = datetime.datetime.now()
     rendered_scene_count, passing_scene_count = render_test_scenes(script_directory, args)
@@ -532,16 +530,16 @@ def main():
 
     print()
     print("Results:")
-    print("  Success Rate  : {0}{1:.2f} %{2}"
+    print("  Success Rate   : {0}{1:.2f} %{2}"
           .format(colorama.Fore.RED if passing_scene_count < rendered_scene_count else colorama.Fore.GREEN,
                   success,
                   colorama.Fore.RESET))
-    print("  Failures      : {0}{1} out of {2} test scene(s){3}"
+    print("  Failures       : {0}{1} out of {2} test scene(s){3}"
           .format(colorama.Fore.RED if passing_scene_count < rendered_scene_count else colorama.Fore.GREEN,
                   rendered_scene_count - passing_scene_count,
                   rendered_scene_count,
                   colorama.Fore.RESET))
-    print("  Total Time    : {0}".format(format_duration(end_time - start_time)))
+    print("  Total Time     : {0}".format(format_duration(end_time - start_time)))
 
 
 if __name__ == "__main__":
