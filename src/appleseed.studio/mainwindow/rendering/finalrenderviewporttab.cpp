@@ -192,6 +192,12 @@ void FinalRenderViewportTab::slot_clear_frame()
     emit signal_clear_frame();
 }
 
+void FinalRenderViewportTab::slot_display_transform_changed(const QString& transform)
+{
+    m_viewport_canvas->get_render_layer()->set_display_transform(transform);
+    m_viewport_canvas->update();
+}
+
 void FinalRenderViewportTab::create_viewport_canvas()
 {
     const CanvasProperties& props = m_project.get_frame()->image().properties();
@@ -359,7 +365,7 @@ void FinalRenderViewportTab::create_toolbar()
     m_toolbar->addWidget(m_display_transform_combo);
     connect(
         m_display_transform_combo, qOverload<const QString&>(&QComboBox::currentIndexChanged),
-        m_viewport_canvas, &ViewportCanvas::slot_display_transform_changed);
+        this, &FinalRenderViewportTab::slot_display_transform_changed);
 
     // Add stretchy spacer.
     // This places interactive widgets on the left and info on the right.

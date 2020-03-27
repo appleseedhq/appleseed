@@ -401,15 +401,6 @@ void ViewportCanvas::dropEvent(QDropEvent* event)
         event->mimeData()->text());
 }
 
-void ViewportCanvas::slot_display_transform_changed(const QString& transform)
-{
-    m_render_layer->set_display_transform(transform);
-
-    if (m_active_base_layer == BaseLayer::FinalRender)
-    {
-        update();
-    }
-}
 
 void ViewportCanvas::slot_light_path_selection_changed(
     const bool      display_light_paths,

@@ -116,8 +116,6 @@ class ViewportCanvas
         const QString&          material_name);
 
   public slots:
-    void slot_toggle_backface_culling(const bool checked);
-    void slot_display_transform_changed(const QString& transform);
     void slot_light_path_selection_changed(
         const bool                                  display_light_paths,
         const int                                   selected_light_path_index,

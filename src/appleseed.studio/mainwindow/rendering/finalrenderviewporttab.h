@@ -105,6 +105,7 @@ class FinalRenderViewportTab
     void slot_set_render_region(const QRect& rect);
     void slot_viewport_canvas_context_menu(const QPoint& point);
     void slot_clear_frame();
+    void slot_display_transform_changed(const QString& transform);
 
   private:
     ProjectExplorer&                                    m_project_explorer;
