@@ -52,6 +52,7 @@
 #include <QMutexLocker>
 #include <QOpenGLContext>
 #include <QOpenGLFunctions_4_1_Core>
+#include <QSurfaceFormat>
 #include <QTimer>
 #include <Qt>
 
@@ -175,20 +176,23 @@ QImage ViewportCanvas::capture()
     return grabFramebuffer();
 }
 
-void ViewportCanvas::initializeGL() {
+void ViewportCanvas::initializeGL()
+{
     RENDERER_LOG_INFO("initializing opengl.");
 
     m_gl = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_4_1_Core>();
 
-    const auto qs_format = format();
+    const QSurfaceFormat qs_format = format();
     if (!m_gl->initializeOpenGLFunctions())
     {
         const int major_version = qs_format.majorVersion();
         const int minor_version = qs_format.minorVersion();
+
         RENDERER_LOG_ERROR(
             "opengl: could not load required gl functions. loaded version %d.%d, required version 3.3.",
             major_version,
             minor_version);
+
         return;
     }
 
@@ -290,22 +294,19 @@ void ViewportCanvas::resizeGL(
 
 void ViewportCanvas::paintGL()
 {
-
     double dpr = static_cast<double>(m_render_layer->image().devicePixelRatio());
     GLsizei w = static_cast<GLsizei>(width() * dpr);
     GLsizei h = static_cast<GLsizei>(height() * dpr);
     m_gl->glViewport(0, 0, w, h);
 
-    m_gl->glBindFramebuffer(GL_FRAMEBUFFER, m_main_fb);
     // Clear the main framebuffers
+    m_gl->glBindFramebuffer(GL_FRAMEBUFFER, m_main_fb);
     GLfloat main_clear[]{ 0.0, 0.0, 0.0, 0.0 };
     m_gl->glClearBufferfv(GL_COLOR, 0, main_clear);
     m_gl->glClearBufferfi(GL_DEPTH_STENCIL, 0, 1.0, 0);
 
     if (m_active_base_layer == BaseLayer::FinalRender)
-    {
         m_render_layer->draw(m_empty_vao, m_draw_light_paths);
-    }
 
     QOpenGLContext *ctx = const_cast<QOpenGLContext *>(QOpenGLContext::currentContext());
 
@@ -398,12 +399,6 @@ void ViewportCanvas::dropEvent(QDropEvent* event)
             static_cast<double>(event->pos().x()) / width(),
             static_cast<double>(event->pos().y()) / height()),
         event->mimeData()->text());
-}
-
-void ViewportCanvas::slot_toggle_backface_culling(const bool checked)
-{
-    m_gl_scene_layer->toggle_backface_culling(checked);
-    update();
 }
 
 void ViewportCanvas::slot_display_transform_changed(const QString& transform)
