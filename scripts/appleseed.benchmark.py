@@ -28,11 +28,15 @@
 # THE SOFTWARE.
 #
 
+from __future__ import print_function
+import argparse
 import datetime
 import os
 import re
 import subprocess
 import sys
+
+from utils import print_runtime_details  # local module
 
 
 # -------------------------------------------------------------------------------------------------
@@ -136,19 +140,20 @@ def print_configuration(appleseed_path, appleseed_args, logger):
 
 
 def main():
-    print("appleseed.benchmark version " + VERSION)
-    print
+    parser = argparse.ArgumentParser(description="benchmark appleseed")
 
-    if len(sys.argv) < 2:
-        print("Usage: {0} <path-to-appleseed.cli> [arguments]".format(sys.argv[0]))
-        sys.exit(1)
+    parser.add_argument("appleseed_path", help="set the path to the appleseed.cli tool")
+    parser.add_argument("appleseed_args", nargs=argparse.REMAINDER,
+                        help="forward additional arguments to appleseed")
 
-    appleseed_path = sys.argv[1]
-    appleseed_args = sys.argv[2:]
+    args = parser.parse_args()
+    appleseed_path = args.appleseed_path
+    appleseed_args = args.appleseed_args
 
     safe_make_directory("logs")
     logger = Logger("logs")
 
+    print_runtime_details("appleseed.benchmark", VERSION, os.path.realpath(__file__), print_function=logger.write)
     print_configuration(appleseed_path, appleseed_args, logger)
 
     safe_make_directory("renders")

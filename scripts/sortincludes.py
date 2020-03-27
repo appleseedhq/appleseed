@@ -31,6 +31,15 @@ import argparse
 import os
 import sys
 
+from utils import print_runtime_details  # local module
+
+
+# -------------------------------------------------------------------------------------------------
+# Constants.
+# -------------------------------------------------------------------------------------------------
+
+VERSION = "1.0"
+
 
 # -------------------------------------------------------------------------------------------------
 # Utility functions.
@@ -88,6 +97,8 @@ def main():
                         help="process all files in the specified directory and all its subdirectories")
     parser.add_argument("path", help="file or directory to process")
     args = parser.parse_args()
+
+    print_runtime_details("sortincludes", VERSION, os.path.realpath(__file__))
 
     if os.path.isfile(args.path):
         process_file(args.path)

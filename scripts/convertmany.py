@@ -34,10 +34,14 @@ import fnmatch
 import os
 import subprocess
 
+from utils import print_runtime_details  # local module
+
 
 # -------------------------------------------------------------------------------------------------
 # Constants.
 # -------------------------------------------------------------------------------------------------
+
+VERSION = "1.0"
 
 DEFAULT_TOOL_FILENAME = "convertmeshfile.exe" if os.name == "nt" else "convertmeshfile"
 
@@ -102,6 +106,8 @@ def main():
     parser.add_argument("input_pattern", metavar="input-pattern", help="input files pattern (e.g. *.obj)")
     parser.add_argument("output_format", metavar="output-format", help="output file format (e.g. abc, binarymesh)")
     args = parser.parse_args()
+
+    print_runtime_details("convertmany", VERSION, os.path.realpath(__file__))
 
     # If no tool path is provided, search for the tool in the same directory as this script.
     if args.tool_path is None:

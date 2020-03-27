@@ -41,6 +41,8 @@ import time
 import traceback
 import xml.dom.minidom as xml
 
+from utils import print_runtime_details
+
 
 # -------------------------------------------------------------------------------------------------
 # Constants.
@@ -440,6 +442,8 @@ def main():
                         help="print missing dependencies")
     parser.add_argument("directory", help="directory to watch")
     args = parser.parse_args()
+
+    print_runtime_details("rendernode", VERSION, os.path.realpath(__file__))
 
     # If no tool path is provided, search for the tool in the same directory as this script.
     if args.tool_path is None:
