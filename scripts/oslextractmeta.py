@@ -40,6 +40,14 @@ import datetime
 import getpass
 import subprocess
 
+from utils import print_runtime_details  # local module
+
+
+# -------------------------------------------------------------------------------------------------
+# Constants.
+# -------------------------------------------------------------------------------------------------
+
+VERSION = "1.0"
 
 FileTypes = {'.oso': "openshadinglanguage"}
 
@@ -337,16 +345,16 @@ def cli():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description='''
-        oslextractmetadata stores the user interface and metadata of a 
-        compiled OSL (openshadinglanguage) shader(s) into a JSON file.
-        The JSON dictionary consists of a 'header' and a 'shader' part.
-        jsondict['shader'] will return a dictionary with all shaders. The
-        user interface of the shader is stored as a sub-dictionary, the
-        metadata can be retrieved using the 'ui' key on the elements, e.g.:
+oslextractmetadata stores the user interface and metadata of a
+compiled OSL (openshadinglanguage) shader(s) into a JSON file.
+The JSON dictionary consists of a 'header' and a 'shader' part.
+jsondict['shader'] will return a dictionary with all shaders. The
+user interface of the shader is stored as a sub-dictionary, the
+metadata can be retrieved using the 'ui' key on the elements, e.g.:
 
-        for x in jsondict['shaders'].values():
-            print x['ui']
-        ''')
+    for x in jsondict['shaders'].values():
+        print x['ui']
+''')
     parser.add_argument('-i', '--input', nargs='+', action='store', dest='files', metavar='compiled shaders', help='List of file(s) to parse.')
     parser.add_argument('-v', '--verbose', action='store_true', dest='verbosity', help='Increase output verbosity.')
     parser.add_argument('-o', '--output', nargs=1, action='store', dest='output',
@@ -379,6 +387,8 @@ def cli():
 
 def main():
     (args, output, existingFile) = cli()
+
+    print_runtime_details("oslextractmetadata", VERSION, os.path.realpath(__file__))
 
     # read configuration file
     cfg_defaults = {'oslpath': '/usr/bin/oslinfo'}

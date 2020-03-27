@@ -33,10 +33,13 @@ import datetime
 import os
 import subprocess
 
+from utils import print_runtime_details  # local module
 
 # -------------------------------------------------------------------------------------------------
 # Constants.
 # -------------------------------------------------------------------------------------------------
+
+VERSION = "1.0"
 
 DEFAULT_TOOL_FILENAME = "projecttool.exe" if os.name == "nt" else "projecttool"
 
@@ -94,6 +97,8 @@ def main():
                         help="scan the specified directory and all its subdirectories")
     parser.add_argument("directory", help="directory to scan")
     args = parser.parse_args()
+
+    print_runtime_details("cleanmany", VERSION, os.path.realpath(__file__))
 
     # If no tool path is provided, search for the tool in the same directory as this script.
     if args.tool_path is None:

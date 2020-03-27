@@ -46,6 +46,8 @@ import time
 import traceback
 import zipfile
 
+from utils import print_runtime_details  # local module
+
 
 # -------------------------------------------------------------------------------------------------
 # Constants.
@@ -997,8 +999,7 @@ def main():
 
     no_zip = args.nozip
 
-    print("appleseed.package version {0}".format(VERSION))
-    print("")
+    print_runtime_details("appleseed.package", VERSION, os.path.realpath(__file__))
 
     print("VERY IMPORTANT:")
     print("")
