@@ -172,6 +172,12 @@ class APPLESEED_ALIGN(16) CompositeClosure
         const foundation::Vector3f& tangent,
         foundation::Arena&          arena);
 
+    void add_ior(
+        const foundation::Color3f&  weight,
+        const float                 ior);
+
+    float choose_ior(const float w) const;
+
   protected:
     size_t                          m_closure_count;
     void*                           m_input_values[MaxClosureEntries];
@@ -179,6 +185,9 @@ class APPLESEED_ALIGN(16) CompositeClosure
     Spectrum                        m_weights[MaxClosureEntries];
     float                           m_scalar_weights[MaxClosureEntries];
     foundation::Basis3f             m_bases[MaxClosureEntries];
+    size_t                          m_ior_count;
+    float                           m_iors[MaxClosureEntries];
+    float                           m_ior_cdf[MaxClosureEntries];
 
     CompositeClosure();
 
@@ -216,17 +225,6 @@ class APPLESEED_ALIGN(16) CompositeSurfaceClosure
         const float                 w,
         const size_t                num_closures,
         float                       pdfs[MaxClosureEntries]) const;
-
-    void add_ior(
-        const foundation::Color3f&  weight,
-        const float                 ior);
-
-    float choose_ior(const float w) const;
-
-  private:
-    size_t                          m_ior_count;
-    float                           m_iors[MaxClosureEntries];
-    float                           m_ior_cdf[MaxClosureEntries];
 
     void process_closure_tree(
         const OSL::ClosureColor*    closure,

@@ -103,7 +103,7 @@ namespace
     //
 
     typedef void (*convert_closure_fun)(
-        CompositeSurfaceClosure&    composite_closure,
+        CompositeClosure&           composite_closure,
         const Basis3f&              shading_basis,
         const void*                 osl_params,
         const Color3f&              weight,
@@ -112,7 +112,7 @@ namespace
     convert_closure_fun g_closure_convert_funs[NumClosuresIDs];
 
     void convert_closure_nop(
-        CompositeSurfaceClosure&    composite_closure,
+        CompositeClosure&           composite_closure,
         const Basis3f&              shading_basis,
         const void*                 osl_params,
         const Color3f&              weight,
@@ -182,7 +182,7 @@ namespace
         }
 
         static void convert_closure(
-            CompositeSurfaceClosure&    composite_closure,
+            CompositeClosure&           composite_closure,
             const Basis3f&              shading_basis,
             const void*                 osl_params,
             const Color3f&              weight,
@@ -277,7 +277,7 @@ namespace
         }
 
         static void convert_closure(
-            CompositeSurfaceClosure&    composite_closure,
+            CompositeClosure&           composite_closure,
             const Basis3f&              shading_basis,
             const void*                 osl_params,
             const Color3f&              weight,
@@ -364,7 +364,7 @@ namespace
         }
 
         static void convert_closure(
-            CompositeSurfaceClosure&    composite_closure,
+            CompositeClosure&           composite_closure,
             const Basis3f&              shading_basis,
             const void*                 osl_params,
             const Color3f&              weight,
@@ -447,7 +447,7 @@ namespace
         }
 
         static void convert_closure(
-            CompositeSurfaceClosure&    composite_closure,
+            CompositeClosure&           composite_closure,
             const Basis3f&              shading_basis,
             const void*                 osl_params,
             const Color3f&              weight,
@@ -590,7 +590,7 @@ namespace
         }
 
         static void convert_closure(
-            CompositeSurfaceClosure&    composite_closure,
+            CompositeClosure&           composite_closure,
             const Basis3f&              shading_basis,
             const void*                 osl_params,
             const Color3f&              weight,
@@ -680,7 +680,7 @@ namespace
         }
 
         static void convert_closure(
-            CompositeSurfaceClosure&    composite_closure,
+            CompositeClosure&           composite_closure,
             const Basis3f&              shading_basis,
             const void*                 osl_params,
             const Color3f&              weight,
@@ -776,7 +776,7 @@ namespace
         }
 
         static void convert_closure(
-            CompositeSurfaceClosure&    composite_closure,
+            CompositeClosure&           composite_closure,
             const Basis3f&              shading_basis,
             const void*                 osl_params,
             const Color3f&              weight,
@@ -931,7 +931,7 @@ namespace
         }
 
         static void convert_closure(
-            CompositeSurfaceClosure&    composite_closure,
+            CompositeClosure&           composite_closure,
             const Basis3f&              shading_basis,
             const void*                 osl_params,
             const Color3f&              weight,
@@ -999,7 +999,7 @@ namespace
         }
 
         static void convert_closure(
-            CompositeSurfaceClosure&    composite_closure,
+            CompositeClosure&           composite_closure,
             const Basis3f&              shading_basis,
             const void*                 osl_params,
             const Color3f&              weight,
@@ -1064,7 +1064,7 @@ namespace
         }
 
         static void convert_closure(
-            CompositeSurfaceClosure&    composite_closure,
+            CompositeClosure&           composite_closure,
             const Basis3f&              shading_basis,
             const void*                 osl_params,
             const Color3f&              weight,
@@ -1140,7 +1140,7 @@ namespace
         }
 
         static void convert_closure(
-            CompositeSurfaceClosure&    composite_closure,
+            CompositeClosure&           composite_closure,
             const Basis3f&              shading_basis,
             const void*                 osl_params,
             const Color3f&              weight,
@@ -1207,7 +1207,7 @@ namespace
         }
 
         static void convert_closure(
-            CompositeSurfaceClosure&    composite_closure,
+            CompositeClosure&           composite_closure,
             const Basis3f&              shading_basis,
             const void*                 osl_params,
             const Color3f&              weight,
@@ -1269,7 +1269,7 @@ namespace
         }
 
         static void convert_closure(
-            CompositeSurfaceClosure&    composite_closure,
+            CompositeClosure&           composite_closure,
             const Basis3f&              shading_basis,
             const void*                 osl_params,
             const Color3f&              weight,
@@ -1567,7 +1567,7 @@ namespace
         }
 
         static void convert_closure(
-            CompositeSurfaceClosure&    composite_closure,
+            CompositeClosure&           composite_closure,
             const Basis3f&              shading_basis,
             const void*                 osl_params,
             const Color3f&              weight,
@@ -1753,6 +1753,7 @@ namespace
 
 CompositeClosure::CompositeClosure()
   : m_closure_count(0)
+  , m_ior_count(0)
 {
 }
 
@@ -1879,6 +1880,30 @@ InputValues* CompositeClosure::do_add_closure(
     return values;
 }
 
+void CompositeClosure::add_ior(
+    const Color3f&              weight,
+    const float                 ior)
+{
+    // We use the luminance of the weight as the IOR weight.
+    const float w = luminance(weight);
+    assert(w > 0.0f);
+
+    m_iors[m_ior_count] = ior;
+    m_ior_cdf[m_ior_count] = w;
+    ++m_ior_count;
+}
+
+float CompositeClosure::choose_ior(const float w) const
+{
+    assert(m_ior_count > 0);
+
+    if APPLESEED_LIKELY(m_ior_count == 1)
+        return m_iors[0];
+
+    const size_t index = sample_cdf_linear_search(m_ior_cdf, w);
+    return m_iors[index];
+}
+
 void CompositeClosure::compute_pdfs(float pdfs[MaxClosureEntries])
 {
     const size_t closure_count = get_closure_count();
@@ -1908,7 +1933,6 @@ CompositeSurfaceClosure::CompositeSurfaceClosure(
     const Basis3f&              original_shading_basis,
     const OSL::ClosureColor*    ci,
     Arena&                      arena)
-  : m_ior_count(0)
 {
     process_closure_tree(ci, original_shading_basis, Color3f(1.0f), arena);
 
@@ -1981,30 +2005,6 @@ size_t CompositeSurfaceClosure::choose_closure(
     assert(num_closures < MaxClosureEntries);
 
     return sample_pdf_linear_search(pdfs, num_closures, w);
-}
-
-void CompositeSurfaceClosure::add_ior(
-    const Color3f&              weight,
-    const float                 ior)
-{
-    // We use the luminance of the weight as the IOR weight.
-    const float w = luminance(weight);
-    assert(w > 0.0f);
-
-    m_iors[m_ior_count] = ior;
-    m_ior_cdf[m_ior_count] = w;
-    ++m_ior_count;
-}
-
-float CompositeSurfaceClosure::choose_ior(const float w) const
-{
-    assert(m_ior_count > 0);
-
-    if APPLESEED_LIKELY(m_ior_count == 1)
-        return m_iors[0];
-
-    const size_t index = sample_cdf_linear_search(m_ior_cdf, w);
-    return m_iors[index];
 }
 
 void CompositeSurfaceClosure::process_closure_tree(
