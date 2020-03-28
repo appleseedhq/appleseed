@@ -1632,6 +1632,8 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/glassbsdf.h
     renderer/modeling/bsdf/glossybrdf.cpp
     renderer/modeling/bsdf/glossybrdf.h
+    renderer/modeling/bsdf/glossylayerbsdf.cpp
+    renderer/modeling/bsdf/glossylayerbsdf.h
     renderer/modeling/bsdf/hairbsdf.cpp
     renderer/modeling/bsdf/hairbsdf.h
     renderer/modeling/bsdf/ibsdffactory.h

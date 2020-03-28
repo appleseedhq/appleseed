@@ -50,6 +50,11 @@ float max(color C)  { return max(C[0], max(C[1], C[2])); }
 float min(vector V) { return min(V[0], min(V[1], V[2])); }
 float max(vector V) { return max(V[0], max(V[1], V[2])); }
 
+
+//
+// BSDF closures.
+//
+
 closure color as_oren_nayar(
     color       reflectance,
     normal      N,
@@ -99,27 +104,6 @@ closure color as_glass(
     //   float "energy_compensation" = 0
     ) BUILTIN;
 
-closure color as_subsurface(
-    string      profile,
-    normal      N,
-    color       reflectance,
-    color       mean_free_path,
-    float       ior
-    // keyword arguments:
-    //   float "fresnel_weight" = 1
-    //   float "volume_anisotropy" = 0
-    ) BUILTIN;
-
-closure color as_randomwalk_glass(
-    normal      N,
-    color       reflectance,
-    color       mean_free_path,
-    float       ior,
-    float       surface_roughness,
-    // keyword arguments:
-    //   float "volume_anisotropy" = 0
-    ) BUILTIN;
-
 closure color as_ashikhmin_shirley(
     normal      N,
     vector      T,
@@ -163,6 +147,62 @@ closure color as_plastic(
     float       diffuse_weight,
     float       scattering) BUILTIN;
 
+
+//
+// BSSRDF closures.
+//
+
+closure color as_subsurface(
+    string      profile,
+    normal      N,
+    color       reflectance,
+    color       mean_free_path,
+    float       ior
+    // keyword arguments:
+    //   float "fresnel_weight" = 1
+    //   float "volume_anisotropy" = 0
+    ) BUILTIN;
+
+closure color as_randomwalk_glass(
+    normal      N,
+    color       reflectance,
+    color       mean_free_path,
+    float       ior,
+    float       surface_roughness,
+    // keyword arguments:
+    //   float "volume_anisotropy" = 0
+    ) BUILTIN;
+
+
+//
+// Layered closures.
+//
+
+closure color as_glossy_layer(
+    closure color   substrate,
+    normal          N,
+    vector          T,
+    color           reflectance,
+    float           roughness,
+    float           anisotropy,
+    float           ior,
+    color           transmittance,
+    float           thickness) BUILTIN;
+
+
+//
+// Special closures.
+//
+
+closure color as_matte(
+    color       matte_color,
+    float       matte_alpha) BUILTIN;
+
+
+//
+// NPR closures.
+//
+
 closure color as_npr_shading() BUILTIN;
 
 closure color as_npr_contour(
@@ -177,11 +217,6 @@ closure color as_npr_contour(
     float       creases_threshold
     // keyword arguments:
     //   int    "quality" = 1
-) BUILTIN;
-
-closure color as_matte(
-    color       matte_color,
-    float       matte_alpha,
-) BUILTIN;
+    ) BUILTIN;
 
 #endif  // AS_OSL_EXTENSIONS_H

@@ -36,4 +36,6 @@ extern const float g_glossy_ggx_albedo_table[1056];
 extern const float g_glass_ggx_albedo_table[4352];
 extern const float g_glass_ggx_rcp_eta_albedo_table[4352];
 
+extern const float g_dielectric_layer_albedo_table[4352];
+
 }   // namespace renderer
