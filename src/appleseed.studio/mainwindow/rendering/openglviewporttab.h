@@ -76,7 +76,6 @@ class OpenGLViewportTab
     ViewportCanvas* get_viewport_canvas() const override;
 
     void render_began() override;
-    void update_size() override;
     void on_tab_selected() override;
 
   signals:

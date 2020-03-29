@@ -92,11 +92,6 @@ class RenderLayer
     void darken();
 
     // Thread-safe.
-    void resize(
-        const std::size_t           width,
-        const std::size_t           height);
-
-    // Thread-safe.
     void clear();
 
     // Called before rendering begins.

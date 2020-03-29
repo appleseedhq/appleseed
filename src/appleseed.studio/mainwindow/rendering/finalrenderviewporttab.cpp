@@ -113,15 +113,6 @@ void FinalRenderViewportTab::render_began()
     m_light_paths_viewport_toolbar.get()->reset(&m_project);
 }
 
-void FinalRenderViewportTab::update_size()
-{
-    ViewportTab::update_size();
-
-    m_set_render_region_button->setChecked(false);
-
-    recreate_handlers();
-}
-
 void FinalRenderViewportTab::on_tab_selected()
 {
     const bool display_light_paths = m_light_paths_manager.should_display_light_paths();
@@ -474,9 +465,6 @@ void FinalRenderViewportTab::recreate_handlers()
     connect(
         m_camera_controller.get(), &CameraController::signal_camera_changed,
         this, &FinalRenderViewportTab::slot_camera_changed);
-    connect(
-        &m_project_explorer, &ProjectExplorer::signal_frame_modified,
-        m_camera_controller.get(), &CameraController::slot_frame_modified);
 
     // Handler for picking scene entities in the render widget.
     m_scene_picking_handler.reset(

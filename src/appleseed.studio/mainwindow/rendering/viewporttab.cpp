@@ -57,7 +57,7 @@ void ViewportTab::clear()
 {
     ViewportCanvas* viewport_canvas = get_viewport_canvas();
     viewport_canvas->get_render_layer()->clear();
-    viewport_canvas->repaint();
+    viewport_canvas->update();
 }
 
 void ViewportTab::render_began()
@@ -65,22 +65,6 @@ void ViewportTab::render_began()
     ViewportCanvas* viewport_canvas = get_viewport_canvas();
     viewport_canvas->get_render_layer()->darken();
     viewport_canvas->get_light_paths_layer()->update_render_camera_transform();
-}
-
-void ViewportTab::update()
-{
-    ViewportCanvas* viewport_canvas = get_viewport_canvas();
-    viewport_canvas->update();
-}
-
-void ViewportTab::update_size()
-{
-    const CanvasProperties& props = m_project.get_frame()->image().properties();
-
-    ViewportCanvas* viewport_canvas = get_viewport_canvas();
-    viewport_canvas->resize(
-        props.m_canvas_width,
-        props.m_canvas_height);
 }
 
 void ViewportTab::on_tab_selected()

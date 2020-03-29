@@ -68,7 +68,8 @@ namespace studio {
 // A widget providing an hardware-accelerated visualization of recorded light paths.
 //
 
-class LightPathsLayer: public QObject
+class LightPathsLayer
+  : public QObject
 {
     Q_OBJECT
 
@@ -100,9 +101,9 @@ class LightPathsLayer: public QObject
 
   private slots:
     void slot_light_path_selection_changed(
-        const bool                                  display_light_paths,
-        const int                                   selected_light_path_index,
-        const int                                   total_light_paths);
+        const bool                          display_light_paths,
+        const int                           selected_light_path_index,
+        const int                           total_light_paths);
 
   private:
     const renderer::Project&                m_project;

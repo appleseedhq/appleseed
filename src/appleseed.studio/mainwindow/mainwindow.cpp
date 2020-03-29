@@ -779,8 +779,8 @@ void MainWindow::update_project_explorer()
             SLOT(slot_project_modified()));
 
         connect(
-            m_project_explorer, SIGNAL(signal_frame_modified()),
-            SLOT(slot_frame_modified()));
+            m_project_explorer, &ProjectExplorer::signal_frame_resolution_changed,
+            this, &MainWindow::slot_frame_resolution_changed);
     }
 
     m_ui->lineedit_filter->clear();
@@ -2105,10 +2105,9 @@ void MainWindow::slot_clear_filter()
     m_ui->lineedit_filter->clear();
 }
 
-void MainWindow::slot_frame_modified()
+void MainWindow::slot_frame_resolution_changed()
 {
-    for (each<ViewportTabCollection> i = m_viewport_tabs; i; ++i)
-        i->second->update_size();
+    recreate_viewport_tabs();
 }
 
 void MainWindow::slot_fullscreen()

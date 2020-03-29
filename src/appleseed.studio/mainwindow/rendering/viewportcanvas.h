@@ -101,11 +101,6 @@ class ViewportCanvas
     // Thread-safe.
     QImage capture() override;
 
-    // Thread-safe.
-    void resize(
-        const size_t            width,
-        const size_t            height);
-
     RenderLayer* get_render_layer();
     GLSceneLayer* get_gl_scene_layer();
     LightPathsLayer* get_light_paths_layer();
@@ -113,13 +108,13 @@ class ViewportCanvas
   signals:
     void signal_material_dropped(
         const foundation::Vector2d& drop_pos,
-        const QString&          material_name);
+        const QString&              material_name);
 
   public slots:
     void slot_light_path_selection_changed(
-        const bool                                  display_light_paths,
-        const int                                   selected_light_path_index,
-        const int                                   total_light_paths);
+        const bool                  display_light_paths,
+        const int                   selected_light_path_index,
+        const int                   total_light_paths);
 
   private:
     const renderer::Project&            m_project;

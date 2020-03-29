@@ -67,9 +67,6 @@ class ViewportTab
 
     virtual void render_began();
 
-    void update();
-    virtual void update_size();
-
     virtual void on_tab_selected();
 
     struct State

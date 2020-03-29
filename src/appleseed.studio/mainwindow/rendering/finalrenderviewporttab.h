@@ -72,7 +72,6 @@ class FinalRenderViewportTab
     void set_light_paths_toggle_enabled(const bool enabled);
 
     void render_began() override;
-    void update_size() override;
     void on_tab_selected() override;
 
     CameraController* get_camera_controller() const;

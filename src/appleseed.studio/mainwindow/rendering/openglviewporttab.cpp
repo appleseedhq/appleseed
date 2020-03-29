@@ -94,13 +94,6 @@ void OpenGLViewportTab::render_began()
     m_light_paths_viewport_toolbar.get()->reset(&m_project);
 }
 
-void OpenGLViewportTab::update_size()
-{
-    ViewportTab::update_size();
-
-    recreate_handlers();
-}
-
 void OpenGLViewportTab::on_tab_selected()
 {
     const bool display_light_paths = m_light_paths_manager.should_display_light_paths();

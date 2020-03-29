@@ -72,7 +72,8 @@ namespace
     constexpr std::size_t Vec3ByteStride = sizeof(float) * 3;
 
     // Struct of an element of the "others" vertex buffer
-    struct OtherAttributes {
+    struct OtherAttributes
+    {
         GLint   v_bitmask;
         GLfloat v_color[3];
         GLfloat v_surface_normal[3];

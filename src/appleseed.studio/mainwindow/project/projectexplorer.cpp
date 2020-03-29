@@ -116,8 +116,8 @@ ProjectExplorer::ProjectExplorer(
         SIGNAL(signal_project_modified()));
 
     connect(
-        &m_project_builder, SIGNAL(signal_frame_modified()),
-        SIGNAL(signal_frame_modified()));
+        &m_project_builder, &ProjectBuilder::signal_frame_resolution_changed,
+        this, &ProjectExplorer::signal_frame_resolution_changed);
 }
 
 ProjectExplorer::~ProjectExplorer()

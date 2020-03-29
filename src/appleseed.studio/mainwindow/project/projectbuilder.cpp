@@ -70,13 +70,17 @@ Frame* ProjectBuilder::edit_frame(
     const size_t new_canvas_width = new_frame->image().properties().m_canvas_width;
     const size_t new_canvas_height = new_frame->image().properties().m_canvas_height;
 
-    if (new_canvas_width != old_canvas_width || new_canvas_height != old_canvas_height)
+    const bool resolution_changed = new_canvas_width != old_canvas_width || new_canvas_height != old_canvas_height;
+
+    if (resolution_changed)
         new_frame->reset_crop_window();
 
     m_project.set_frame(new_frame);
 
     slot_notify_project_modification();
-    emit signal_frame_modified();
+
+    if (resolution_changed)
+        emit signal_frame_resolution_changed();
 
     return m_project.get_frame();
 }

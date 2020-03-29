@@ -306,7 +306,7 @@ class MainWindow
     // Project explorer.
     void slot_filter_text_changed(const QString& pattern);
     void slot_clear_filter();
-    void slot_frame_modified();
+    void slot_frame_resolution_changed();
 
     // General UI actions.
     void slot_fullscreen();

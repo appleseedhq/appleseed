@@ -80,12 +80,20 @@ RenderLayer::RenderLayer(
   , m_gl_initialized(false)
 {
     setFocusPolicy(Qt::StrongFocus);
+    setFixedWidth(static_cast<int>(width));
+    setFixedHeight(static_cast<int>(height));
     setAutoFillBackground(false);
     setAttribute(Qt::WA_OpaquePaintEvent, true);
 
     m_gl_tex = new QOpenGLTexture(QOpenGLTexture::Target2D);
 
-    resize(width, height);
+    m_image =
+        QImage(
+            static_cast<int>(width),
+            static_cast<int>(height),
+            QImage::Format_RGB888);
+
+    clear();
 
     const char* display_name = m_ocio_config->getDefaultDisplay();
     const char* default_transform = m_ocio_config->getDefaultView(display_name);
@@ -152,24 +160,6 @@ QImage RenderLayer::capture()
 void RenderLayer::darken()
 {
     multiply(0.2f);
-}
-
-void RenderLayer::resize(
-    const std::size_t   width,
-    const std::size_t   height)
-{
-    QMutexLocker locker(&m_mutex);
-
-    setFixedWidth(static_cast<int>(width));
-    setFixedHeight(static_cast<int>(height));
-
-    m_image =
-        QImage(
-            static_cast<int>(width),
-            static_cast<int>(height),
-            QImage::Format_RGB888);
-
-    clear();
 }
 
 void RenderLayer::clear()

@@ -101,7 +101,7 @@ class ProjectBuilder
 
   signals:
     void signal_project_modified() const;
-    void signal_frame_modified() const;
+    void signal_frame_resolution_changed() const;
 
   public slots:
     void slot_notify_project_modification() const;

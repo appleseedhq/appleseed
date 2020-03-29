@@ -86,7 +86,6 @@ class CameraController
 
   public slots:
     void slot_entity_picked(renderer::ScenePicker::PickingResult result);
-    void slot_frame_modified();
 
   signals:
     void signal_camera_change_begin();
