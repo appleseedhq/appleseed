@@ -80,7 +80,7 @@ namespace
         if (!success)
         {
             char info_log[1024];
-            f->glGetShaderInfoLog(shader, 1024, NULL, info_log);
+            f->glGetShaderInfoLog(shader, sizeof(info_log), NULL, info_log);
 
             GLint shader_kind;
             f->glGetShaderiv(shader, GL_SHADER_TYPE, &shader_kind);
@@ -88,13 +88,13 @@ namespace
             const std::string shader_kind_string = shader_kind_to_string(shader_kind);
 
             RENDERER_LOG_ERROR(
-                "opengl: %s shader compilation failed:\n%s",
+                "%s OpenGL shader compilation failed:\n%s",
                 shader_kind_string.c_str(),
                 info_log);
         }
     }
 
-    // Link an OpenlGL shader program with a vertex and optional fragment shader object.
+    // Link an OpenGL shader program with a vertex and optional fragment shader object.
     void link_shader_program(
         QOpenGLFunctions_4_1_Core*  f,
         const GLuint                program,
@@ -115,10 +115,10 @@ namespace
         if (!success)
         {
             char info_log[1024];
-            f->glGetProgramInfoLog(program, 1024, NULL, info_log);
+            f->glGetProgramInfoLog(program, sizeof(info_log), NULL, info_log);
 
             RENDERER_LOG_ERROR(
-                "opengl: shader program linking failed:\n%s",
+                "OpenGL shader program linking failed:\n%s",
                 info_log);
         }
     }

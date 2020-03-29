@@ -67,11 +67,6 @@ void ViewportTab::render_began()
     viewport_canvas->get_light_paths_layer()->update_render_camera_transform();
 }
 
-void ViewportTab::reset_zoom()
-{
-    m_zoom_handler->reset_zoom();
-}
-
 void ViewportTab::update()
 {
     ViewportCanvas* viewport_canvas = get_viewport_canvas();
@@ -105,6 +100,11 @@ void ViewportTab::load_state(const State& state)
     // The order matters here.
     m_zoom_handler->load_state(state.m_zoom_handler_state);
     m_pan_handler->load_state(state.m_pan_handler_state);
+}
+
+void ViewportTab::slot_reset_zoom()
+{
+    m_zoom_handler->reset_zoom();
 }
 
 }   // namespace studio

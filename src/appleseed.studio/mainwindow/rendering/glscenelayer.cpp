@@ -231,7 +231,7 @@ void GLSceneLayer::load_object_data(const Object& object)
 {
     const std::string obj_name = std::string(object.get_name());
 
-    RENDERER_LOG_DEBUG("opengl: uploading mesh data for object \"%s\"...", obj_name.c_str());
+    RENDERER_LOG_DEBUG("uploading OpenGL mesh data for object \"%s\"...", obj_name.c_str());
 
     if (m_scene_object_index_map.count(obj_name) == 0)
     {
@@ -293,7 +293,7 @@ void GLSceneLayer::load_scene_data()
 {
     const float time = m_camera.get_shutter_middle_time();
 
-    RENDERER_LOG_DEBUG("opengl: uploading scene data...");
+    RENDERER_LOG_DEBUG("uploading OpenGL scene data...");
 
     // First, load all the unique object vertex buffer data into static VBOs
     for (const auto& assembly : m_project.get_scene()->assemblies())

@@ -66,7 +66,6 @@ class ViewportTab
     void clear();
 
     virtual void render_began();
-    void reset_zoom();
 
     void update();
     virtual void update_size();
@@ -81,6 +80,9 @@ class ViewportTab
 
     State save_state() const;
     void load_state(const State& state);
+
+  protected slots:
+    void slot_reset_zoom();
 
   protected:
     renderer::Project&                                  m_project;

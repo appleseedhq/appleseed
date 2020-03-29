@@ -302,7 +302,6 @@ class MainWindow
     void slot_quicksave_frame_and_aovs();
     void slot_save_render_widget_content();
     void slot_clear_frame();
-    void slot_reset_zoom();
 
     // Project explorer.
     void slot_filter_text_changed(const QString& pattern);

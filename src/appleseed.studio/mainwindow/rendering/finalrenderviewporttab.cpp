@@ -306,7 +306,7 @@ void FinalRenderViewportTab::create_toolbar()
     reset_zoom_button->setToolTip(combine_name_and_shortcut("Reset Zoom", reset_zoom_button->shortcut()));
     connect(
         reset_zoom_button, &QToolButton::clicked,
-        this, &FinalRenderViewportTab::signal_reset_zoom);
+        this, &FinalRenderViewportTab::slot_reset_zoom);
     m_toolbar->addWidget(reset_zoom_button);
 
     m_toolbar->addSeparator();

@@ -91,8 +91,6 @@ ViewportCanvas::ViewportCanvas(
   , m_accum_revealage_fb(0)
 {
     setFocusPolicy(Qt::StrongFocus);
-    setFixedWidth(static_cast<int>(width));
-    setFixedHeight(static_cast<int>(height));
     setAutoFillBackground(false);
     setAttribute(Qt::WA_OpaquePaintEvent, true);
 
@@ -259,6 +257,9 @@ void ViewportCanvas::resize(
     const size_t width,
     const size_t height)
 {
+    setFixedWidth(static_cast<int>(width));
+    setFixedHeight(static_cast<int>(height));
+
     m_render_layer->resize(width, height);
     m_light_paths_layer->resize(width, height);
 }

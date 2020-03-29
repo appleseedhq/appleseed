@@ -1004,9 +1004,6 @@ void MainWindow::create_final_render_tab()
         m_final_render_viewport_tab, SIGNAL(signal_quicksave_frame_and_aovs()),
         SLOT(slot_quicksave_frame_and_aovs()));
     connect(
-        m_final_render_viewport_tab, SIGNAL(signal_reset_zoom()),
-        SLOT(slot_reset_zoom()));
-    connect(
         m_final_render_viewport_tab, SIGNAL(signal_clear_frame()),
         SLOT(slot_clear_frame()));
     connect(
@@ -1037,9 +1034,6 @@ void MainWindow::create_opengl_tab()
     connect(
         m_opengl_viewport_tab, SIGNAL(signal_viewport_canvas_context_menu(const QPoint&)),
         SLOT(slot_viewport_canvas_context_menu(const QPoint&)));
-    connect(
-        m_opengl_viewport_tab, SIGNAL(signal_reset_zoom()),
-        SLOT(slot_reset_zoom()));
 
     m_opengl_viewport_tab_index = add_viewport_tab(m_opengl_viewport_tab, "OpenGL");
 }
@@ -2098,14 +2092,6 @@ void MainWindow::slot_clear_frame()
     {
         kvp.second->clear();
     }
-}
-
-void MainWindow::slot_reset_zoom()
-{
-    const int current_tab_index = m_ui->tab_render_channels->currentIndex();
-    const auto viewport_tab_it = m_tab_index_to_viewport_tab.find(current_tab_index);
-    if (viewport_tab_it != m_tab_index_to_viewport_tab.end())
-        viewport_tab_it->second->reset_zoom();
 }
 
 void MainWindow::slot_filter_text_changed(const QString& pattern)
