@@ -174,11 +174,9 @@ void FinalRenderViewportTab::slot_viewport_canvas_context_menu(const QPoint& poi
 void FinalRenderViewportTab::slot_clear_frame()
 {
     m_light_paths_toggle_button->setChecked(false);
-    m_light_paths_toggle_button->setEnabled(false);
     m_light_paths_picking_handler->set_enabled(false);
     m_light_paths_viewport_toolbar->set_enabled(false);
     m_scene_picking_handler->set_enabled(false);
-    m_light_paths_manager.clear_light_paths_selection();
 
     emit signal_clear_frame();
 }

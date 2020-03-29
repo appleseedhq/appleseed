@@ -104,8 +104,6 @@ class LightPathsViewportToolbar
     QToolButton*                                m_prev_path_button;
     QToolButton*                                m_next_path_button;
 
-    void clear_selection() const;
-
     void create_toolbar();
     void refresh_toolbar() const;
 

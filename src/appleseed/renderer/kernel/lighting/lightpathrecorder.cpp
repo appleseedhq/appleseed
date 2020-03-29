@@ -236,7 +236,10 @@ void LightPathRecorder::query(
     {
         for (size_t x = x0; x <= x1; ++x)
         {
-            const auto& index_entry = impl->m_index[y * impl->m_render_width + x];
+            const std::size_t pixel_index = y * impl->m_render_width + x;
+            assert(pixel_index < impl->m_index.size());
+
+            const auto& index_entry = impl->m_index[pixel_index];
 
             for (size_t p = index_entry.m_begin_path; p < index_entry.m_end_path; ++p)
             {

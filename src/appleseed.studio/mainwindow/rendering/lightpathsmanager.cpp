@@ -106,7 +106,7 @@ void LightPathsManager::set_light_paths(const LightPathArray& light_paths)
     set_selected_light_path_index(-1);
 }
 
-void LightPathsManager::clear_light_paths_selection()
+void LightPathsManager::clear_light_paths()
 {
     m_light_paths.clear();
     set_selected_light_path_index(-1);
@@ -143,19 +143,14 @@ void LightPathsManager::save_all_light_paths(QWidget* source) const
     m_project.get_light_path_recorder().write(filepath.toUtf8().constData());
 }
 
-const renderer::LightPathArray& LightPathsManager::light_paths() const
+const renderer::LightPathArray& LightPathsManager::get_light_paths() const
 {
     return m_light_paths;
 }
 
-int LightPathsManager::get_selected_light_paths_index() const
+int LightPathsManager::get_selected_light_path_index() const
 {
     return m_selected_light_path_index;
-}
-
-std::size_t LightPathsManager::get_selected_light_paths_count() const
-{
-    return m_light_paths.size();
 }
 
 void LightPathsManager::slot_select_all_light_paths()

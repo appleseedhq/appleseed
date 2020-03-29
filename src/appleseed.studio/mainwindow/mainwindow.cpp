@@ -1245,17 +1245,14 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
     }
 
     Project* project = m_project_manager.get_project();
-    Frame* frame = project->get_frame();
-
+    project->get_frame()->clear_main_and_aov_images();
     project->get_light_path_recorder().clear();
-    m_light_paths_manager->clear_light_paths_selection();
-    frame->clear_main_and_aov_images();
+
+    m_light_paths_manager->clear_light_paths();
 
     // Darken render widgets.
     for (const_each<ViewportTabCollection> i = m_viewport_tabs; i; ++i)
-    {
         i->second->render_began();
-    }
 
     // Retrieve the appropriate rendering configuration.
     const char* configuration_name =
@@ -2084,14 +2081,15 @@ void MainWindow::slot_save_render_widget_content()
 
 void MainWindow::slot_clear_frame()
 {
-    Frame* frame = m_project_manager.get_project()->get_frame();
-    frame->clear_main_and_aov_images();
+    Project* project = m_project_manager.get_project();
+    project->get_frame()->clear_main_and_aov_images();
+    project->get_light_path_recorder().clear();
+
+    m_light_paths_manager->clear_light_paths();
 
     // Clear all render widgets to black.
     for (const std::pair<std::string, ViewportTab*>& kvp : m_viewport_tabs)
-    {
         kvp.second->clear();
-    }
 }
 
 void MainWindow::slot_filter_text_changed(const QString& pattern)
@@ -2107,6 +2105,9 @@ void MainWindow::slot_clear_filter()
 
 void MainWindow::slot_frame_resolution_changed()
 {
+    m_project_manager.get_project()->get_light_path_recorder().clear();
+    m_light_paths_manager->clear_light_paths();
+
     recreate_viewport_tabs();
 }
 

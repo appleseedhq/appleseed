@@ -65,19 +65,18 @@ class LightPathsManager
         renderer::ParamArray&       application_settings);
 
     void set_light_paths(
-        const renderer::LightPathArray&     light_paths);
+        const renderer::LightPathArray& light_paths);
 
-    void clear_light_paths_selection();
+    void clear_light_paths();
 
     void display_light_paths(const bool on);
     bool should_display_light_paths() const;
 
     void save_all_light_paths(QWidget* source) const;
 
-    const renderer::LightPathArray& light_paths() const;
+    const renderer::LightPathArray& get_light_paths() const;
 
-    int get_selected_light_paths_index() const;
-    std::size_t get_selected_light_paths_count() const;
+    int get_selected_light_path_index() const;
 
   signals:
     void signal_light_path_selection_changed(

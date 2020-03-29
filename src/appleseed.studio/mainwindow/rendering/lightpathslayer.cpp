@@ -144,7 +144,7 @@ void LightPathsLayer::load_light_paths_data()
 {
     m_path_terminator_vertex_indices.clear();
 
-    const renderer::LightPathArray& light_paths = m_light_paths_manager.light_paths();
+    const renderer::LightPathArray& light_paths = m_light_paths_manager.get_light_paths();
 
     if (!light_paths.empty())
     {
@@ -452,7 +452,7 @@ void LightPathsLayer::render_scene(const GLfloat* gl_view_matrix) const
 
     if (m_total_triangle_count > 1)
     {
-        const int selected_light_path_index = m_light_paths_manager.get_selected_light_paths_index();
+        const int selected_light_path_index = m_light_paths_manager.get_selected_light_path_index();
 
         GLint first_selected, last_selected;
 

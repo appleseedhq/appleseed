@@ -155,11 +155,6 @@ void LightPathsViewportToolbar::slot_save_light_paths()
     m_light_paths_manager.save_all_light_paths(m_toolbar);
 }
 
-void LightPathsViewportToolbar::clear_selection() const
-{
-    m_light_paths_manager.clear_light_paths_selection();
-}
-
 void LightPathsViewportToolbar::create_toolbar()
 {
     // Create the render toolbar.
@@ -224,7 +219,7 @@ bool LightPathsViewportToolbar::eventFilter(QObject* object, QEvent* event)
                 const int key = key_event->key();
 
                 if (key == Qt::Key_Escape)
-                    clear_selection();
+                    m_light_paths_manager.clear_light_paths();
                 else if (key == Qt::Key_Left)
                     emit signal_display_previous_light_path();
                 else if (key == Qt::Key_Right)
