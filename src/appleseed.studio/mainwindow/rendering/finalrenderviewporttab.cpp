@@ -134,7 +134,7 @@ void FinalRenderViewportTab::slot_camera_changed()
 {
     m_viewport_canvas->get_light_paths_layer()->set_transform(m_camera_controller->get_transform());
     m_viewport_canvas->get_gl_scene_layer()->set_transform(m_camera_controller->get_transform());
-    update();
+    m_viewport_canvas->update();
 }
 
 void FinalRenderViewportTab::slot_toggle_render_region(const bool checked)
