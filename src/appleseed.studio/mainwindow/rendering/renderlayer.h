@@ -145,6 +145,7 @@ class RenderLayer
     GLuint                              m_shader_program;
     GLint                               m_mult_loc;
     bool                                m_gl_initialized;
+    bool                                m_refresh_gl_texture;
 
     OCIO::ConstConfigRcPtr              m_ocio_config;
     OCIO::ConstProcessorRcPtr           m_ocio_processor;

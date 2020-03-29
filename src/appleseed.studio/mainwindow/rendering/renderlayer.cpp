@@ -106,9 +106,13 @@ void RenderLayer::draw(GLuint empty_vao, bool paths_display_active)
 {
     QMutexLocker locker(&m_mutex);
 
-    m_gl_tex->destroy();
-    m_gl_tex->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Nearest);
-    m_gl_tex->setData(m_image, QOpenGLTexture::MipMapGeneration::DontGenerateMipMaps);
+    if (m_refresh_gl_texture)
+    {
+        m_gl_tex->destroy();
+        m_gl_tex->setMinMagFilters(QOpenGLTexture::Linear, QOpenGLTexture::Nearest);
+        m_gl_tex->setData(m_image, QOpenGLTexture::MipMapGeneration::DontGenerateMipMaps);
+        m_refresh_gl_texture = false;
+    }
 
     m_gl->glUseProgram(m_shader_program);
 
@@ -168,6 +172,8 @@ void RenderLayer::clear()
 
     m_image.fill(QColor(0, 0, 0));
     m_image_storage.reset();
+
+    m_refresh_gl_texture = true;
 }
 
 namespace
@@ -213,6 +219,8 @@ void RenderLayer::multiply(const float multiplier)
         for (std::size_t x = 0; x < image_width * 3; ++x)
             row[x] = truncate<std::uint8_t>(row[x] * multiplier);
     }
+
+    m_refresh_gl_texture = true;
 }
 
 namespace
@@ -301,6 +309,8 @@ void RenderLayer::highlight_tile(
         BracketExtent,
         BracketColor,
         sizeof(BracketColor));
+
+    m_refresh_gl_texture = true;
 }
 
 void RenderLayer::blit_tile(
@@ -314,6 +324,8 @@ void RenderLayer::blit_tile(
 
     blit_tile_no_lock(frame, tile_x, tile_y);
     update_tile_no_lock(tile_x, tile_y);
+
+    m_refresh_gl_texture = true;
 }
 
 void RenderLayer::blit_frame(const Frame& frame)
@@ -332,6 +344,8 @@ void RenderLayer::blit_frame(const Frame& frame)
             update_tile_no_lock(x, y);
         }
     }
+
+    m_refresh_gl_texture = true;
 }
 
 void RenderLayer::set_display_transform(const QString& transform)
