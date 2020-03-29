@@ -178,7 +178,7 @@ QImage ViewportCanvas::capture()
 
 void ViewportCanvas::initializeGL()
 {
-    RENDERER_LOG_INFO("initializing opengl.");
+    RENDERER_LOG_DEBUG("initializing OpenGL context...");
 
     m_gl = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_4_1_Core>();
 
@@ -189,7 +189,7 @@ void ViewportCanvas::initializeGL()
         const int minor_version = qs_format.minorVersion();
 
         RENDERER_LOG_ERROR(
-            "opengl: could not load required gl functions. loaded version %d.%d, required version 3.3.",
+            "could not load required OpenGL functions: loaded version %d.%d, required version 4.2.",
             major_version,
             minor_version);
 
