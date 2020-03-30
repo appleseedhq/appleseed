@@ -47,6 +47,7 @@
 #include "foundation/string/string.h"
 
 // Qt headers.
+#include <QDialogButtonBox>
 #include <QKeySequence>
 #include <QShortcut>
 #include <Qt>
@@ -89,20 +90,20 @@ void ApplicationSettingsWindow::slot_reload_application_settings()
 
 void ApplicationSettingsWindow::build_connections()
 {
-    connect(m_ui->buttonbox, SIGNAL(accepted()), SLOT(slot_save_configuration_and_close()));
-    connect(m_ui->buttonbox, SIGNAL(rejected()), SLOT(slot_restore_configuration_and_close()));
+    connect(m_ui->buttonbox, &QDialogButtonBox::accepted, &ApplicationSettingsWindow::slot_save_configuration_and_close);
+    connect(m_ui->buttonbox, &QDialogButtonBox::rejected, &ApplicationSettingsWindow::slot_restore_configuration_and_close);
 
     connect(
-        create_window_local_shortcut(this, Qt::Key_Return), SIGNAL(activated()),
-        SLOT(slot_save_configuration_and_close()));
+        create_window_local_shortcut(this, Qt::Key_Return), &QShortcut::activated),
+        &ApplicationSettingsWindow::slot_save_configuration_and_close);
 
     connect(
-        create_window_local_shortcut(this, Qt::Key_Enter), SIGNAL(activated()),
-        SLOT(slot_save_configuration_and_close()));
+        create_window_local_shortcut(this, Qt::Key_Enter), &QShortcut::activated),
+        &ApplicationSettingsWindow::slot_save_configuration_and_close);
 
     connect(
-        create_window_local_shortcut(this, Qt::Key_Escape), SIGNAL(activated()),
-        SLOT(slot_restore_configuration_and_close()));
+        create_window_local_shortcut(this, Qt::Key_Escape), &QShortcut::activated),
+        &ApplicationSettingsWindow::slot_save_configuration_and_close);
 }
 
 void ApplicationSettingsWindow::load_settings()

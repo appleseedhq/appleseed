@@ -42,6 +42,7 @@
 #include "foundation/utility/api/apistringpair.h"
 
 // Qt headers.
+#include <QDialogButtonBox>
 #include <QKeySequence>
 #include <QShortcut>
 #include <QString>
@@ -73,11 +74,11 @@ AboutWindow::AboutWindow(QWidget* parent)
 
     setFixedSize(width(), sizeHint().height());
 
-    connect(m_ui->dialogbuttonbox, SIGNAL(accepted()), this, SLOT(close()));
+    connect(m_ui->dialogbuttonbox, &QDialogButtonBox::accepted, this, &QWidget::close);
 
     connect(
-        new QShortcut(QKeySequence(Qt::Key_Escape), this), SIGNAL(activated()),
-        this, SLOT(close()));
+        new QShortcut(QKeySequence(Qt::Key_Escape), this), &QShortcut::activated,
+        this, &QWidget::close);
 
     WindowBase::load_settings();
 }

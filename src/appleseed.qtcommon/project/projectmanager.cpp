@@ -40,6 +40,7 @@
 #include "foundation/platform/compiler.h"
 
 // Qt headers.
+#include <QFutureWatcher>
 #include <QtConcurrent>
 
 // Boost headers.
@@ -66,9 +67,10 @@ ProjectManager::ProjectManager()
   : m_is_loading(false)
   , m_dirty_flag(false)
 {
+
     connect(
-        &m_async_io_future_watcher, SIGNAL(finished()),
-        this, SLOT(slot_load_project_async_complete()));
+        &m_async_io_future_watcher, &QFutureWatcher<bool>::finished,
+        this, &ProjectManager::slot_load_project_async_complete);
 }
 
 void ProjectManager::create_project()

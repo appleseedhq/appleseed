@@ -41,7 +41,9 @@ namespace
 DoubleSlider::DoubleSlider(QWidget* parent)
   : QSlider(parent)
 {
-    connect(this, SIGNAL(valueChanged(int)), this, SLOT(setValue(int)));
+    connect(
+        this, &DoubleSlider::valueChanged, 
+        this, QOverload<const int>::of(&DoubleSlider::setValue));
 
     setSingleStep(1);
 }
@@ -49,7 +51,9 @@ DoubleSlider::DoubleSlider(QWidget* parent)
 DoubleSlider::DoubleSlider(const Qt::Orientation orientation, QWidget* parent)
   : QSlider(orientation, parent)
 {
-    connect(this, SIGNAL(valueChanged(int)), this, SLOT(setValue(int)));
+   connect(
+        this, &DoubleSlider::valueChanged, 
+        this, QOverload<const int>::of(&DoubleSlider::setValue));
 
     setSingleStep(1);
 }
