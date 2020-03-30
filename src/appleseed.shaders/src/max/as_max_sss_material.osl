@@ -44,6 +44,7 @@ shader as_max_sss_material
     color                SpecularColor = 1.0,
     string               Distribution = "ggx"
     [[
+        string widget = "null",
         int as_deprecated = 1,
     ]],
     float                Roughness = 0.1,

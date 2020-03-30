@@ -191,18 +191,14 @@ shader as_standard_surface
         float max = 1.0,
         string label = "Specular Roughness",
         string page = "Specular",
-        int as_max_param_id = 20
+        int as_max_param_id = 20,
+        int divider = 1
     ]],
     float in_specular_spread = 0.25
     [[
         string as_maya_attribute_name = "specularSpread",
         string as_maya_attribute_short_name = "sps",
-        float min = 0.0,
-        float max = 1.0,
-        string label = "Specular Spread",
-        string page = "Specular",
-        string help = "Specular spread, controls the tails of the highlights.",
-        int divider = 1,
+        string widget = "null",
         int as_deprecated = 1,
         int as_max_param_id = 22
     ]],

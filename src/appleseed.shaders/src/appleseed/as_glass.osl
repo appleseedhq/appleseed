@@ -96,17 +96,14 @@ shader as_glass
     [[
         string as_maya_attribute_name = "distribution",
         string as_maya_attribute_short_name = "dd",
-        string label = "Distribution",
-        string widget = "popup",
-        string options = "beckmann|ggx|std",
-        string page = "Specular",
+        string widget = "null",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-	int as_deprecated = 1,
-	int as_max_param_id = 9
+        int as_deprecated = 1,
+        int as_max_param_id = 9
     ]],
     float in_roughness = 0.1
     [[
@@ -116,17 +113,14 @@ shader as_glass
         float max = 1.0,
         string label = "Roughness",
         string page = "Specular",
+        int divider = 1,
         int as_max_param_id = 10
     ]],
     float in_specular_spread = 0.5
     [[
         string as_maya_attribute_name = "specularSpread",
         string as_maya_attribute_short_name = "ss",
-        float min = 0.0,
-        float max = 1.0,
-        string label = "Specular Spread",
-        string page = "Specular",
-        int divider = 1,
+        string widget = "null",
         int as_deprecated = 1,
         int as_max_param_id = 12,
     ]],

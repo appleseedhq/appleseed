@@ -53,8 +53,7 @@ shader as_max_metal_material
     string               Distribution = "ggx"
     [[
         string help = "Microfacet distribution to use: Beckmann or GGX.",
-        string widget = "popup",
-        string options = "beckmann|ggx",
+        string widget = "null",
         int as_deprecated = 1
     ]],
     float                Roughness = 0.1
