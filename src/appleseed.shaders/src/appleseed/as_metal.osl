@@ -69,22 +69,19 @@ shader as_metal
         string label = "Edge Reflectance Weight",
         string page = "Fresnel",
         string help = "Edge reflectance weight.",
-        int as_max_param_id = 26
+        int as_max_param_id = 26,
+        int divider = 1
     ]],
     int in_distribution = 0
     [[
         string as_maya_attribute_name = "distribution",
         string as_maya_attribute_short_name = "mdf",
-        string widget = "mapper",
-        string options = "Beckmann:0|GGX:1",
-        string label = "Distribution",
-        string page = "Specular",
+        string widget = "null",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1,
         int as_deprecated = 1,
         int as_max_param_id = 4
     ]],

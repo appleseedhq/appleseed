@@ -34,9 +34,7 @@ shader as_max_plastic_material
     vector Normal = N,
     string Distribution = "ggx"
     [[
-        string widget = "popup",
-        string options = "beckmann|ggx|gtr1|std",
-        string help = "Microfacet distribution function to use",
+        string widget = "null",
         int as_deprecated = 1
     ]],
     color SpecularColor = color(0.5),
@@ -52,9 +50,7 @@ shader as_max_plastic_material
     ]],
     float Spread = 0.25
     [[
-        float min = 0.0,
-        float max = 1.0,
-        string help = "Specular falloff, or highlights spread.",
+        string widget = "null",
         int as_deprecated = 1
     ]],
     float IOR = 1.5
