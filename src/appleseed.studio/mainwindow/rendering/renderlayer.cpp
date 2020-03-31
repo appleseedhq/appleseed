@@ -78,6 +78,7 @@ RenderLayer::RenderLayer(
   , m_mutex(QMutex::Recursive)
   , m_ocio_config(ocio_config)
   , m_gl_initialized(false)
+  , m_refresh_gl_texture(false)
 {
     setFocusPolicy(Qt::StrongFocus);
     setFixedWidth(static_cast<int>(width));
