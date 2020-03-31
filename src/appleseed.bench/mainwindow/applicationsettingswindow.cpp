@@ -90,20 +90,25 @@ void ApplicationSettingsWindow::slot_reload_application_settings()
 
 void ApplicationSettingsWindow::build_connections()
 {
-    connect(m_ui->buttonbox, &QDialogButtonBox::accepted, &ApplicationSettingsWindow::slot_save_configuration_and_close);
-    connect(m_ui->buttonbox, &QDialogButtonBox::rejected, &ApplicationSettingsWindow::slot_restore_configuration_and_close);
+    connect(
+        m_ui->buttonbox, &QDialogButtonBox::accepted,
+        this, &ApplicationSettingsWindow::slot_save_configuration_and_close);
 
     connect(
-        create_window_local_shortcut(this, Qt::Key_Return), &QShortcut::activated),
-        &ApplicationSettingsWindow::slot_save_configuration_and_close);
+        m_ui->buttonbox, &QDialogButtonBox::rejected,
+        this, &ApplicationSettingsWindow::slot_restore_configuration_and_close);
 
     connect(
-        create_window_local_shortcut(this, Qt::Key_Enter), &QShortcut::activated),
-        &ApplicationSettingsWindow::slot_save_configuration_and_close);
+        create_window_local_shortcut(this, Qt::Key_Return), &QShortcut::activated,
+        this, &ApplicationSettingsWindow::slot_save_configuration_and_close);
 
     connect(
-        create_window_local_shortcut(this, Qt::Key_Escape), &QShortcut::activated),
-        &ApplicationSettingsWindow::slot_save_configuration_and_close);
+        create_window_local_shortcut(this, Qt::Key_Enter), &QShortcut::activated,
+        this, &ApplicationSettingsWindow::slot_save_configuration_and_close);
+
+    connect(
+        create_window_local_shortcut(this, Qt::Key_Escape), &QShortcut::activated,
+        this, &ApplicationSettingsWindow::slot_save_configuration_and_close);
 }
 
 void ApplicationSettingsWindow::load_settings()
