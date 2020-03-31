@@ -43,7 +43,7 @@ DoubleSlider::DoubleSlider(QWidget* parent)
 {
     connect(
         this, &DoubleSlider::valueChanged, 
-        this, QOverload<const int>::of(&DoubleSlider::setValue));
+        this, static_cast<void (DoubleSlider::*)(const int)>(&DoubleSlider::setValue));
 
     setSingleStep(1);
 }
@@ -51,9 +51,9 @@ DoubleSlider::DoubleSlider(QWidget* parent)
 DoubleSlider::DoubleSlider(const Qt::Orientation orientation, QWidget* parent)
   : QSlider(orientation, parent)
 {
-   connect(
+    connect(
         this, &DoubleSlider::valueChanged, 
-        this, QOverload<const int>::of(&DoubleSlider::setValue));
+        this, static_cast<void (DoubleSlider::*)(const int)>(&DoubleSlider::setValue));
 
     setSingleStep(1);
 }
