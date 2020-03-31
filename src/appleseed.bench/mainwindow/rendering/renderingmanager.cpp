@@ -140,36 +140,36 @@ RenderingManager::RenderingManager(RenderingTimeDisplay& rendering_time_display)
 
     connect(
         &m_renderer_controller, &QtRendererController::signal_frame_begin,
-        &RenderingManager::slot_frame_begin,
+        this, &RenderingManager::slot_frame_begin,
         Qt::BlockingQueuedConnection);
 
     connect(
         &m_renderer_controller, &QtRendererController::signal_frame_end,
-        &RenderingManager::slot_frame_end,
+        this, &RenderingManager::slot_frame_end,
         Qt::BlockingQueuedConnection);
 
     connect(
         &m_renderer_controller, &QtRendererController::signal_rendering_begin,
-        &RenderingManager::slot_rendering_begin,
+        this, &RenderingManager::slot_rendering_begin,
         Qt::BlockingQueuedConnection);
 
     connect(
         &m_renderer_controller, &QtRendererController::signal_rendering_success,
-        &RenderingManager::slot_rendering_end,
+        this, &RenderingManager::slot_rendering_end,
         Qt::BlockingQueuedConnection);
 
     connect(
         &m_renderer_controller, &QtRendererController::signal_rendering_abort,
-        &RenderingManager::slot_rendering_end,
+        this, &RenderingManager::slot_rendering_end,
         Qt::BlockingQueuedConnection);
 
     connect(
         &m_renderer_controller, &QtRendererController::signal_rendering_success,
-        &QtRendererController::signal_rendering_success);
+        this, &RenderingManager::signal_rendering_success);
 
     connect(
         &m_renderer_controller, &QtRendererController::signal_rendering_abort,
-        &QtRendererController::signal_rendering_abort);
+        this, &RenderingManager::signal_rendering_abort);
 }
 
 void RenderingManager::start_rendering(
@@ -214,16 +214,16 @@ void RenderingManager::start_rendering(
             m_renderer_controller));
 
     connect(
-        m_master_renderer_thread.get(), &MasterRendererThread::signal_rendering_failed,
-        &RenderingManager::slot_frame_end);
+        static_cast<MasterRendererThread*>(m_master_renderer_thread.get()), &MasterRendererThread::signal_rendering_failed,
+        this, &RenderingManager::slot_frame_end);
 
     connect(
-        m_master_renderer_thread.get(), &MasterRendererThread::signal_rendering_failed,
-        &RenderingManager::slot_rendering_failed);
+        static_cast<MasterRendererThread*>(m_master_renderer_thread.get()), &MasterRendererThread::signal_rendering_failed,
+        this, &RenderingManager::slot_rendering_failed);
 
     connect(
-        m_master_renderer_thread.get(), &QThread::finished,
-        &RenderingManager::slot_master_renderer_thread_finished);
+        static_cast<MasterRendererThread*>(m_master_renderer_thread.get()), &QThread::finished,
+        this, &RenderingManager::slot_master_renderer_thread_finished);
 
     m_master_renderer_thread->start();
 }

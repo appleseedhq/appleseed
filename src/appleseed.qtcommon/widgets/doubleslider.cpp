@@ -30,6 +30,9 @@
 // Interface header.
 #include "doubleslider.h"
 
+// Qt headers.
+#include <QtGlobal>
+
 namespace appleseed {
 namespace qtcommon {
 
@@ -51,7 +54,7 @@ DoubleSlider::DoubleSlider(QWidget* parent)
 DoubleSlider::DoubleSlider(const Qt::Orientation orientation, QWidget* parent)
   : QSlider(orientation, parent)
 {
-   connect(
+    connect(
         this, &DoubleSlider::valueChanged, 
         this, QOverload<const int>::of(&DoubleSlider::setValue));
 

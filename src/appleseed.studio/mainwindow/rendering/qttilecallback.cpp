@@ -36,6 +36,7 @@
 // Qt headers.
 #include <QObject>
 #include <Qt>
+#include <QtGlobal>
 
 // Standard headers.
 #include <cassert>
@@ -64,8 +65,8 @@ namespace
           : m_render_widget(render_widget)
         {
             connect(
-                this, SIGNAL(signal_update()),
-                m_render_widget, SLOT(update()),
+                this, &QtTileCallback::signal_update,
+                m_render_widget, QOverload<void>::of(&QWidget::update),
                 Qt::QueuedConnection);
         }
 
