@@ -47,7 +47,8 @@ shader as_glass
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
         string label = "Transmittance Color",
-        string page = "Transmittance"
+        string page = "Transmittance",
+        int as_max_param_id = 0
     ]],
     float in_transmittance_amount = 0.99
     [[
@@ -56,21 +57,24 @@ shader as_glass
         float min = 0.0,
         float max = 1.0,
         string label = "Transmittance Weight",
-        string page = "Transmittance"
+        string page = "Transmittance",
+        int as_max_param_id = 2
     ]],
     color in_reflection_tint = color(1)
     [[
         string as_maya_attribute_name = "reflectionTint",
         string as_maya_attribute_short_name = "rt",
         string label = "Reflection Tint",
-        string page = "Specular"
+        string page = "Specular",
+        int as_max_param_id = 4
     ]],
     color in_refraction_tint = color(1)
     [[
         string as_maya_attribute_name = "refractionTint",
         string as_maya_attribute_short_name = "tt",
         string label = "Refraction Tint",
-        string page = "Specular"
+        string page = "Specular",
+        int as_max_param_id = 6
     ]],
     float in_ior = 1.5
     [[
@@ -85,7 +89,8 @@ shader as_glass
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 8
     ]],
     string in_distribution = "ggx"
     [[
@@ -100,7 +105,8 @@ shader as_glass
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int as_deprecated = 1
+	int as_deprecated = 1,
+	int as_max_param_id = 9
     ]],
     float in_roughness = 0.1
     [[
@@ -109,7 +115,8 @@ shader as_glass
         float min = 0.001,
         float max = 1.0,
         string label = "Roughness",
-        string page = "Specular"
+        string page = "Specular",
+        int as_max_param_id = 10
     ]],
     float in_specular_spread = 0.5
     [[
@@ -120,7 +127,8 @@ shader as_glass
         string label = "Specular Spread",
         string page = "Specular",
         int divider = 1,
-        int as_deprecated = 1
+        int as_deprecated = 1,
+        int as_max_param_id = 12,
     ]],
     float in_anisotropy_amount = 0.0
     [[
@@ -129,7 +137,8 @@ shader as_glass
         float min = 0.0,
         float max = 1.0,
         string label = "Anisotropy Amount",
-        string page = "Specular.Anisotropy"
+        string page = "Specular.Anisotropy",
+        int as_max_param_id = 14
     ]],
     float in_anisotropy_angle = 0.0
     [[
@@ -140,7 +149,8 @@ shader as_glass
         string label = "Anisotropy Rotation",
         string page = "Specular.Anisotropy",
         string help = "The [0,1] range maps to [0,360] degrees range.",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 16
     ]],
     int in_anisotropy_mode = 0
     [[
@@ -156,7 +166,8 @@ shader as_glass
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 18
     ]],
     color in_anisotropy_map = color(0)
     [[
@@ -165,7 +176,8 @@ shader as_glass
         string label = "Anisotropy Vector Map",
         string page = "Specular.Anisotropy",
         string help = "Vector tangent field map, with XY in R,G channels.",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 19
     ]],
     vector in_anisotropy_direction = vector(0)
     [[
@@ -173,14 +185,16 @@ shader as_glass
         string as_maya_attribute_short_name = "and",
         string label = "Anisotropy Vector",
         string page = "Specular.Anisotropy",
-        string help = "Explicit anisotropy vector, such as the vector output by a tangent field node."
+        string help = "Explicit anisotropy vector, such as the vector output by a tangent field node.",
+        int as_max_param_id = 21
     ]],
     color in_volume_transmittance = 1.0
     [[
         string as_maya_attribute_name = "volumeTransmittance",
         string as_maya_attribute_short_name = "vt",
         string label = "Volume Transmittance",
-        string page = "Volume"
+        string page = "Volume",
+        int as_max_param_id = 23
     ]],
     float in_volume_transmittance_distance = 0.0
     [[
@@ -190,14 +204,16 @@ shader as_glass
         float max = 1e+9,
         string label = "Transmittance Distance",
         string page = "Volume",
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 25
     ]],
     normal in_bump_normal = N
     [[
         string as_maya_attribute_name = "normalCamera",
         string as_maya_attribute_short_name = "n",
         string label = "Bump Normal",
-        string page = "Bump"
+        string page = "Bump",
+        int as_max_param_id = 27
     ]],
     int in_enable_matte = 0
     [[
@@ -211,7 +227,8 @@ shader as_glass
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 28
     ]],
     float in_matte_opacity = 0.0
     [[
@@ -222,7 +239,8 @@ shader as_glass
         string label = "Matte Opacity",
         string page = "Matte Opacity",
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 29
     ]],
     color in_matte_opacity_color = color(1,0.5,0)
     [[
@@ -231,7 +249,8 @@ shader as_glass
         string label = "Matte Opacity Color",
         string page = "Matte Opacity",
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 31
     ]],
     int in_maximum_ray_depth = 100
     [[
@@ -246,7 +265,8 @@ shader as_glass
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 33
     ]],
     vector Tn = vector(0)
     [[
@@ -254,7 +274,8 @@ shader as_glass
         int as_maya_attribute_hidden = 1,
         string widget = "null",
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 34
     ]],
     vector Bn = vector(0)
     [[
@@ -262,20 +283,23 @@ shader as_glass
         int as_maya_attribute_hidden = 1,
         string widget = "null",
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 35
     ]],
 
     output closure color out_outColor = 0
     [[
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 36
     ]],
     output closure color out_outTransparency = 0
     [[
         string as_maya_attribute_name = "outTransparency",
         string as_maya_attribute_short_name = "ot",
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 36
     ]],
     output closure color out_outMatteOpacity = 0
     [[
@@ -284,7 +308,8 @@ shader as_glass
         string widget = "null",
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 36
     ]]
 )
 {
