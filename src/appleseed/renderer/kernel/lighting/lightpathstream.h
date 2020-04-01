@@ -67,7 +67,8 @@ class LightPathStream
     void begin_path(
         const PixelContext&             pixel_context,
         const Camera*                   camera,
-        const foundation::Vector3d&     camera_vertex_position);
+        const foundation::Vector3d&     camera_vertex_position,
+        const foundation::Vector3d&     camera_vertex_normal);
 
     void hit_reflector(
         const PathVertex&               vertex);
@@ -79,12 +80,14 @@ class LightPathStream
     void sampled_emitting_shape(
         const EmittingShape&            shape,
         const foundation::Vector3d&     emission_position,
+        const foundation::Vector3d&     emission_normal,
         const Spectrum&                 material_value,
         const Spectrum&                 emitted_radiance);
 
     void sampled_non_physical_light(
         const Light&                    light,
         const foundation::Vector3d&     emission_position,
+        const foundation::Vector3d&     emission_normal,
         const Spectrum&                 material_value,
         const Spectrum&                 emitted_radiance);
 
@@ -117,6 +120,7 @@ class LightPathStream
     {
         const ObjectInstance*       m_object_instance;          // object instance that was hit
         foundation::Vector3f        m_vertex_position;          // world space position of the hit point on the reflector
+        foundation::Vector3f        m_surface_normal;           // world space normal of the surface of the reflector
         foundation::Color3f         m_path_throughput;          // cumulative path throughput up to but excluding this vertex, in reverse order (i.e. in the order from camera to light source)
     };
 
@@ -130,6 +134,7 @@ class LightPathStream
     {
         const Entity*               m_entity;                   // object instance or non-physical light that was sampled
         foundation::Vector3f        m_vertex_position;          // world space position of the emitting point on the emitter
+        foundation::Vector3f        m_surface_normal;           // world space normal of the surface of the emitter
         foundation::Color3f         m_material_value;           // BSDF value at the previous vertex
         foundation::Color3f         m_emitted_radiance;         // emitted radiance in W.sr^-1.m^-2
     };
@@ -157,6 +162,7 @@ class LightPathStream
         const Entity*               m_entity;                   // object instance or non-physical light
         foundation::Vector3f        m_position;                 // world space position of this vertex
         foundation::Color3f         m_radiance;                 // radiance arriving at this vertex, in W.sr^-1.m^-2
+        foundation::Vector3f        m_surface_normal;           // world space normal of the surface at this vertex
     };
 
     // Scene.
@@ -168,6 +174,7 @@ class LightPathStream
     foundation::Vector2i            m_pixel_coords;
     foundation::Vector2f            m_sample_position;
     foundation::Vector3f            m_camera_vertex_position;
+    foundation::Vector3f            m_camera_vertex_normal;
 
     // Scattering events (transient).
     std::vector<Event>              m_events;

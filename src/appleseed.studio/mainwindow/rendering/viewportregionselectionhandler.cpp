@@ -28,7 +28,7 @@
 //
 
 // Interface header.
-#include "renderregionhandler.h"
+#include "viewportregionselectionhandler.h"
 
 // appleseed.qtcommon headers.
 #include "widgets/mousecoordinatestracker.h"
@@ -54,7 +54,7 @@ using namespace foundation;
 namespace appleseed {
 namespace studio {
 
-RenderRegionHandler::RenderRegionHandler(
+ViewportRegionSelectionHandler::ViewportRegionSelectionHandler(
     QWidget*                        widget,
     const MouseCoordinatesTracker&  mouse_tracker)
   : m_widget(widget)
@@ -66,22 +66,22 @@ RenderRegionHandler::RenderRegionHandler(
     m_widget->installEventFilter(this);
 }
 
-RenderRegionHandler::~RenderRegionHandler()
+ViewportRegionSelectionHandler::~ViewportRegionSelectionHandler()
 {
     m_widget->removeEventFilter(this);
 }
 
-void RenderRegionHandler::set_enabled(const bool enabled)
+void ViewportRegionSelectionHandler::set_enabled(const bool enabled)
 {
     m_enabled = enabled;
 }
 
-void RenderRegionHandler::set_mode(const Mode mode)
+void ViewportRegionSelectionHandler::set_mode(const Mode mode)
 {
     m_mode = mode;
 }
 
-bool RenderRegionHandler::eventFilter(QObject* object, QEvent* event)
+bool ViewportRegionSelectionHandler::eventFilter(QObject* object, QEvent* event)
 {
     if (m_enabled)
     {
@@ -112,12 +112,19 @@ bool RenderRegionHandler::eventFilter(QObject* object, QEvent* event)
             {
                 const QMouseEvent* mouse_event = static_cast<QMouseEvent*>(event);
 
-                if (mouse_event->button() == Qt::LeftButton)
+                if (mouse_event->button() == Qt::LeftButton &&
+                    !(mouse_event->modifiers() & (Qt::AltModifier | Qt::ShiftModifier | Qt::ControlModifier)))
                 {
                     m_rubber_band->hide();
 
+                    const QPoint& pos = mouse_event->pos();
+
+                    // Don't consider a click as a selection.
+                    if (m_origin == pos)
+                        break;
+
                     const Vector2i p0 = m_mouse_tracker.widget_to_pixel(m_origin);
-                    const Vector2i p1 = m_mouse_tracker.widget_to_pixel(mouse_event->pos());
+                    const Vector2i p1 = m_mouse_tracker.widget_to_pixel(pos);
 
                     const int x0 = std::max(std::min(p0.x, p1.x), 0);
                     const int y0 = std::max(std::min(p0.y, p1.y), 0);
@@ -129,6 +136,8 @@ bool RenderRegionHandler::eventFilter(QObject* object, QEvent* event)
                     if (m_mode == RectangleSelectionMode)
                         emit signal_rectangle_selection(QRect(x0, y0, w, h));
                     else emit signal_render_region(QRect(x0, y0, w, h));
+
+                    return true;
                 }
 
                 break;

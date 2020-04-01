@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2020 Kevin Masson, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,50 +28,78 @@
 
 #pragma once
 
-// appleseed.studio headers.
-#include "mainwindow/rendering/lightpathsmanager.h"
-
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
+
+// appleseed.renderer headers.
+#include "renderer/api/lighting.h"
+#include "renderer/utility/paramarray.h"
 
 // Qt headers.
 #include <QObject>
 
 // Forward declarations.
+namespace appleseed { namespace studio { class LightPathsLayer; } }
 namespace appleseed { namespace studio { class ViewportCanvas; } }
 namespace renderer  { class Project; }
 class QEvent;
 class QPoint;
+class QWidget;
 
 namespace appleseed {
 namespace studio {
 
-class LightPathsPickingHandler
+//
+// Keep track of selected light paths.
+//
+
+class LightPathsManager
   : public QObject
 {
     Q_OBJECT
 
   public:
-    LightPathsPickingHandler(
-        LightPathsManager&                          light_paths_manager,
-        ViewportCanvas*                             viewport_canvas,
-        const renderer::Project&                    project);
+    LightPathsManager(
+        const renderer::Project&    project,
+        renderer::ParamArray&       application_settings);
 
-    void set_enabled(const bool enabled);
+    void set_light_paths(
+        const renderer::LightPathArray& light_paths);
+
+    void clear_light_paths();
+
+    void display_light_paths(const bool on);
+    bool should_display_light_paths() const;
+
+    void save_all_light_paths(QWidget* source) const;
+
+    const renderer::LightPathArray& get_light_paths() const;
+
+    int get_selected_light_path_index() const;
+
+  signals:
+    void signal_light_path_selection_changed(
+        const bool display_light_paths,
+        const int selected_light_path_index,
+        const int total_light_paths) const;
 
   public slots:
-    void slot_rectangle_selection(const QRect& rect);
+    void slot_select_all_light_paths();
+    void slot_select_previous_light_path();
+    void slot_select_next_light_path();
+    void slot_clear_light_paths();
 
   private:
-    LightPathsManager&                              m_light_paths_manager;
-    ViewportCanvas*                                 m_viewport_canvas;
-    const renderer::Project&                        m_project;
-    bool                                            m_enabled;
+    const renderer::Project&    m_project;
+    renderer::ParamArray&       m_application_settings;
 
-    void pick(const QPoint& point) const;
+    renderer::LightPathArray    m_light_paths;
+    int                         m_selected_light_path_index;  // The index of the shown path. All paths are displayed when using -1.
+    bool                        m_display_light_paths;
 
-    bool eventFilter(QObject* object, QEvent* event) override;
+    void set_selected_light_path_index(int index);
+    void print_selected_light_paths() const;
 };
 
 }   // namespace studio

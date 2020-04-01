@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2020 Kevin Masson, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -31,92 +30,64 @@
 
 // appleseed.studio headers.
 #include "mainwindow/rendering/cameracontroller.h"
+#include "mainwindow/rendering/lightpathsmanager.h"
+#include "mainwindow/rendering/lightpathsviewporttoolbar.h"
 #include "mainwindow/rendering/materialdrophandler.h"
 #include "mainwindow/rendering/pixelcolortracker.h"
 #include "mainwindow/rendering/pixelinspectorhandler.h"
-#include "mainwindow/rendering/renderclipboardhandler.h"
-#include "mainwindow/rendering/renderregionhandler.h"
 #include "mainwindow/rendering/scenepickinghandler.h"
-
-// appleseed.qtcommon headers.
-#include "widgets/mousecoordinatestracker.h"
-#include "widgets/scrollareapanhandler.h"
-#include "widgets/widgetzoomhandler.h"
+#include "mainwindow/rendering/viewporttab.h"
+#include "mainwindow/rendering/viewportregionselectionhandler.h"
 
 // OpenColorIO headers.
 #include <OpenColorIO/OpenColorIO.h>
 namespace OCIO = OCIO_NAMESPACE;
 
-// Qt headers.
-#include <QObject>
-#include <QWidget>
-
-// Standard headers.
-#include <memory>
-
 // Forward declarations.
+namespace appleseed { namespace qtcommon { class MouseCoordinatesTracker; } }
+namespace appleseed { namespace studio { class LightPathsPickingHandler; } }
 namespace appleseed { namespace studio { class ProjectExplorer; } }
 namespace appleseed { namespace studio { class RenderingManager; } }
-namespace appleseed { namespace studio { class RenderWidget; } }
 namespace renderer  { class Project; }
-class QComboBox;
-class QLabel;
-class QPoint;
-class QRect;
-class QScrollArea;
-class QToolBar;
 class QToolButton;
 
 namespace appleseed {
 namespace studio {
 
-//
-// A tab wrapping a render widget and its toolbar.
-//
-
-class RenderTab
-  : public QWidget
+class FinalRenderViewportTab
+  : public ViewportTab
 {
     Q_OBJECT
 
   public:
-    RenderTab(
-        ProjectExplorer&        project_explorer,
-        renderer::Project&      project,
-        RenderingManager&       rendering_manager,
-        OCIO::ConstConfigRcPtr  ocio_config);
+    FinalRenderViewportTab(
+        ProjectExplorer&                    project_explorer,
+        renderer::Project&                  project,
+        RenderingManager&                   rendering_manager,
+        LightPathsManager&                  light_paths_manager,
+        OCIO::ConstConfigRcPtr              ocio_config);
 
-    RenderWidget* get_render_widget() const;
+    ViewportCanvas* get_viewport_canvas() const override;
+
+    void set_light_paths_toggle_enabled(const bool enabled);
+
+    void render_began() override;
+    void on_tab_selected() override;
+
     CameraController* get_camera_controller() const;
     ScenePickingHandler* get_scene_picking_handler() const;
 
     void set_clear_frame_button_enabled(const bool enabled);
     void set_render_region_buttons_enabled(const bool enabled);
 
-    void clear();
-    void darken();
-    void reset_zoom();
-
-    void update();
-    void update_size();
-
-    struct State
-    {
-        qtcommon::WidgetZoomHandler::State      m_zoom_handler_state;
-        qtcommon::ScrollAreaPanHandler::State   m_pan_handler_state;
-    };
-
-    State save_state() const;
-    void load_state(const State& state);
-
   signals:
     void signal_save_frame_and_aovs();
     void signal_quicksave_frame_and_aovs();
     void signal_set_render_region(const QRect& rect);
     void signal_clear_render_region();
-    void signal_render_widget_context_menu(const QPoint& point);
     void signal_reset_zoom();
     void signal_clear_frame();
+    void signal_viewport_canvas_context_menu(const QPoint& point);
 
     void signal_camera_change_begin();
     void signal_camera_changed();
@@ -126,43 +97,50 @@ class RenderTab
     void signal_rectangle_selection(const QRect& rect);
 
   private slots:
-    void slot_render_widget_context_menu(const QPoint& point);
-    void slot_toggle_render_region(const bool checked);
-    void slot_set_render_region(const QRect& rect);
+    void slot_camera_changed();
     void slot_toggle_pixel_inspector(const bool checked);
+    void slot_toggle_render_region(const bool checked);
+    void slot_toggle_light_paths(const bool checked);
+    void slot_set_render_region(const QRect& rect);
+    void slot_viewport_canvas_context_menu(const QPoint& point);
+    void slot_clear_frame();
+    void slot_display_transform_changed(const QString& transform);
 
   private:
-    RenderWidget*                                       m_render_widget;
-    QScrollArea*                                        m_scroll_area;
-    QToolBar*                                           m_toolbar;
+    ProjectExplorer&                                    m_project_explorer;
+    RenderingManager&                                   m_rendering_manager;
+    LightPathsManager&                                  m_light_paths_manager;
+    OCIO::ConstConfigRcPtr                              m_ocio_config;
+
+    ViewportCanvas*                                     m_viewport_canvas;
     QToolButton*                                        m_set_render_region_button;
     QToolButton*                                        m_clear_render_region_button;
     QToolButton*                                        m_clear_frame_button;
+    QScrollArea*                                        m_scroll_area;
+    QToolBar*                                           m_toolbar;
+    QToolButton*                                        m_light_paths_toggle_button;
     QComboBox*                                          m_picking_mode_combo;
+    QComboBox*                                          m_display_transform_combo;
+    QComboBox*                                          m_base_layer_combo;
     QLabel*                                             m_info_label;
     QLabel*                                             m_r_label;
     QLabel*                                             m_g_label;
     QLabel*                                             m_b_label;
     QLabel*                                             m_a_label;
 
-    ProjectExplorer&                                    m_project_explorer;
-    renderer::Project&                                  m_project;
-    RenderingManager&                                   m_rendering_manager;
-
-    std::unique_ptr<qtcommon::WidgetZoomHandler>        m_zoom_handler;
-    std::unique_ptr<qtcommon::ScrollAreaPanHandler>     m_pan_handler;
     std::unique_ptr<MaterialDropHandler>                m_material_drop_handler;
     std::unique_ptr<qtcommon::MouseCoordinatesTracker>  m_mouse_tracker;
     std::unique_ptr<PixelColorTracker>                  m_pixel_color_tracker;
     std::unique_ptr<PixelInspectorHandler>              m_pixel_inspector_handler;
     std::unique_ptr<CameraController>                   m_camera_controller;
     std::unique_ptr<ScenePickingHandler>                m_scene_picking_handler;
-    std::unique_ptr<RenderRegionHandler>                m_render_region_handler;
+    std::unique_ptr<ViewportRegionSelectionHandler>     m_viewport_selection_handler;
     std::unique_ptr<RenderClipboardHandler>             m_clipboard_handler;
 
-    OCIO::ConstConfigRcPtr                              m_ocio_config;
+    std::unique_ptr<LightPathsViewportToolbar>          m_light_paths_viewport_toolbar;
+    std::unique_ptr<LightPathsPickingHandler>           m_light_paths_picking_handler;
 
-    void create_render_widget();
+    void create_viewport_canvas();
     void create_toolbar();
     void create_scrollarea();
     void recreate_handlers();

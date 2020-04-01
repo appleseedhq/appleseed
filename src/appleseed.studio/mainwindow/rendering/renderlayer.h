@@ -44,6 +44,7 @@ namespace OCIO = OCIO_NAMESPACE;
 // Qt headers.
 #include <QImage>
 #include <QMutex>
+#include <QOpenGLWidget>
 #include <QPainter>
 #include <QWidget>
 
@@ -58,7 +59,10 @@ namespace renderer      { class Frame; }
 class QDragEnterEvent;
 class QDragMoveEvent;
 class QDropEvent;
+class QOpenGLFunctions_4_1_Core;
+class QOpenGLTexture;
 class QPaintEvent;
+class QRect;
 
 namespace appleseed {
 namespace studio {
@@ -67,7 +71,7 @@ namespace studio {
 // A render widget based on QImage.
 //
 
-class RenderWidget
+class RenderLayer
   : public QWidget
   , public ICapturableWidget
 {
@@ -75,9 +79,9 @@ class RenderWidget
 
   public:
     // Constructor.
-    RenderWidget(
-        const size_t                width,
-        const size_t                height,
+    RenderLayer(
+        const std::size_t           width,
+        const std::size_t           height,
         OCIO::ConstConfigRcPtr      ocio_config,
         QWidget*                    parent = nullptr);
 
@@ -85,9 +89,7 @@ class RenderWidget
     QImage capture() override;
 
     // Thread-safe.
-    void resize(
-        const size_t            width,
-        const size_t            height);
+    void darken();
 
     // Thread-safe.
     void clear();
@@ -100,40 +102,50 @@ class RenderWidget
 
     // Thread-safe.
     void highlight_tile(
-        const renderer::Frame&  frame,
-        const size_t            tile_x,
-        const size_t            tile_y,
-        const size_t            thread_index,
-        const size_t            thread_count);
+        const renderer::Frame&      frame,
+        const std::size_t           tile_x,
+        const std::size_t           tile_y,
+        const std::size_t           thread_index,
+        const std::size_t           thread_count);
 
     // Thread-safe.
     void blit_tile(
-        const renderer::Frame&  frame,
-        const size_t            tile_x,
-        const size_t            tile_y);
+        const renderer::Frame&      frame,
+        const std::size_t           tile_x,
+        const std::size_t           tile_y);
 
     // Thread-safe.
-    void blit_frame(const renderer::Frame& frame);
+    void blit_frame(
+        const renderer::Frame&      frame);
+
+    // Thread-safe.
+    void set_display_transform(
+        const QString&              transform);
+
+    void draw(
+        GLuint                      empty_vao,
+        bool                        paths_display_active);
+
+    void init_gl(QSurfaceFormat format);
+    void set_gl_functions(QOpenGLFunctions_4_1_Core* functions);
 
     // Direct access to internals for high-performance drawing.
     QMutex& mutex();
     QImage& image();
 
-  signals:
-    void signal_material_dropped(
-        const foundation::Vector2d& drop_pos,
-        const QString&          material_name);
-
-  public slots:
-    void slot_display_transform_changed(const QString& transform);
-
   private:
     mutable QMutex                      m_mutex;
     QImage                              m_image;
-    QPainter                            m_painter;
     std::unique_ptr<foundation::Tile>   m_float_tile_storage;
     std::unique_ptr<foundation::Tile>   m_uint8_tile_storage;
     std::unique_ptr<foundation::Image>  m_image_storage;
+
+    QOpenGLFunctions_4_1_Core*          m_gl;
+    QOpenGLTexture*                     m_gl_tex;
+    GLuint                              m_shader_program;
+    GLint                               m_mult_loc;
+    bool                                m_gl_initialized;
+    bool                                m_refresh_gl_texture;
 
     OCIO::ConstConfigRcPtr              m_ocio_config;
     OCIO::ConstProcessorRcPtr           m_ocio_processor;
@@ -141,31 +153,26 @@ class RenderWidget
     void allocate_working_storage(const foundation::CanvasProperties& frame_props);
 
     void blit_tile_no_lock(
-        const renderer::Frame&  frame,
-        const size_t            tile_x,
-        const size_t            tile_y);
+        const renderer::Frame&      frame,
+        const std::size_t           tile_x,
+        const std::size_t           tile_y);
 
     void update_tile_no_lock(
-        const size_t            tile_x,
-        const size_t            tile_y);
-
-    void paintEvent(QPaintEvent* event) override;
-    void dragEnterEvent(QDragEnterEvent* event) override;
-    void dragMoveEvent(QDragMoveEvent* event) override;
-    void dropEvent(QDropEvent* event) override;
+        const std::size_t           tile_x,
+        const std::size_t           tile_y);
 };
 
 
 //
-// RenderWidget class implementation.
+// RenderLayer class implementation.
 //
 
-inline QMutex& RenderWidget::mutex()
+inline QMutex& RenderLayer::mutex()
 {
     return m_mutex;
 }
 
-inline QImage& RenderWidget::image()
+inline QImage& RenderLayer::image()
 {
     return m_image;
 }

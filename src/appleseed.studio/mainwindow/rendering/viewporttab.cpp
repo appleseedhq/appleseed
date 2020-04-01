@@ -27,36 +27,70 @@
 // THE SOFTWARE.
 //
 
-#pragma once
+// Interface header.
+#include "viewporttab.h"
 
 // appleseed.renderer headers.
-#include "renderer/api/rendering.h"
+#include "renderer/api/frame.h"
+#include "renderer/api/project.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+#include "foundation/image/canvasproperties.h"
 
-// Forward declarations.
-namespace appleseed { namespace studio { class ViewportCanvas; } }
+using namespace appleseed::qtcommon;
+using namespace foundation;
+using namespace renderer;
 
 namespace appleseed {
 namespace studio {
 
-class QtTileCallbackFactory
-  : public renderer::ITileCallbackFactory
+//
+// ViewportTab class implementation.
+//
+
+ViewportTab::ViewportTab(Project& project)
+  : m_project(project)
 {
-  public:
-    // Constructor.
-    explicit QtTileCallbackFactory(ViewportCanvas* viewport_canvas);
+}
 
-    // Delete this instance.
-    void release() override;
+void ViewportTab::clear()
+{
+    ViewportCanvas* viewport_canvas = get_viewport_canvas();
+    viewport_canvas->get_render_layer()->clear();
+    viewport_canvas->update();
+}
 
-    // Return a new instance of the class.
-    renderer::ITileCallback* create() override;
+void ViewportTab::render_began()
+{
+    ViewportCanvas* viewport_canvas = get_viewport_canvas();
+    viewport_canvas->get_render_layer()->darken();
+    viewport_canvas->get_light_paths_layer()->update_render_camera_transform();
+}
 
-  private:
-    ViewportCanvas* m_viewport_canvas;
-};
+void ViewportTab::on_tab_selected()
+{
+}
+
+ViewportTab::State ViewportTab::save_state() const
+{
+    State state;
+    state.m_zoom_handler_state = m_zoom_handler->save_state();
+    state.m_pan_handler_state = m_pan_handler->save_state();
+    return state;
+}
+
+void ViewportTab::load_state(const State& state)
+{
+    // The order matters here.
+    m_zoom_handler->load_state(state.m_zoom_handler_state);
+    m_pan_handler->load_state(state.m_pan_handler_state);
+}
+
+void ViewportTab::slot_reset_zoom()
+{
+    m_zoom_handler->reset_zoom();
+}
 
 }   // namespace studio
 }   // namespace appleseed
+

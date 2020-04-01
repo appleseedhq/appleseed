@@ -68,6 +68,7 @@ struct LightPathVertex
     const Entity*   m_entity;
     float           m_position[3];
     float           m_radiance[3];
+    float           m_surface_normal[3];
 };
 
 

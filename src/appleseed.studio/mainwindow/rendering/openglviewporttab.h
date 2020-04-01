@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2020 Kevin Masson, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,16 +30,16 @@
 
 // appleseed.studio headers.
 #include "mainwindow/rendering/cameracontroller.h"
-#include "mainwindow/rendering/lightpathspickinghandler.h"
+#include "mainwindow/rendering/lightpathsmanager.h"
+#include "mainwindow/rendering/lightpathsviewporttoolbar.h"
 #include "mainwindow/rendering/renderclipboardhandler.h"
+#include "mainwindow/rendering/viewportcanvas.h"
+#include "mainwindow/rendering/viewportregionselectionhandler.h"
+#include "mainwindow/rendering/viewporttab.h"
 
-// appleseed.qtcommon headers.
-#include "widgets/mousecoordinatestracker.h"
-#include "widgets/scrollareapanhandler.h"
-#include "widgets/widgetzoomhandler.h"
-
-// appleseed.renderer headers.
-#include "renderer/api/rendering.h"
+// OpenColorIO headers.
+#include <OpenColorIO/OpenColorIO.h>
+namespace OCIO = OCIO_NAMESPACE;
 
 // Qt headers.
 #include <QObject>
@@ -49,9 +49,9 @@
 #include <memory>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class LightPathsWidget; } }
-namespace renderer  { class ParamArray; }
+namespace renderer  { class Entity; }
 namespace renderer  { class Project; }
+class QComboBox;
 class QLabel;
 class QPoint;
 class QRect;
@@ -62,56 +62,52 @@ class QToolButton;
 namespace appleseed {
 namespace studio {
 
-//
-// A tab providing an hardware-accelerated visualization of recorded light paths.
-//
-
-class LightPathsTab
-  : public QWidget
+class OpenGLViewportTab
+  : public ViewportTab
 {
     Q_OBJECT
 
   public:
-    LightPathsTab(
-        renderer::Project&      project,
-        renderer::ParamArray&   settings);
+    OpenGLViewportTab(
+        renderer::Project&                  project,
+        LightPathsManager&                  light_paths_manager,
+        OCIO::ConstConfigRcPtr              ocio_config);
 
-  public slots:
-    void slot_entity_picked(const renderer::ScenePicker::PickingResult& result);
-    void slot_rectangle_selection(const QRect& rect);
+    ViewportCanvas* get_viewport_canvas() const override;
+
+    void render_began() override;
+    void on_tab_selected() override;
+
+  signals:
+    void signal_reset_zoom();
+    void signal_viewport_canvas_context_menu(const QPoint& point);
 
   private slots:
-    void slot_light_path_selection_changed(
-        const int               selected_light_path_index,
-        const int               total_light_paths) const;
-    void slot_context_menu(const QPoint& point);
-    void slot_save_light_paths();
     void slot_camera_changed();
+    void slot_viewport_canvas_context_menu(const QPoint& point);
+    void slot_toggle_light_paths(const bool checked);
+    void slot_toggle_backface_culling(const bool checked);
 
   private:
-    renderer::Project&                                  m_project;
-    renderer::ParamArray&                               m_settings;
-    LightPathsWidget*                                   m_light_paths_widget;
+    LightPathsManager&                                  m_light_paths_manager;
+    OCIO::ConstConfigRcPtr                              m_ocio_config;
+
+    ViewportCanvas*                                     m_viewport_canvas;
     QScrollArea*                                        m_scroll_area;
     QToolBar*                                           m_toolbar;
-    QToolButton*                                        m_prev_path_button;
-    QToolButton*                                        m_next_path_button;
-    QLabel*                                             m_info_label;
+    QToolButton*                                        m_light_paths_toggle_button;
 
-    std::unique_ptr<qtcommon::WidgetZoomHandler>        m_zoom_handler;
-    std::unique_ptr<qtcommon::ScrollAreaPanHandler>     m_pan_handler;
-    std::unique_ptr<qtcommon::MouseCoordinatesTracker>  m_mouse_tracker;
     std::unique_ptr<CameraController>                   m_camera_controller;
-    std::unique_ptr<LightPathsPickingHandler>           m_screen_space_paths_picking_handler;
-    std::unique_ptr<LightPathsPickingHandler>           m_world_space_paths_picking_handler;
     std::unique_ptr<RenderClipboardHandler>             m_clipboard_handler;
 
-    void create_light_paths_widget();
+    std::unique_ptr<LightPathsViewportToolbar>          m_light_paths_viewport_toolbar;
+
+    void create_viewport_canvas();
     void create_toolbar();
     void create_scrollarea();
     void recreate_handlers();
-
 };
 
 }   // namespace studio
 }   // namespace appleseed
+

@@ -26,26 +26,17 @@
 //
 
 #version 420
-#extension GL_ARB_separate_shader_objects : enable
 
-layout(location = 0) in vec3 a_pos;
-layout(location = 1) in vec3 a_norm;
-layout(location = 2) in mat4 i_model;
+in vec2 f_uv;
 
-uniform mat4 u_view;
-uniform mat4 u_proj;
+uniform sampler2D u_render_tex;
+uniform float u_mult;
 
-layout(location = 0) out vec3 frag_pos;
-layout(location = 1) out vec3 frag_norm;
+out vec4 Target0;
 
 void main()
 {
-    mat4 model_view = u_view * i_model;
-    vec4 world_pos = model_view * vec4(a_pos, 1.0);
-    frag_pos = world_pos.xyz;
+    const vec3 col = texture(u_render_tex, f_uv, 0).rgb;
 
-    mat3 normal_matrix = mat3(transpose(inverse(model_view)));
-    frag_norm = normal_matrix * a_norm;
-
-    gl_Position = u_proj * world_pos;
+    Target0 = vec4(col * u_mult, 1.0);
 }

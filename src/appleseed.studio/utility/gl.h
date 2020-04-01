@@ -1,3 +1,4 @@
+
 //
 // This source file is part of appleseed.
 // Visit https://appleseedhq.net/ for additional information and resources.
@@ -25,27 +26,27 @@
 // THE SOFTWARE.
 //
 
-#version 420
-#extension GL_ARB_separate_shader_objects : enable
+#pragma once
 
-layout(location = 0) in vec3 a_pos;
-layout(location = 1) in vec3 a_norm;
-layout(location = 2) in mat4 i_model;
+// Qt headers.
+#include <QOpenGLFunctions_4_1_Core>
 
-uniform mat4 u_view;
-uniform mat4 u_proj;
+// Forward declarations.
+class QByteArray;
+class QString;
 
-layout(location = 0) out vec3 frag_pos;
-layout(location = 1) out vec3 frag_norm;
+namespace appleseed {
+namespace studio {
 
-void main()
-{
-    mat4 model_view = u_view * i_model;
-    vec4 world_pos = model_view * vec4(a_pos, 1.0);
-    frag_pos = world_pos.xyz;
+// Create an OpenlGL shader program with a vertex and optional fragment shader source code.
+GLuint create_shader_program(
+    QOpenGLFunctions_4_1_Core*  f,
+    const QByteArray*           vert_source,
+    const QByteArray*           frag_source = 0);
 
-    mat3 normal_matrix = mat3(transpose(inverse(model_view)));
-    frag_norm = normal_matrix * a_norm;
+// Load a GLSL shader from file into a QByteArray.
+QByteArray load_gl_shader(const QString& base_name);
 
-    gl_Position = u_proj * world_pos;
-}
+}   // namespace studio
+}   // namespace appleseed
+

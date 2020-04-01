@@ -29,33 +29,63 @@
 
 #pragma once
 
-// appleseed.renderer headers.
-#include "renderer/api/rendering.h"
+// appleseed.studio headers.
+#include "mainwindow/rendering/viewportcanvas.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+// appleseed.qtcommon headers.
+#include "widgets/scrollareapanhandler.h"
+#include "widgets/widgetzoomhandler.h"
+
+// Qt headers.
+#include <QObject>
+#include <QWidget>
+
+// Standard headers.
+#include <memory>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class ViewportCanvas; } }
+namespace renderer  { class Project; }
 
 namespace appleseed {
 namespace studio {
 
-class QtTileCallbackFactory
-  : public renderer::ITileCallbackFactory
+//
+// A tab wrapping a render widget and its toolbar.
+//
+
+class ViewportTab
+  : public QWidget
 {
+    Q_OBJECT
+
   public:
-    // Constructor.
-    explicit QtTileCallbackFactory(ViewportCanvas* viewport_canvas);
+    ViewportTab(renderer::Project& project);
 
-    // Delete this instance.
-    void release() override;
+    virtual ViewportCanvas* get_viewport_canvas() const = 0;
 
-    // Return a new instance of the class.
-    renderer::ITileCallback* create() override;
+    void clear();
 
-  private:
-    ViewportCanvas* m_viewport_canvas;
+    virtual void render_began();
+
+    virtual void on_tab_selected();
+
+    struct State
+    {
+        qtcommon::WidgetZoomHandler::State      m_zoom_handler_state;
+        qtcommon::ScrollAreaPanHandler::State   m_pan_handler_state;
+    };
+
+    State save_state() const;
+    void load_state(const State& state);
+
+  protected slots:
+    void slot_reset_zoom();
+
+  protected:
+    renderer::Project&                                  m_project;
+
+    std::unique_ptr<qtcommon::WidgetZoomHandler>        m_zoom_handler;
+    std::unique_ptr<qtcommon::ScrollAreaPanHandler>     m_pan_handler;
 };
 
 }   // namespace studio

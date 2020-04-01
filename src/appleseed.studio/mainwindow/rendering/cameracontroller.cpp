@@ -146,11 +146,6 @@ void CameraController::slot_entity_picked(ScenePicker::PickingResult result)
     }
 }
 
-void CameraController::slot_frame_modified()
-{
-    configure_controller();
-}
-
 bool CameraController::eventFilter(QObject* object, QEvent* event)
 {
     if (m_enabled)

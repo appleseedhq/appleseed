@@ -86,7 +86,7 @@ class ProjectExplorer
 
   signals:
     void signal_project_modified() const;
-    void signal_frame_modified() const;
+    void signal_frame_resolution_changed() const;
 
   private:
     QTreeWidget*                    m_tree_widget;
