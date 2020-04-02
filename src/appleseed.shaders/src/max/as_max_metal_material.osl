@@ -53,8 +53,7 @@ shader as_max_metal_material
     string               Distribution = "ggx"
     [[
         string help = "Microfacet distribution to use: Beckmann or GGX.",
-        string widget = "popup",
-        string options = "beckmann|ggx",
+        string widget = "null",
         int as_deprecated = 1
     ]],
     float                Roughness = 0.1
@@ -81,6 +80,7 @@ shader as_max_metal_material
         Tn,
         NormalReflectance,
         EdgeTint,
+        1.0, // edge tint weight
         microfacet_roughness(Roughness, RoughnessDepthScale),
         Anisotropic,
         "energy_compensation", 1.0);

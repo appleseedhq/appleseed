@@ -32,7 +32,7 @@ shader as_manifold2D
 [[
     string icon = "asManifold2D.png",
     string help = "Node to place and transform UV coordinates.",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_manifold2D.html#label-as-manifold2D",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_manifold2d.html",
 
     string as_node_name = "asManifold2D",
     string as_category = "utility",

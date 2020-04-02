@@ -30,11 +30,11 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 
 namespace foundation {
 namespace voxel {
@@ -97,8 +97,8 @@ class Node
     // The maximum size of a single voxel tree is 2^29 = 536,870,912 nodes.
     //
 
-    ValueType   m_abscissa;
-    uint32      m_info;
+    ValueType       m_abscissa;
+    std::uint32_t   m_info;
 };
 
 
@@ -166,7 +166,7 @@ inline void Node<T>::set_child_node_index(const size_t index)
     assert(is_interior());
     assert(index < (1UL << 29));
     m_info &= 0x80000003u;
-    m_info |= static_cast<uint32>(index) << 2;
+    m_info |= static_cast<std::uint32_t>(index) << 2;
 }
 
 template <typename T>
@@ -182,7 +182,7 @@ inline void Node<T>::set_split_dim(const size_t dim)
     assert(is_interior());
     assert(dim < 4);
     m_info &= 0xFFFFFFFCu;
-    m_info |= static_cast<uint32>(dim);
+    m_info |= static_cast<std::uint32_t>(dim);
 }
 
 template <typename T>

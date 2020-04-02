@@ -39,6 +39,12 @@ set (sources
     stdouttilecallback.cpp
     stdouttilecallback.h
 )
+if (WIN32)
+    set (sources
+        ${sources}
+        windowsapp.manifest
+    )
+endif ()
 list (APPEND appleseed.cli_sources
     ${sources}
 )
@@ -70,7 +76,7 @@ endif ()
 
 include_directories (
     .
-    ../appleseed.shared
+    ../appleseed.common
 )
 
 
@@ -89,7 +95,7 @@ link_against_platform (appleseed.cli)
 
 target_link_libraries (appleseed.cli
     appleseed
-    appleseed.shared
+    appleseed.common
     ${Boost_LIBRARIES}
 )
 

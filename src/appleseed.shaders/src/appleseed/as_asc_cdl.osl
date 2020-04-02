@@ -39,7 +39,7 @@ shader as_asc_cdl
 [[
     string icon = "asAscCdl.png",
     string help = "Slope/Offset/Power Color Decision List utility shader according to the American Society of Cinematographers",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_asc_cdl.html#label-as-asc-cdl",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_asc_cdl.html",
     
     string as_node_name = "asAscCdl",
     string as_category = "utility",
@@ -154,7 +154,7 @@ shader as_asc_cdl
 
     color unclamped = mix(luma, transformed_color, in_saturation);
 
-    out_outColor = (in_clamp_output)
+    out_outColor = in_clamp_output
         ? clamp(unclamped, color(0), color(1))
         : unclamped;
 }

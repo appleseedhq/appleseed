@@ -29,28 +29,31 @@
 
 #pragma once
 
-// appleseed.foundation headers.
-#include "foundation/platform/types.h"
-
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 
 namespace renderer
 {
 
-template <size_t N>
+template <std::size_t N>
 class SampleCountHistory
 {
   public:
     SampleCountHistory()
-      : m_size(0)
-      , m_first(0)
-      , m_index(0)
     {
+        clear();
     }
 
-    void insert(const double time, const foundation::uint64 value)
+    void clear()
+    {
+        m_size = 0;
+        m_first = 0;
+        m_index = 0;
+    }
+
+    void insert(const double time, const std::uint64_t value)
     {
         m_index = m_first;
 
@@ -74,7 +77,7 @@ class SampleCountHistory
         assert(last->m_value >= first->m_value);
         assert(last->m_time >= first->m_time);
 
-        const foundation::uint64 delta_value = last->m_value - first->m_value;
+        const std::uint64_t delta_value = last->m_value - first->m_value;
         const double delta_time = last->m_time - first->m_time;
 
         return delta_time > 0.0 ? delta_value / delta_time : 0.0;
@@ -83,14 +86,14 @@ class SampleCountHistory
   private:
     struct Record
     {
-        double              m_time;
-        foundation::uint64  m_value;
+        double          m_time;
+        std::uint64_t   m_value;
     };
 
-    Record  m_records[N];
-    size_t  m_size;
-    size_t  m_first;
-    size_t  m_index;
+    Record      m_records[N];
+    std::size_t m_size;
+    std::size_t m_first;
+    std::size_t m_index;
 };
 
 }   // namespace renderer

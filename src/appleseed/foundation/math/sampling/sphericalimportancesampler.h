@@ -43,6 +43,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 #include <cstdio>
 #include <map>
 #include <vector>
@@ -77,7 +78,7 @@ class SphericalImportanceSampler
         }
     };
 
-    typedef std::map<uint64, size_t> PointCache;
+    typedef std::map<std::uint64_t, size_t> PointCache;
 
     std::vector<Vector<T, 3>>   m_verts;
     std::vector<Tri>            m_tris;
@@ -254,7 +255,7 @@ size_t SphericalImportanceSampler<T>::get_or_create_middle_point(PointCache& poi
     if (v0 > v1)
         std::swap(v0, v1);
 
-    const uint64 key = (static_cast<uint64>(v0) << 32) | v1;
+    const std::uint64_t key = (static_cast<std::uint64_t>(v0) << 32) | v1;
 
     const PointCache::const_iterator it = point_cache.find(key);
 

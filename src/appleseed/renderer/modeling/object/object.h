@@ -101,14 +101,24 @@ class APPLESEED_DLLSYMBOL Object
         const Project&              project,
         const BaseGroup*            parent) override;
 
-    // Return the alpha map cached by on_frame_begin().
-    const Source* get_alpha_map() const;
+    struct APPLESEED_DLLSYMBOL RenderData
+    {
+        const Source* m_alpha_map;
+
+        RenderData();
+
+        void clear();
+    };
+
+    // Return render-time data of this entity.
+    // Render-time data are available between on_frame_begin() and on_frame_end() calls.
+    const RenderData& get_render_data() const;
 
     // Send this object to an object rasterizer.
     virtual void rasterize(ObjectRasterizer& rasterizer) const;
 
   private:
-    const Source* m_alpha_map;
+    RenderData m_render_data;
 };
 
 
@@ -116,9 +126,9 @@ class APPLESEED_DLLSYMBOL Object
 // Object class implementation.
 //
 
-inline const Source* Object::get_alpha_map() const
+inline const Object::RenderData& Object::get_render_data() const
 {
-    return m_alpha_map;
+    return m_render_data;
 }
 
 }   // namespace renderer

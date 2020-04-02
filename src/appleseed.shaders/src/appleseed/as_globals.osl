@@ -30,7 +30,7 @@ shader as_globals
 [[
     string help = "OSL global variables.",
     string icon = "asGlobals.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_globals.html#label-as-globals",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_globals.html",
 
     string as_node_name = "asGlobals",
     string as_category = "utility",
@@ -45,66 +45,76 @@ shader as_globals
     point Pref = P
     [[
         int lockgeom = 0,
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 0
     ]],
     normal Nref = N
     [[
         int lockgeom = 0,
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 1
     ]],
     output point out_world_P = P
     [[
         string as_maya_attribute_name = "worldP",
         string as_maya_attribute_short_name = "wp",
-        string label = "Surface Position"
+        string label = "Surface Position",
+        int as_max_param_id = 2
     ]],
     output point out_world_Pref = Pref
     [[
         string as_maya_attribute_name = "worldPref",
         string as_maya_attribute_short_name = "wpr",
         string label = "Reference Point",
-        string help = "World space reference point Pref."
+        string help = "World space reference point Pref.",
+        int as_max_param_id = 2
     ]],
     output point out_world_Ps = Ps
     [[
         string as_maya_attribute_name = "worldPs",
         string as_maya_attribute_short_name = "wps",
         string label = "Light Point Position",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 2
     ]],
     output normal out_world_N = N
     [[
         string as_maya_attribute_name = "worldN",
         string as_maya_attribute_short_name = "n",
-        string label = "Shading Normal"
+        string label = "Shading Normal",
+        int as_max_param_id = 2
     ]],
     output normal out_world_Nref = Nref
     [[
         string as_maya_attribute_name = "worldNref",
         string as_maya_attribute_short_name = "nre",
         string label = "Reference Normal",
-        string help = "World space reference normal Nref."
+        string help = "World space reference normal Nref.",
+        int as_max_param_id = 2
     ]],
     output normal out_world_Ng = Ng
     [[
         string as_maya_attribute_name = "worldNg",
         string as_maya_attribute_short_name = "ng",
         string label = "Geometric Normal",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 2
     ]],
     output vector out_world_I = I
     [[
         string as_maya_attribute_name = "worldI",
         string as_maya_attribute_short_name = "wri",
         string label = "Viewer Vector",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 2
     ]],
     output vector out_world_dPdu = dPdu
     [[
         string as_maya_attribute_name = "worldDPdu",
         string as_maya_attribute_short_name = "dpu",
         string label = "dP/du",
-        string help = "Partial derivative of P along the U direction."
+        string help = "Partial derivative of P along the U direction.",
+        int as_max_param_id = 2
     ]],
     output vector out_world_dPdv = dPdv
     [[
@@ -112,21 +122,24 @@ shader as_globals
         string as_maya_attribute_short_name = "dpv",
         string label = "dP/dv",
         string help = "Partial derivative of P along the V direction.",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 2
     ]],
     output vector out_world_dPdx = Dx(P)
     [[
         string as_maya_attribute_name = "worldDPdx",
         string as_maya_attribute_short_name = "dpx",
         string label = "dP/dx",
-        string help = "Partial derivative of P along the X direction."
+        string help = "Partial derivative of P along the X direction.",
+        int as_max_param_id = 2
     ]],
     output vector out_world_dPdy = Dy(P)
     [[
         string as_maya_attribute_name = "worldDPdy",
         string as_maya_attribute_short_name = "dpy",
         string label = "dP/dy",
-        string help = "Partial derivative of P along the Y direction."
+        string help = "Partial derivative of P along the Y direction.",
+        int as_max_param_id = 2
     ]],
     output vector out_world_dPdz = Dz(P)
     [[
@@ -134,78 +147,146 @@ shader as_globals
         string as_maya_attribute_short_name = "dpz",
         string label = "dP/dz",
         string help = "Partial derivative of P along the Z direction.",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 2
     ]],
-    output normal out_world_dNdu = 0
+    normal dNdu = 0
     [[
         int lockgeom = 0,
+        string widget = "null",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string widget = "null"
+    ]],
+    normal dNdv = 0
+    [[
+        int lockgeom = 0,
+        string widget = "null",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string widget = "null"
+    ]],
+    output normal out_world_dNdu = dNdu
+    [[
         string as_maya_attribute_name = "worldDNdu",
         string as_maya_attribute_short_name = "dnu",
         string label = "dN/du",
-        string help = "Partial derivative of N along the V direction."
+        string help = "Partial derivative of N along the V direction.",
+        int as_max_param_id = 2
     ]],
-    output normal out_world_dNdv = 0
+    output normal out_world_dNdv = dNdv
     [[
-        int lockgeom = 0,
         string as_maya_attribute_name = "worldDNdv",
         string as_maya_attribute_short_name = "dnv",
         string label = "dN/dv",
         string help = "Partial derivative of N along the U direction.",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 2
     ]],
-    output vector out_world_Tn = 0
+    normal Tn = 0
     [[
         int lockgeom = 0,
+        string widget = "null",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string widget = "null"
+    ]],
+    normal Bn = 0
+    [[
+        int lockgeom = 0,
+        string widget = "null",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string widget = "null"
+    ]],
+    output vector out_world_Tn = Tn
+    [[
         string as_maya_attribute_name = "worldTn",
         string as_maya_attribute_short_name = "tn",
-        string label = "Tangent Vector"
+        string label = "Tangent Vector",
+        int as_max_param_id = 2
     ]],
-    output vector out_world_Bn = 0
+    output vector out_world_Bn = Bn
     [[
-        int lockgeom = 0,
         string as_maya_attribute_name = "worldBn",
         string as_maya_attribute_short_name = "bn",
         string label = "Bitangent Vector",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 2
     ]],
     output float out_u_coord = u
     [[
         string as_maya_attribute_name = "outUCoord",
         string as_maya_attribute_short_name = "ouc",
-        string label = "U Coordinate"
+        string label = "U Coordinate",
+        int as_max_param_id = 2
     ]],
     output float out_v_coord = v
     [[
         string as_maya_attribute_name = "outVCoord",
         string as_maya_attribute_short_name = "ovc",
-        string label = "V Coordinate"
+        string label = "V Coordinate",
+        int as_max_param_id = 2
     ]],
     output float out_uv_coord[2] = {u, v}
     [[
         string as_maya_attribute_name = "outUV",
         string as_maya_attribute_short_name = "o",
         string label = "UV Coords",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 2
+    ]],
+    color vertex_color = color(1)
+    [[
+        int lockgeom = 0,
+        string widget = "null",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string widget = "null"
+    ]],
+    output color out_vertex_color = vertex_color
+    [[
+        string as_maya_attribute_name = "vertexColor",
+        string as_maya_attribute_short_name = "vrc",
+        string label = "Vertex Color"
     ]],
     output float out_time = time
     [[
         string as_maya_attribute_name = "time",
         string as_maya_attribute_short_name = "tim",
-        string label = "Shutter Time"
+        string label = "Shutter Time",
+        int as_max_param_id = 2
     ]],
     output float out_dtime = dtime
     [[
         string as_maya_attribute_name = "dtime",
         string as_maya_attribute_short_name = "dti",
         string label = "Time Amount",
-        string help = "The amount of time covered by this shading sample."
+        string help = "The amount of time covered by this shading sample.",
+        int as_max_param_id = 2
     ]],
     output vector out_world_dPdtime = dPdtime
     [[
         string as_maya_attribute_name = "worldDPdtime",
         string as_maya_attribute_short_name = "dpt",
         string label = "dP/dtime",
-        string help = "Derivative of P along time, or how P changes per unit time."
+        string help = "Derivative of P along time, or how P changes per unit time.",
+        int as_max_param_id = 2
     ]]
 )
 {

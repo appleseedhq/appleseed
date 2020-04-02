@@ -34,7 +34,7 @@
 #include "renderer/modeling/surfaceshader/surfaceshader.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/utility/kvpair.h"
 
 // appleseed.main headers.

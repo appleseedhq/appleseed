@@ -35,7 +35,7 @@
 #include "mainwindow/project/itemregistry.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/uid.h"
 
 // Qt headers.
@@ -124,7 +124,7 @@ EntityItemBase<Entity>::~EntityItemBase()
 template <typename Entity>
 void EntityItemBase<Entity>::update()
 {
-    set_title(QString::fromUtf8(m_entity->get_name()));
+    set_title(m_entity->get_name());
 }
 
 }   // namespace studio

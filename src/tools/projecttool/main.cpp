@@ -30,7 +30,7 @@
 // projecttool headers.
 #include "commandlinehandler.h"
 
-// appleseed.shared headers.
+// appleseed.common headers.
 #include "application/application.h"
 #include "application/superlogger.h"
 
@@ -38,8 +38,8 @@
 #include "renderer/api/project.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/memory/autoreleaseptr.h"
+#include "foundation/containers/dictionary.h"
 
 // Boost headers.
 #include "boost/filesystem/operations.hpp"
@@ -49,7 +49,7 @@
 #include <string>
 
 using namespace appleseed::projecttool;
-using namespace appleseed::shared;
+using namespace appleseed::common;
 using namespace foundation;
 using namespace renderer;
 namespace bf = boost::filesystem;

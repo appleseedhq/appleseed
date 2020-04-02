@@ -30,7 +30,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -70,7 +70,8 @@ class APPLESEED_DLLSYMBOL ShaderCompiler
     ~ShaderCompiler();
 };
 
- //
+
+//
 // ShaderCompiler factory.
 //
 

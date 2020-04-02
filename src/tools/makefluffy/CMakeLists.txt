@@ -36,6 +36,12 @@ set (sources
     commandlinehandler.h
     main.cpp
 )
+if (WIN32)
+    set (sources
+        ${sources}
+        windowsapp.manifest
+    )
+endif ()
 list (APPEND makefluffy_sources
     ${sources}
 )
@@ -67,7 +73,7 @@ endif ()
 
 include_directories (
     .
-    ../../appleseed.shared
+    ../../appleseed.common
 )
 
 
@@ -86,7 +92,7 @@ link_against_platform (makefluffy)
 
 target_link_libraries (makefluffy
     appleseed
-    appleseed.shared
+    appleseed.common
     ${Boost_LIBRARIES}
 )
 

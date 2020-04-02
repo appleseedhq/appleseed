@@ -1,0 +1,476 @@
+
+//
+// This source file is part of appleseed.
+// Visit https://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2019 Luis Barrancos, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/color/as_color_transforms.h"
+#include "appleseed/color/as_colorimetry.h"
+#include "appleseed/maya/as_maya_helpers.h"
+
+shader as_surface_luminance
+[[
+    string icon = "asSurfaceLuminance.png",
+    string help = "Node that gets the relative luminance of an input closure.",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_surface_luminance.html",
+
+    string as_node_name = "asSurfaceLuminance",
+    string as_category = "shader",
+
+    string as_max_class_id = "1813865764 1568361250",
+    string as_max_plugin_type = "material",
+
+    int as_maya_type_id = 0x00127a0a,
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch"
+]]
+(
+    closure color in_color = 0
+    [[
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Surface shader",
+        string page = "Surface",
+        string help = "The input material shader.",
+        int divider = 1
+    ]],
+    string in_evaluation_mode = "diffuse+specular"
+    [[
+        string as_maya_attribute_name = "evaluationMode",
+        string as_maya_attribute_short_name = "evm",
+        string widget = "popup",
+        string options = "emission|diffuse|specular|emission+diffuse|emission+specular|diffuse+specular|all",
+        string label = "Evaluation Mode",
+        string page = "Surface",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "The choice of closure BxDF to consider for evaluation",
+        int divider = 1
+    ]],
+    int in_clamp_input = 0
+    [[
+        string as_maya_attribute_name = "clampInput",
+        string as_maya_attribute_short_name = "cin",
+        string widget = "checkBox",
+        string label = "Clamp Input",
+        string page = "Surface",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Clamp input to [0,1] range."
+    ]],
+    int in_clamp_output = 0
+    [[
+        string as_maya_attribute_name = "clampOutput",
+        string as_maya_attribute_short_name = "cou",
+        string widget = "checkBox",
+        string label = "Clamp Output",
+        string page = "Surface",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string help = "Clamp output to [0,1] range."
+    ]],
+    int in_deriveFromMayaCMS = 1
+    [[
+        string as_maya_attribute_name = "deriveFromMayaCMS",
+        string as_maya_attribute_short_name = "dm",
+        string widget = "checkBox",
+        string label = "Use Maya CMS",
+        string page = "Color Space",
+        int divider = 1,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    int in_inputColorSpace = 0
+    [[
+        string as_maya_attribute_name = "inputColorSpace",
+        string as_maya_attribute_short_name = "is",
+        int as_maya_attribute_keyable = 4,
+        string widget = "mapper",
+        string options = "ACES 2065-1 AP0:0|ACEScg AP1:1|Rec.2020:2|DCI-P3:3|Rec.709 or sRGB:4|Chromaticity Coordinates:5",
+        string label = "Input Color Space",
+        string page = "Color Space",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    float in_chromaticityCoordsR[2] = {0.640, 0.330}
+    [[
+        string as_maya_attribute_name = "chromaticityCoordsR",
+        string as_maya_attribute_short_name = "pr",
+        int as_maya_attribute_keyable = 0,
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "R xy Coordinates",
+        string page = "Color Space.RGB Primaries"
+    ]],
+    float in_chromaticityCoordsG[2] = {0.300, 0.600}
+    [[
+        string as_maya_attribute_name = "chromaticityCoordsG",
+        string as_maya_attribute_short_name = "pg",
+        int as_maya_attribute_keyable = 0,
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "G xy Coordinates",
+        string page = "Color Space.RGB Primaries"
+    ]],
+    float in_chromaticityCoordsB[2] = {0.150, 0.060}
+    [[
+        string as_maya_attribute_name = "chromaticityCoordsB",
+        string as_maya_attribute_short_name = "pb",
+        int as_maya_attribute_keyable = 0,
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "B xy Coordinates",
+        string page = "Color Space.RGB Primaries",
+        int divider = 1
+    ]],
+    int in_inputIlluminants = 0
+    [[
+        string as_maya_attribute_name = "inputIlluminants",
+        string as_maya_attribute_short_name = "ii",
+        string widget = "mapper",
+        string options = "Standard Illuminant D50:0|Standard Illuminant D55:1|Standard Illuminant D60:2|Standard Illuminant D65:3|Standard Illuminant D75:4|DCI White Point:5|Equal Energy White Point E:6|Correlated Color Temperature:7|WP Chromaticity Coordinates:8",
+        string label = "Illuminants",
+        string page = "Color Space.Illuminants",
+        string help = "Preset illuminants, correlated color temperature or explicit white point xy chromaticity coordinates.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    int in_colorTemperature = 6504
+    [[
+        string as_maya_attribute_name = "colorTemperature",
+        string as_maya_attribute_short_name = "ct",
+        int min = 1667,
+        int max = 25000,
+        string label = "Color Temperature",
+        string page = "Color Space.Illuminants",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 1
+    ]],
+    float in_chromaticityCoordsW[2] = {0.3127, 0.329}
+    [[
+        string as_maya_attribute_name = "chromaticityCoordsW",
+        string as_maya_attribute_short_name = "pw",
+        int as_maya_attribute_keyable = 0,
+        float softmin = 0.0,
+        float softmax = 1.0,
+        string label = "W xy Coordinates",
+        string page = "Color Space.Illuminants"
+    ]],
+
+    MAYA_COLORMANAGEMENT_PARAMETERS,
+
+    output float out_result = 0
+    [[
+        string as_maya_attribute_name = "result",
+        string as_maya_attribute_short_name = "r",
+        string label = "Luminance Scalar"
+    ]],
+    output closure color out_color = 0
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string label = "Surface Luminance",
+        string widget = "null"
+    ]]
+)
+{
+    if (!isconnected(in_color))
+    {
+        return;
+    }
+
+    if (!raytype("npr"))
+    {
+        out_color = in_color;
+    }
+    else
+    {
+        color emis = color(0), diff = color(0), spec = color(0);
+
+        if (in_evaluation_mode == "emission" ||
+            in_evaluation_mode == "emission+diffuse" ||
+            in_evaluation_mode == "emission+specular" ||
+            in_evaluation_mode == "all")
+        {
+            getattribute("surface_shader:emission", emis);
+        }
+
+        if (in_evaluation_mode == "diffuse" ||
+            in_evaluation_mode == "emission+diffuse" ||
+            in_evaluation_mode == "diffuse+specular" ||
+            in_evaluation_mode == "all")
+        {
+            getattribute("surface_shader:diffuse", diff);
+        }
+
+        if (in_evaluation_mode == "specular" ||
+            in_evaluation_mode == "emission+specular" ||
+            in_evaluation_mode == "diffuse+specular" ||
+            in_evaluation_mode == "all")
+        {
+            getattribute("surface_shader:glossy", spec);
+        }
+
+        if (max(emis) < EPS && max(diff) < EPS && max(spec) < EPS)
+        {
+            return;
+        }
+                                                      
+        // Derive the rendering/working space from Maya.
+
+        color coeffs;
+
+        if (in_deriveFromMayaCMS)
+        {
+            if (!in_colorManagementEnabled)
+            {
+                // CMS off, default to sRGB/Rec.709 RGB primaries and white.
+                coeffs = color(REC709_D65_LUMINANCE_COEFFS);
+            }
+            else
+            {
+                if (in_workingSpace == "ACES2065-1")
+                {
+                    coeffs = color(ACES_D60_LUMINANCE_COEFFS);
+                }
+                else if (in_workingSpace == "ACEScg")
+                {
+                    coeffs = color(ACESCG_D60_LUMINANCE_COEFFS);
+                }
+                else if (in_workingSpace == "scene-linear Rec 2020")
+                {
+                    coeffs = color(REC2020_D65_LUMINANCE_COEFFS);
+                }
+                else if (in_workingSpace == "scene-linear DCI-P3")
+                {
+                    coeffs = color(DCIP3_DCI_LUMINANCE_COEFFS);
+                }
+                else if (in_workingSpace == "scene-linear Rec 709/sRGB")
+                {
+                    coeffs = color(REC709_D65_LUMINANCE_COEFFS);
+                }
+                else
+                {
+                    coeffs = color(0);
+#ifdef DEBUG
+                    string shadername = "";
+                    getattribute("shader:shadername", shadername);
+                    warning("[WARNING]:Invalid Maya renderspace in %s, %s:%i\n",
+                            shadername, __FILE__, __LINE__);
+#endif
+                }
+            }
+        }
+        else
+        {
+            // Explicitly set the working space, starting with custom RGBW
+            // primaries and choice of white points.
+
+            if (in_inputColorSpace == 5)
+            {
+                color RGBW[4];
+
+                RGBW[0] = transform_CIExyY_to_CIEXYZ(
+                    color(in_chromaticityCoordsR[0],
+                          in_chromaticityCoordsR[1],
+                          1.0));
+
+                RGBW[1] = transform_CIExyY_to_CIEXYZ(
+                    color(in_chromaticityCoordsG[0],
+                          in_chromaticityCoordsG[1],
+                          1.0));
+
+                RGBW[2] = transform_CIExyY_to_CIEXYZ(
+                    color(in_chromaticityCoordsB[0],
+                          in_chromaticityCoordsB[1],
+                          1.0));
+
+                if (in_inputIlluminants < 6)
+                {
+                    string illuminant = "";
+
+                    if (in_inputIlluminants == 0)
+                    {
+                        illuminant = "D50";
+                    }
+                    else if (in_inputIlluminants == 1)
+                    {
+                        illuminant = "D55";
+                    }
+                    else if (in_inputIlluminants == 2)
+                    {
+                        illuminant = "D60";
+                    }
+                    else if (in_inputIlluminants == 3)
+                    {
+                        illuminant = "D65";
+                    }
+                    else if (in_inputIlluminants == 4)
+                    {
+                        illuminant = "D75";
+                    }
+                    else if (in_inputIlluminants == 5)
+                    {
+                        illuminant = "DCI";
+                    }
+
+                    RGBW[3] = get_illuminant_CIEXYZ(illuminant);
+                }
+                else if (in_inputIlluminants == 6)
+                {
+                    RGBW[3] = transform_CIExyY_to_CIEXYZ(
+                        color(ILLUMINANT_E_WHITEPOINT_xy, 1.0));
+                }
+                else if (in_inputIlluminants == 7)
+                {
+                    // Convert from CCT to CIExy chromaticity coordinates.
+
+                    if (in_colorTemperature == 6504) // D65
+                    {
+                        RGBW[3] = transform_CIExyY_to_CIEXYZ(
+                            color(D65_WHITEPOINT_CIE1931_2DEG_xy, 1.0));
+                    }
+                    else
+                    {
+                        float Tc_xy[2];
+
+                        get_CIExy_from_CCT_Kang(in_colorTemperature, Tc_xy);
+
+                        RGBW[3] = transform_CIExyY_to_CIEXYZ(
+                            color(Tc_xy[0], Tc_xy[1], 1.0));
+                    }
+                }
+                else
+                {
+                    // Explicit white point CIExy chromaticity coordinates.
+
+                    RGBW[3] = transform_CIExyY_to_CIEXYZ(
+                        color(in_chromaticityCoordsW[0],
+                              in_chromaticityCoordsW[1],
+                              1.0));
+                }
+
+                matrix M = inverse(matrix(
+                    RGBW[0][0], RGBW[1][0], RGBW[2][0], 0.0,
+                    RGBW[0][1], RGBW[1][1], RGBW[2][1], 0.0,
+                    RGBW[0][2], RGBW[1][2], RGBW[2][2], 0.0,
+                    0.0, 0.0, 0.0, 1.0));
+
+                float Sr = M[0][0] * RGBW[3][0] +
+                           M[0][1] * RGBW[3][1] +
+                           M[0][2] * RGBW[3][2];
+
+                float Sg = M[1][0] * RGBW[3][0] +
+                           M[1][1] * RGBW[3][1] +
+                           M[1][2] * RGBW[3][2];
+
+                float Sb = M[2][0] * RGBW[3][0] +
+                           M[2][1] * RGBW[3][1] +
+                           M[2][2] * RGBW[3][2];
+
+                // XYZ->RGB matrix would be
+                //
+                // |SrXr SgXg SbXb|
+                // |SrYr SgYg SbYb|
+                // |SrZr SgZg SbZb|
+                //
+                // but we only want the Y coefficients.
+
+                coeffs = color(Sr * RGBW[0][1],
+                               Sg * RGBW[1][1],
+                               Sb * RGBW[2][1]);
+            }
+            else
+            {
+                // Provide common RGBW chromaticity coordinates.
+
+                if (in_inputColorSpace == 0)
+                {
+                    coeffs = color(ACES_D60_LUMINANCE_COEFFS);
+                }
+                else if (in_inputColorSpace == 1)
+                {
+                    coeffs = color(ACESCG_D60_LUMINANCE_COEFFS);
+                }
+                else if (in_inputColorSpace == 2)
+                {
+                    coeffs = color(REC2020_D65_LUMINANCE_COEFFS);
+                }
+                else if (in_inputColorSpace == 3)
+                {
+                    coeffs = color(DCIP3_DCI_LUMINANCE_COEFFS);
+                }
+                else if (in_inputColorSpace == 4)
+                {
+                    coeffs = color(REC709_D65_LUMINANCE_COEFFS);
+                }
+                else
+                {
+                    coeffs = color(0);
+                }
+            }
+        }
+
+        if (in_clamp_input)
+        {
+            emis = clamp(emis, 0, 1);
+            diff = clamp(diff, 0, 1);
+            spec = clamp(spec, 0, 1);
+        }
+
+        color input_color = (in_clamp_output)
+            ? clamp(emis + diff + spec, 0, 1)
+            : emis + diff + spec;
+
+        float relative_Y = coeffs[0] * input_color[0] +
+                           coeffs[1] * input_color[1] +
+                           coeffs[2] * input_color[2];
+
+        out_color = relative_Y * as_npr_shading();
+        out_result = relative_Y;
+    }
+}

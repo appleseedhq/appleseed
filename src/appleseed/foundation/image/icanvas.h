@@ -34,7 +34,6 @@
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/tile.h"
-#include "foundation/platform/types.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -42,6 +41,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 
 namespace foundation
 {
@@ -69,10 +69,10 @@ class APPLESEED_DLLSYMBOL ICanvas
         const size_t            tile_y) const = 0;
 
     // Direct access to a given pixel.
-    uint8* pixel(
+    std::uint8_t* pixel(
         const size_t            x,
         const size_t            y);
-    const uint8* pixel(
+    const std::uint8_t* pixel(
         const size_t            x,
         const size_t            y) const;
 
@@ -115,7 +115,7 @@ class APPLESEED_DLLSYMBOL ICanvas
 // ICanvas class implementation.
 //
 
-inline uint8* ICanvas::pixel(
+inline std::uint8_t* ICanvas::pixel(
     const size_t        x,
     const size_t        y)
 {
@@ -138,7 +138,7 @@ inline uint8* ICanvas::pixel(
     return t.pixel(pixel_x, pixel_y);
 }
 
-inline const uint8* ICanvas::pixel(
+inline const std::uint8_t* ICanvas::pixel(
     const size_t        x,
     const size_t        y) const
 {

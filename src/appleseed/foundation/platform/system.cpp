@@ -38,8 +38,9 @@
 #include "foundation/platform/arch.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/thread.h"
-#include "foundation/utility/log.h"
-#include "foundation/utility/string.h"
+#include "foundation/platform/types.h"
+#include "foundation/log/log.h"
+#include "foundation/string/string.h"
 
 // Standard headers.
 #include <cstring>
@@ -123,12 +124,12 @@ namespace
     //   cpuinfo[1] == EBX
     //   cpuinfo[2] == ECX
     //   cpuinfo[3] == EDX
-    void cpuid(uint32 cpuinfo[4], const uint32 index)
+    void cpuid(std::uint32_t cpuinfo[4], const std::uint32_t index)
     {
         __cpuidex(reinterpret_cast<int*>(cpuinfo), static_cast<int>(index), 0);
     }
 
-    uint64 xgetbv(const int32 index)
+    std::uint64_t xgetbv(const std::int32_t index)
     {
         return _xgetbv(index);
     }
@@ -214,7 +215,7 @@ size_t System::get_l3_cache_line_size()
     return get_cache_descriptor(3, cache) ? cache.LineSize : 0;
 }
 
-uint64 System::get_total_physical_memory_size()
+std::uint64_t System::get_total_physical_memory_size()
 {
     // Reference: http://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
 
@@ -222,10 +223,10 @@ uint64 System::get_total_physical_memory_size()
     mem_info.dwLength = sizeof(mem_info);
     GlobalMemoryStatusEx(&mem_info);
 
-    return static_cast<uint64>(mem_info.ullTotalPhys);
+    return static_cast<std::uint64_t>(mem_info.ullTotalPhys);
 }
 
-uint64 System::get_total_virtual_memory_size()
+std::uint64_t System::get_total_virtual_memory_size()
 {
     // Reference: http://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
 
@@ -233,10 +234,10 @@ uint64 System::get_total_virtual_memory_size()
     mem_info.dwLength = sizeof(mem_info);
     GlobalMemoryStatusEx(&mem_info);
 
-    return static_cast<uint64>(mem_info.ullTotalPageFile);
+    return static_cast<std::uint64_t>(mem_info.ullTotalPageFile);
 }
 
-uint64 System::get_process_virtual_memory_size()
+std::uint64_t System::get_process_virtual_memory_size()
 {
     // Reference: http://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
 
@@ -249,7 +250,7 @@ uint64 System::get_process_virtual_memory_size()
     return pmc.PrivateUsage;
 }
 
-uint64 System::get_peak_process_virtual_memory_size()
+std::uint64_t System::get_peak_process_virtual_memory_size()
 {
     PROCESS_MEMORY_COUNTERS_EX pmc;
     GetProcessMemoryInfo(
@@ -273,7 +274,7 @@ namespace
     //   cpuinfo[1] == EBX
     //   cpuinfo[2] == ECX
     //   cpuinfo[3] == EDX
-    void cpuid(uint32 cpuinfo[4], const uint32 index)
+    void cpuid(std::uint32_t cpuinfo[4], const std::uint32_t index)
     {
         __cpuid_count(
             index,
@@ -284,11 +285,11 @@ namespace
             cpuinfo[3]);
     }
 
-    uint64 xgetbv(const int32 index)
+    std::uint64_t xgetbv(const std::int32_t index)
     {
-        uint32 eax, edx;
+        std::uint32_t eax, edx;
         __asm__ __volatile__("xgetbv" : "=a"(eax), "=d"(edx) : "c"(index));
-        return (static_cast<uint64>(edx) << 32) | eax;
+        return (static_cast<std::uint64_t>(edx) << 32) | eax;
     }
 
     size_t get_system_value(const char* name)
@@ -329,29 +330,29 @@ size_t System::get_l3_cache_line_size()
     return get_l3_cache_size() > 0 ? get_system_value("hw.cachelinesize") : 0;
 }
 
-uint64 System::get_total_physical_memory_size()
+std::uint64_t System::get_total_physical_memory_size()
 {
     // Reference: http://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
 
     int name[2] = { CTL_HW, HW_MEMSIZE };
-    uint64 result;
-    size_t result_length = sizeof(uint64);
+    std::uint64_t result;
+    size_t result_length = sizeof(std::uint64_t);
     sysctl(name, 2, &result, &result_length, 0, 0);
 
-    return static_cast<uint64>(result);
+    return static_cast<std::uint64_t>(result);
 }
 
-uint64 System::get_total_virtual_memory_size()
+std::uint64_t System::get_total_virtual_memory_size()
 {
     // Reference: http://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
 
     struct statfs stats;
     if (statfs("/", &stats) == 0)
-        return static_cast<uint64>(stats.f_bsize) * stats.f_bfree;
+        return static_cast<std::uint64_t>(stats.f_bsize) * stats.f_bfree;
     else return 0;
 }
 
-uint64 System::get_process_virtual_memory_size()
+std::uint64_t System::get_process_virtual_memory_size()
 {
     // Reference: http://nadeausoftware.com/articles/2012/07/c_c_tip_how_get_process_resident_set_size_physical_memory_use
 
@@ -380,7 +381,7 @@ uint64 System::get_process_virtual_memory_size()
     return info.virtual_size;
 }
 
-uint64 System::get_peak_process_virtual_memory_size()
+std::uint64_t System::get_peak_process_virtual_memory_size()
 {
     // todo: implement.
     return 0;
@@ -399,7 +400,7 @@ namespace
     //   cpuinfo[1] == EBX
     //   cpuinfo[2] == ECX
     //   cpuinfo[3] == EDX
-    void cpuid(uint32 cpuinfo[4], const uint32 index)
+    void cpuid(std::uint32_t cpuinfo[4], const std::uint32_t index)
     {
         __cpuid_count(
             index,
@@ -410,11 +411,11 @@ namespace
             cpuinfo[3]);
     }
 
-    uint64 xgetbv(const int32 index)
+    std::uint64_t xgetbv(const std::int32_t index)
     {
-        uint32 eax, edx;
+        std::uint32_t eax, edx;
         __asm__ __volatile__("xgetbv" : "=a"(eax), "=d"(edx) : "c"(index));
-        return (static_cast<uint64>(edx) << 32) | eax;
+        return (static_cast<std::uint64_t>(edx) << 32) | eax;
     }
 }
 
@@ -448,31 +449,31 @@ size_t System::get_l3_cache_line_size()
     return sysconf(_SC_LEVEL3_CACHE_LINESIZE);
 }
 
-uint64 System::get_total_physical_memory_size()
+std::uint64_t System::get_total_physical_memory_size()
 {
     // Reference: http://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
 
     struct sysinfo mem_info;
     sysinfo(&mem_info);
 
-    return static_cast<uint64>(mem_info.totalram) * mem_info.mem_unit;
+    return static_cast<std::uint64_t>(mem_info.totalram) * mem_info.mem_unit;
 }
 
-uint64 System::get_total_virtual_memory_size()
+std::uint64_t System::get_total_virtual_memory_size()
 {
     // Reference: http://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
 
     struct sysinfo mem_info;
     sysinfo(&mem_info);
 
-    uint64 result = mem_info.totalram;
+    std::uint64_t result = mem_info.totalram;
     result += mem_info.totalswap;
     result *= mem_info.mem_unit;
 
     return result;
 }
 
-uint64 System::get_process_virtual_memory_size()
+std::uint64_t System::get_process_virtual_memory_size()
 {
     // todo: this is wrong, it returns RSS instead of virtual memory.
 
@@ -491,10 +492,10 @@ uint64 System::get_process_virtual_memory_size()
 
     fclose(fp);
 
-    return static_cast<uint64>(rss) * sysconf(_SC_PAGESIZE);
+    return static_cast<std::uint64_t>(rss) * sysconf(_SC_PAGESIZE);
 }
 
-uint64 System::get_peak_process_virtual_memory_size()
+std::uint64_t System::get_peak_process_virtual_memory_size()
 {
     // todo: implement.
     return 0;
@@ -852,15 +853,15 @@ size_t System::get_l3_cache_line_size()
     return x86_caches[L3].linesize;
 }
 
-uint64 System::get_total_physical_memory_size()
+std::uint64_t System::get_total_physical_memory_size()
 {
     const long pagesize = sysconf(_SC_PAGESIZE);
     const long numpages = sysconf(_SC_PHYS_PAGES);
 
-    return static_cast<uint64>(pagesize) * numpages;
+    return static_cast<std::uint64_t>(pagesize) * numpages;
 }
 
-uint64 System::get_total_virtual_memory_size()
+std::uint64_t System::get_total_virtual_memory_size()
 {
     quad_t swap;
     size_t len = sizeof(swap);
@@ -871,7 +872,7 @@ uint64 System::get_total_virtual_memory_size()
     return get_total_physical_memory_size() + swap;
 }
 
-uint64 System::get_process_virtual_memory_size()
+std::uint64_t System::get_process_virtual_memory_size()
 {
     // todo: this is wrong, it returns peak RSS instead of virtual memory.
 
@@ -884,10 +885,10 @@ uint64 System::get_process_virtual_memory_size()
     const int result = getrusage(RUSAGE_SELF, &ru);
     assert(result == 0);
 
-    return static_cast<uint64>(ru.ru_maxrss) * 1024;
+    return static_cast<std::uint64_t>(ru.ru_maxrss) * 1024;
 }
 
-uint64 System::get_peak_process_virtual_memory_size()
+std::uint64_t System::get_peak_process_virtual_memory_size()
 {
     // todo: implement.
     return 0;
@@ -972,26 +973,6 @@ void System::print_information(Logger& logger)
 #ifdef APPLESEED_X86
     X86CPUFeatures features;
     detect_x86_cpu_features(features);
-
-    std::stringstream isabuilder;
-    if (features.m_hw_sse) isabuilder << "SSE ";
-    if (features.m_hw_sse2) isabuilder << "SSE2 ";
-    if (features.m_hw_sse3) isabuilder << "SSE3 ";
-    if (features.m_hw_ssse3) isabuilder << "SSSE3 ";
-    if (features.m_hw_sse41) isabuilder << "SSE4.1 ";
-    if (features.m_hw_sse42) isabuilder << "SSE4.2 ";
-    if (features.m_hw_sse4a) isabuilder << "SSE4a ";
-    if (features.m_hw_avx) isabuilder << "AVX ";
-    if (features.m_hw_avx2) isabuilder << "AVX2 ";
-    if (features.m_hw_fma3) isabuilder << "FMA3 ";
-    if (features.m_hw_f16c) isabuilder << "F16C ";
-
-    const std::string isa =
-        isabuilder.str().empty()
-            ? "base instruction set"
-            : trim_right(isabuilder.str());
-#else
-    const std::string isa = "base instruction set";
 #endif
 
     // Can't use LOG_INFO() here because of the #ifdefs.
@@ -1026,7 +1007,7 @@ void System::print_information(Logger& logger)
         pretty_size(get_l2_cache_line_size()).c_str(),
         pretty_size(get_l3_cache_size()).c_str(),
         pretty_size(get_l3_cache_line_size()).c_str(),
-        isa.c_str(),
+        get_cpu_features_string().c_str(),
         pretty_size(get_total_physical_memory_size()).c_str(),
         pretty_size(get_total_virtual_memory_size()).c_str(),
         pretty_uint(DefaultWallclockTimer().frequency()).c_str(),
@@ -1075,7 +1056,7 @@ namespace
     {
         // Reference: http://stackoverflow.com/a/22521619/922184
 
-        uint32 cpuinfo[4];
+        std::uint32_t cpuinfo[4];
         cpuid(cpuinfo, 1);
 
         const bool os_uses_xsave_xrstor = (cpuinfo[2] & (1UL << 27)) != 0;
@@ -1083,7 +1064,7 @@ namespace
 
         if (os_uses_xsave_xrstor && cpu_avx_support)
         {
-            const uint64 xcr_feature_mask = xgetbv(_XCR_XFEATURE_ENABLED_MASK);
+            const std::uint64_t xcr_feature_mask = xgetbv(_XCR_XFEATURE_ENABLED_MASK);
             return (xcr_feature_mask & 0x6) == 0x6;
         }
 
@@ -1095,7 +1076,7 @@ namespace
         if (!detect_os_avx())
             return false;
 
-        const uint64 xcr_feature_mask = xgetbv(_XCR_XFEATURE_ENABLED_MASK);
+        const std::uint64_t xcr_feature_mask = xgetbv(_XCR_XFEATURE_ENABLED_MASK);
         return (xcr_feature_mask & 0xe6) == 0xe6;
     }
 
@@ -1103,7 +1084,7 @@ namespace
     {
         char vendor[13];
 
-        uint32 cpuinfo[4];
+        std::uint32_t cpuinfo[4];
         cpuid(cpuinfo, 0);
 
         memcpy(vendor + 0, &cpuinfo[1], 4);
@@ -1132,9 +1113,9 @@ void System::detect_x86_cpu_features(X86CPUFeatures& features)
         X86CPUFeatures::Vendor::Unknown;
 
     // EAX=0: Get vendor ID.
-    uint32 cpuinfo[4];
+    std::uint32_t cpuinfo[4];
     cpuid(cpuinfo, 0x00000000);
-    const uint32 highest_function_id = cpuinfo[0];
+    const std::uint32_t highest_function_id = cpuinfo[0];
 
     if (highest_function_id >= 0x00000001)
     {
@@ -1178,7 +1159,7 @@ void System::detect_x86_cpu_features(X86CPUFeatures& features)
 
     // EAX=0x80000000: Get Highest Extended Function Supported.
     cpuid(cpuinfo, 0x80000000);
-    const uint32 highest_ext_function_id = cpuinfo[0];
+    const std::uint32_t highest_ext_function_id = cpuinfo[0];
 
     if (highest_ext_function_id >= 0x80000001)
     {
@@ -1197,5 +1178,33 @@ void System::detect_x86_cpu_features(X86CPUFeatures& features)
 }
 
 #endif
+
+APIString System::get_cpu_features_string()
+{
+#ifdef APPLESEED_X86
+    X86CPUFeatures features;
+    detect_x86_cpu_features(features);
+
+    std::stringstream isabuilder;
+    if (features.m_hw_sse) isabuilder << "SSE ";
+    if (features.m_hw_sse2) isabuilder << "SSE2 ";
+    if (features.m_hw_sse3) isabuilder << "SSE3 ";
+    if (features.m_hw_ssse3) isabuilder << "SSSE3 ";
+    if (features.m_hw_sse41) isabuilder << "SSE4.1 ";
+    if (features.m_hw_sse42) isabuilder << "SSE4.2 ";
+    if (features.m_hw_sse4a) isabuilder << "SSE4a ";
+    if (features.m_hw_avx) isabuilder << "AVX ";
+    if (features.m_hw_avx2) isabuilder << "AVX2 ";
+    if (features.m_hw_fma3) isabuilder << "FMA3 ";
+    if (features.m_hw_f16c) isabuilder << "F16C ";
+
+    return
+        isabuilder.str().empty()
+            ? "base instruction set"
+            : trim_right(isabuilder.str());
+#else
+    return "base instruction set";
+#endif
+}
 
 }   // namespace foundation

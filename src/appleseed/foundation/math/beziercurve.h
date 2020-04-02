@@ -1194,15 +1194,20 @@ bool BezierCurveIntersector<BezierCurveType>::converge(
             v = lerp(v0, vn, w);
 
             // Compute the bitangent and intersection point in XY plane.
-            const VectorType tangent = curve.evaluate_tangent(v);
-            const Vector<ValueType, 2> bitangent = normalize(Vector<ValueType, 2>(-tangent.y, tangent.x));
+            const VectorType tangent = curve.evaluate_tangent(w);
+            const Vector<ValueType, 2> bitangent = Vector<ValueType, 2>(tangent.y, -tangent.x);
             const Vector<ValueType, 2> point(p.x, p.y);
 
             // Compute the vertical projection of point to the bitangent.
             const ValueType vert_proj = dot(point, bitangent);
 
-            // Compute u parameter.
-            u = saturate((vert_proj + ValueType(0.5) * width) / width);
+            // Compute distance from point to curve
+            const ValueType pt_curve_dist = std::sqrt(dotxy(p, p));
+
+            // Compute u parameter
+            u = vert_proj > ValueType(0.0) ?
+                ValueType(0.5) + pt_curve_dist / width :
+                ValueType(0.5) - pt_curve_dist / width;
         }
 
         return true;

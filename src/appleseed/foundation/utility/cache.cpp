@@ -31,7 +31,7 @@
 #include "cache.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/string.h"
+#include "foundation/string/string.h"
 
 namespace foundation
 {
@@ -39,9 +39,9 @@ namespace foundation
 namespace cache_impl
 {
     CacheStatisticsEntry::CacheStatisticsEntry(
-        const std::string&   name,
-        const uint64         hit_count,
-        const uint64         miss_count)
+        const std::string&      name,
+        const std::uint64_t     hit_count,
+        const std::uint64_t     miss_count)
       : Statistics::Entry(name)
     {
         m_hit_count = hit_count;
@@ -63,7 +63,7 @@ namespace cache_impl
 
     std::string CacheStatisticsEntry::to_string() const
     {
-        const uint64 accesses = m_hit_count + m_miss_count;
+        const std::uint64_t accesses = m_hit_count + m_miss_count;
 
         if (accesses == 0)
             return "n/a";

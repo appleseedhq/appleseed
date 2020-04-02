@@ -70,6 +70,7 @@ class APPLESEED_DLLSYMBOL PostProcessingStage
     int m_order;
 };
 
+
 //
 // PostProcessingStage class implementation.
 //

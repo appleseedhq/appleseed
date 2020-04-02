@@ -35,10 +35,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/rng/mersennetwister.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 #include <vector>
 
 // Forward declarations.
@@ -74,7 +74,8 @@ class TileJobFactory
         const TileOrdering                  tile_ordering,
         const TileJob::TileRendererVector&  tile_renderers,
         const TileJob::TileCallbackVector&  tile_callbacks,
-        const foundation::uint32            pass_hash,
+        const size_t                        thread_count,
+        const std::uint32_t                 pass_hash,
         const Spectrum::Mode                spectrum_mode,
         TileJobVector&                      tile_jobs,
         foundation::IAbortSwitch&           abort_switch);

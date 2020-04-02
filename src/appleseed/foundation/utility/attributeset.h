@@ -31,13 +31,13 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/platform/types.h"
-#include "foundation/utility/memory.h"
+#include "foundation/memory/memory.h"
 #include "foundation/utility/numerictype.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -106,11 +106,11 @@ class AttributeSet
   private:
     struct Channel
     {
-        std::string         m_name;
-        NumericTypeID       m_type;
-        size_t              m_dimension;
-        size_t              m_value_size;
-        std::vector<uint8>  m_storage;
+        std::string                 m_name;
+        NumericTypeID               m_type;
+        size_t                      m_dimension;
+        size_t                      m_value_size;
+        std::vector<std::uint8_t>   m_storage;
     };
 
     std::vector<Channel*>   m_channels;

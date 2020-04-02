@@ -77,7 +77,7 @@ BOOL APIENTRY DllMain(
 {
     if (reason == DLL_PROCESS_ATTACH)
     {
-#ifndef SHIP
+#ifndef APPLESEED_SHIP
         // Open a console.
         // open_console();
 #endif

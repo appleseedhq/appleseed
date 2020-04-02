@@ -40,14 +40,14 @@
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
 #include "foundation/platform/defaulttimers.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/stopwatch.h"
-#include "foundation/utility/string.h"
 
 // BCD headers.
 #include "bcd/CovarianceMatrix.h"

@@ -28,243 +28,505 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/timers.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/stopwatch.h"
 #include "foundation/utility/test.h"
 
+// Standard headers.
+#include <cstdint>
+#include <ostream>
+
 using namespace foundation;
 
-TEST_SUITE(Foundation_Utility_Stopwatch)
+namespace
 {
     struct FakeTimer
     {
-        uint64 m_time;
+        std::uint64_t m_time;
 
         FakeTimer()
           : m_time(0)
         {
         }
 
-        uint64 frequency() const
+        std::uint64_t frequency() const
         {
             return 1;
         }
 
-        uint64 read() const
+        std::uint64_t read() const
         {
             return m_time;
         }
 
-        uint64 read_start() const
+        std::uint64_t read_start() const
         {
             return read();
         }
 
-        uint64 read_end() const
+        std::uint64_t read_end() const
         {
             return read();
         }
     };
 
-    TEST_CASE(TestUnstartedStopwatch)
-    {
-        Stopwatch<FakeTimer> watch(0);
+    using StopwatchType = Stopwatch<FakeTimer>;
+    using StateType = StopwatchType::State;
+}
 
-        EXPECT_EQ(watch.get_ticks(), 0);
+namespace foundation
+{
+    std::ostream& operator<<(std::ostream& s, const StateType state)
+    {
+        switch (state)
+        {
+          case StateType::Stopped: s << "stopped"; break;
+          case StateType::Running: s << "running"; break;
+          case StateType::Paused: s << "paused"; break;
+          default: s << "unknown"; break;
+        }
+
+        return s;
+    }
+}
+
+#define TIME_PASSES(n)                  \
+    do                                  \
+    {                                   \
+        sw.get_timer().m_time += n;     \
+    } while (false)
+
+TEST_SUITE(Foundation_Utility_Stopwatch)
+{
+    //
+    // Stopwatch is in initial state.
+    //
+
+    TEST_CASE(InitialState)
+    {
+        StopwatchType sw;
+
+        EXPECT_EQ(StateType::Stopped, sw.get_state());
+        EXPECT_EQ(0, sw.get_ticks());
     }
 
-    TEST_CASE(TestMeasureStopwatch)
+    TEST_CASE(Start_StopwatchIsInInitialState)
     {
-        Stopwatch<FakeTimer> watch(0);
-        FakeTimer& timer = watch.get_timer();
+        StopwatchType sw;
 
-        watch.start();
-        EXPECT_EQ(watch.get_ticks(), 0);
+        // Action.
+        sw.start();
 
-        timer.m_time += 500;
-        EXPECT_EQ(watch.get_ticks(), 0);
-
-        watch.measure();
-        EXPECT_EQ(watch.get_ticks(), 500);
-
-        timer.m_time += 100;
-        watch.measure();
-        EXPECT_EQ(watch.get_ticks(), 600);
-
-        timer.m_time += 50;
-        watch.measure();
-        EXPECT_EQ(watch.get_ticks(), 650);
+        EXPECT_EQ(StateType::Running, sw.get_state());
+        EXPECT_EQ(0, sw.get_ticks());
     }
 
-    TEST_CASE(TestMeasureRestartedStopwatch)
+    TEST_CASE(Stop_StopwatchIsInInitialState)
     {
-        Stopwatch<FakeTimer> watch(0);
-        FakeTimer& timer = watch.get_timer();
+        StopwatchType sw;
 
-        watch.start();
-        timer.m_time += 400;
-        watch.measure();
-        EXPECT_EQ(watch.get_ticks(), 400);
+        // Action.
+        sw.stop();
 
-        watch.start();
-        timer.m_time += 600;
-        EXPECT_EQ(watch.get_ticks(), 0);
-
-        watch.measure();
-        EXPECT_EQ(watch.get_ticks(), 600);
-        EXPECT_EQ(timer.m_time, 1000);
-
-        timer.m_time += 600;
-        watch.measure();
-        EXPECT_EQ(watch.get_ticks(), 1200);
-
-        watch.start();
-        watch.measure();
-        EXPECT_EQ(watch.get_ticks(), 0);
-
-        timer.m_time += 100;
-        watch.measure();
-        EXPECT_EQ(watch.get_ticks(), 100);
+        EXPECT_EQ(StateType::Stopped, sw.get_state());
+        EXPECT_EQ(0, sw.get_ticks());
     }
 
-    TEST_CASE(TestMeasureClearedStopwatch)
+    // Can't pause while in initial state.
+
+    // Can't resume while in initial state.
+
+    TEST_CASE(Measure_StopwatchIsInInitialState)
     {
-        Stopwatch<FakeTimer> watch(0);
-        FakeTimer& timer = watch.get_timer();
+        StopwatchType sw;
 
-        watch.start();
-        timer.m_time += 400;
-        watch.measure();
-        EXPECT_EQ(watch.get_ticks(), 400);
+        // Action.
+        TIME_PASSES(100);
+        sw.measure();
 
-        watch.clear();
-        EXPECT_EQ(watch.get_ticks(), 0);
-
-        watch.measure();
-        EXPECT_EQ(watch.get_ticks(), 400);
-
-        timer.m_time += 10;
-        watch.measure();
-        EXPECT_EQ(watch.get_ticks(), 410);
+        EXPECT_EQ(StateType::Stopped, sw.get_state());
+        EXPECT_EQ(0, sw.get_ticks());
     }
 
-    TEST_CASE(TestMeasureClearedPausedStopwatch)
+    //
+    // Stopwatch was started.
+    //
+
+    TEST_CASE(Start_StopwatchWasStarted)
     {
-        Stopwatch<FakeTimer> watch(0);
-        FakeTimer& timer = watch.get_timer();
+        StopwatchType sw;
 
-        watch.start();
-        timer.m_time += 400;
-        watch.measure();
-        EXPECT_EQ(watch.get_ticks(), 400);
+        sw.start();
 
-        watch.pause();
-        EXPECT_EQ(watch.get_ticks(), 400);
+        // Action.
+        sw.start();
 
-        watch.clear();
-        EXPECT_EQ(watch.get_ticks(), 0);
-
-        watch.measure();
-        EXPECT_EQ(watch.get_ticks(), 400);
-
-        watch.clear();
-        EXPECT_EQ(watch.get_ticks(), 0);
-
-        watch.resume();
-        EXPECT_EQ(watch.get_ticks(), 0);
-        watch.measure();
-        EXPECT_EQ(watch.get_ticks(), 400);
+        EXPECT_EQ(StateType::Running, sw.get_state());
+        EXPECT_EQ(0, sw.get_ticks());
     }
 
-    TEST_CASE(TestMeasurePausedStopwatch)
+    TEST_CASE(Stop_StopwatchWasStarted)
     {
-        Stopwatch<FakeTimer> watch(0);
-        FakeTimer& timer = watch.get_timer();
+        StopwatchType sw;
 
-        watch.start();
-        timer.m_time += 500;
+        sw.start();
 
-        watch.measure();
-        EXPECT_EQ(watch.get_ticks(), 500);
+        // Action.
+        sw.stop();
 
-        timer.m_time += 100;
-
-        watch.pause();
-        timer.m_time += 400;
-        EXPECT_EQ(watch.get_ticks(), 500);
-
-        watch.measure();
-        EXPECT_EQ(watch.get_ticks(), 600);
-
-        watch.resume();
-        timer.m_time += 150;
-        watch.measure();
-        EXPECT_EQ(watch.get_ticks(), 750);
-
-        watch.pause();
-        timer.m_time += 4000;
-
-        watch.measure();
-        EXPECT_EQ(watch.get_ticks(), 750);
+        EXPECT_EQ(StateType::Stopped, sw.get_state());
+        EXPECT_EQ(0, sw.get_ticks());
     }
 
-    TEST_CASE(TestMultipleMeasureOnRunningStopwatch)
+    TEST_CASE(Pause_StopwatchWasStarted)
     {
-        Stopwatch<FakeTimer> watch(0);
-        FakeTimer& timer = watch.get_timer();
+        StopwatchType sw;
 
-        watch.start();
-        timer.m_time += 400;
-        watch.measure();
-        watch.measure();
-        watch.measure();
-        watch.measure();
-        EXPECT_EQ(watch.get_ticks(), 400);
+        sw.start();
+
+        // Action.
+        sw.pause();
+
+        EXPECT_EQ(StateType::Paused, sw.get_state());
+        EXPECT_EQ(0, sw.get_ticks());
     }
 
-    TEST_CASE(TestMultipleMeasureOnPausedStopwatch)
+    // Can't resume while running.
+
+    TEST_CASE(Measure_StopwatchWasStarted)
     {
-        Stopwatch<FakeTimer> watch(0);
-        FakeTimer& timer = watch.get_timer();
+        StopwatchType sw;
 
-        watch.start();
-        timer.m_time += 5;
+        sw.start();
 
-        watch.measure();
-        watch.measure();
-        watch.measure();
-        watch.measure();
-        EXPECT_EQ(watch.get_ticks(), 5);
+        // Action.
+        TIME_PASSES(100);
+        sw.measure();
 
-        timer.m_time += 1;
+        EXPECT_EQ(StateType::Running, sw.get_state());
+        EXPECT_EQ(100, sw.get_ticks());
+    }
 
-        watch.pause();
-        timer.m_time += 4;
-        EXPECT_EQ(watch.get_ticks(), 5);
+    //
+    // Stopwatch was started, then measured.
+    //
 
-        watch.measure();
-        watch.measure();
-        watch.measure();
-        watch.measure();
-        EXPECT_EQ(watch.get_ticks(), 6);
+    TEST_CASE(Start_StopwatchWasStartedThenMeasured)
+    {
+        StopwatchType sw;
 
-        watch.resume();
-        timer.m_time += 15;
-        watch.measure();
-        watch.measure();
-        watch.measure();
-        watch.measure();
-        watch.measure();
-        EXPECT_EQ(watch.get_ticks(), 21);
+        sw.start();
 
-        watch.pause();
-        timer.m_time += 4;
+        TIME_PASSES(100);
+        sw.measure();
 
-        watch.measure();
-        watch.measure();
-        watch.measure();
-        watch.measure();
-        watch.measure();
-        EXPECT_EQ(watch.get_ticks(), 21);
+        // Action.
+        sw.start();
+
+        EXPECT_EQ(StateType::Running, sw.get_state());
+        EXPECT_EQ(0, sw.get_ticks());
+    }
+
+    TEST_CASE(Stop_StopwatchWasStartedThenMeasured)
+    {
+        StopwatchType sw;
+
+        sw.start();
+
+        TIME_PASSES(100);
+        sw.measure();
+
+        // Action.
+        sw.stop();
+
+        EXPECT_EQ(StateType::Stopped, sw.get_state());
+        EXPECT_EQ(100, sw.get_ticks());
+    }
+
+    TEST_CASE(Pause_StopwatchWasStartedThenMeasured)
+    {
+        StopwatchType sw;
+
+        sw.start();
+
+        TIME_PASSES(100);
+        sw.measure();
+
+        // Action.
+        sw.pause();
+
+        EXPECT_EQ(StateType::Paused, sw.get_state());
+        EXPECT_EQ(100, sw.get_ticks());
+    }
+
+    // Can't resume while running.
+
+    TEST_CASE(Measure_StopwatchWasStartedThenMeasured)
+    {
+        StopwatchType sw;
+
+        sw.start();
+
+        TIME_PASSES(100);
+        sw.measure();
+
+        // Action.
+        TIME_PASSES(10);
+        sw.measure();
+
+        EXPECT_EQ(StateType::Running, sw.get_state());
+        EXPECT_EQ(110, sw.get_ticks());
+    }
+
+    //
+    // Stopwatch was started, then measured, then stopped.
+    //
+
+    TEST_CASE(Start_StopwatchWasStartedThenMeasuredThenStopped)
+    {
+        StopwatchType sw;
+
+        sw.start();
+
+        TIME_PASSES(100);
+        sw.measure();
+
+        sw.stop();
+
+        // Action.
+        sw.start();
+
+        EXPECT_EQ(StateType::Running, sw.get_state());
+        EXPECT_EQ(0, sw.get_ticks());
+    }
+
+    TEST_CASE(Stop_StopwatchWasStartedThenMeasuredThenStopped)
+    {
+        StopwatchType sw;
+
+        sw.start();
+
+        TIME_PASSES(100);
+        sw.measure();
+
+        sw.stop();
+
+        // Action.
+        sw.stop();
+
+        EXPECT_EQ(StateType::Stopped, sw.get_state());
+        EXPECT_EQ(100, sw.get_ticks());
+    }
+
+    // Can't pause while stopped.
+
+    // Can't resume while stopped.
+
+    TEST_CASE(Measure_StopwatchWasStartedThenMeasuredThenStopped)
+    {
+        StopwatchType sw;
+
+        sw.start();
+
+        TIME_PASSES(100);
+        sw.measure();
+
+        sw.stop();
+
+        // Action.
+        TIME_PASSES(10);
+        sw.measure();
+
+        EXPECT_EQ(StateType::Stopped, sw.get_state());
+        EXPECT_EQ(100, sw.get_ticks());
+    }
+
+    //
+    // Stopwatch was started, then measured, then paused.
+    //
+
+    TEST_CASE(Start_StopwatchWasStartedThenMeasuredThenPaused)
+    {
+        StopwatchType sw;
+
+        sw.start();
+
+        TIME_PASSES(100);
+        sw.measure();
+
+        sw.pause();
+
+        // Action.
+        sw.start();
+
+        EXPECT_EQ(StateType::Running, sw.get_state());
+        EXPECT_EQ(0, sw.get_ticks());
+    }
+
+    TEST_CASE(Stop_StopwatchWasStartedThenMeasuredThenPaused)
+    {
+        StopwatchType sw;
+
+        sw.start();
+
+        TIME_PASSES(100);
+        sw.measure();
+
+        sw.pause();
+
+        // Action.
+        sw.stop();
+
+        EXPECT_EQ(StateType::Stopped, sw.get_state());
+        EXPECT_EQ(100, sw.get_ticks());
+    }
+
+    // Can't pause while paused.
+
+    TEST_CASE(Resume_StopwatchWasStartedThenMeasuredThenPaused)
+    {
+        StopwatchType sw;
+
+        sw.start();
+
+        TIME_PASSES(100);
+        sw.measure();
+
+        sw.pause();
+
+        // Action.
+        sw.resume();
+
+        EXPECT_EQ(StateType::Running, sw.get_state());
+        EXPECT_EQ(100, sw.get_ticks());
+    }
+
+    TEST_CASE(Measure_StopwatchWasStartedThenMeasuredThenPaused)
+    {
+        StopwatchType sw;
+
+        sw.start();
+
+        TIME_PASSES(100);
+        sw.measure();
+
+        sw.pause();
+
+        // Action.
+        TIME_PASSES(10);
+        sw.measure();
+
+        EXPECT_EQ(StateType::Paused, sw.get_state());
+        EXPECT_EQ(100, sw.get_ticks());
+    }
+
+    //
+    // Stopwatch was paused, then measured, then resumed.
+    //
+
+    TEST_CASE(Start_StopwatchWasPausedThenMeasuredThenResumed)
+    {
+        StopwatchType sw;
+
+        sw.start();
+
+        TIME_PASSES(100);
+        sw.measure();
+
+        sw.pause();
+
+        TIME_PASSES(10);
+        sw.measure();
+
+        sw.resume();
+
+        TIME_PASSES(1);
+        sw.measure();
+
+        // Action.
+        sw.start();
+
+        EXPECT_EQ(StateType::Running, sw.get_state());
+        EXPECT_EQ(0, sw.get_ticks());
+    }
+
+    TEST_CASE(Stop_StopwatchWasPausedThenMeasuredThenResumed)
+    {
+        StopwatchType sw;
+
+        sw.start();
+
+        TIME_PASSES(100);
+        sw.measure();
+
+        sw.pause();
+
+        TIME_PASSES(10);
+        sw.measure();
+
+        sw.resume();
+
+        TIME_PASSES(1);
+        sw.measure();
+
+        // Action.
+        sw.stop();
+
+        EXPECT_EQ(StateType::Stopped, sw.get_state());
+        EXPECT_EQ(101, sw.get_ticks());
+    }
+
+    TEST_CASE(Pause_StopwatchWasPausedThenMeasuredThenResumed)
+    {
+        StopwatchType sw;
+
+        sw.start();
+
+        TIME_PASSES(100);
+        sw.measure();
+
+        sw.pause();
+
+        TIME_PASSES(10);
+        sw.measure();
+
+        sw.resume();
+
+        TIME_PASSES(1);
+        sw.measure();
+
+        // Action.
+        sw.pause();
+
+        EXPECT_EQ(StateType::Paused, sw.get_state());
+        EXPECT_EQ(101, sw.get_ticks());
+    }
+
+    // Can't resume while resumed.
+
+    TEST_CASE(Measure_StopwatchWasPausedThenMeasuredThenResumed)
+    {
+        StopwatchType sw;
+
+        sw.start();
+
+        TIME_PASSES(1000);
+        sw.measure();
+
+        sw.pause();
+
+        TIME_PASSES(100);
+        sw.measure();
+
+        sw.resume();
+
+        TIME_PASSES(10);
+        sw.measure();
+
+        // Action.
+        TIME_PASSES(1);
+        sw.measure();
+
+        EXPECT_EQ(StateType::Running, sw.get_state());
+        EXPECT_EQ(1011, sw.get_ticks());
     }
 }

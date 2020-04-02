@@ -36,8 +36,8 @@
 #include "renderer/api/material.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Qt headers.
 #include <QPushButton>
@@ -139,7 +139,7 @@ Dictionary DisneyMaterialCustomUI::get_values() const
         Dictionary layer_values = m_layers[i]->get_values();
 
         values.insert(
-            layer_values.get<std::string>("layer_name"),
+            layer_values.get<std::string>("layer_name").c_str(),
             layer_values.insert("layer_number", i));
     }
 

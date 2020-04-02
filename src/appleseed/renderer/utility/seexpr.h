@@ -38,8 +38,8 @@
 #include "foundation/image/colorspace.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/string.h"
 
 // SeExpr headers.
 #pragma warning (push)

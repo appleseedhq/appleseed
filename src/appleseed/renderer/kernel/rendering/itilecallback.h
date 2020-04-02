@@ -37,6 +37,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 // Forward declarations.
 namespace renderer  { class Frame; }
@@ -68,22 +69,29 @@ class APPLESEED_DLLSYMBOL ITileCallback
 
     // This method is called before a tile is rendered.
     virtual void on_tile_begin(
-        const Frame*    frame,
-        const size_t    tile_x,
-        const size_t    tile_y) = 0;
+        const Frame*            frame,
+        const size_t            tile_x,
+        const size_t            tile_y,
+        const size_t            thread_index,
+        const size_t            thread_count) = 0;
 
     // This method is called after a tile is rendered.
     virtual void on_tile_end(
-        const Frame*    frame,
-        const size_t    tile_x,
-        const size_t    tile_y) = 0;
+        const Frame*            frame,
+        const size_t            tile_x,
+        const size_t            tile_y) = 0;
 
     //
     // Methods called by progressive (whole-frame) renderers.
     //
 
     // This method is called after the frame has been updated.
-    virtual void on_progressive_frame_update(const Frame* frame) = 0;
+    virtual void on_progressive_frame_update(
+        const Frame&            frame,
+        const double            time,
+        const std::uint64_t     samples,
+        const double            samples_per_pixel,
+        const std::uint64_t     samples_per_second) = 0;
 };
 
 

@@ -37,8 +37,8 @@
 #include "foundation/image/imageattributes.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/iostreamop.h"
-#include "foundation/utility/string.h"
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"
@@ -50,6 +50,7 @@
 
 // Standard headers.
 #include <algorithm>
+#include <cstdint>
 #include <cstring>
 #include <memory>
 #include <stdexcept>
@@ -342,8 +343,8 @@ struct GenericImageFileWriter::Impl
         const CanvasProperties& props = canvas->properties();
 
         // Construct the temporary buffer holding one row of tiles in target format.
-        std::unique_ptr<uint8[]> buffer(new uint8[props.m_canvas_width * props.m_tile_height * props.m_pixel_size]);
-        uint8* APPLESEED_RESTRICT buffer_ptr = buffer.get();
+        std::unique_ptr<std::uint8_t[]> buffer(new std::uint8_t[props.m_canvas_width * props.m_tile_height * props.m_pixel_size]);
+        std::uint8_t* APPLESEED_RESTRICT buffer_ptr = buffer.get();
 
         // Loop over the rows of tiles.
         for (size_t tile_y = 0; tile_y < props.m_tile_count_y; tile_y++)
@@ -369,7 +370,7 @@ struct GenericImageFileWriter::Impl
                         const size_t buffer_index = (y * props.m_canvas_width + buffer_x) * props.m_pixel_size;
 
                         // Retrieve the (x, y) pixel.
-                        const uint8* APPLESEED_RESTRICT pixel = tile.pixel(x, y);
+                        const std::uint8_t* APPLESEED_RESTRICT pixel = tile.pixel(x, y);
 
                         // Write the pixel into the buffer.
                         memcpy(&(buffer_ptr[buffer_index]), pixel, props.m_pixel_size);

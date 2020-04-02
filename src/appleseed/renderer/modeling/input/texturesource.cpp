@@ -36,10 +36,9 @@
 #include "renderer/modeling/texture/texture.h"
 
 // appleseed.foundation headers.
+#include "foundation/hash/hash.h"
 #include "foundation/image/tile.h"
-#include "foundation/math/hash.h"
 #include "foundation/math/scalar.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cassert>
@@ -166,7 +165,7 @@ TextureSource::TextureSource(
 {
 }
 
-uint64 TextureSource::compute_signature() const
+std::uint64_t TextureSource::compute_signature() const
 {
     return m_texture_instance.compute_signature();
 }
@@ -211,10 +210,10 @@ Color4f TextureSource::get_texel(
         Color4f(
             integer_to_color3(
                 mix_uint32(
-                    static_cast<uint32>(m_assembly_uid),
-                    static_cast<uint32>(m_texture_uid),
-                    static_cast<uint32>(tile_x),
-                    static_cast<uint32>(tile_y))),
+                    static_cast<std::uint32_t>(m_assembly_uid),
+                    static_cast<std::uint32_t>(m_texture_uid),
+                    static_cast<std::uint32_t>(tile_x),
+                    static_cast<std::uint32_t>(tile_y))),
             1.0f);
 
 #endif

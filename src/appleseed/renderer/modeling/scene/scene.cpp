@@ -109,9 +109,8 @@ Scene::Scene()
   : Entity(g_class_uid)
   , BaseGroup(this)
   , impl(new Impl(this))
-  , m_has_render_data(false)
-  , m_camera(nullptr)
 {
+    clear_render_data();
     set_name("scene");
 }
 
@@ -125,9 +124,14 @@ void Scene::release()
     delete this;
 }
 
-Camera* Scene::get_active_camera() const
+void Scene::clear_render_data()
 {
-    return m_camera;
+    m_render_data.m_bbox.invalidate();
+    m_render_data.m_center = GVector3(0.0);
+    m_render_data.m_radius = GScalar(0.0);
+    m_render_data.m_diameter = GScalar(0.0);
+    m_render_data.m_safe_diameter = GScalar(0.0);
+    m_render_data.m_active_camera = nullptr;
 }
 
 CameraContainer& Scene::cameras() const
@@ -354,15 +358,15 @@ bool Scene::on_render_begin(
 
     // The scene's render data must be computed before `on_render_begin()` is called on child entities,
     // because child entities such as cameras may retrieve the scene's bounding box or diameter.
-    assert(!m_has_render_data);
+    clear_render_data();
     m_render_data.m_bbox = compute_bbox();
     m_render_data.m_center = m_render_data.m_bbox.center();
     m_render_data.m_radius = m_render_data.m_bbox.radius();
     m_render_data.m_diameter = m_render_data.m_bbox.diameter();
     m_render_data.m_safe_diameter = m_render_data.m_diameter * GScalar(1.01);
-    m_has_render_data = true;
+    m_render_data.m_active_camera = project.get_uncached_active_camera();
 
-    if (!BaseGroup::on_render_begin(project, parent,recorder,  abort_switch))
+    if (!BaseGroup::on_render_begin(project, parent, recorder, abort_switch))
         return false;
 
     bool success = true;
@@ -380,7 +384,7 @@ void Scene::on_render_end(
     const Project&          project,
     const BaseGroup*        parent)
 {
-    m_has_render_data = false;
+    clear_render_data();
 
     Entity::on_render_end(project, parent);
 }
@@ -407,18 +411,7 @@ bool Scene::on_frame_begin(
     // Call on_frame_begin() on cameras last because some of them cast rays to sense depth in their autofocus mechanism.
     success = success && invoke_on_frame_begin(cameras(), project, this, recorder, abort_switch);
 
-    m_camera = project.get_uncached_active_camera();
-
     return success;
-}
-
-void Scene::on_frame_end(
-    const Project&          project,
-    const BaseGroup*        parent)
-{
-    m_camera = nullptr;
-
-    Entity::on_frame_end(project, parent);
 }
 
 #ifdef APPLESEED_WITH_EMBREE
@@ -429,6 +422,7 @@ const EmbreeDevice& Scene::get_embree_device() const
 }
 
 #endif
+
 
 //
 // SceneFactory class implementation.

@@ -30,12 +30,11 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/types.h"
 #ifdef _WIN32
 #include "foundation/platform/windows.h"
 #endif
 #include "foundation/utility/casts.h"
-#include "foundation/utility/memory.h"
+#include "foundation/memory/memory.h"
 
 // Boost headers.
 #include "boost/atomic/atomic.hpp"
@@ -43,6 +42,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <cstdint>
 
 namespace foundation
 {
@@ -51,62 +51,62 @@ namespace foundation
 // Atomic operations on native types.
 //
 
-uint32 atomic_read(
-    volatile uint32*    ptr);
+std::uint32_t atomic_read(
+    volatile std::uint32_t*     ptr);
 
 void atomic_write(
-    volatile uint32*    ptr,
-    const uint32        value);
+    volatile std::uint32_t*     ptr,
+    const std::uint32_t         value);
 
-uint32 atomic_inc(
-    volatile uint32*    ptr);
+std::uint32_t atomic_inc(
+    volatile std::uint32_t*     ptr);
 
-uint32 atomic_dec(
-    volatile uint32*    ptr);
+std::uint32_t atomic_dec(
+    volatile std::uint32_t*     ptr);
 
-uint32 atomic_cas(
-    volatile uint32*    ptr,
-    const uint32        expected_value,
-    const uint32        new_value);
+std::uint32_t atomic_cas(
+    volatile std::uint32_t*     ptr,
+    const std::uint32_t         expected_value,
+    const std::uint32_t         new_value);
 
 void atomic_add(
-    volatile float*     ptr,
-    const float         operand);
+    volatile float*             ptr,
+    const float                 operand);
 
 
 //
 // Implementation.
 //
 
-APPLESEED_FORCE_INLINE uint32 atomic_read(
-    volatile uint32*    ptr)
+APPLESEED_FORCE_INLINE std::uint32_t atomic_read(
+    volatile std::uint32_t*     ptr)
 {
     return boost::interprocess::ipcdetail::atomic_read32(ptr);
 }
 
 APPLESEED_FORCE_INLINE void atomic_write(
-    volatile uint32*    ptr,
-    const uint32        value)
+    volatile std::uint32_t*     ptr,
+    const std::uint32_t         value)
 {
     boost::interprocess::ipcdetail::atomic_write32(ptr, value);
 }
 
-APPLESEED_FORCE_INLINE uint32 atomic_inc(
-    volatile uint32*    ptr)
+APPLESEED_FORCE_INLINE std::uint32_t atomic_inc(
+    volatile std::uint32_t*     ptr)
 {
     return boost::interprocess::ipcdetail::atomic_inc32(ptr);
 }
 
-APPLESEED_FORCE_INLINE uint32 atomic_dec(
-    volatile uint32*    ptr)
+APPLESEED_FORCE_INLINE std::uint32_t atomic_dec(
+    volatile std::uint32_t*     ptr)
 {
     return boost::interprocess::ipcdetail::atomic_dec32(ptr);
 }
 
-APPLESEED_FORCE_INLINE uint32 atomic_cas(
-    volatile uint32*    ptr,
-    const uint32        expected_value,
-    const uint32        new_value)
+APPLESEED_FORCE_INLINE std::uint32_t atomic_cas(
+    volatile std::uint32_t*     ptr,
+    const std::uint32_t         expected_value,
+    const std::uint32_t         new_value)
 {
 #if defined _WIN32
     return InterlockedCompareExchange(ptr, new_value, expected_value);
@@ -118,19 +118,19 @@ APPLESEED_FORCE_INLINE uint32 atomic_cas(
 }
 
 APPLESEED_FORCE_INLINE void atomic_add(
-    volatile float*     ptr,
-    const float         operand)
+    volatile float*             ptr,
+    const float                 operand)
 {
     assert(is_aligned(ptr, 4));
 
-    volatile uint32* iptr = reinterpret_cast<volatile uint32*>(ptr);
-    uint32 expected = *iptr;
+    volatile std::uint32_t* iptr = reinterpret_cast<volatile std::uint32_t*>(ptr);
+    std::uint32_t expected = *iptr;
 
     while (true)
     {
         const float value = binary_cast<float>(expected);
-        const uint32 new_value = binary_cast<uint32>(value + operand);
-        const uint32 actual = atomic_cas(iptr, expected, new_value);
+        const std::uint32_t new_value = binary_cast<std::uint32_t>(value + operand);
+        const std::uint32_t actual = atomic_cas(iptr, expected, new_value);
         if (actual == expected)
             return;
         expected = actual;

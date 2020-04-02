@@ -30,13 +30,14 @@
 #include "zip.h"
 
 // appleseed.foundation headers.
+#include "foundation/string/string.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/minizip/unzip.h"
 #include "foundation/utility/minizip/zip.h"
-#include "foundation/utility/string.h"
 
 // Boost headers.
 #include "boost/filesystem.hpp"
+#include "boost/range/iterator_range.hpp"
 
 // Standard headers.
 #include <ctime>
@@ -289,12 +290,8 @@ void zip(const std::string& zip_filename, const std::string& directory_to_zip)
         if (zip_file == nullptr)
             throw ZipException(("can't open file " + zip_filename).c_str());
 
-        for (std::set<std::string>::iterator it = files_to_zip.begin();
-             it != files_to_zip.end(); ++it)
-        {
-            const std::string filename_to_zip = *it;
+        for (const std::string& filename_to_zip : files_to_zip)
             zip_current_file(zip_file, filename_to_zip, directory_to_zip);
-        }
 
         zipClose(zip_file, nullptr);
     }
@@ -348,21 +345,16 @@ std::set<std::string> recursive_ls(const bf::path& dir)
 {
     std::set<std::string> files;
 
-    // A default-constructed directory_iterator acts as the end iterator.
-    for (bf::directory_iterator di(dir), de; di != de; ++di)
+    for (const bf::path& entry_path : boost::make_iterator_range(bf::directory_iterator(dir)))
     {
-        const bf::path& current_path = di->path();
-
-        if (bf::is_directory(current_path))
+        if (bf::is_directory(entry_path))
         {
-            const std::string dirname = current_path.filename().string();
-            const std::set<std::string> files_in_subdir = recursive_ls(current_path);
+            const std::string dirname = entry_path.filename().string();
 
-            for (const_each<std::set<std::string>> fi = files_in_subdir; fi; ++fi)
-                files.insert(dirname + "/" + *fi);
+            for (const std::string& filepath : recursive_ls(entry_path))
+                files.insert(dirname + "/" + filepath);
         }
-        else
-            files.insert(current_path.filename().string());
+        else files.insert(entry_path.filename().string());
     }
 
     return files;

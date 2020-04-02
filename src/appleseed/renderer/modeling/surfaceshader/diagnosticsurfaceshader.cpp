@@ -50,25 +50,25 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
+#include "foundation/hash/hash.h"
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/distance.h"
-#include "foundation/math/hash.h"
 #include "foundation/math/minmax.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/otherwise.h"
 
 // Standard headers.
 #include <algorithm>
 #include <cassert>
-#include <cstddef>
 #include <cmath>
+#include <cstddef>
+#include <cstdint>
 #include <string>
 
 using namespace foundation;
@@ -327,12 +327,19 @@ void DiagnosticSurfaceShader::evaluate(
                         ray.m_dir - ray.m_rx.m_dir,
                         ray.m_dir - ray.m_ry.m_dir);
 
-                    BSDFSample sample(&shading_point, Dual3f(outgoing));
+                    BSDF::LocalGeometry local_geometry;
+                    local_geometry.m_shading_point = &shading_point;
+                    local_geometry.m_geometric_normal = Vector3f(shading_point.get_geometric_normal());
+                    local_geometry.m_shading_basis = Basis3f(shading_point.get_shading_basis());
+
+                    BSDFSample sample;
                     material_data.m_bsdf->sample(
                         sampling_context,
                         material_data.m_bsdf->evaluate_inputs(shading_context, shading_point),
                         false,
                         false,
+                        local_geometry,
+                        Dual3f(outgoing),
                         ScatteringMode::All,
                         sample);
 
@@ -515,7 +522,7 @@ void DiagnosticSurfaceShader::evaluate(
                     // Retrieve the time, the scene and the camera.
                     const float time = shading_point.get_time().m_absolute;
                     const Scene& scene = shading_point.get_scene();
-                    const Camera& camera = *scene.get_active_camera();
+                    const Camera& camera = *scene.get_render_data().m_active_camera;
 
                     // Compute the film space coordinates of the intersection point.
                     Vector2d point_ndc;
@@ -590,7 +597,7 @@ void DiagnosticSurfaceShader::evaluate(
             shading_result,
             integer_to_color3<float>(shading_point.get_assembly_instance().get_uid()));
         break;
-      
+
       case Objects:
         set_shading_result(
             shading_result,
@@ -605,10 +612,10 @@ void DiagnosticSurfaceShader::evaluate(
 
       case Primitives:
         {
-            const uint32 h =
+            const std::uint32_t h =
                 mix_uint32(
-                    static_cast<uint32>(shading_point.get_object_instance().get_uid()),
-                    static_cast<uint32>(shading_point.get_primitive_index()));
+                    static_cast<std::uint32_t>(shading_point.get_object_instance().get_uid()),
+                    static_cast<std::uint32_t>(shading_point.get_primitive_index()));
             set_shading_result(shading_result, integer_to_color3<float>(h));
         }
         break;
@@ -648,12 +655,19 @@ void DiagnosticSurfaceShader::evaluate(
                         ray.m_dir - ray.m_rx.m_dir,
                         ray.m_dir - ray.m_ry.m_dir);
 
-                    BSDFSample sample(&shading_point, Dual3f(outgoing));
+                    BSDF::LocalGeometry local_geometry;
+                    local_geometry.m_shading_point = &shading_point;
+                    local_geometry.m_geometric_normal = Vector3f(shading_point.get_geometric_normal());
+                    local_geometry.m_shading_basis = Basis3f(shading_point.get_shading_basis());
+
+                    BSDFSample sample;
                     material_data.m_bsdf->sample(
                         sampling_context,
                         material_data.m_bsdf->evaluate_inputs(shading_context, shading_point),
                         false,
                         false,
+                        local_geometry,
+                        Dual3f(outgoing),
                         ScatteringMode::All,
                         sample);
 

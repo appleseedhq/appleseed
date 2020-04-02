@@ -44,7 +44,7 @@ shader as_toon
 [[
     string help = "Non-Photo-Realistic (NPR) Toon material node",
     string icon = "asToon.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_toon.html#label-as-toon",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_toon.html",
 
     string as_node_name = "asToon",
     string as_category = "shader",

@@ -89,19 +89,6 @@ shader as_maya_lambert
         string label = "Translucence Focus",
         string page = "Common Material Attributes"
     ]],
-    int in_hideSource = 0
-    [[
-        string as_maya_attribute_name = "hideSource",
-        string label = "Hide Glow Source",
-        string widget = "checkBox",
-        string page = "Special Effects"
-    ]],
-    float in_glowIntensity = 0.0
-    [[
-        string as_maya_attribute_name = "glowIntensity",
-        string label = "Glow Intensity",
-        string page = "Special Effects"
-    ]],
     int in_matteOpacityMode = 2
     [[
         string as_maya_attribute_name = "matteOpacityMode",
@@ -128,6 +115,8 @@ shader as_maya_lambert
         string as_maya_attribute_name = "refractiveIndex",
         string label = "Refractive Index",
         float min = 0.010,
+        float max = 3.0,
+        float softmin = 0.010,
         float softmax = 3.0,
         string page = "Raytrace Options"
     ]],
@@ -135,8 +124,11 @@ shader as_maya_lambert
     [[
         string as_maya_attribute_name = "refractionLimit",
         string label = "Refraction Limit",
+        string widget = "intslider",
         int min = 0,
         int max = 10,
+        int softmin = 0,
+        int softmax = 10,
         string page = "Raytrace Options"
     ]],
     float in_shadowAttenuation = 0.5
@@ -166,69 +158,67 @@ shader as_maya_lambert
     ]]
 )
 {
-    if (raytype("shadow") || raytype("transparency"))
-    {
-        color transparency = in_transparency;
+    int is_transparent = max(in_transparency) > 0.0 ? 1 : 0;
 
-        // Shadow attenuation: 0=constant, 1=fake caustics.
-        if (in_refractions && max(in_transparency) > 0.0)
+    if (raytype("transparency"))
+    {
+        if (is_transparent)
         {
-            transparency = mix(
-                transparency,
-                abs(dot(-I, normalize(in_normalCamera))),
-                in_shadowAttenuation);
+            out_outTransparency = in_transparency * transparent();
+            out_outColor = out_outTransparency;
         }
 
-        if (max(transparency) > 0.0)
+        // We only support Maya's mode 0. For everything else, there's
+        // as_matte() and its shader pass-through.
+        if (in_matteOpacityMode == 0)
         {
-            out_outTransparency = transparency * transparent();
-            out_outColor = out_outTransparency;
+            out_outMatteOpacity = as_matte(color(0), 0.0);
+            out_outColor += out_outMatteOpacity;
+        }
+        return;
+    }
+
+    if (raytype("shadow"))
+    {
+        // Shadow attenuation, 0=constant, 1=fake caustics.
+        if (in_refractions && is_transparent)
+        {
+            out_outColor = mix(
+                in_transparency,
+                abs(dot(I, normalize(in_normalCamera))),
+                in_shadowAttenuation) * transparent();
         }
         return;
     }
 
     color opacity = 1.0 - in_transparency;
 
-    if (raytype("light") && max(in_incandescence) > 0.0)
+    if (raytype("light") && max(in_incandescence) > 0.0 && opacity != 0)
     {
         out_outColor += opacity * in_incandescence * emission();
+        return;
     }
 
     normal Nn = normalize(in_normalCamera);
 
-    if (max(in_color) > 0.0)
+    if (max(in_color) > 0.0 && opacity != 0)
     {
         out_outColor += opacity * in_diffuse * in_color * diffuse(Nn);
         out_outColor += opacity * in_translucence * in_color *
                         translucent(Nn);
     }
 
-    if (in_refractions)
+    if (in_refractions && is_transparent)
     {
+        // Maya associates the BTDF with transparency.
+
         int ray_depth = 0;
         int status = getattribute("path:ray_depth", ray_depth);
 
         if (status && ray_depth <= in_refractionLimit)
         {
-            // Maya associates transparency with the BTDF
             out_outColor += in_transparency *
                 refraction(Nn, in_refractiveIndex);
         }
-    }
-    else if (max(in_transparency) > 0.0)
-    {
-        out_outTransparency = in_transparency * transparent();
-        out_outColor += out_outTransparency;
-    }
-
-    if (in_matteOpacityMode == 1)
-    {
-        out_outMatteOpacity = holdout();
-        out_outColor += out_outMatteOpacity;
-    }
-    else
-    {
-        out_outMatteOpacity = in_matteOpacity * holdout();
-        out_outColor += out_outMatteOpacity;
     }
 }

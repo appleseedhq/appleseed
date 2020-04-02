@@ -28,20 +28,20 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/log/log.h"
 #include "foundation/platform/atomic.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/timers.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/job/ijob.h"
 #include "foundation/utility/job/jobmanager.h"
 #include "foundation/utility/job/jobqueue.h"
 #include "foundation/utility/job/workerthread.h"
-#include "foundation/utility/log.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 #include <new>
 #include <utility>
 
@@ -61,7 +61,7 @@ namespace
       : public IJob
     {
       public:
-        explicit JobNotifyingAboutExecution(volatile uint32* execution_count)
+        explicit JobNotifyingAboutExecution(volatile std::uint32_t* execution_count)
           : m_execution_count(execution_count)
         {
         }
@@ -72,7 +72,7 @@ namespace
         }
 
       private:
-        volatile uint32* m_execution_count;
+        volatile std::uint32_t* m_execution_count;
     };
 }
 
@@ -111,7 +111,7 @@ TEST_SUITE(Foundation_Utility_Job_JobQueue)
       : public IJob
     {
       public:
-        explicit JobNotifyingAboutDestruction(volatile uint32* destruction_count)
+        explicit JobNotifyingAboutDestruction(volatile std::uint32_t* destruction_count)
           : m_destruction_count(destruction_count)
         {
         }
@@ -126,7 +126,7 @@ TEST_SUITE(Foundation_Utility_Job_JobQueue)
         }
 
       private:
-        volatile uint32* m_destruction_count;
+        volatile std::uint32_t* m_destruction_count;
     };
 
     TEST_CASE(InitialStateIsCorrect)
@@ -158,7 +158,7 @@ TEST_SUITE(Foundation_Utility_Job_JobQueue)
 
     TEST_CASE(JobScheduledWithOwnershipTransferIsDestructedWhenJobQueueIsDestructed)
     {
-        volatile uint32 destruction_count = 0;
+        volatile std::uint32_t destruction_count = 0;
 
         {
             JobQueue job_queue;
@@ -170,7 +170,7 @@ TEST_SUITE(Foundation_Utility_Job_JobQueue)
 
     TEST_CASE(JobScheduledWithoutOwnershipTransferIsNotDestructedWhenJobQueueIsDestructed)
     {
-        volatile uint32 destruction_count = 0;
+        volatile std::uint32_t destruction_count = 0;
 
         {
             JobQueue job_queue;
@@ -182,7 +182,7 @@ TEST_SUITE(Foundation_Utility_Job_JobQueue)
 
     TEST_CASE(JobScheduledWithOwnershipTransferIsDestructedWhenJobQueueIsCleared)
     {
-        volatile uint32 destruction_count = 0;
+        volatile std::uint32_t destruction_count = 0;
 
         JobQueue job_queue;
         job_queue.schedule(new JobNotifyingAboutDestruction(&destruction_count), true);
@@ -194,7 +194,7 @@ TEST_SUITE(Foundation_Utility_Job_JobQueue)
 
     TEST_CASE(JobScheduledWithoutOwnershipTransferIsNotDestructedWhenJobQueueIsCleared)
     {
-        volatile uint32 destruction_count = 0;
+        volatile std::uint32_t destruction_count = 0;
 
         JobQueue job_queue;
         job_queue.schedule(new JobNotifyingAboutDestruction(&destruction_count), false);
@@ -269,7 +269,7 @@ TEST_SUITE(Foundation_Utility_Job_JobQueue)
 
     TEST_CASE(RunningJobOwnedByQueueIsDestructedWhenRetired)
     {
-        volatile uint32 destruction_count = 0;
+        volatile std::uint32_t destruction_count = 0;
 
         JobQueue job_queue;
         job_queue.schedule(new JobNotifyingAboutDestruction(&destruction_count), true);
@@ -283,7 +283,7 @@ TEST_SUITE(Foundation_Utility_Job_JobQueue)
 
     TEST_CASE(RunningJobNotOwnedByQueueIsNotDestructedWhenRetired)
     {
-        volatile uint32 destruction_count = 0;
+        volatile std::uint32_t destruction_count = 0;
 
         JobQueue job_queue;
         job_queue.schedule(new JobNotifyingAboutDestruction(&destruction_count), false);
@@ -316,7 +316,7 @@ TEST_SUITE(Foundation_Utility_Job_JobManager)
       public:
         JobCreatingAnotherJob(
             JobQueue&           job_queue,
-            volatile uint32*    execution_count)
+            volatile std::uint32_t*    execution_count)
           : m_job_queue(job_queue)
           , m_execution_count(execution_count)
         {
@@ -330,7 +330,7 @@ TEST_SUITE(Foundation_Utility_Job_JobManager)
 
       private:
         JobQueue&           m_job_queue;
-        volatile uint32*    m_execution_count;
+        volatile std::uint32_t*    m_execution_count;
     };
 
     TEST_CASE_F(InitialStateIsCorrect, FixtureJobManager)
@@ -350,7 +350,7 @@ TEST_SUITE(Foundation_Utility_Job_JobManager)
 
     TEST_CASE_F(JobManagerExecutesJobs, FixtureJobManager)
     {
-        volatile uint32 execution_count = 0;
+        volatile std::uint32_t execution_count = 0;
 
         job_queue.schedule(
             new JobNotifyingAboutExecution(&execution_count));
@@ -363,7 +363,7 @@ TEST_SUITE(Foundation_Utility_Job_JobManager)
 
     TEST_CASE_F(JobManagerExecutesSubJobs, FixtureJobManager)
     {
-        volatile uint32 execution_count = 0;
+        volatile std::uint32_t execution_count = 0;
 
         job_queue.schedule(
             new JobCreatingAnotherJob(job_queue, &execution_count));
@@ -389,7 +389,7 @@ TEST_SUITE(Foundation_Utility_Job_WorkerThread)
 
         bool timeout() const
         {
-            const uint64 elapsed_ticks = m_timer.read_end();
+            const std::uint64_t elapsed_ticks = m_timer.read_end();
 
             const double elasped_seconds =
                 static_cast<double>(elapsed_ticks - m_start_ticks) / m_timer_frequency;
@@ -400,8 +400,8 @@ TEST_SUITE(Foundation_Utility_Job_WorkerThread)
       private:
         const double                    m_timeout_seconds;
         mutable DefaultWallclockTimer   m_timer;
-        const uint64                    m_timer_frequency;
-        const uint64                    m_start_ticks;
+        const std::uint64_t             m_timer_frequency;
+        const std::uint64_t             m_start_ticks;
     };
 
     struct JobThrowingBadAllocException
@@ -439,7 +439,7 @@ TEST_SUITE(Foundation_Utility_Job_WorkerThread)
         JobQueue job_queue;
         job_queue.schedule(new JobThrowingBadAllocException());
 
-        volatile uint32 execution_count = 0;
+        volatile std::uint32_t execution_count = 0;
         job_queue.schedule(new JobNotifyingAboutExecution(&execution_count));
 
         Logger logger;
@@ -464,7 +464,7 @@ TEST_SUITE(Foundation_Utility_Job_WorkerThread)
         JobQueue job_queue;
         job_queue.schedule(new JobThrowingBadAllocException());
 
-        volatile uint32 execution_count = 0;
+        volatile std::uint32_t execution_count = 0;
         job_queue.schedule(new JobNotifyingAboutExecution(&execution_count));
 
         Logger logger;

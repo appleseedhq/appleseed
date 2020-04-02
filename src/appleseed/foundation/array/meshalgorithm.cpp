@@ -35,6 +35,7 @@
 
 // Standard headers.
 #include <algorithm>
+#include <cstdint>
 
 namespace foundation
 {
@@ -75,17 +76,17 @@ namespace
         {
         }
 
-        void operator()(const ArrayView<uint8>& view)
+        void operator()(const ArrayView<std::uint8_t>& view)
         {
             collect_stats(view);
         }
 
-        void operator()(const ArrayView<uint16>& view)
+        void operator()(const ArrayView<std::uint16_t>& view)
         {
             collect_stats(view);
         }
 
-        void operator()(const ArrayView<uint32>& view)
+        void operator()(const ArrayView<std::uint32_t>& view)
         {
             collect_stats(view);
         }

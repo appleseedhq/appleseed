@@ -28,7 +28,7 @@
 
 #pragma once
 
-// appleseed.shared headers.
+// appleseed.common headers.
 #include "application/commandlinehandlerbase.h"
 
 // appleseed.foundation headers.
@@ -38,7 +38,7 @@
 #include <string>
 
 // Forward declarations.
-namespace appleseed { namespace shared { class SuperLogger; } }
+namespace appleseed { namespace common { class SuperLogger; } }
 
 namespace appleseed {
 namespace dumpmetadata {
@@ -48,7 +48,7 @@ namespace dumpmetadata {
 //
 
 class CommandLineHandler
-  : public shared::CommandLineHandlerBase
+  : public common::CommandLineHandlerBase
 {
   public:
     foundation::ValueOptionHandler<std::string> m_format;
@@ -60,7 +60,7 @@ class CommandLineHandler
     // Emit usage instructions to the logger.
     void print_program_usage(
         const char*             executable_name,
-        shared::SuperLogger&    logger) const override;
+        common::SuperLogger&    logger) const override;
 };
 
 }   // namespace dumpmetadata

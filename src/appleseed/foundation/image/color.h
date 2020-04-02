@@ -30,11 +30,10 @@
 #pragma once
 
 // appleseed.foundation headers.
+#include "foundation/hash/hash.h"
 #include "foundation/math/fp.h"
-#include "foundation/math/hash.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/poison.h"
 
 // Imath headers.
@@ -49,6 +48,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 
 namespace foundation
 {
@@ -176,6 +176,9 @@ template <typename T, size_t N> bool has_nan(const Color<T, N>& c);
 
 // Return true if all components of a color are finite (not NaN, not infinite).
 template <typename T, size_t N> bool is_finite(const Color<T, N>& c);
+
+// Return true if all components of a color are finite (not NaN, not infinite) and non-negative.
+template <typename T, size_t N> bool is_finite_non_neg(const Color<T, N>& c);
 
 
 //
@@ -326,13 +329,13 @@ class Color<T, 4>
 // Full specializations for colors of type int, float and double.
 //
 
-typedef Color<uint8,    3> Color3b;
-typedef Color<float,    3> Color3f;
-typedef Color<double,   3> Color3d;
+typedef Color<std::uint8_t, 3> Color3b;
+typedef Color<float,        3> Color3f;
+typedef Color<double,       3> Color3d;
 
-typedef Color<uint8,    4> Color4b;
-typedef Color<float,    4> Color4f;
-typedef Color<double,   4> Color4d;
+typedef Color<std::uint8_t, 4> Color4b;
+typedef Color<float,        4> Color4f;
+typedef Color<double,       4> Color4d;
 
 
 //
@@ -898,6 +901,18 @@ inline bool is_finite(const Color<T, N>& c)
     return true;
 }
 
+template <typename T, size_t N>
+inline bool is_finite_non_neg(const Color<T, N>& c)
+{
+    for (size_t i = 0; i < N; ++i)
+    {
+        if (!FP<T>::is_finite_non_neg(c[i]))
+            return false;
+    }
+
+    return true;
+}
+
 
 //
 // RGB color implementation.
@@ -1177,11 +1192,11 @@ inline Color<T, 4> Color<T, 4>::unpremultiplied() const
 template <typename T, typename Int>
 Color<T, 3> integer_to_color3(const Int i)
 {
-    const uint32 u = static_cast<uint32>(i);    // keep the low 32 bits
+    const std::uint32_t u = static_cast<std::uint32_t>(i);    // keep the low 32 bits
 
-    const uint32 x = hash_uint32(u);
-    const uint32 y = hash_uint32(u + 1);
-    const uint32 z = hash_uint32(u + 2);
+    const std::uint32_t x = hash_uint32(u);
+    const std::uint32_t y = hash_uint32(u + 1);
+    const std::uint32_t z = hash_uint32(u + 2);
 
     return Color<T, 3>(
         static_cast<T>(x) * (1.0f / 4294967295.0f),

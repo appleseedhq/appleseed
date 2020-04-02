@@ -33,11 +33,11 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
 #include <algorithm>
@@ -282,21 +282,24 @@ namespace
             const void*             data,
             const ShadingPoint&     outgoing_point,
             const Vector3f&         outgoing_dir,
+            const int               modes,
             BSSRDFSample&           bssrdf_sample,
             BSDFSample&             bsdf_sample) const override
         {
             const GaussianBSSRDFInputValues* values =
                 static_cast<const GaussianBSSRDFInputValues*>(data);
 
-            return do_sample(
-                shading_context,
-                sampling_context,
-                data,
-                values->m_base_values,
-                outgoing_point,
-                outgoing_dir,
-                bssrdf_sample,
-                bsdf_sample);
+            return
+                do_sample(
+                    shading_context,
+                    sampling_context,
+                    data,
+                    values->m_base_values,
+                    outgoing_point,
+                    outgoing_dir,
+                    modes,
+                    bssrdf_sample,
+                    bsdf_sample);
         }
 
         void evaluate(
@@ -311,15 +314,16 @@ namespace
             const GaussianBSSRDFInputValues* values =
                 static_cast<const GaussianBSSRDFInputValues*>(data);
 
-            return do_evaluate(
-                data,
-                values->m_base_values,
-                outgoing_point,
-                outgoing_dir,
-                incoming_point,
-                incoming_dir,
-                modes,
-                value);
+            return
+                do_evaluate(
+                    data,
+                    values->m_base_values,
+                    outgoing_point,
+                    outgoing_dir,
+                    incoming_point,
+                    incoming_dir,
+                    modes,
+                    value);
         }
     };
 }

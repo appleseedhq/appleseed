@@ -37,8 +37,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/stringexception.h"
-#include "foundation/utility/foreach.h"
-#include "foundation/utility/string.h"
+#include "foundation/string/string.h"
 
 // Standard headers.
 #include <string>
@@ -178,7 +177,7 @@ T* get_required_entity(
 
     T* entity = container.get_by_name(entity_name.c_str());
 
-    if (entity == 0)
+    if (entity == nullptr)
         throw ExceptionUnknownEntity(entity_name.c_str());
 
     return entity;
@@ -198,7 +197,7 @@ T* get_optional_entity(
 
     T* entity = container.get_by_name(entity_name.c_str());
 
-    if (entity == 0)
+    if (entity == nullptr)
         throw ExceptionUnknownEntity(entity_name.c_str());
 
     return entity;
@@ -209,11 +208,10 @@ std::vector<std::string> collect_entity_names(
     const EntityContainer&          entities)
 {
     std::vector<std::string> names;
-
     names.reserve(entities.size());
 
-    for (foundation::const_each<EntityContainer> i = entities; i; ++i)
-        names.push_back(i->get_name());
+    for (const auto& entity : entities)
+        names.emplace_back(entity.get_name());
 
     return names;
 }
@@ -233,21 +231,19 @@ inline std::string make_unique_name(
     const std::string&              prefix,
     const std::vector<std::string>& entity_names)
 {
-    int max_number = 0;
+    int max_numeric_suffix = 0;
 
-    for (size_t i = 0, e = entity_names.size(); i < e; ++i)
+    for (const std::string& entity_name : entity_names)
     {
-        const std::string& entity_name = entity_names[i];
-
         if (foundation::starts_with(entity_name, prefix))
         {
             try
             {
                 const std::string entity_name_suffix = entity_name.substr(prefix.size());
-                const int number = foundation::from_string<int>(entity_name_suffix);
+                const int numeric_suffix = foundation::from_string<int>(entity_name_suffix);
 
-                if (max_number < number)
-                    max_number = number;
+                if (max_numeric_suffix < numeric_suffix)
+                    max_numeric_suffix = numeric_suffix;
             }
             catch (const foundation::ExceptionStringConversionError&)
             {
@@ -255,7 +251,7 @@ inline std::string make_unique_name(
         }
     }
 
-    return prefix + foundation::to_string(max_number + 1);
+    return prefix + foundation::to_string(max_numeric_suffix + 1);
 }
 
 }   // namespace renderer

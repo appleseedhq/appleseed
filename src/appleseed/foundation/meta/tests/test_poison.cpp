@@ -28,28 +28,30 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/arch.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/poison.h"
 #include "foundation/utility/test.h"
 
+// Standard headers.
+#include <cstdint>
+
 using namespace foundation;
 
-#ifdef DEBUG
+#ifdef APPLESEED_DEBUG
 
 TEST_SUITE(Foundation_Utility_Debug_Poison)
 {
     TEST_CASE(Debug_Poison_Int8)
     {
-        int8 x = 0;
+        std::int8_t x = 0;
 
         debug_poison(x);
 
-        EXPECT_EQ(int8(0xADU), x);
+        EXPECT_EQ(std::int8_t(0xADU), x);
     }
 
     TEST_CASE(Debug_Poison_UInt8)
     {
-        uint8 x = 0;
+        std::uint8_t x = 0;
 
         debug_poison(x);
 
@@ -58,16 +60,16 @@ TEST_SUITE(Foundation_Utility_Debug_Poison)
 
     TEST_CASE(Debug_Poison_Int32)
     {
-        int32 x = 0;
+        std::int32_t x = 0;
 
         debug_poison(x);
 
-        EXPECT_EQ(int32(0xADADADADU), x);
+        EXPECT_EQ(std::int32_t(0xADADADADU), x);
     }
 
     TEST_CASE(Debug_Poison_UInt32)
     {
-        uint32 x = 0;
+        std::uint32_t x = 0;
 
         debug_poison(x);
 
@@ -149,16 +151,16 @@ TEST_SUITE(Foundation_Utility_Always_Poison)
 {
     TEST_CASE(Always_Poison_Int8)
     {
-        int8 x = 0;
+        std::int8_t x = 0;
 
         always_poison(x);
 
-        EXPECT_EQ(int8(0xADU), x);
+        EXPECT_EQ(std::int8_t(0xADU), x);
     }
 
     TEST_CASE(Always_Poison_UInt8)
     {
-        uint8 x = 0;
+        std::uint8_t x = 0;
 
         always_poison(x);
 
@@ -167,16 +169,16 @@ TEST_SUITE(Foundation_Utility_Always_Poison)
 
     TEST_CASE(Always_Poison_Int32)
     {
-        int32 x = 0;
+        std::int32_t x = 0;
 
         always_poison(x);
 
-        EXPECT_EQ(int32(0xADADADADU), x);
+        EXPECT_EQ(std::int32_t(0xADADADADU), x);
     }
 
     TEST_CASE(Always_Poison_UInt32)
     {
-        uint32 x = 0;
+        std::uint32_t x = 0;
 
         always_poison(x);
 

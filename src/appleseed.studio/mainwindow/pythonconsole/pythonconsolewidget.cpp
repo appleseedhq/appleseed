@@ -34,8 +34,10 @@
 #include "mainwindow/pythonconsole/outputredirector.h"
 #include "mainwindow/pythonconsole/pythoneditor.h"
 #include "mainwindow/pythonconsole/pythonoutput.h"
-#include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
+
+// appleseed.qtcommon headers.
+#include "utility/miscellaneous.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/utility.h"
@@ -53,6 +55,7 @@
 // Standard headers.
 #include <fstream>
 
+using namespace appleseed::qtcommon;
 using namespace renderer;
 
 namespace appleseed {
@@ -207,7 +210,6 @@ void PythonConsoleWidget::slot_open_file()
 
     if (!filepath.isEmpty())
     {
-        filepath = QDir::toNativeSeparators(filepath);
         open_file(filepath.toStdString());
     }
 }
@@ -269,8 +271,7 @@ namespace
         QMessageBox msgbox(parent);
         msgbox.setWindowTitle("Save Changes?");
         msgbox.setIcon(QMessageBox::Question);
-        msgbox.setText("The Python script has been modified.");
-        msgbox.setInformativeText("Do you want to save your changes?");
+        msgbox.setText("The Python script has been modified.\n\nDo you want to save your changes?");
         msgbox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel);
         msgbox.setDefaultButton(QMessageBox::Save);
         return msgbox.exec();

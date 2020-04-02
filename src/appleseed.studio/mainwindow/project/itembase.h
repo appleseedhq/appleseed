@@ -29,7 +29,7 @@
 
 #pragma once
 
-// appleseed.studio headers.
+// appleseed.qtcommon headers.
 #include "utility/miscellaneous.h"
 
 // appleseed.foundation headers.
@@ -113,13 +113,15 @@ QList<Item*> ItemBase::get_action_items()
 
     if (action && !action->data().isNull())
     {
-        const QList<Item*> items = qlist_static_cast<Item*>(action->data().value<QList<ItemBase*>>());
+        const QList<Item*> items =
+            qtcommon::qlist_static_cast<Item*>(
+                action->data().value<QList<ItemBase*>>());
 
         if (!items.empty())
             return items;
     }
 
-    return make_qlist(static_cast<Item*>(this));
+    return qtcommon::make_qlist(static_cast<Item*>(this));
 }
 
 }   // namespace studio

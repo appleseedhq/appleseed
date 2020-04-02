@@ -1,4 +1,4 @@
-# appleseed [![Build Status](https://travis-ci.org/appleseedhq/appleseed.svg?branch=master)](https://travis-ci.org/appleseedhq/appleseed) [![Build status](https://ci.appveyor.com/api/projects/status/7550aaymiusjpk20?svg=true)](https://ci.appveyor.com/project/appleseedhq/appleseed)
+# appleseed [![Build Status](https://travis-ci.org/appleseedhq/appleseed.svg?branch=master)](https://travis-ci.org/appleseedhq/appleseed) [![Build status](https://ci.appveyor.com/api/projects/status/7550aaymiusjpk20?svg=true)](https://ci.appveyor.com/project/appleseedhq/appleseed) [![Documentation Status](https://readthedocs.org/projects/appleseed/badge/?version=latest)](https://readthedocs.org/projects/appleseed)
 
 ![Interior Scene by Juan Carlos Gutiérrez](https://github.com/appleseedhq/appleseedhq.github.io/raw/master/img/renders/jc-interior.jpg)
 
@@ -28,6 +28,10 @@ appleseed is available as a portable C++ library with C++ and Python APIs, as a 
 * [Coding philosophy and guidelines](https://github.com/appleseedhq/appleseed/wiki/Coding-Philosophy-and-Guidelines)
 * [Detailed projects ideas](https://github.com/appleseedhq/appleseed/wiki/List-of-Project-ideas-for-GSoC-2019)
 * [Developer and contributor wiki](https://github.com/appleseedhq/appleseed/wiki)
+
+## Citing
+
+appleseed releases have [DOIs](https://en.wikipedia.org/wiki/Digital_object_identifier) for scientific citation: https://zenodo.org/record/3456967.
 
 ## Related Projects
 

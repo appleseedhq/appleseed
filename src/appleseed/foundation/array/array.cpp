@@ -32,6 +32,9 @@
 // appleseed.foundation headers.
 #include "foundation/utility/otherwise.h"
 
+// Standard headers.
+#include <cstdint>
+
 namespace foundation
 {
 
@@ -115,7 +118,7 @@ template <typename T>
 const void* Array::Model<T>::end() const
 {
     return
-        reinterpret_cast<const int8*>(m_items.data())
+          reinterpret_cast<const std::int8_t*>(m_items.data())
         + sizeof(T) * m_items.size();
 }
 
@@ -129,7 +132,7 @@ template <typename T>
 void* Array::Model<T>::end()
 {
     return
-        reinterpret_cast<int8*>(m_items.data())
+          reinterpret_cast<std::int8_t*>(m_items.data())
         + sizeof(T) * m_items.size();
 }
 
@@ -154,15 +157,14 @@ Array::Array(const ArrayType type, const size_t size)
 
     switch (type)
     {
-      ARRAY_INIT_CASE(UInt8Type, uint8)
-      ARRAY_INIT_CASE(UInt16Type, uint16)
-      ARRAY_INIT_CASE(UInt32Type, uint32)
+      ARRAY_INIT_CASE(UInt8Type, std::uint8_t)
+      ARRAY_INIT_CASE(UInt16Type, std::uint16_t)
+      ARRAY_INIT_CASE(UInt32Type, std::uint32_t)
       ARRAY_INIT_CASE(FloatType, float)
       ARRAY_INIT_CASE(Vector2fType, Vector2f)
       ARRAY_INIT_CASE(Vector3fType, Vector3f)
       ARRAY_INIT_CASE(CompressedUnitVectorType, CompressedUnitVector)
       ARRAY_INIT_CASE(Color3fType, Color3f)
-
       assert_otherwise;
     }
 

@@ -35,8 +35,10 @@
 #endif
 #include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/tools.h"
-#include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
+
+// appleseed.qtcommon headers.
+#include "utility/miscellaneous.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/material.h"
@@ -56,6 +58,7 @@
 // Standard headers.
 #include <utility>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 namespace bf = boost::filesystem;
@@ -169,8 +172,6 @@ void MaterialItem::slot_export()
     {
         if (QFileInfo(filepath).suffix().isEmpty())
             filepath += ".dmt";
-
-        filepath = QDir::toNativeSeparators(filepath);
 
         ParamArray parameters = m_entity->get_parameters();
         parameters.insert("__name", m_entity->get_name());

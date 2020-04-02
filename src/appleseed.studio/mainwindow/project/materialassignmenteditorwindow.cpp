@@ -40,9 +40,11 @@
 #include "mainwindow/project/objectinstanceitem.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/rendering/renderingmanager.h"
+
+// appleseed.qtcommon headers.
 #include "utility/interop.h"
 #include "utility/miscellaneous.h"
-#include "utility/mousewheelfocuseventfilter.h"
+#include "widgets/mousewheelfocuseventfilter.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/object.h"
@@ -69,6 +71,7 @@
 #include <set>
 #include <sstream>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 
@@ -307,8 +310,8 @@ MaterialAssignmentEditorWindow::SlotValue MaterialAssignmentEditorWindow::get_sl
     else if (slot_info.get_mode() == "same")
     {
         const StringDictionary& front_mappings = m_object_instance.get_front_material_mappings();
-        if (front_mappings.exist(slot_info.m_slot_name))
-            slot_value.m_material_name = front_mappings.get<std::string>(slot_info.m_slot_name);
+        if (front_mappings.exist(slot_info.m_slot_name.c_str()))
+            slot_value.m_material_name = front_mappings.get<std::string>(slot_info.m_slot_name.c_str());
     }
 
     return slot_value;

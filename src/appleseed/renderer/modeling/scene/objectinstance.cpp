@@ -41,8 +41,8 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/makevector.h"
 
 // OpenImageIO headers.
@@ -116,6 +116,21 @@ bool has_participating_media(const MaterialArray& materials)
 
 
 //
+// ObjectInstance::RenderData class implementation.
+//
+
+ObjectInstance::RenderData::RenderData()
+{
+    clear();
+}
+
+void ObjectInstance::RenderData::clear()
+{
+    m_shadow_terminator_freq_mult = 1.0f;
+}
+
+
+//
 // ObjectInstance class implementation.
 //
 
@@ -162,25 +177,7 @@ ObjectInstance::ObjectInstance(
     m_vis_flags = VisibilityFlags::parse(params.child("visibility"), context);
 
     // Retrieve medium priority.
-    m_medium_priority = params.get_optional<int8>("medium_priority", 0);
-
-    // Retrieve ray bias method.
-    const std::string ray_bias_method =
-        params.get_optional<std::string>(
-            "ray_bias_method",
-            "none",
-            make_vector("none", "normal", "incoming_direction", "outgoing_direction"),
-            context);
-    if (ray_bias_method == "none")
-        m_ray_bias_method = RayBiasMethodNone;
-    else if (ray_bias_method == "normal")
-        m_ray_bias_method = RayBiasMethodNormal;
-    else if (ray_bias_method == "incoming_direction")
-        m_ray_bias_method = RayBiasMethodIncomingDirection;
-    else m_ray_bias_method = RayBiasMethodOutgoingDirection;
-
-    // Retrieve ray bias distance.
-    m_ray_bias_distance = params.get_optional<double>("ray_bias_distance", 0.0);
+    m_medium_priority = params.get_optional<std::int8_t>("medium_priority", 0);
 
     // Retrieve SSS set ID.
     impl->m_sss_set_identifier = params.get_optional<std::string>("sss_set_id", "");
@@ -202,7 +199,7 @@ void ObjectInstance::release()
     delete this;
 }
 
-uint64 ObjectInstance::compute_signature() const
+std::uint64_t ObjectInstance::compute_signature() const
 {
     return
         m_object
@@ -482,8 +479,6 @@ bool ObjectInstance::on_frame_begin(
     if (!Entity::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
-    m_transform_swaps_handedness = get_transform().swaps_handedness();
-
     const OnFrameBeginMessageContext context("object instance", this);
 
     const bool uses_materials_alpha_mapping =
@@ -501,7 +496,22 @@ bool ObjectInstance::on_frame_begin(
         }
     }
 
+    m_render_data.clear();
+    m_render_data.m_transform_swaps_handedness = get_transform().swaps_handedness();
+
+    const float shadow_terminator_correction = m_params.get_optional("shadow_terminator_correction", 0.0f);
+    m_render_data.m_shadow_terminator_freq_mult = 1.0f / (1.0f - shadow_terminator_correction);
+
     return true;
+}
+
+void ObjectInstance::on_frame_end(
+    const Project&          project,
+    const BaseGroup*        parent)
+{
+    m_render_data.clear();
+
+    Entity::on_frame_end(project, parent);
 }
 
 
@@ -512,6 +522,22 @@ bool ObjectInstance::on_frame_begin(
 DictionaryArray ObjectInstanceFactory::get_input_metadata()
 {
     DictionaryArray metadata;
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "shadow_terminator_correction")
+            .insert("label", "Shadow Terminator Fix")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "0.5")
+                    .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "0.0"));
 
     metadata.push_back(
         Dictionary()
@@ -531,33 +557,11 @@ DictionaryArray ObjectInstanceFactory::get_input_metadata()
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "ray_bias_method")
-            .insert("label", "Ray Bias Method")
-            .insert("type", "enumeration")
-            .insert("items",
-                Dictionary()
-                    .insert("No Ray Bias", "none")
-                    .insert("Shift Along Surface Normal", "normal")
-                    .insert("Shift Along Incoming Direction", "incoming_direction")
-                    .insert("Shift Along Outgoing Direction", "outgoing_direction"))
-            .insert("use", "optional")
-            .insert("default", "none"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "ray_bias_distance")
-            .insert("label", "Ray Bias Distance")
+            .insert("name", "sss_set_id")
+            .insert("label", "SSS Set Identifier")
             .insert("type", "text")
             .insert("use", "optional")
-            .insert("default", "0.0"));
-
-    metadata.push_back(
-        Dictionary()
-        .insert("name", "sss_set_id")
-        .insert("label", "SSS Set Identifier")
-        .insert("type", "text")
-        .insert("use", "optional")
-        .insert("default", ""));
+            .insert("default", ""));
 
     return metadata;
 }

@@ -35,8 +35,8 @@
 #include "renderer/kernel/rendering/sampleaccumulationbuffer.h"
 
 // appleseed.foundation headers.
+#include "foundation/memory/memory.h"
 #include "foundation/utility/job.h"
-#include "foundation/utility/memory.h"
 
 // Standard headers.
 #include <cassert>
@@ -110,7 +110,7 @@ void SampleGeneratorBase::signal_invalid_sample()
     const size_t MaxWarningsPerThread = 5;
 
     if (m_invalid_sample_count <= MaxWarningsPerThread)
-        RENDERER_LOG_WARNING("a sample had nan, negative or infinite components and was ignored.");
+        RENDERER_LOG_WARNING("a sample had NaN, negative or infinite components and was ignored.");
     else if (m_invalid_sample_count == MaxWarningsPerThread + 1)
         RENDERER_LOG_WARNING("more invalid samples found, omitting warning messages for brevity.");
 }

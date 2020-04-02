@@ -65,25 +65,25 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/hash/hash.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
 #include "foundation/math/basis.h"
-#include "foundation/math/hash.h"
 #include "foundation/math/population.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
-#include "foundation/utility/arena.h"
+#include "foundation/memory/arena.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/statistics.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>
 #include <cmath>
+#include <cstdint>
 #include <string>
 
 // Forward declarations.
@@ -296,7 +296,7 @@ namespace
                 SampleVector&               samples,
                 const Spectrum&             initial_flux)
               : m_params(params)
-              , m_camera(*scene.get_active_camera())
+              , m_camera(*scene.get_render_data().m_active_camera)
               , m_canvas_width(frame.image().properties().m_canvas_width)
               , m_canvas_height(frame.image().properties().m_canvas_height)
               , m_shading_context(shading_context)
@@ -307,7 +307,9 @@ namespace
             {
             }
 
-            void on_first_diffuse_bounce(const PathVertex& vertex)
+            void on_first_diffuse_bounce(
+                const PathVertex&           vertex,
+                const Spectrum&             albedo)
             {
             }
 
@@ -476,14 +478,17 @@ namespace
                         vertex.get_shading_normal());
 
                 // Evaluate the BSDF at the vertex position.
+                BSDF::LocalGeometry local_geometry;
+                local_geometry.m_shading_point = vertex.m_shading_point;
+                local_geometry.m_geometric_normal = Vector3f(geometric_normal);
+                local_geometry.m_shading_basis = Basis3f(vertex.get_shading_basis());
                 DirectShadingComponents bsdf_value;
                 const float bsdf_prob =
                     vertex.m_bsdf->evaluate(
                         vertex.m_bsdf_data,
                         true,                                       // adjoint
                         true,                                       // multiply by |cos(incoming, normal)|
-                        Vector3f(geometric_normal),
-                        Basis3f(vertex.get_shading_basis()),
+                        local_geometry,
                         Vector3f(vertex.m_outgoing.get_value()),    // outgoing (toward the light)
                         -Vector3f(camera_outgoing),                 // incoming (toward the camera)
                         ScatteringMode::All,                        // todo: likely incorrect
@@ -546,10 +551,10 @@ namespace
 
         SamplingContext::RNGType        m_rng;
 
-        uint64                          m_light_sample_count;
+        std::uint64_t                   m_light_sample_count;
 
-        uint64                          m_path_count;
-        Population<uint64>              m_path_length;
+        std::uint64_t                   m_path_count;
+        Population<std::uint64_t>       m_path_length;
 
         float                           m_shutter_open_begin_time;
         float                           m_shutter_close_end_time;
@@ -561,7 +566,7 @@ namespace
             m_arena.clear();
 
             // Create a sampling context.
-            const size_t instance = mix_uint32(m_frame.get_noise_seed(), static_cast<uint32>(sequence_index));
+            const size_t instance = mix_uint32(m_frame.get_noise_seed(), static_cast<std::uint32_t>(sequence_index));
             SamplingContext sampling_context(
                 m_rng,
                 m_params.m_sampling_mode,

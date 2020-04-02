@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017-2018 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2017-2019 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,7 +30,7 @@ shader as_anisotropy_vector_field
 [[
     string help = "Creates an anisotropy field vector from an input color.",
     string icon = "asAnisotropyVectorField.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_anisotropy_vector_field.html#label-as-anisotropy-vector-field",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_anisotropy_vector_field.html",
 
     string as_node_name = "asAnisotropyVectorField",
     string as_category = "utility",
@@ -168,10 +168,11 @@ shader as_anisotropy_vector_field
     {
         vector vector_map = normalize((vector) in_color * 2.0 - 1.0);
 
-        tangent = normalize(
-            vector_map[0] * Tn +
-            vector_map[1] * Bn +
-            vector_map[2] * Nn);
+        if (in_field_mode == 1)
+        {
+            vector_map = vector(vector_map[0], vector_map[2], vector_map[1]);
+        }
+        tangent = normalize(vector_map[0] * Tn + vector_map[1] * Bn);
     }
 
     if (in_rotation_value > 0.0 || isconnected(in_rotation_value))

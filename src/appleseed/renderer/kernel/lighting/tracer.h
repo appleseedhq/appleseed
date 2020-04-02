@@ -250,7 +250,7 @@ inline void Tracer::trace_between_simple(
         const double dist = foundation::norm(direction);
 
         const ShadingRay ray(
-            origin.get_biased_point(direction),
+            origin.get_point(),
             direction / dist,
             0.0,                        // ray tmin
             dist * (1.0 - 1.0e-6),      // ray tmax
@@ -289,7 +289,7 @@ inline void Tracer::trace_between_simple(
         const double dist = foundation::norm(direction);
 
         const ShadingRay ray(
-            origin.get_biased_point(direction),
+            origin.get_point(),
             direction / dist,
             0.0,                        // ray tmin
             dist * (1.0 - 1.0e-6),      // ray tmax
@@ -435,7 +435,7 @@ inline const ShadingPoint& Tracer::trace_between_full(
     const double dist = foundation::norm(direction);
 
     ShadingRay ray(
-        origin.get_biased_point(direction),
+        origin.get_point(),
         direction / dist,
         0.0,
         dist * (1.0 - 1.0e-6),
@@ -464,7 +464,7 @@ inline const ShadingPoint& Tracer::trace_between_full(
     const double dist = foundation::norm(direction);
 
     ShadingRay ray(
-        origin.get_biased_point(direction),
+        origin.get_point(),
         direction / dist,
         0.0,
         dist * (1.0 - 1.0e-6),

@@ -100,6 +100,15 @@ source_group ("include\\appleseed\\math" FILES
     ${include_appleseed_math_sources}
 )
 
+set (include_appleseed_max_sources
+)
+list (APPEND osl_headers
+    ${include_appleseed_max_sources}
+)
+source_group ("include\\appleseed\\max" FILES
+    ${include_appleseed_max_sources}
+)
+
 set (include_appleseed_maya_sources
     include/appleseed/maya/as_maya_cms_syncolor_idt.h
     include/appleseed/maya/as_maya_fractal_helpers.h
@@ -126,6 +135,16 @@ list (APPEND osl_headers
 )
 source_group ("include\\appleseed\\pattern" FILES
     ${include_appleseed_pattern_sources}
+)
+
+set (include_appleseed_texture_sources
+    include/appleseed/texture/as_texture_helpers.h
+)
+list (APPEND osl_headers
+    ${include_appleseed_texture_sources}
+)
+source_group ("include\\appleseed\\texture" FILES
+    ${include_appleseed_texture_sources}
 )
 
 set (include_appleseed_transform_sources
@@ -267,6 +286,7 @@ set (src_appleseed_sources
      src/appleseed/as_attributes.osl
      src/appleseed/as_blackbody.osl
      src/appleseed/as_blend_color.osl
+     src/appleseed/as_blend_normal.osl
      src/appleseed/as_blend_shader.osl
      src/appleseed/as_bump.osl
      src/appleseed/as_closure2surface.osl
@@ -279,6 +299,7 @@ set (src_appleseed_sources
      src/appleseed/as_fresnel.osl
      src/appleseed/as_glass.osl
      src/appleseed/as_globals.osl
+     src/appleseed/as_hair_material.osl
      src/appleseed/as_id_manifold.osl
      src/appleseed/as_invert_color.osl
      src/appleseed/as_luminance.osl
@@ -289,10 +310,12 @@ set (src_appleseed_sources
      src/appleseed/as_noise3d.osl
      src/appleseed/as_plastic.osl
      src/appleseed/as_ray_switch.osl
+     src/appleseed/as_ray_switch_surface.osl
      src/appleseed/as_sbs_pbrmaterial.osl
      src/appleseed/as_space_transform.osl
      src/appleseed/as_standard_surface.osl
      src/appleseed/as_subsurface.osl
+     src/appleseed/as_surface_luminance.osl
      src/appleseed/as_switch_surface.osl
      src/appleseed/as_switch_texture.osl
      src/appleseed/as_swizzle.osl

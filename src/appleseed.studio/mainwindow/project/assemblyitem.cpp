@@ -46,6 +46,8 @@
 #include "mainwindow/project/texturecollectionitem.h"
 #include "mainwindow/project/tools.h"
 #include "mainwindow/rendering/renderingmanager.h"
+
+// appleseed.qtcommon headers.
 #include "utility/miscellaneous.h"
 
 // appleseed.renderer headers.
@@ -62,7 +64,7 @@
 #include "renderer/api/volume.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
 
@@ -76,6 +78,7 @@
 #include <string>
 #include <vector>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 
@@ -98,7 +101,7 @@ AssemblyItem::AssemblyItem(
   , m_parent(parent)
   , m_parent_item(parent_item)
 {
-    set_title(QString::fromUtf8(assembly.get_name()));
+    set_title(assembly.get_name());
 
     set_allow_edition(false);
 
@@ -329,8 +332,7 @@ namespace
         QMessageBox msgbox;
         msgbox.setWindowTitle("Delete Assembly?");
         msgbox.setIcon(QMessageBox::Question);
-        msgbox.setText(QString("You are about to delete the assembly \"%1\" and all its instances.").arg(assembly_name));
-        msgbox.setInformativeText("Continue?");
+        msgbox.setText(QString("You are about to delete the assembly \"%1\" and all its instances.\n\nContinue?").arg(assembly_name));
         msgbox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
         msgbox.setDefaultButton(QMessageBox::No);
         return msgbox.exec();

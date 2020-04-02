@@ -43,6 +43,8 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/triangulator.h"
 #include "foundation/math/vector.h"
+#include "foundation/memory/autoreleaseptr.h"
+#include "foundation/memory/memory.h"
 #include "foundation/mesh/genericmeshfilereader.h"
 #include "foundation/mesh/imeshbuilder.h"
 #include "foundation/mesh/imeshfilereader.h"
@@ -50,19 +52,18 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/types.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/apistring.h"
-#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/filter.h"
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/memory.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/stopwatch.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <exception>
 #include <map>
 #include <string>
@@ -266,7 +267,7 @@ namespace
             m_face_vertices.resize(m_vertex_count);
 
             for (size_t i = 0; i < m_vertex_count; ++i)
-                m_face_vertices[i] = static_cast<uint32>(vertices[i]);
+                m_face_vertices[i] = static_cast<std::uint32_t>(vertices[i]);
         }
 
         void set_face_vertex_normals(const size_t vertex_normals[]) override
@@ -274,7 +275,7 @@ namespace
             m_face_normals.resize(m_vertex_count);
 
             for (size_t i = 0; i < m_vertex_count; ++i)
-                m_face_normals[i] = static_cast<uint32>(vertex_normals[i]);
+                m_face_normals[i] = static_cast<std::uint32_t>(vertex_normals[i]);
         }
 
         void set_face_vertex_tex_coords(const size_t tex_coords[]) override
@@ -282,12 +283,12 @@ namespace
             m_face_tex_coords.resize(m_vertex_count);
 
             for (size_t i = 0; i < m_vertex_count; ++i)
-                m_face_tex_coords[i] = static_cast<uint32>(tex_coords[i]);
+                m_face_tex_coords[i] = static_cast<std::uint32_t>(tex_coords[i]);
         }
 
         void set_face_material(const size_t material) override
         {
-            m_face_material = static_cast<uint32>(material);
+            m_face_material = static_cast<std::uint32_t>(material);
         }
 
       private:
@@ -303,10 +304,10 @@ namespace
 
         // Face definition.
         size_t                            m_vertex_count;
-        std::vector<uint32>               m_face_vertices;
-        std::vector<uint32>               m_face_normals;
-        std::vector<uint32>               m_face_tex_coords;
-        uint32                            m_face_material;
+        std::vector<std::uint32_t>        m_face_vertices;
+        std::vector<std::uint32_t>        m_face_normals;
+        std::vector<std::uint32_t>        m_face_tex_coords;
+        std::uint32_t                     m_face_material;
 
         // Support data for face triangulation.
         Triangulator<double>              m_triangulator;
@@ -687,9 +688,9 @@ namespace
         {
             Triangle tri = old_triangles[i];
 
-            tri.m_n0 = static_cast<uint32>(object.push_vertex_normal(old_normals[tri.m_n0]));
-            tri.m_n1 = static_cast<uint32>(object.push_vertex_normal(old_normals[tri.m_n1]));
-            tri.m_n2 = static_cast<uint32>(object.push_vertex_normal(old_normals[tri.m_n2]));
+            tri.m_n0 = static_cast<std::uint32_t>(object.push_vertex_normal(old_normals[tri.m_n0]));
+            tri.m_n1 = static_cast<std::uint32_t>(object.push_vertex_normal(old_normals[tri.m_n1]));
+            tri.m_n2 = static_cast<std::uint32_t>(object.push_vertex_normal(old_normals[tri.m_n2]));
 
             object.push_triangle(tri);
         }

@@ -63,9 +63,13 @@ namespace foundation
 //
 // References:
 //
+//   Rotation matrix
 //   http://en.wikipedia.org/wiki/Rotation_matrix
 //
 //   Real-Time Rendering, Second Edition, A. K. Peters
+//
+//   A function for creating a rotation matrix that rotates a vector called "from" into another vector called "to"
+//   https://github.com/erich666/jgt-code/blob/master/Volume_04/Number_4/Moller1999/fromtorot.c
 //
 
 template <typename T, size_t M, size_t N>

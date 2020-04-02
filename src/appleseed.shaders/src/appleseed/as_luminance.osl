@@ -34,7 +34,7 @@ shader as_luminance
 [[
     string icon = "asLuminance.png",
     string help = "A node that outputs the (color space-aware) relative luminance of a color.",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_luminance.html#label-as-luminance",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_luminance.html",
 
     string as_node_name = "asLuminance",
     string as_category = "color",
@@ -76,20 +76,20 @@ shader as_luminance
         string options = "ACES 2065-1 AP0:0|ACEScg AP1:1|Rec.2020:2|DCI-P3:3|Rec.709 or sRGB:4|Chromaticity Coordinates:5",
         string label = "Input Color Space",
         string page = "Color Space",
-        int divider = 1,
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
     ]],
     float in_chromaticityCoordsR[2] = {0.640, 0.330}
     [[
         string as_maya_attribute_name = "chromaticityCoordsR",
         string as_maya_attribute_short_name = "pr",
         int as_maya_attribute_keyable = 0,
-        float min = 0.0,
-        float max = 1.0,
+        float softmin = 0.0,
+        float softmax = 1.0,
         string label = "R xy Coordinates",
         string page = "Color Space.RGB Primaries"
     ]],
@@ -98,8 +98,8 @@ shader as_luminance
         string as_maya_attribute_name = "chromaticityCoordsG",
         string as_maya_attribute_short_name = "pg",
         int as_maya_attribute_keyable = 0,
-        float min = 0.0,
-        float max = 1.0,
+        float softmin = 0.0,
+        float softmax = 1.0,
         string label = "G xy Coordinates",
         string page = "Color Space.RGB Primaries"
     ]],
@@ -108,8 +108,8 @@ shader as_luminance
         string as_maya_attribute_name = "chromaticityCoordsB",
         string as_maya_attribute_short_name = "pb",
         int as_maya_attribute_keyable = 0,
-        float min = 0.0,
-        float max = 1.0,
+        float softmin = 0.0,
+        float softmax = 1.0,
         string label = "B xy Coordinates",
         string page = "Color Space.RGB Primaries",
         int divider = 1
@@ -123,12 +123,12 @@ shader as_luminance
         string label = "Illuminants",
         string page = "Color Space.Illuminants",
         string help = "Preset illuminants, correlated color temperature or explicit white point xy chromaticity coordinates.",
-        int divider = 1,
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
     ]],
     int in_colorTemperature = 6504
     [[
@@ -149,8 +149,8 @@ shader as_luminance
         string as_maya_attribute_name = "chromaticityCoordsW",
         string as_maya_attribute_short_name = "pw",
         int as_maya_attribute_keyable = 0,
-        float min = 0.0,
-        float max = 1.0,
+        float softmin = 0.0,
+        float softmax = 1.0,
         string label = "W xy Coordinates",
         string page = "Color Space.Illuminants"
     ]],

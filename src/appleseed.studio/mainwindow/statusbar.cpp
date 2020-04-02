@@ -31,9 +31,13 @@
 #include "statusbar.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/string.h"
+#include "foundation/string/string.h"
+
+// Standard headers.
+#include <cassert>
 
 using namespace foundation;
+using namespace renderer;
 
 namespace appleseed {
 namespace studio {
@@ -41,12 +45,6 @@ namespace studio {
 //
 // StatusBar class implementation.
 //
-
-StatusBar::StatusBar()
-  : m_rendering_timer(nullptr)
-  , m_timer_id(-1)
-{
-}
 
 void StatusBar::set_text(const std::string& text)
 {
@@ -57,7 +55,6 @@ void StatusBar::start_rendering_time_display(RenderingTimer* rendering_timer)
 {
     assert(m_rendering_timer == nullptr);
     assert(m_timer_id == -1);
-
     assert(rendering_timer);
 
     m_rendering_timer = rendering_timer;
@@ -69,7 +66,6 @@ void StatusBar::stop_rendering_time_display()
     if (m_rendering_timer != nullptr)
     {
         assert(m_timer_id != -1);
-
         killTimer(m_timer_id);
 
         m_rendering_timer = nullptr;
@@ -81,6 +77,8 @@ void StatusBar::timerEvent(QTimerEvent* event)
 {
     assert(m_rendering_timer);
 
+    // todo: possible race condition. It would be neat if measuring a timer
+    // was an immutable operation on the timer.
     m_rendering_timer->measure();
 
     const double rendering_time = m_rendering_timer->get_seconds();

@@ -28,10 +28,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/compressedunitvector.h"
-#include "foundation/math/vector.h"
 #include "foundation/math/rng/distribution.h"
 #include "foundation/math/rng/xoroshiro128plus.h"
 #include "foundation/math/sampling/mappings.h"
+#include "foundation/math/vector.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 

@@ -60,16 +60,17 @@
 #include "foundation/math/transform.h"
 #include "foundation/math/treeoptimizer.h"
 #include "foundation/math/vector.h"
+#include "foundation/memory/alignedallocator.h"
+#include "foundation/memory/memory.h"
 #include "foundation/platform/system.h"
 #include "foundation/platform/timers.h"
-#include "foundation/utility/alignedallocator.h"
+#include "foundation/platform/types.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/makevector.h"
-#include "foundation/utility/memory.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/stopwatch.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <algorithm>
@@ -455,7 +456,7 @@ size_t TriangleTree::get_memory_size() const
         - sizeof(*static_cast<const TreeType*>(this))
         + sizeof(*this)
         + m_triangle_keys.capacity() * sizeof(TriangleKey)
-        + m_leaf_data.capacity() * sizeof(uint8);
+        + m_leaf_data.capacity() * sizeof(std::uint8_t);
 }
 
 namespace
@@ -944,11 +945,11 @@ void TriangleTree::store_triangles(
                     item_begin,
                     item_count);
 
-            MemoryWriter user_data_writer(&node.get_user_data<uint8>());
+            MemoryWriter user_data_writer(&node.get_user_data<std::uint8_t>());
 
-            if (leaf_size <= NodeType::MaxUserDataSize - sizeof(uint32))
+            if (leaf_size <= NodeType::MaxUserDataSize - sizeof(std::uint32_t))
             {
-                user_data_writer.write<uint32>(~uint32(0));
+                user_data_writer.write<std::uint32_t>(~std::uint32_t(0));
 
                 TriangleEncoder::encode(
                     triangle_vertex_infos,
@@ -960,7 +961,7 @@ void TriangleTree::store_triangles(
             }
             else
             {
-                user_data_writer.write(static_cast<uint32>(leaf_data_writer.offset()));
+                user_data_writer.write(static_cast<std::uint32_t>(leaf_data_writer.offset()));
 
                 TriangleEncoder::encode(
                     triangle_vertex_infos,
@@ -1062,9 +1063,9 @@ namespace
     };
 
     // Hash a filter key.
-    uint64 hash(const FilterKey& key)
+    std::uint64_t hash(const FilterKey& key)
     {
-        uint64 h = key.m_object->compute_signature();
+        std::uint64_t h = key.m_object->compute_signature();
 
         for (size_t i = 0; i < key.m_materials.size(); ++i)
         {
@@ -1147,7 +1148,7 @@ namespace
                 continue;
 
             // Update existing intersection filters.
-            const uint64 filter_key_hash = hash(filter_key);
+            const std::uint64_t filter_key_hash = hash(filter_key);
             const IntersectionFilterRepository::const_iterator it = filters.find(filter_key_hash);
             if (it != filters.end())
             {
@@ -1192,14 +1193,14 @@ namespace
         if (repository.empty())
             return;
 
-        std::set<uint64> hashes;
+        std::set<std::uint64_t> hashes;
 
         for (const_each<FilterKeySet> i = filter_keys; i; ++i)
             hashes.insert(hash(*i));
 
         for (IntersectionFilterRepository::iterator i = repository.begin(); i != repository.end(); )
         {
-            const uint64 filter_key_hash = i->first;
+            const std::uint64_t filter_key_hash = i->first;
 
             if (hashes.find(filter_key_hash) == hashes.end())
             {
@@ -1359,11 +1360,11 @@ bool TriangleLeafVisitor::visit(
     )
 {
     // Retrieve the pointer to the data of this leaf.
-    const uint8* user_data = &node.get_user_data<uint8>();
-    const uint32 leaf_data_index = *reinterpret_cast<const uint32*>(user_data);
-    const uint8* leaf_data =
-        leaf_data_index == ~uint32(0)
-            ? user_data + sizeof(uint32)                // triangles are stored in the leaf node
+    const std::uint8_t* user_data = &node.get_user_data<std::uint8_t>();
+    const std::uint32_t leaf_data_index = *reinterpret_cast<const std::uint32_t*>(user_data);
+    const std::uint8_t* leaf_data =
+        leaf_data_index == ~std::uint32_t(0)
+            ? user_data + sizeof(std::uint32_t)         // triangles are stored in the leaf node
             : &m_tree.m_leaf_data[leaf_data_index];     // triangles are stored in the tree
     MemoryReader reader(leaf_data);
 
@@ -1376,10 +1377,10 @@ bool TriangleLeafVisitor::visit(
         FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
 
         // Retrieve the triangle's visibility flags.
-        const uint32 vis_flags = reader.read<uint32>();
+        const std::uint32_t vis_flags = reader.read<std::uint32_t>();
 
         // Retrieve the number of motion segments for this triangle.
-        const uint32 motion_segment_count = reader.read<uint32>();
+        const std::uint32_t motion_segment_count = reader.read<std::uint32_t>();
 
         // todo: get rid of this test by sorting triangles by their number of motion segments.
         if (motion_segment_count == 0)
@@ -1513,11 +1514,11 @@ bool TriangleLeafProbeVisitor::visit(
     )
 {
     // Retrieve the pointer to the data of this leaf.
-    const uint8* user_data = &node.get_user_data<uint8>();
-    const uint32 leaf_data_index = *reinterpret_cast<const uint32*>(user_data);
-    const uint8* leaf_data =
-        leaf_data_index == ~uint32(0)
-            ? user_data + sizeof(uint32)                // triangles are stored in the leaf node
+    const std::uint8_t* user_data = &node.get_user_data<std::uint8_t>();
+    const std::uint32_t leaf_data_index = *reinterpret_cast<const std::uint32_t*>(user_data);
+    const std::uint8_t* leaf_data =
+        leaf_data_index == ~std::uint32_t(0)
+            ? user_data + sizeof(std::uint32_t)         // triangles are stored in the leaf node
             : &m_tree.m_leaf_data[leaf_data_index];     // triangles are stored in the tree
     MemoryReader reader(leaf_data);
 
@@ -1527,10 +1528,10 @@ bool TriangleLeafProbeVisitor::visit(
         FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(1));
 
         // Retrieve the triangle's visibility flags.
-        const uint32 vis_flags = reader.read<uint32>();
+        const std::uint32_t vis_flags = reader.read<std::uint32_t>();
 
         // Retrieve the number of motion segments for this triangle.
-        const uint32 motion_segment_count = reader.read<uint32>();
+        const std::uint32_t motion_segment_count = reader.read<std::uint32_t>();
 
         // todo: get rid of this test by sorting triangles by their number of motion segments.
         if (motion_segment_count == 0)

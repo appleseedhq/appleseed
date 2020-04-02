@@ -41,6 +41,8 @@
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/rendering/renderingmanager.h"
+
+// appleseed.qtcommon headers.
 #include "utility/miscellaneous.h"
 
 // appleseed.renderer headers.
@@ -64,6 +66,7 @@
 #include <string>
 #include <utility>
 
+using namespace appleseed::qtcommon;
 using namespace appleseed::studio;
 using namespace foundation;
 using namespace renderer;

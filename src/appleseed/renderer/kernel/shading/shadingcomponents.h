@@ -61,6 +61,9 @@ class ShadingComponents
     // Constructor. Clears all components to 0.
     ShadingComponents();
 
+    // Return true if all components are finite (not NaN, not infinite) and non-negative.
+    bool is_valid() const;
+
     void add_emission(
         const size_t                    path_length,
         const ScatteringMode::Mode      scattering_mode,

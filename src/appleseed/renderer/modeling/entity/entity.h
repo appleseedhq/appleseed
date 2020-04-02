@@ -34,9 +34,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
-#include "foundation/platform/types.h"
+#include "foundation/hash/siphash.h"
 #include "foundation/utility/job/iabortswitch.h"
-#include "foundation/utility/siphash.h"
 #include "foundation/utility/uid.h"
 #include "foundation/utility/version.h"
 
@@ -45,6 +44,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 #include <string>
 
 // Forward declarations.
@@ -88,12 +88,12 @@ class APPLESEED_DLLSYMBOL Entity
     foundation::UniqueID get_class_uid() const;
 
     // Compute and return the unique signature of this entity instance.
-    virtual foundation::uint64 compute_signature() const;
+    virtual std::uint64_t compute_signature() const;
 
     // Combine two entity signatures.
-    static foundation::uint64 combine_signatures(
-        const foundation::uint64        s1,
-        const foundation::uint64        s2);
+    static std::uint64_t combine_signatures(
+        const std::uint64_t             s1,
+        const std::uint64_t             s2);
 
     // Set/get the parent of this entity.
     void set_parent(Entity* parent);
@@ -221,14 +221,14 @@ inline foundation::UniqueID Entity::get_class_uid() const
     return m_class_uid;
 }
 
-inline foundation::uint64 Entity::compute_signature() const
+inline std::uint64_t Entity::compute_signature() const
 {
     return foundation::siphash24(get_uid(), get_version_id());
 }
 
-inline foundation::uint64 Entity::combine_signatures(
-    const foundation::uint64            s1,
-    const foundation::uint64            s2)
+inline std::uint64_t Entity::combine_signatures(
+    const std::uint64_t                 s1,
+    const std::uint64_t                 s2)
 {
     return foundation::siphash24(s1, s2);
 }

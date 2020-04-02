@@ -39,15 +39,16 @@
 #include "renderer/modeling/color/wavelengths.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/math/basis.h"
+#include "foundation/math/dual.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/microfacet.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
 #include <cmath>
@@ -169,21 +170,23 @@ namespace
         void sample(
             SamplingContext&                sampling_context,
             const DisneyBRDFInputValues*    values,
+            const BSDF::LocalGeometry&      local_geometry,
+            const Dual3f&                   outgoing,
             BSDFSample&                     sample) const
         {
             // Compute the incoming direction.
             sampling_context.split_in_place(2, 1);
             const Vector2f s = sampling_context.next2<Vector2f>();
             const Vector3f wi = sample_hemisphere_cosine(s);
-            const Vector3f incoming = sample.m_shading_basis.transform_to_parent(wi);
+            const Vector3f incoming = local_geometry.m_shading_basis.transform_to_parent(wi);
             sample.m_incoming = Dual3f(incoming);
 
             // Compute the component value and the probability density of the sampled direction.
             const float probability =
                 evaluate(
                     values,
-                    sample.m_shading_basis,
-                    sample.m_outgoing.get_value(),
+                    local_geometry,
+                    outgoing.get_value(),
                     incoming,
                     sample.m_value.m_diffuse);
             assert(probability > 0.0f);
@@ -192,13 +195,13 @@ namespace
             {
                 sample.set_to_scattering(ScatteringMode::Diffuse, probability);
                 sample.m_aov_components.m_albedo = values->m_base_color;
-                sample.compute_reflected_differentials();
+                sample.compute_reflected_differentials(local_geometry, outgoing);
             }
         }
 
         float evaluate(
             const DisneyBRDFInputValues*    values,
-            const Basis3f&                  shading_basis,
+            const BSDF::LocalGeometry&      local_geometry,
             const Vector3f&                 outgoing,
             const Vector3f&                 incoming,
             Spectrum&                       value) const
@@ -206,7 +209,7 @@ namespace
             // This code is mostly ported from the GLSL implementation
             // in Disney's BRDF explorer.
 
-            const Vector3f n(shading_basis.get_normal());
+            const Vector3f n(local_geometry.m_shading_basis.get_normal());
             const Vector3f h(normalize(incoming + outgoing));
 
             // Using the absolute values of cos_on and cos_in creates discontinuities.
@@ -243,10 +246,10 @@ namespace
         }
 
         float evaluate_pdf(
-            const Basis3f&                  shading_basis,
+            const BSDF::LocalGeometry&      local_geometry,
             const Vector3f&                 incoming) const
         {
-            const Vector3f& n = shading_basis.get_normal();
+            const Vector3f& n = local_geometry.m_shading_basis.get_normal();
             const float cos_in = std::abs(dot(incoming, n));
             return cos_in * RcpPi<float>();
         }
@@ -263,21 +266,23 @@ namespace
         void sample(
             SamplingContext&                sampling_context,
             const DisneyBRDFInputValues*    values,
+            const BSDF::LocalGeometry&      local_geometry,
+            const Dual3f&                   outgoing,
             BSDFSample&                     sample) const
         {
             // Compute the incoming direction.
             sampling_context.split_in_place(2, 1);
             const Vector2f s = sampling_context.next2<Vector2f>();
             const Vector3f wi = sample_hemisphere_uniform(s);
-            const Vector3f incoming = sample.m_shading_basis.transform_to_parent(wi);
+            const Vector3f incoming = local_geometry.m_shading_basis.transform_to_parent(wi);
             sample.m_incoming = Dual3f(incoming);
 
             // Compute the component value and the probability density of the sampled direction.
             const float probability =
                 evaluate(
                     values,
-                    sample.m_shading_basis,
-                    sample.m_outgoing.get_value(),
+                    local_geometry,
+                    outgoing.get_value(),
                     incoming,
                     sample.m_value.m_glossy);
             assert(probability > 0.0f);
@@ -285,13 +290,13 @@ namespace
             if (probability > 1.0e-6f)
             {
                 sample.set_to_scattering(ScatteringMode::Glossy, probability);
-                sample.compute_reflected_differentials();
+                sample.compute_reflected_differentials(local_geometry, outgoing);
             }
         }
 
         float evaluate(
             const DisneyBRDFInputValues*    values,
-            const Basis3f&                  shading_basis,
+            const BSDF::LocalGeometry&      local_geometry,
             const Vector3f&                 outgoing,
             const Vector3f&                 incoming,
             Spectrum&                       value) const
@@ -314,7 +319,7 @@ namespace
         }
 
         float evaluate_pdf(
-            const Basis3f&                  shading_basis,
+            const BSDF::LocalGeometry&      local_geometry,
             const Vector3f&                 incoming) const
         {
             return RcpTwoPi<float>();
@@ -412,6 +417,8 @@ namespace
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
+            const LocalGeometry&        local_geometry,
+            const Dual3f&               outgoing,
             const int                   modes,
             BSDFSample&                 sample) const override
         {
@@ -437,13 +444,23 @@ namespace
             float probability;
             if (s < cdf[DiffuseComponent])
             {
-                DisneyDiffuseComponent().sample(sampling_context, values, sample);
+                DisneyDiffuseComponent().sample(
+                    sampling_context,
+                    values,
+                    local_geometry,
+                    outgoing,
+                    sample);
                 probability = weights[DiffuseComponent] * sample.get_probability();
                 weights[DiffuseComponent] = 0.0f;
             }
             else if (s < cdf[SheenComponent])
             {
-                DisneySheenComponent().sample(sampling_context, values, sample);
+                DisneySheenComponent().sample(
+                    sampling_context,
+                    values,
+                    local_geometry,
+                    outgoing,
+                    sample);
                 probability = weights[SheenComponent] * sample.get_probability();
                 weights[SheenComponent] = 0.0f;
             }
@@ -460,6 +477,8 @@ namespace
                     alpha_x,
                     alpha_y,
                     DisneySpecularFresnelFun(*values),
+                    local_geometry,
+                    outgoing,
                     sample);
                 probability = weights[SpecularComponent] * sample.get_probability();
                 weights[SpecularComponent] = 0.0f;
@@ -472,6 +491,8 @@ namespace
                     alpha,
                     alpha,
                     DisneyClearcoatFresnelFun(*values),
+                    local_geometry,
+                    outgoing,
                     sample);
                 probability = weights[ClearcoatComponent] * sample.get_probability();
                 weights[ClearcoatComponent] = 0.0f;
@@ -480,7 +501,6 @@ namespace
             if (sample.get_mode() == ScatteringMode::None)
                 return;
 
-            const Vector3f& outgoing = sample.m_outgoing.get_value();
             const Vector3f& incoming = sample.m_incoming.get_value();
 
             if (weights[DiffuseComponent] > 0.0f)
@@ -490,8 +510,8 @@ namespace
                     weights[DiffuseComponent] *
                     DisneyDiffuseComponent().evaluate(
                         values,
-                        sample.m_shading_basis,
-                        outgoing,
+                        local_geometry,
+                        outgoing.get_value(),
                         incoming,
                         diffuse);
                 sample.m_value.m_diffuse += diffuse;
@@ -504,8 +524,8 @@ namespace
                     weights[SheenComponent] *
                     DisneySheenComponent().evaluate(
                         values,
-                        sample.m_shading_basis,
-                        outgoing,
+                        local_geometry,
+                        outgoing.get_value(),
                         incoming,
                         sheen);
                 sample.m_value.m_glossy += sheen;
@@ -525,10 +545,10 @@ namespace
                     MicrofacetBRDFHelper<GGXMDF, false>::evaluate(
                         alpha_x,
                         alpha_y,
-                        sample.m_shading_basis,
-                        outgoing,
-                        incoming,
                         DisneySpecularFresnelFun(*values),
+                        local_geometry,
+                        outgoing.get_value(),
+                        incoming,
                         spec);
                 sample.m_value.m_glossy += spec;
             }
@@ -542,10 +562,10 @@ namespace
                     MicrofacetBRDFHelper<GTR1MDF, false>::evaluate(
                         alpha,
                         alpha,
-                        sample.m_shading_basis,
-                        outgoing,
-                        incoming,
                         DisneyClearcoatFresnelFun(*values),
+                        local_geometry,
+                        outgoing.get_value(),
+                        incoming,
                         clear);
                 sample.m_value.m_glossy += clear;
             }
@@ -567,8 +587,7 @@ namespace
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
-            const Vector3f&             geometric_normal,
-            const Basis3f&              shading_basis,
+            const LocalGeometry&        local_geometry,
             const Vector3f&             outgoing,
             const Vector3f&             incoming,
             const int                   modes,
@@ -588,7 +607,7 @@ namespace
                     weights[DiffuseComponent] *
                     DisneyDiffuseComponent().evaluate(
                         values,
-                        shading_basis,
+                        local_geometry,
                         outgoing,
                         incoming,
                         value.m_diffuse);
@@ -600,7 +619,7 @@ namespace
                     weights[SheenComponent] *
                     DisneySheenComponent().evaluate(
                         values,
-                        shading_basis,
+                        local_geometry,
                         outgoing,
                         incoming,
                         value.m_glossy);
@@ -620,10 +639,10 @@ namespace
                     MicrofacetBRDFHelper<GGXMDF, false>::evaluate(
                         alpha_x,
                         alpha_y,
-                        shading_basis,
+                        DisneySpecularFresnelFun(*values),
+                        local_geometry,
                         outgoing,
                         incoming,
-                        DisneySpecularFresnelFun(*values),
                         spec);
 
                 if (spec_pdf > 0.0f)
@@ -641,10 +660,10 @@ namespace
                     MicrofacetBRDFHelper<GTR1MDF, false>::evaluate(
                         alpha,
                         alpha,
-                        shading_basis,
+                        DisneyClearcoatFresnelFun(*values),
+                        local_geometry,
                         outgoing,
                         incoming,
-                        DisneyClearcoatFresnelFun(*values),
                         clearcoat);
 
                 if (clearcoat_pdf > 0.0f)
@@ -664,8 +683,7 @@ namespace
         float evaluate_pdf(
             const void*                 data,
             const bool                  adjoint,
-            const Vector3f&             geometric_normal,
-            const Basis3f&              shading_basis,
+            const LocalGeometry&        local_geometry,
             const Vector3f&             outgoing,
             const Vector3f&             incoming,
             const int                   modes) const override
@@ -682,14 +700,14 @@ namespace
             {
                 pdf +=
                     weights[DiffuseComponent] *
-                    DisneyDiffuseComponent().evaluate_pdf(shading_basis, incoming);
+                    DisneyDiffuseComponent().evaluate_pdf(local_geometry, incoming);
             }
 
             if (weights[SheenComponent] > 0.0f)
             {
                 pdf +=
                     weights[SheenComponent] *
-                    DisneySheenComponent().evaluate_pdf(shading_basis, incoming);
+                    DisneySheenComponent().evaluate_pdf(local_geometry, incoming);
             }
 
             if (weights[SpecularComponent] > 0.0f)
@@ -705,7 +723,7 @@ namespace
                     MicrofacetBRDFHelper<GGXMDF, false>::pdf(
                         alpha_x,
                         alpha_y,
-                        shading_basis,
+                        local_geometry,
                         outgoing,
                         incoming);
             }
@@ -718,7 +736,7 @@ namespace
                     MicrofacetBRDFHelper<GTR1MDF, false>::pdf(
                         alpha,
                         alpha,
-                        shading_basis,
+                        local_geometry,
                         outgoing,
                         incoming);
             }

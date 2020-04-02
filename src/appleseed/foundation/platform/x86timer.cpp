@@ -57,32 +57,32 @@ namespace
 {
     // Measure and return the frequency (in Hz) of a given timer.
     template <typename Timer>
-    uint64 measure_timer_frequency(Timer& timer, const uint32 calibration_time_ms)
+    std::uint64_t measure_timer_frequency(Timer& timer, const std::uint32_t calibration_time_ms)
     {
-        const uint64 begin = timer.read_start();
+        const std::uint64_t begin = timer.read_start();
         sleep(calibration_time_ms);
-        const uint64 end = timer.read_end();
+        const std::uint64_t end = timer.read_end();
         return ((end - begin) * 1000) / calibration_time_ms;
     }
 }
 
-X86Timer::X86Timer(const uint32 calibration_time_ms)
+X86Timer::X86Timer(const std::uint32_t calibration_time_ms)
   : m_frequency(measure_timer_frequency(*this, calibration_time_ms))
 {
     assert(m_frequency > 0);
 }
 
-uint64 X86Timer::frequency()
+std::uint64_t X86Timer::frequency()
 {
     return m_frequency;
 }
 
-uint64 X86Timer::read_start()
+std::uint64_t X86Timer::read_start()
 {
 // Visual C++, 32-bit mode.
 #if defined _MSC_VER && !defined _WIN64
 
-    uint32 h, l;
+    std::uint32_t h, l;
 
     __asm
     {
@@ -92,7 +92,7 @@ uint64 X86Timer::read_start()
         mov l, eax
     }
 
-    return (static_cast<uint64>(h) << 32) | l;
+    return (static_cast<std::uint64_t>(h) << 32) | l;
 
 // Visual C++, 64-bit mode.
 #elif defined _MSC_VER && defined _WIN64
@@ -105,7 +105,7 @@ uint64 X86Timer::read_start()
 // gcc.
 #elif defined __GNUC__
 
-    uint32 h, l, _dummy;
+    std::uint32_t h, l, _dummy;
 
     // %ebx may be used to point to GOT for PIC on 32-bit x86, so it must be
     // preserved (cf. src/appleseed/foundation/platform/system.cpp).
@@ -127,7 +127,7 @@ uint64 X86Timer::read_start()
       : : "ecx"
     );
 
-    return (static_cast<uint64>(h) << 32) | l;
+    return (static_cast<std::uint64_t>(h) << 32) | l;
 
 // Other platforms.
 #else
@@ -137,12 +137,12 @@ uint64 X86Timer::read_start()
 #endif
 }
 
-uint64 X86Timer::read_end()
+std::uint64_t X86Timer::read_end()
 {
 // Visual C++, 32-bit mode.
 #if defined _MSC_VER && !defined _WIN64
 
-    uint32 h, l;
+    std::uint32_t h, l;
 
     __asm
     {
@@ -152,13 +152,13 @@ uint64 X86Timer::read_end()
         cpuid                               // prevent instructions coming afterward from executing before the RDTSCP instruction
     }
 
-    return (static_cast<uint64>(h) << 32) | l;
+    return (static_cast<std::uint64_t>(h) << 32) | l;
 
 // Visual C++, 64-bit mode.
 #elif defined _MSC_VER && defined _WIN64
 
     unsigned int aux;
-    const uint64 value = __rdtscp(&aux);
+    const std::uint64_t value = __rdtscp(&aux);
 
     int cpu_info[4];
     __cpuid(cpu_info, 0);                   // prevent instructions coming afterward from executing before the RDTSCP instruction
@@ -168,7 +168,7 @@ uint64 X86Timer::read_end()
 // gcc.
 #elif defined __GNUC__
 
-    uint32 h, l, _dummy;
+    std::uint32_t h, l, _dummy;
 
     // Here we call CPUID to prevent instructions coming afterward from
     // executing before the RDTSCP instruction.  Reference: "How to
@@ -191,7 +191,7 @@ uint64 X86Timer::read_end()
       : : "eax", "ecx", "edx"
     );
 
-    return (static_cast<uint64>(h) << 32) | l;
+    return (static_cast<std::uint64_t>(h) << 32) | l;
 
 // Other platforms.
 #else

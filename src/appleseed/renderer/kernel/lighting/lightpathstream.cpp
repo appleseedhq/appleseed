@@ -46,7 +46,7 @@
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/memory.h"
+#include "foundation/memory/memory.h"
 #include "foundation/utility/otherwise.h"
 
 // Standard headers.
@@ -101,7 +101,7 @@ void LightPathStream::hit_reflector(const PathVertex& vertex)
 
     Event event;
     event.m_type = EventType::HitReflector;
-    event.m_data_index = static_cast<uint8>(m_hit_reflector_data.size());
+    event.m_data_index = static_cast<std::uint8_t>(m_hit_reflector_data.size());
     m_events.push_back(event);
 
     HitReflectorData data;
@@ -120,7 +120,7 @@ void LightPathStream::hit_emitter(
 
     Event event;
     event.m_type = EventType::HitEmitter;
-    event.m_data_index = static_cast<uint8>(m_hit_emitter_data.size());
+    event.m_data_index = static_cast<std::uint8_t>(m_hit_emitter_data.size());
     m_events.push_back(event);
 
     HitEmitterData data;
@@ -139,7 +139,7 @@ void LightPathStream::sampled_emitting_shape(
 {
     Event event;
     event.m_type = EventType::SampledEmitter;
-    event.m_data_index = static_cast<uint8>(m_sampled_emitter_data.size());
+    event.m_data_index = static_cast<std::uint8_t>(m_sampled_emitter_data.size());
     m_events.push_back(event);
 
     SampledEmitterData data;
@@ -160,7 +160,7 @@ void LightPathStream::sampled_non_physical_light(
 {
     Event event;
     event.m_type = EventType::SampledEmitter;
-    event.m_data_index = static_cast<uint8>(m_sampled_emitter_data.size());
+    event.m_data_index = static_cast<std::uint8_t>(m_sampled_emitter_data.size());
     m_events.push_back(event);
 
     SampledEmitterData data;
@@ -179,7 +179,7 @@ void LightPathStream::sampled_environment(
 {
     Event event;
     event.m_type = EventType::SampledEnvironment;
-    event.m_data_index = static_cast<uint8>(m_sampled_env_data.size());
+    event.m_data_index = static_cast<std::uint8_t>(m_sampled_env_data.size());
     m_events.push_back(event);
 
     SampledEnvData data;
@@ -238,7 +238,7 @@ void LightPathStream::create_path_from_hit_emitter(const size_t emitter_event_in
     StoredPath stored_path;
     stored_path.m_pixel_coords = Vector2u16(m_pixel_coords);
     stored_path.m_sample_position = m_sample_position;
-    stored_path.m_vertex_begin_index = static_cast<uint32>(m_vertices.size());
+    stored_path.m_vertex_begin_index = static_cast<std::uint32_t>(m_vertices.size());
 
     // Emitter vertex.
     StoredPathVertex emitter_vertex;
@@ -292,7 +292,7 @@ void LightPathStream::create_path_from_hit_emitter(const size_t emitter_event_in
     m_vertices.push_back(camera_vertex);
 
     // Store path.
-    stored_path.m_vertex_end_index = static_cast<uint32>(m_vertices.size());
+    stored_path.m_vertex_end_index = static_cast<std::uint32_t>(m_vertices.size());
     m_paths.push_back(stored_path);
 }
 
@@ -313,7 +313,7 @@ void LightPathStream::create_path_from_sampled_emitter(const size_t emitter_even
     StoredPath stored_path;
     stored_path.m_pixel_coords = Vector2u16(m_pixel_coords);
     stored_path.m_sample_position = m_sample_position;
-    stored_path.m_vertex_begin_index = static_cast<uint32>(m_vertices.size());
+    stored_path.m_vertex_begin_index = static_cast<std::uint32_t>(m_vertices.size());
 
     // Emitter vertex.
     StoredPathVertex emitter_vertex;
@@ -367,7 +367,7 @@ void LightPathStream::create_path_from_sampled_emitter(const size_t emitter_even
     m_vertices.push_back(camera_vertex);
 
     // Store path.
-    stored_path.m_vertex_end_index = static_cast<uint32>(m_vertices.size());
+    stored_path.m_vertex_end_index = static_cast<std::uint32_t>(m_vertices.size());
     m_paths.push_back(stored_path);
 }
 
@@ -388,7 +388,7 @@ void LightPathStream::create_path_from_sampled_environment(const size_t env_even
     StoredPath stored_path;
     stored_path.m_pixel_coords = Vector2u16(m_pixel_coords);
     stored_path.m_sample_position = m_sample_position;
-    stored_path.m_vertex_begin_index = static_cast<uint32>(m_vertices.size());
+    stored_path.m_vertex_begin_index = static_cast<std::uint32_t>(m_vertices.size());
 
     // Emitter vertex.
     StoredPathVertex emitter_vertex;
@@ -442,7 +442,7 @@ void LightPathStream::create_path_from_sampled_environment(const size_t env_even
     m_vertices.push_back(camera_vertex);
 
     // Store path.
-    stored_path.m_vertex_end_index = static_cast<uint32>(m_vertices.size());
+    stored_path.m_vertex_end_index = static_cast<std::uint32_t>(m_vertices.size());
     m_paths.push_back(stored_path);
 }
 

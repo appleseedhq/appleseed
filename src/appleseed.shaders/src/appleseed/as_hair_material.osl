@@ -1,0 +1,156 @@
+
+//
+// This source file is part of appleseed.
+// Visit https://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2019 Girish Ramesh, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+shader as_hair_material
+[[
+    string help = "Hair Material.",
+    string icon = "asHair.png",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_hair.html",
+
+    string as_node_name = "asHair",
+    string as_category = "shader",
+
+    string as_max_class_id = "799297017 247489034",
+    string as_max_plugin_type = "material",
+
+    int as_maya_type_id = 0x00127a0b,
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch"
+]]
+(
+    color in_reflectance = color(0.0)
+    [[
+        string as_maya_attribute_name = "reflectance",
+        string as_maya_attribute_short_name = "ref",
+        string label = "Reflectance Color",
+        string page = "Reflectance"
+    ]],
+    float in_melanin = 0.8
+    [[
+        string as_maya_attribute_name = "melanin",
+        string as_maya_attribute_short_name = "mel",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Melanin Amount",
+        string page = "Color"
+    ]],
+    float in_melanin_redness = 0.0
+    [[
+        string as_maya_attribute_name = "melaninRedness",
+        string as_maya_attribute_short_name = "melR",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Melanin Redness",
+        string page = "Color"
+    ]],
+    float in_eta = 1.55
+    [[
+        string as_maya_attribute_name = "eta",
+        string as_maya_attribute_short_name = "et",
+        float min = 1.0,
+        float max = 10.0,
+        float softmax = 2.0,
+        string label = "Index Of Refraction",
+        string page = "IOR",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    float in_beta_M = 0.3
+    [[
+        string as_maya_attribute_name = "longRoughness",
+        string as_maya_attribute_short_name = "roM",
+        float min = 0.001,
+        float max = 1.0,
+        string label = "Longitudinal Roughness",
+        string page = "Hair Properties"
+    ]],
+    float in_beta_N = 0.3
+    [[
+        string as_maya_attribute_name = "aziRoughness",
+        string as_maya_attribute_short_name = "roN",
+        float min = 0.001,
+        float max = 1.0,
+        string label = "Azimuthal Roughness",
+        string page = "Hair Properties"
+    ]],
+    float in_alpha = 2.0
+    [[
+        string as_maya_attribute_name = "cuticleAngle",
+        string as_maya_attribute_short_name = "cutAng",
+        float min = 0.001,
+        float max = 10.0,
+        string label = "Cuticle Angle",
+        string page = "Hair Properties"
+    ]],
+    int in_maximum_ray_depth = 100
+    [[
+        string as_maya_attribute_name = "maximumRayDepth",
+        string as_maya_attribute_short_name = "mr",
+        int min = 0,
+        int max = 100,
+        int softmax = 16,
+        string label = "Ray Depth",
+        string page = "Advanced",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    output closure color out_outColor = 0
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string widget = "null"
+    ]]
+)
+{
+    if (raytype("shadow"))
+    {
+        return;
+    }
+
+    int ray_depth = 0;
+    int status = getattribute("path:ray_depth", ray_depth);
+
+    if (!status || ray_depth > in_maximum_ray_depth)
+    {
+        return;
+    }
+    
+    out_outColor += as_hair(
+        in_reflectance,
+        in_melanin,
+        in_melanin_redness,
+        in_eta,
+        in_beta_M,
+        in_beta_N,
+        in_alpha);
+}

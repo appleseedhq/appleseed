@@ -30,19 +30,19 @@
 // Interface header.
 #include "inputwidgetproxies.h"
 
-// appleseed.studio headers.
+// appleseed.qtcommon headers.
 #include "utility/interop.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/color.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/image/regularspectrum.h"
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/iostreamop.h"
-#include "foundation/utility/string.h"
 
 // Qt headers.
 #include <QCheckBox>
@@ -60,6 +60,7 @@
 // Standard headers.
 #include <vector>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 
@@ -439,7 +440,7 @@ Dictionary InputWidgetProxyCollection::get_values() const
         const std::string value = i->second->get();
 
         if (!value.empty())
-            values.insert(i->first, value);
+            values.insert(i->first.c_str(), value);
     }
 
     return values;

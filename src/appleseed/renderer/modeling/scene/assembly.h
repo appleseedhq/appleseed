@@ -37,9 +37,9 @@
 #include "renderer/modeling/scene/iassemblyfactory.h"
 
 // appleseed.foundation headers.
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/api/apiarray.h"
-#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
 
 // appleseed.main headers.
@@ -151,21 +151,21 @@ class APPLESEED_DLLSYMBOL Assembly
         const Project&              project,
         const BaseGroup*            parent) override;
 
-    struct RenderData
+    struct APPLESEED_DLLSYMBOL RenderData
     {
         IndexedObjectInstanceArray  m_procedural_object_instances;
-    };
 
-    // Return whether render-time data are available for this entity.
-    bool has_render_data() const;
+        RenderData();
+
+        void clear();
+    };
 
     // Return render-time data of this entity.
     // Render-time data are available between on_frame_begin() and on_frame_end() calls.
     const RenderData& get_render_data() const;
 
   protected:
-    bool        m_has_render_data;
-    RenderData  m_render_data;
+    RenderData m_render_data;
 
     // Constructor.
     Assembly(
@@ -215,14 +215,8 @@ class APPLESEED_DLLSYMBOL AssemblyFactory
 // Assembly class implementation.
 //
 
-inline bool Assembly::has_render_data() const
-{
-    return m_has_render_data;
-}
-
 inline const Assembly::RenderData& Assembly::get_render_data() const
 {
-    assert(m_has_render_data);
     return m_render_data;
 }
 

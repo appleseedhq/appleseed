@@ -35,13 +35,13 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 // Forward declarations.
 namespace renderer      { class TextureCache; }
@@ -64,7 +64,7 @@ class APPLESEED_DLLSYMBOL Source
     virtual ~Source() = 0;
 
     // Compute a signature unique to this source.
-    virtual foundation::uint64 compute_signature() const = 0;
+    virtual std::uint64_t compute_signature() const = 0;
 
     // Return true if the source is uniform, false if it is varying.
     bool is_uniform() const;

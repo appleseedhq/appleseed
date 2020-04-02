@@ -87,11 +87,11 @@ void Pixel::convert_and_shuffle(
         // Convert source channel to destination channel.
         convert(
             src_format,
-            reinterpret_cast<const uint8*>(src_begin) + src_channel_offset,
-            reinterpret_cast<const uint8*>(src_end) + src_channel_offset,
+            reinterpret_cast<const std::uint8_t*>(src_begin) + src_channel_offset,
+            reinterpret_cast<const std::uint8_t*>(src_end) + src_channel_offset,
             src_channels,
             dest_format,
-            reinterpret_cast<uint8*>(dest) + dest_channel_offset,
+            reinterpret_cast<std::uint8_t*>(dest) + dest_channel_offset,
             dest_channels);
 
         // Compute offset in bytes of next destination channel.

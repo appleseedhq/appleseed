@@ -36,7 +36,9 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/types.h"
+
+// Standard headers.
+#include <cstdint>
 
 // Forward declarations.
 namespace renderer  { class ColorEntity; }
@@ -59,7 +61,7 @@ class ColorSource
     const ColorEntity& get_color_entity() const;
 
     // Compute a signature unique to this source.
-    foundation::uint64 compute_signature() const override;
+    std::uint64_t compute_signature() const override;
 
     // Return hints allowing to treat this source as one of another type.
     Hints get_hints() const override;

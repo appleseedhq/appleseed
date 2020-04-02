@@ -36,10 +36,10 @@
 #include "foundation/image/accumulatortile.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/thread.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
@@ -74,7 +74,7 @@ class GlobalSampleAccumulationBuffer
         foundation::IAbortSwitch&   abort_switch) override;
 
     // Increment the number of samples used for pixel values renormalization. Thread-safe.
-    void increment_sample_count(const foundation::uint64 delta_sample_count);
+    void increment_sample_count(const std::uint64_t delta_sample_count);
 
   private:
     boost::shared_mutex             m_mutex;

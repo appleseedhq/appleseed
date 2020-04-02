@@ -30,12 +30,14 @@
 // Interface header.
 #include "entitycreatorbase.h"
 
-// appleseed.studio headers.
+// appleseed.qtcommon headers.
 #include "utility/miscellaneous.h"
 
 // Qt headers.
 #include <QMessageBox>
 #include <QString>
+
+using namespace appleseed::qtcommon;
 
 namespace appleseed {
 namespace studio {

@@ -35,13 +35,17 @@ layout(location = 2) in mat4 i_model;
 uniform mat4 u_view;
 uniform mat4 u_proj;
 
-layout(location = 1) out vec3 v_world_pos;
-layout(location = 0) out vec3 v_norm;
+layout(location = 0) out vec3 frag_pos;
+layout(location = 1) out vec3 frag_norm;
 
 void main()
 {
-    vec4 world_pos = i_model * vec4(a_pos, 1.0);
-    v_world_pos = world_pos.xyz;
-    v_norm = a_norm;
-    gl_Position = u_proj * u_view * world_pos;
+    mat4 model_view = u_view * i_model;
+    vec4 world_pos = model_view * vec4(a_pos, 1.0);
+    frag_pos = world_pos.xyz;
+
+    mat3 normal_matrix = mat3(transpose(inverse(model_view)));
+    frag_norm = normal_matrix * a_norm;
+
+    gl_Position = u_proj * world_pos;
 }

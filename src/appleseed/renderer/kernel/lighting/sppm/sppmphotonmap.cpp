@@ -36,8 +36,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/defaulttimers.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/statistics.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cstddef>
@@ -64,7 +64,7 @@ SPPMPhotonMap::SPPMPhotonMap(SPPMPhotonVector& photons)
 
         Statistics statistics;
         statistics.insert_time("build time", builder.get_build_time());
-        statistics.insert_size("size", photons.get_memory_size());
+        statistics.insert_size("size", photons.get_memory_size());  // size without the photon positions since they were moved out
         statistics.merge(knn::TreeStatistics<knn::Tree3f>(*this));
 
         RENDERER_LOG_DEBUG("%s",

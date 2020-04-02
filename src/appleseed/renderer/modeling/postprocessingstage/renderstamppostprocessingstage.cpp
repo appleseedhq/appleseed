@@ -34,6 +34,7 @@
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/core/appleseed.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
@@ -46,9 +47,8 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/system.h"
 #include "foundation/resources/logo/appleseed-seeds-256.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/string.h"
 
 // OpenImageIO headers.
 #include "foundation/platform/_beginoiioheaders.h"

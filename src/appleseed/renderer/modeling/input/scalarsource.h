@@ -34,10 +34,12 @@
 #include "renderer/modeling/input/source.h"
 
 // appleseed.foundation headers.
+#include "foundation/hash/siphash.h"
 #include "foundation/image/color.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/types.h"
-#include "foundation/utility/siphash.h"
+
+// Standard headers.
+#include <cstdint>
 
 namespace renderer
 {
@@ -54,7 +56,7 @@ class ScalarSource
     explicit ScalarSource(const float scalar);
 
     // Compute a signature unique to this source.
-    foundation::uint64 compute_signature() const override;
+    std::uint64_t compute_signature() const override;
 
     // Return hints allowing to treat this source as one of another type.
     Hints get_hints() const override;
@@ -90,7 +92,7 @@ inline ScalarSource::ScalarSource(const float scalar)
 {
 }
 
-inline foundation::uint64 ScalarSource::compute_signature() const
+inline std::uint64_t ScalarSource::compute_signature() const
 {
     return foundation::siphash24(m_scalar);
 }

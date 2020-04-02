@@ -37,6 +37,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 // Forward declarations.
 namespace renderer  { class Frame; }
@@ -61,20 +62,27 @@ class TileCallbackBase
     }
 
     void on_tile_begin(
-        const Frame*    frame,
-        const size_t    tile_x,
-        const size_t    tile_y) override
+        const Frame*            frame,
+        const size_t            tile_x,
+        const size_t            tile_y,
+        const size_t            thread_index,
+        const size_t            thread_count) override
     {
     }
 
     void on_tile_end(
-        const Frame*    frame,
-        const size_t    tile_x,
-        const size_t    tile_y) override
+        const Frame*            frame,
+        const size_t            tile_x,
+        const size_t            tile_y) override
     {
     }
 
-    void on_progressive_frame_update(const Frame* frame) override
+    void on_progressive_frame_update(
+        const Frame&            frame,
+        const double            time,
+        const std::uint64_t     samples,
+        const double            samples_per_pixel,
+        const std::uint64_t     samples_per_second) override
     {
     }
 };

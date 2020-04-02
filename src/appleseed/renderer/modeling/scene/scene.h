@@ -37,7 +37,7 @@
 #include "renderer/modeling/scene/containers.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
 
 // appleseed.main headers.
@@ -76,10 +76,6 @@ class APPLESEED_DLLSYMBOL Scene
 
     // Delete this instance.
     void release() override;
-
-    // Access the active camera.
-    // Return nullptr if the camera does not exist.
-    Camera* get_active_camera() const;
 
     // Access the cameras.
     CameraContainer& cameras() const;
@@ -134,10 +130,6 @@ class APPLESEED_DLLSYMBOL Scene
         OnFrameBeginRecorder&       recorder,
         foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
-    void on_frame_end(
-        const Project&              project,
-        const BaseGroup*            parent) override;
-
 #ifdef APPLESEED_WITH_EMBREE
 
     const EmbreeDevice& get_embree_device() const;
@@ -151,6 +143,9 @@ class APPLESEED_DLLSYMBOL Scene
         GScalar     m_radius;
         GScalar     m_diameter;
         GScalar     m_safe_diameter;
+        Camera*     m_active_camera;
+
+        // Cannot add methods to this class without first DLL-exporting GAABB3, GVector3, etc.
     };
 
     // Return render-time data of this entity.
@@ -163,15 +158,15 @@ class APPLESEED_DLLSYMBOL Scene
     struct Impl;
     Impl* impl;
 
-    Camera*     m_camera;
-    bool        m_has_render_data;
-    RenderData  m_render_data;
+    RenderData m_render_data;
 
     // Constructor. Initially, the scene is empty.
     Scene();
 
     // Destructor.
     ~Scene() override;
+
+    void clear_render_data();
 };
 
 
@@ -193,7 +188,6 @@ class APPLESEED_DLLSYMBOL SceneFactory
 
 inline const Scene::RenderData& Scene::get_render_data() const
 {
-    assert(m_has_render_data);
     return m_render_data;
 }
 

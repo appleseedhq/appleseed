@@ -32,7 +32,7 @@
 #include "renderer/modeling/aov/aov.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/autoreleaseptr.h"
 
 // BCD headers.
 #include "bcd/DeepImage.h"

@@ -44,10 +44,10 @@
 #include "foundation/math/bvh.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 // Forward declarations.
 namespace foundation    { class StatisticsVector; }
@@ -72,26 +72,6 @@ class Intersector
         const TraceContext&                 trace_context,
         TextureCache&                       texture_cache,
         const bool                          report_self_intersections = false);
-
-    // Refine the location of a point on a surface.
-    static foundation::Vector3d refine(
-        const TriangleSupportPlaneType&     support_plane,
-        const foundation::Vector3d&         point,
-        const foundation::Vector3d&         direction);     // incoming or outgoing direction
-
-    // Offset a point away from a surface represented by its normal.
-    static void fixed_offset(
-        const foundation::Vector3d&         p,
-        foundation::Vector3d                n,
-        foundation::Vector3d&               front,
-        foundation::Vector3d&               back);
-    static void adaptive_offset(
-        const TriangleSupportPlaneType&     support_plane,
-        const foundation::Vector3d&         p,
-        foundation::Vector3d                n,
-        foundation::Vector3d&               front,
-        foundation::Vector3d&               back);
-
     // Trace a world space ray through the scene.
     bool trace(
         const ShadingRay&                   ray,
@@ -155,8 +135,8 @@ class Intersector
     mutable EmbreeSceneAccessCache                  m_embree_scene_cache;
 #endif
     // Intersection statistics.
-    mutable foundation::uint64                      m_shading_ray_count;
-    mutable foundation::uint64                      m_probe_ray_count;
+    mutable std::uint64_t                           m_shading_ray_count;
+    mutable std::uint64_t                           m_probe_ray_count;
 #ifdef FOUNDATION_BVH_ENABLE_TRAVERSAL_STATS
     mutable foundation::bvh::TraversalStatistics    m_assembly_tree_traversal_stats;
     mutable foundation::bvh::TraversalStatistics    m_triangle_tree_traversal_stats;

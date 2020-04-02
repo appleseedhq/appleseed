@@ -32,7 +32,7 @@ shader as_sbs_pbrmaterial
 [[
     string help = "Substance Painter PBR material.",
     string icon = "asSbsPbrMaterial.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_sbs_pbrmaterial.html#label-as-sbs-pbrmaterial",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_sbs_pbrmaterial.html",
 
     string as_node_name = "asSbsPbrMaterial",
     string as_category = "shader",
@@ -462,6 +462,7 @@ shader as_sbs_pbrmaterial
                 tangent,
                 in_baseColor,
                 color(1.0), // edge tint
+                0.0, // edge tint weight
                 max(0.01, in_roughness),
                 in_anisotropyLevel,
                 "energy_compensation", 0.0);

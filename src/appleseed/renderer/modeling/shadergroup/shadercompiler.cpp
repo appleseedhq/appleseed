@@ -41,6 +41,7 @@
 #include "foundation/platform/_endoslheaders.h"
 
 // Standard headers.
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -55,27 +56,18 @@ namespace renderer
 
 struct ShaderCompiler::Impl
 {
-    Impl(const char* stdosl_path)
+    std::string                         m_stdosl_path;
+    std::unique_ptr<OIIOErrorHandler>   m_error_handler;
+    std::vector<std::string>            m_options;
+
+    explicit Impl(const char* stdosl_path)
       : m_stdosl_path(stdosl_path)
     {
-        m_error_handler = new OIIOErrorHandler();
+        m_error_handler.reset(new OIIOErrorHandler());
     #ifndef NDEBUG
         m_error_handler->verbosity(OIIO::ErrorHandler::VERBOSE);
     #endif
-
-        m_compiler = new OSL::OSLCompiler(m_error_handler);
     }
-
-    ~Impl()
-    {
-        delete m_compiler;
-        delete m_error_handler;
-    }
-
-    std::string               m_stdosl_path;
-    OSL::OSLCompiler*         m_compiler;
-    OIIOErrorHandler*         m_error_handler;
-    std::vector<std::string>  m_options;
 };
 
 ShaderCompiler::ShaderCompiler(const char* stdosl_path)
@@ -107,13 +99,16 @@ bool ShaderCompiler::compile_buffer(
     const char* source_code,
     APIString&  result) const
 {
-    std::string buffer;
-    const bool ok = impl->m_compiler->compile_buffer(
-        source_code,
-        buffer,
-        impl->m_options,
-        impl->m_stdosl_path.c_str());
 
+    OSL::OSLCompiler compiler(impl->m_error_handler.get());
+
+    std::string buffer;
+    const bool ok =
+        compiler.compile_buffer(
+            source_code,
+            buffer,
+            impl->m_options,
+            impl->m_stdosl_path.c_str());
     if (ok)
         result = APIString(buffer.c_str());
 

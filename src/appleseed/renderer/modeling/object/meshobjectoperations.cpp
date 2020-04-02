@@ -36,8 +36,8 @@
 #include "renderer/utility/triangle.h"
 
 // appleseed.foundation headers.
+#include "foundation/hash/murmurhash.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/murmurhash.h"
 
 // Standard headers.
 #include <cassert>
@@ -157,7 +157,7 @@ void compute_smooth_vertex_tangents_base_pose(MeshObject& object)
         const GScalar dv0 = v0_uv[1] - v2_uv[1];
         const GScalar du1 = v1_uv[0] - v2_uv[0];
         const GScalar dv1 = v1_uv[1] - v2_uv[1];
-        const GScalar det = du0 * dv1 - dv0 * du1;
+        const GScalar det = dv1 * du0 - dv0 * du1;
 
         if (det == GScalar(0.0))
             continue;
@@ -165,8 +165,14 @@ void compute_smooth_vertex_tangents_base_pose(MeshObject& object)
         const GVector3& v2 = object.get_vertex(triangle.m_v2);
         const GVector3 dp0 = object.get_vertex(triangle.m_v0) - v2;
         const GVector3 dp1 = object.get_vertex(triangle.m_v1) - v2;
-        const GVector3 tangent = normalize(dv1 * dp0 - dv0 * dp1);
 
+        GVector3 tangent = dv1 * dp0 - dv0 * dp1;
+        const GScalar tangent_norm = norm(tangent);
+
+        if (tangent_norm == GScalar(0.0))
+            continue;
+
+        tangent /= tangent_norm;
         tangents[triangle.m_v0] += tangent;
         tangents[triangle.m_v1] += tangent;
         tangents[triangle.m_v2] += tangent;
@@ -208,7 +214,7 @@ void compute_smooth_vertex_tangents_pose(MeshObject& object, const size_t motion
         const GScalar dv0 = v0_uv[1] - v2_uv[1];
         const GScalar du1 = v1_uv[0] - v2_uv[0];
         const GScalar dv1 = v1_uv[1] - v2_uv[1];
-        const GScalar det = du0 * dv1 - dv0 * du1;
+        const GScalar det = dv1 * du0 - dv0 * du1;
 
         if (det == GScalar(0.0))
             continue;
@@ -216,8 +222,14 @@ void compute_smooth_vertex_tangents_pose(MeshObject& object, const size_t motion
         const GVector3& v2 = object.get_vertex_pose(triangle.m_v2, motion_segment_index);
         const GVector3 dp0 = object.get_vertex_pose(triangle.m_v0, motion_segment_index) - v2;
         const GVector3 dp1 = object.get_vertex_pose(triangle.m_v1, motion_segment_index) - v2;
-        const GVector3 tangent = normalize(dv1 * dp0 - dv0 * dp1);
 
+        GVector3 tangent = dv1 * dp0 - dv0 * dp1;
+        const GScalar tangent_norm = norm(tangent);
+
+        if (tangent_norm == GScalar(0.0))
+            continue;
+
+        tangent /= tangent_norm;
         tangents[triangle.m_v0] += tangent;
         tangents[triangle.m_v1] += tangent;
         tangents[triangle.m_v2] += tangent;

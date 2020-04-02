@@ -32,7 +32,7 @@ shader as_disney_material
 [[
     string help = "Disney material.",
     string icon = "asDisneyMaterial.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_disney_material.html#label-as-disney-material",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_disney_material.html",
 
     string as_node_name = "asDisneyMaterial",
     string as_category = "shader",
@@ -294,9 +294,7 @@ shader as_disney_material
             vector vector_map = normalize(
                 (vector) in_anisotropy_vector_map * 2.0 - 1.0);
 
-            tangent = normalize(vector_map[0] * Tn +
-                                vector_map[1] * Bn +
-                                vector_map[2] * Nn);
+            tangent = normalize(vector_map[0] * Tn + vector_map[1] * Bn);
         }
 
         if (in_anisotropy_angle > 0.0)

@@ -28,14 +28,12 @@
 
 #pragma once
 
-// appleseed.foundation headers.
-#include "foundation/platform/types.h"
-
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 // Forward declarations.
 namespace renderer  { class MessageContext; }
@@ -47,7 +45,7 @@ namespace renderer
 class APPLESEED_DLLSYMBOL VisibilityFlags
 {
   public:
-    typedef foundation::uint32 Type;
+    typedef std::uint32_t Type;
 
     enum Values
     {

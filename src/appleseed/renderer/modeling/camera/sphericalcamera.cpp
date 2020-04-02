@@ -48,9 +48,9 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/autoreleaseptr.h"
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }

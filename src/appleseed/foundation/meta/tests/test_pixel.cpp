@@ -30,8 +30,10 @@
 // appleseed.foundation headers.
 #include "foundation/image/pixel.h"
 #include "foundation/math/half.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/test.h"
+
+// Standard headers.
+#include <cstdint>
 
 using namespace foundation;
 
@@ -41,7 +43,7 @@ TEST_SUITE(Foundation_Image_Pixel)
     {
         const Half input = 1.0f;
 
-        uint32 output;
+        std::uint32_t output;
         Pixel::convert_to_format(
             &input, &input + 1,
             1,
@@ -56,7 +58,7 @@ TEST_SUITE(Foundation_Image_Pixel)
     {
         const float input = 1.0f;
 
-        uint32 output;
+        std::uint32_t output;
         Pixel::convert_to_format(
             &input, &input + 1,
             1,
@@ -71,7 +73,7 @@ TEST_SUITE(Foundation_Image_Pixel)
     {
         const Half input = 1.0f;
 
-        uint32 output;
+        std::uint32_t output;
         Pixel::convert_from_format(
             PixelFormatHalf,
             &input, &input + 1,
@@ -86,7 +88,7 @@ TEST_SUITE(Foundation_Image_Pixel)
     {
         const float input = 1.0f;
 
-        uint32 output;
+        std::uint32_t output;
         Pixel::convert_from_format(
             PixelFormatFloat,
             &input, &input + 1,

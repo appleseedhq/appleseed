@@ -34,13 +34,13 @@
 #include "foundation/image/image.h"
 #include "foundation/image/text/stb_truetype.h"
 #include "foundation/math/scalar.h"
-#include "foundation/platform/types.h"
 #include "foundation/resources/fonts/Ubuntu-L.ttf.h"
 #include "foundation/resources/fonts/Ubuntu-M.ttf.h"
 
 // Standard headers.
 #include <algorithm>
 #include <cstddef>
+#include <cstdint>
 #include <vector>
 
 namespace foundation
@@ -245,7 +245,7 @@ void TextRenderer::draw_string(
     const float baseline = ascent * scale;
 
     // Bitmap inside which glyphs will be rendered.
-    std::vector<uint8> glyph_bitmap(32 * 32, 0);
+    std::vector<std::uint8_t> glyph_bitmap(32 * 32, 0);
 
     float x = origin_x;
     float y = origin_y;
@@ -312,7 +312,7 @@ void TextRenderer::draw_string(
                     continue;
 
                 // Compute text opacity.
-                const uint8 alpha_uint8 = glyph_bitmap[j * glyph_w + i];
+                const std::uint8_t alpha_uint8 = glyph_bitmap[j * glyph_w + i];
                 if (alpha_uint8 == 0)
                     continue;
                 const float alpha = alpha_uint8 * (1.0f / 255.0f);

@@ -44,7 +44,7 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/containers/dictionary.h"
 
 // Standard headers.
 #include <cassert>
@@ -202,6 +202,8 @@ Dictionary Configuration::get_metadata()
     metadata.dictionaries().insert(
         "texture_controlled_pixel_renderer",
         TextureControlledPixelRendererFactory::get_params_metadata());
+
+    // GenericTileRendererFactory exposes no metadata.
 
     metadata.dictionaries().insert(
         "adaptive_tile_renderer",

@@ -48,6 +48,7 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/math/matrix.h"
@@ -55,15 +56,13 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/compiler.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/types.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/stopwatch.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>
@@ -105,15 +104,13 @@ namespace
             TextureCache&   texture_cache,
             const Source*   radiance_source,
             const Source*   multiplier_source,
-            const Source*   exposure_source,
-            const Source*   exposure_multiplier_source,
+            const float     exposure_multiplier,
             const size_t    width,
             const size_t    height)
           : m_texture_cache(texture_cache)
           , m_radiance_source(radiance_source)
           , m_multiplier_source(multiplier_source)
-          , m_exposure_source(exposure_source)
-          , m_exposure_multiplier_source(exposure_multiplier_source) 
+          , m_exposure_multiplier(exposure_multiplier)
           , m_rcp_width(1.0f / width)
           , m_rcp_height(1.0f / height)
         {
@@ -138,14 +135,7 @@ namespace
             {
                 float multiplier;
                 m_multiplier_source->evaluate(m_texture_cache, SourceInputs(uv), multiplier);
-
-                float exposure;
-                m_exposure_source->evaluate(m_texture_cache, SourceInputs(uv), exposure);
-
-                float exposure_multiplier;
-                m_exposure_multiplier_source->evaluate_uniform(exposure_multiplier);
-
-                payload *= multiplier * std::pow(2.0f, exposure * exposure_multiplier);
+                payload *= multiplier * m_exposure_multiplier;
                 importance = luminance(payload);
             }
             else
@@ -159,8 +149,7 @@ namespace
         TextureCache&   m_texture_cache;
         const Source*   m_radiance_source;
         const Source*   m_multiplier_source;
-        const Source*   m_exposure_source;
-        const Source*   m_exposure_multiplier_source;
+        const float     m_exposure_multiplier;
         const float     m_rcp_width;
         const float     m_rcp_height;
     };
@@ -182,7 +171,6 @@ namespace
             m_inputs.declare("radiance", InputFormatSpectralIlluminance);
             m_inputs.declare("radiance_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("exposure", InputFormatFloat, "0.0");
-            m_inputs.declare("exposure_multiplier", InputFormatFloat, "1.0");
 
             m_phi_shift = deg_to_rad(m_params.get_optional<float>("horizontal_shift", 0.0f));
             m_theta_shift = deg_to_rad(m_params.get_optional<float>("vertical_shift", 0.0f));
@@ -207,31 +195,15 @@ namespace
             if (!EnvironmentEDF::on_render_begin(project, parent, recorder, abort_switch))
                 return false;
 
-            // Don't do anything if this is not the active environment EDF.
-            const Environment* environment = project.get_scene()->get_environment();
-            if (environment->get_uncached_environment_edf() != this)
-                return true;
-
-            build_importance_map(*project.get_scene(), abort_switch);
-
-            return true;
-        }
-
-        bool on_frame_begin(
-            const Project&          project,
-            const BaseGroup*        parent,
-            OnFrameBeginRecorder&   recorder,
-            IAbortSwitch*           abort_switch) override
-        {
-            if (!EnvironmentEDF::on_frame_begin(project, parent, recorder, abort_switch))
-                return false;
-
-            // Don't do anything if this is not the active environment EDF.
-            const Environment* environment = project.get_scene()->get_environment();
-            if (environment->get_uncached_environment_edf() != this)
-                return true;
-
             check_non_zero_emission("radiance", "radiance_multiplier");
+
+            InputValues values;
+            get_inputs().evaluate_uniforms(&values);
+            m_exposure_multiplier = std::pow(2.0f, values.m_exposure);
+
+            // Build importance map only if this environment EDF is the active one.
+            if (project.get_scene()->get_environment()->get_uncached_environment_edf() == this)
+                build_importance_map(*project.get_scene(), abort_switch);
 
             return true;
         }
@@ -243,7 +215,7 @@ namespace
             Spectrum&               value,
             float&                  probability) const override
         {
-            if (m_importance_sampler.get() == nullptr)
+            if (!m_importance_sampler)
             {
                 RENDERER_LOG_WARNING(
                     "cannot sample environment edf \"%s\" because it is not bound to the environment.",
@@ -327,7 +299,7 @@ namespace
         {
             assert(is_normalized(outgoing));
 
-            if (m_importance_sampler.get() == nullptr)
+            if (!m_importance_sampler)
             {
                 RENDERER_LOG_WARNING(
                     "cannot compute pdf for environment edf \"%s\" because it is not bound to the environment.",
@@ -362,7 +334,7 @@ namespace
         {
             assert(is_normalized(outgoing));
 
-            if (m_importance_sampler.get() == nullptr)
+            if (!m_importance_sampler)
             {
                 RENDERER_LOG_WARNING(
                     "cannot compute pdf for environment edf \"%s\" because it is not bound to the environment.",
@@ -396,6 +368,8 @@ namespace
             float       m_exposure;                 // emitted radiance multiplier in f-stops
             float       m_exposure_multiplier;      // emitted radiance exposure multiplier
         };
+
+        float   m_exposure_multiplier;
 
         float   m_phi_shift;                        // horizontal shift in radians
         float   m_theta_shift;                      // vertical shift in radians
@@ -433,8 +407,7 @@ namespace
                 texture_cache,
                 radiance_source,
                 m_inputs.source("radiance_multiplier"),
-                m_inputs.source("exposure"),
-                m_inputs.source("exposure_multiplier"),
+                m_exposure_multiplier,
                 m_importance_map_width,
                 m_importance_map_height);
 
@@ -480,7 +453,7 @@ namespace
             if (is_finite(values.m_radiance))
             {
                 value = values.m_radiance;
-                value *= values.m_radiance_multiplier * std::pow(2.0f, values.m_exposure * values.m_exposure_multiplier);
+                value *= values.m_radiance_multiplier * m_exposure_multiplier;
             }
             else value.set(0.0f);
         }
@@ -492,7 +465,7 @@ namespace
         {
             assert(u >= 0.0f && u < 1.0f);
             assert(v >= 0.0f && v < 1.0f);
-            assert(m_importance_sampler.get());
+            assert(m_importance_sampler);
 
             // Compute the probability density of this sample in the importance map.
             const size_t x = truncate<size_t>(m_importance_map_width * u);
@@ -564,29 +537,18 @@ DictionaryArray LatLongMapEnvironmentEDFFactory::get_input_metadata() const
         Dictionary()
             .insert("name", "exposure")
             .insert("label", "Exposure")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary().insert("texture_instance", "Texture Instances"))
-            .insert("use", "optional")
-            .insert("default", "0.0")
-            .insert("help", "Environment exposure"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "exposure_multiplier")
-            .insert("label", "Exposure Multiplier")
             .insert("type", "numeric")
             .insert("min",
                 Dictionary()
-                    .insert("value", "-64.0")
+                    .insert("value", "-8.0")
                     .insert("type", "soft"))
             .insert("max",
                 Dictionary()
-                    .insert("value", "64.0")
+                    .insert("value", "8.0")
                     .insert("type", "soft"))
-            .insert("default", "1.0")
             .insert("use", "optional")
-            .insert("help", "Environment exposure multiplier"));
+            .insert("default", "0.0")
+            .insert("help", "Environment exposure"));
 
     metadata.push_back(
         Dictionary()
@@ -621,6 +583,8 @@ DictionaryArray LatLongMapEnvironmentEDFFactory::get_input_metadata() const
             .insert("default", "0.0")
             .insert("use", "optional")
             .insert("help", "Environment texture vertical shift in degrees"));
+
+    add_common_input_metadata(metadata);
 
     return metadata;
 }

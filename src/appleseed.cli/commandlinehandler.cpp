@@ -30,13 +30,13 @@
 // Interface header.
 #include "commandlinehandler.h"
 
-// appleseed.shared headers.
+// appleseed.common headers.
 #include "application/superlogger.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/log.h"
+#include "foundation/log/log.h"
 
-using namespace appleseed::shared;
+using namespace appleseed::common;
 using namespace foundation;
 
 namespace appleseed {
@@ -104,9 +104,9 @@ CommandLineHandler::CommandLineHandler()
         &m_samples
             .add_name("--samples")
             .add_name("-s")
-            .set_description("set the minimum and maximum numbers of samples per pixel")
-            .set_syntax("min max")
-            .set_exact_value_count(2));
+            .set_description("set the number of samples per pixel")
+            .set_syntax("n")
+            .set_exact_value_count(1));
 
     parser().add_option_handler(
         &m_passes

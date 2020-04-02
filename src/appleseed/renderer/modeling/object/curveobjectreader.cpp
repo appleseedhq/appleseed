@@ -49,11 +49,11 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/types.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/otherwise.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/stopwatch.h"
-#include "foundation/utility/string.h"
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"
@@ -108,7 +108,7 @@ namespace
                 static_cast<CurveObject*>(
                     CurveObjectFactory().create(m_name.c_str(), m_params).release());
 
-            m_split_count = m_params.get_optional<size_t>("presplits", 0);
+            m_split_count = m_params.get_optional<size_t>("presplits", 3);
 
             m_object->push_basis(basis);
             m_object->push_curve_count(count);

@@ -35,10 +35,10 @@
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
 #include "foundation/platform/thread.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 #include <vector>
 
 namespace renderer
@@ -50,7 +50,7 @@ namespace renderer
 
 struct SpectrumLine
 {
-    foundation::uint32      m_wavelength;
+    std::uint32_t           m_wavelength;
     float                   m_amplitude;
 };
 
@@ -95,9 +95,13 @@ class SPPMPhotonVector
     size_t get_memory_size() const;
 
     void swap(SPPMPhotonVector& rhs);
+
+    void clear_release_memory();
     void clear_keep_memory();
+
     void reserve_mono_photons(const size_t capacity);
     void reserve_poly_photons(const size_t capacity);
+
     void push_back(
         const foundation::Vector3f&     position,
         const SPPMMonoPhoton&           photon);

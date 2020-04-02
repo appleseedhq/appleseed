@@ -636,30 +636,40 @@ QHeaderView::down-arrow:disabled
 /*
  * QTreeView.
  * QListView.
+ * QTableView.
  */
 
 QTreeView,
-QListView
+QListView,
+QTableView
 {
     border: BORDER_STYLE;
 	alternate-background-color: rgb(33, 33, 33);
 }
 
+QTableView
+{
+    gridline-color: BORDER_COLOR;
+}
+
 QTabWidget QTreeView,
-QTabWidget QListView
+QTabWidget QListView,
+QTabWidget QTableView
 {
     border: 0px;
 }
 
 QTreeView::item:hover,
-QListView::item:hover
+QListView::item:hover,
+QTableView::item:hover
 {
     background-color: HOVER_BACKGROUND_COLOR;
     color: HOVER_TEXT_COLOR;
 }
 
 QTreeView::item:selected,
-QListView::item:selected
+QListView::item:selected,
+QTableView::item:selected
 {
     background-color: SELECTED_BACKGROUND_COLOR;
     color: SELECTED_TEXT_COLOR;
@@ -668,7 +678,7 @@ QListView::item:selected
 #ifdef __APPLE__
 QTreeView::branch:selected
 {
-    background-color: DEFAULT_BACKGROUND_COLOR;     /* avoid a disgracious blue background on Mac OS X (transparent is not enough) */
+    background-color: DEFAULT_BACKGROUND_COLOR;     /* avoid a disgracious blue background on macOS (transparent is not enough) */
 }
 #endif
 
@@ -1051,6 +1061,36 @@ QAbstractSpinBox::down-arrow:disabled
 
 
 /*
+ * QToolTip.
+ */
+
+QToolTip
+{
+    background-color: rgba(80, 80, 80, 180);
+    color: rgba(255, 255, 255, 180);
+    border: 0px;
+    opacity: 200;
+}
+
+
+/*
+ * QProgressBar.
+ */
+
+QProgressBar
+{
+    border: BORDER_STYLE;
+    margin-right: 40px;
+    text-align: right;
+}
+
+QProgressBar::chunk
+{
+    background-color: HOVER_BACKGROUND_COLOR;
+}
+
+
+/*
  * appleseed::studio::FoldablePanelWidget.
  */
 
@@ -1102,7 +1142,8 @@ QWidget#TestWindow QSplitter::handle
 QTabWidget#tab_render_channels > QWidget,
 QTabWidget#tab_render_channels QWidget#render_widget_tab,
 QTabWidget#tab_render_channels QScrollArea#render_widget_scrollarea,
-QTabWidget#tab_render_channels QWidget#render_widget_wrapper
+QTabWidget#tab_render_channels QWidget#render_widget_wrapper,
+QWidget[renderWidgetWrapper="true"]
 {
     background-color: rgb(28, 28, 28);
 }
@@ -1211,10 +1252,7 @@ QLineEdit#lineedit_root_path[isSet="false"]
     color: DISABLED_TEXT_COLOR;
 }
 
-QToolTip
+QTableWidget#tablewidget_results::item:hover
 {
-    background-color: rgba(80, 80, 80, 180);
-    color: rgba(255, 255, 255, 180);
-    border: 0px;
-    opacity: 200;
+    background-color: transparent;
 }

@@ -31,8 +31,8 @@
 #include "imaterialfactory.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 using namespace foundation;
 
@@ -104,8 +104,8 @@ void IMaterialFactory::add_displacement_metadata(DictionaryArray& metadata)
             .insert("type", "numeric")
             .insert("min",
                 Dictionary()
-                    .insert("value", "0.0")
-                    .insert("type", "hard"))
+                    .insert("value", "-1.0")
+                    .insert("type", "soft"))
             .insert("max",
                 Dictionary()
                     .insert("value", "1.0")

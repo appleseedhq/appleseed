@@ -36,8 +36,8 @@
 shader as_invert_color
 [[
     string icon = "asInvertColor.png",
-    string help = "Inverts one or more individual color channels of the the input color in the respective color model. The output is a RGB color.",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_invert_color.html#label-as-invert-color",
+    string help = "Inverts one or more individual color channels of the input color in the respective color model. The output is a RGB color.",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_invert_color.html",
     
     string as_node_name = "asInvertColor",
     string as_category = "utility",

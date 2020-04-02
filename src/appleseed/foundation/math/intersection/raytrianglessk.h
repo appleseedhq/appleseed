@@ -36,13 +36,13 @@
 #ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
-#include "foundation/platform/types.h"
 #include "foundation/utility/poison.h"
 
 // Standard headers.
 #include <cassert>
 #include <cmath>
 #include <cstddef>
+#include <cstdint>
 
 namespace foundation
 {
@@ -64,24 +64,24 @@ struct TriangleSSK
     typedef Ray<T, 3> RayType;
 
     // Scaled normal (the third component is equal to 1.0).
-    ValueType   m_nu;
-    ValueType   m_nv;
+    ValueType       m_nu;
+    ValueType       m_nv;
 
     // Dot product between triangle vertex and scaled normal.
-    ValueType   m_np;
+    ValueType       m_np;
 
     // Triangle vertex.
-    ValueType   m_pu;
-    ValueType   m_pv;
+    ValueType       m_pu;
+    ValueType       m_pv;
 
     // Index of principal component.
-    uint32      m_ci;
+    std::uint32_t   m_ci;
 
     // Triangle edges.
-    ValueType   m_e0u;
-    ValueType   m_e0v;
-    ValueType   m_e1u;
-    ValueType   m_e1v;
+    ValueType       m_e0u;
+    ValueType       m_e0v;
+    ValueType       m_e1u;
+    ValueType       m_e1v;
 
     // Constructors.
     TriangleSSK();
@@ -111,10 +111,10 @@ struct TriangleSSKSupportPlane
     typedef Vector<T, 3> VectorType;
     typedef Ray<T, 3> RayType;
 
-    ValueType   m_nu;
-    ValueType   m_nv;
-    ValueType   m_np;
-    uint32      m_ci;
+    ValueType       m_nu;
+    ValueType       m_nv;
+    ValueType       m_np;
+    std::uint32_t   m_ci;
 
     // Constructors.
     TriangleSSKSupportPlane();
@@ -166,7 +166,7 @@ inline TriangleSSK<T>::TriangleSSK(
     ValueType rcp_nw = ValueType(1.0) / n[w];
     m_nu = n[u] * rcp_nw;
     m_nv = n[v] * rcp_nw;
-    m_ci = static_cast<uint32>(w);
+    m_ci = static_cast<std::uint32_t>(w);
 
     // Store triangle vertex.
     m_pu = v0[u];

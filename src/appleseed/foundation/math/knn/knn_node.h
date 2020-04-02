@@ -30,11 +30,11 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 
 namespace foundation {
 namespace knn {
@@ -89,10 +89,10 @@ class Node
     //     bit  31      node type (0 for leaf node)
     //
 
-    ValueType   m_abscissa;
-    uint32      m_info;
-    uint32      m_point_index;
-    uint32      m_point_count;
+    ValueType       m_abscissa;
+    std::uint32_t   m_info;
+    std::uint32_t   m_point_index;
+    std::uint32_t   m_point_count;
 };
 
 
@@ -129,7 +129,7 @@ inline void Node<T>::set_child_node_index(const size_t index)
 {
     assert(index < (1u << 29));
     m_info &= 0x80000003u;
-    m_info |= static_cast<uint32>(index) << 2;
+    m_info |= static_cast<std::uint32_t>(index) << 2;
 }
 
 template <typename T>
@@ -143,7 +143,7 @@ inline void Node<T>::set_split_dim(const size_t dim)
 {
     assert(dim < 4);
     m_info &= 0xFFFFFFFCu;
-    m_info |= static_cast<uint32>(dim);
+    m_info |= static_cast<std::uint32_t>(dim);
 }
 
 template <typename T>
@@ -167,7 +167,7 @@ inline T Node<T>::get_split_abs() const
 template <typename T>
 inline void Node<T>::set_point_index(const size_t index)
 {
-    m_point_index = static_cast<uint32>(index);
+    m_point_index = static_cast<std::uint32_t>(index);
 }
 
 template <typename T>
@@ -179,7 +179,7 @@ inline size_t Node<T>::get_point_index() const
 template <typename T>
 inline void Node<T>::set_point_count(const size_t size)
 {
-    m_point_count = static_cast<uint32>(size);
+    m_point_count = static_cast<std::uint32_t>(size);
 }
 
 template <typename T>

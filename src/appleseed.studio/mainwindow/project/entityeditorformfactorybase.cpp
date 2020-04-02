@@ -31,8 +31,8 @@
 #include "entityeditorformfactorybase.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
 #include <cstddef>
@@ -77,7 +77,7 @@ void EntityEditorFormFactoryBase::add_input_metadata(
         const std::string input_name = im.get<std::string>("name");
 
         im.insert("value",
-            input_values.strings().exist(input_name) ? input_values.get<std::string>(input_name) :
+            input_values.strings().exist(input_name.c_str()) ? input_values.get<std::string>(input_name.c_str()) :
             im.strings().exist("default") ? im.get<std::string>("default") :
             "");
 

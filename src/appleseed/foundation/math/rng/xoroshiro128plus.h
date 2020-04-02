@@ -30,10 +30,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cassert>
+#include <cstdint>
 
 namespace foundation
 {
@@ -56,13 +56,13 @@ class Xoroshiro128plus
     // Constructors, seed the generator.
     // The seed must not be zero everywhere.
     Xoroshiro128plus();
-    explicit Xoroshiro128plus(const uint64 s0, const uint64 s1);
+    explicit Xoroshiro128plus(const std::uint64_t s0, const std::uint64_t s1);
 
     // Generate a 32-bit random number.
-    uint32 rand_uint32();
+    std::uint32_t rand_uint32();
 
   private:
-    uint64 m_s[2];
+    std::uint64_t m_s[2];
 };
 
 
@@ -76,25 +76,25 @@ inline Xoroshiro128plus::Xoroshiro128plus()
     m_s[1] = 0x55897310023CAE21ull;
 }
 
-inline Xoroshiro128plus::Xoroshiro128plus(const uint64 s0, const uint64 s1)
+inline Xoroshiro128plus::Xoroshiro128plus(const std::uint64_t s0, const std::uint64_t s1)
 {
     assert(s0 != 0 || s1 != 0);     // if the seed is 0 everywhere, all output values will be 0
     m_s[0] = s0;
     m_s[1] = s1;
 }
 
-inline uint32 Xoroshiro128plus::rand_uint32()
+inline std::uint32_t Xoroshiro128plus::rand_uint32()
 {
-    const uint64 s0 = m_s[0];
-    uint64 s1 = m_s[1];
+    const std::uint64_t s0 = m_s[0];
+    std::uint64_t s1 = m_s[1];
 
-    const uint64 result = s0 + s1;
+    const std::uint64_t result = s0 + s1;
 
     s1 ^= s0;
     m_s[0] = rotl64(s0, 55) ^ s1 ^ (s1 << 14);  // a, b
     m_s[1] = rotl64(s1, 36);                    // c
 
-    return static_cast<uint32>(result >> 32);
+    return static_cast<std::uint32_t>(result >> 32);
 }
 
 }   // namespace foundation

@@ -92,7 +92,7 @@ double compute_ambient_occlusion(
             continue;
 
         // Compute the ray origin.
-        ray.m_org = shading_point.get_biased_point(ray.m_dir);
+        ray.m_org = shading_point.get_point();
 
         // Count the number of computed samples.
         ++computed_samples;

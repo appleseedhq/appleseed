@@ -30,8 +30,8 @@
 #pragma once
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/api/apiarray.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"

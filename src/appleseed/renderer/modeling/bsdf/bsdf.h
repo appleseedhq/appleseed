@@ -36,6 +36,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/dual.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/uid.h"
 
@@ -98,6 +99,13 @@ class APPLESEED_DLLSYMBOL BSDF
     // of the Dirac Delta in order to detect incorrect usages.
     static const float DiracDelta;
 
+    struct LocalGeometry
+    {
+        const ShadingPoint*         m_shading_point;
+        foundation::Vector3f        m_geometric_normal;         // world space geometric normal at the shading point, unit-length
+        foundation::Basis3f         m_shading_basis;            // world space shading basis at the shading point
+    };
+
     // Constructor.
     BSDF(
         const char*                 name,
@@ -152,6 +160,8 @@ class APPLESEED_DLLSYMBOL BSDF
         const void*                 data,                       // input values
         const bool                  adjoint,                    // if true, use the adjoint scattering kernel
         const bool                  cosine_mult,                // if true, multiply by |cos(incoming, normal)|
+        const LocalGeometry&        local_geometry,
+        const foundation::Dual3f&   outgoing,                   // world space outgoing direction, unit-length
         const int                   modes,                      // allowed scattering modes
         BSDFSample&                 sample) const = 0;
 
@@ -162,8 +172,7 @@ class APPLESEED_DLLSYMBOL BSDF
         const void*                 data,                       // input values
         const bool                  adjoint,                    // if true, use the adjoint scattering kernel
         const bool                  cosine_mult,                // if true, multiply by |cos(incoming, normal)|
-        const foundation::Vector3f& geometric_normal,           // world space geometric normal, unit-length
-        const foundation::Basis3f&  shading_basis,              // world space orthonormal basis around shading normal
+        const LocalGeometry&        local_geometry,
         const foundation::Vector3f& outgoing,                   // world space outgoing direction, unit-length
         const foundation::Vector3f& incoming,                   // world space incoming direction, unit-length
         const int                   modes,                      // enabled scattering modes
@@ -173,8 +182,7 @@ class APPLESEED_DLLSYMBOL BSDF
     virtual float evaluate_pdf(
         const void*                 data,                       // input values
         const bool                  adjoint,                    // if true, use the adjoint scattering kernel
-        const foundation::Vector3f& geometric_normal,           // world space geometric normal, unit-length
-        const foundation::Basis3f&  shading_basis,              // world space orthonormal basis around shading normal
+        const LocalGeometry&        local_geometry,
         const foundation::Vector3f& outgoing,                   // world space outgoing direction, unit-length
         const foundation::Vector3f& incoming,                   // world space incoming direction, unit-length
         const int                   modes) const = 0;           // enabled scattering modes

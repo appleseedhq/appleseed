@@ -31,8 +31,8 @@
 // appleseed.foundation headers.
 #include "foundation/array/arrayallocator.h"
 #include "foundation/array/arraytraits.h"
+#include "foundation/memory/alignedallocator.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/alignedallocator.h"
 #include "foundation/utility/test.h"
 
 // appleseed.main headers.
@@ -204,4 +204,4 @@ class APPLESEED_DLLSYMBOL Array
     Concept* m_self;
 };
 
-}       // namespace foundation
+}   // namespace foundation

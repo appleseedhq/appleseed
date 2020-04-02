@@ -34,8 +34,8 @@
 #include "renderer/modeling/material/material.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 using namespace foundation;
 
@@ -98,6 +98,14 @@ namespace
             {
                 RENDERER_LOG_WARNING(
                     "%smaterial is emitting light but may be partially or entirely transparent; "
+                    "this may lead to unexpected or unphysical results.",
+                    context.get());
+            }
+
+            if  (m_render_data.m_volume && m_render_data.m_alpha_map)
+            {
+                RENDERER_LOG_WARNING(
+                    "%smaterial is assigned an alpha map and a volume at the same time; "
                     "this may lead to unexpected or unphysical results.",
                     context.get());
             }

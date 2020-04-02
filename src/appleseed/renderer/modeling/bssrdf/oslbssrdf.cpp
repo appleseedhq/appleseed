@@ -43,9 +43,9 @@
 #include "renderer/modeling/bssrdf/standarddipolebssrdf.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
+#include "foundation/memory/arena.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/arena.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
 #include <cassert>
@@ -97,7 +97,7 @@ namespace
                 create_and_register_bssrdf<StandardDipoleBSSRDFFactory>(
                     SubsurfaceStandardDipoleID,
                     "standard_dipole");
-            
+
             m_randomwalk =
                 create_and_register_randomwalk_bssrdf(
                     SubsurfaceRandomwalkID,
@@ -172,6 +172,7 @@ namespace
             const void*             data,
             const ShadingPoint&     outgoing_point,
             const Vector3f&         outgoing_dir,
+            const int               modes,
             BSSRDFSample&           bssrdf_sample,
             BSDFSample&             bsdf_sample) const override
         {
@@ -196,6 +197,7 @@ namespace
                         c->get_closure_input_values(closure_index),
                         outgoing_point,
                         outgoing_dir,
+                        modes,
                         bssrdf_sample,
                         bsdf_sample);
 

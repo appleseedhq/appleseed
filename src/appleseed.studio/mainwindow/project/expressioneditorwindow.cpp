@@ -34,10 +34,12 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/tools.h"
-#include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
 
-// appleseed.shared headers.
+// appleseed.qtcommon headers.
+#include "utility/miscellaneous.h"
+
+// appleseed.common headers.
 #include "application/application.h"
 
 // appleseed.renderer headers.
@@ -77,7 +79,8 @@
 #include <fstream>
 #include <sstream>
 
-using namespace appleseed::shared;
+using namespace appleseed::common;
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 namespace bf = boost::filesystem;
@@ -255,7 +258,6 @@ void ExpressionEditorWindow::slot_save_script()
             if (QFileInfo(filepath).suffix().isEmpty())
                 filepath += ".se";
 
-            filepath = QDir::toNativeSeparators(filepath);
             m_script_filepath = filepath.toStdString();
         }
     }
@@ -289,8 +291,6 @@ void ExpressionEditorWindow::slot_load_script()
 
     if (!filepath.isEmpty())
     {
-        filepath = QDir::toNativeSeparators(filepath);
-
         // Open script file.
         std::ifstream script_file(filepath.toStdString().c_str());
         if (!script_file.is_open())

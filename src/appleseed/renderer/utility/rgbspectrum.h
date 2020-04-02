@@ -38,7 +38,6 @@
 #ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
-#include "foundation/platform/types.h"
 #include "foundation/utility/poison.h"
 
 // Standard headers.
@@ -51,7 +50,7 @@ namespace renderer
 {
 
 //
-// ...
+// RGBSpectrum is like renderer::DynamicSpectrum, but RGB-only.
 //
 
 template <typename T>
@@ -87,21 +86,21 @@ class RGBSpectrum
 
     // Constructors.
 #ifdef APPLESEED_USE_SSE
-    RGBSpectrum();                                      // leave all components uninitialized
+    RGBSpectrum();                                          // leave all components uninitialized
 #else
 #if !defined(_MSC_VER) || _MSC_VER >= 1800
-    RGBSpectrum() = default;                            // leave all components uninitialized
+    RGBSpectrum() = default;                                // leave all components uninitialized
 #else
-    RGBSpectrum() {}                                    // leave all components uninitialized
+    RGBSpectrum() {}                                        // leave all components uninitialized
 #endif
 #endif
-    explicit RGBSpectrum(const ValueType val);          // set all components to `val`
+    explicit RGBSpectrum(const ValueType val);              // set all components to `val`
     RGBSpectrum(
         const foundation::Color<ValueType, 3>&              rgb,
         const foundation::LightingConditions&               lighting_conditions,
         const Intent                                        intent);
 
-    template<size_t N>
+    template <size_t N>
     RGBSpectrum(
         const foundation::RegularSpectrum<ValueType, N>&    spectrum,
         const foundation::LightingConditions&               lighting_conditions,
@@ -197,6 +196,23 @@ template <typename T> bool fz(const renderer::RGBSpectrum<T>& s, const T eps);
 // Component-wise reciprocal.
 template <typename T> renderer::RGBSpectrum<T> rcp(const renderer::RGBSpectrum<T>& s);
 
+// Component-wise square root.
+template <typename T> renderer::RGBSpectrum<T> sqrt(const renderer::RGBSpectrum<T>& s);
+
+// Component-wise power.
+template <typename T> renderer::RGBSpectrum<T> pow(const renderer::RGBSpectrum<T>& x, const T y);
+
+// Component-wise power.
+template <typename T> renderer::RGBSpectrum<T> pow(
+    const renderer::RGBSpectrum<T>& x,
+    const renderer::RGBSpectrum<T>& y);
+
+// Component-wise logarithm.
+template <typename T> renderer::RGBSpectrum<T> log(const renderer::RGBSpectrum<T>& s);
+
+// Component-wise exponent.
+template <typename T> renderer::RGBSpectrum<T> exp(const renderer::RGBSpectrum<T>& s);
+
 // Return whether all components of a spectrum are in [0,1].
 template <typename T> bool is_saturated(const renderer::RGBSpectrum<T>& s);
 
@@ -246,22 +262,8 @@ template <typename T> bool has_nan(const renderer::RGBSpectrum<T>& s);
 // Return true if all components of a spectrum are finite (not NaN, not infinite).
 template <typename T> bool is_finite(const renderer::RGBSpectrum<T>& s);
 
-// Return the square root of a spectrum.
-template <typename T> renderer::RGBSpectrum<T> sqrt(const renderer::RGBSpectrum<T>& s);
-
-// Raise a spectrum to a given power.
-template <typename T> renderer::RGBSpectrum<T> pow(const renderer::RGBSpectrum<T>& x, const T y);
-
-// Raise a spectrum to a given power, component-wise.
-template <typename T> renderer::RGBSpectrum<T> pow(
-    const renderer::RGBSpectrum<T>& x,
-    const renderer::RGBSpectrum<T>& y);
-
-// Compute the logarithm of a spectrum.
-template <typename T> renderer::RGBSpectrum<T> log(const renderer::RGBSpectrum<T>& s);
-
-// Compute the exponential of a spectrum.
-template <typename T> renderer::RGBSpectrum<T> exp(const renderer::RGBSpectrum<T>& s);
+// Return true if all components of a spectrum are finite (not NaN, not infinite) and non-negative.
+template <typename T> bool is_finite_non_neg(const renderer::RGBSpectrum<T>& s);
 
 }   // namespace foundation
 
@@ -802,6 +804,75 @@ inline renderer::RGBSpectrum<T> rcp(const renderer::RGBSpectrum<T>& s)
 }
 
 template <typename T>
+inline renderer::RGBSpectrum<T> sqrt(const renderer::RGBSpectrum<T>& s)
+{
+    renderer::RGBSpectrum<T> result;
+
+    for (size_t i = 0, e = renderer::RGBSpectrum<T>::size(); i < e; ++i)
+        result[i] = std::sqrt(s[i]);
+
+    return result;
+}
+
+#ifdef APPLESEED_USE_SSE
+
+APPLESEED_FORCE_INLINE renderer::RGBSpectrum<float> sqrt(const renderer::RGBSpectrum<float>& s)
+{
+    renderer::RGBSpectrum<float> result;
+    _mm_store_ps(&result[ 0], _mm_sqrt_ps(_mm_load_ps(&s[ 0])));
+    return result;
+}
+
+#endif  // APPLESEED_USE_SSE
+
+template <typename T>
+inline renderer::RGBSpectrum<T> pow(const renderer::RGBSpectrum<T>& x, const T y)
+{
+    renderer::RGBSpectrum<T> result;
+
+    for (size_t i = 0, e = renderer::RGBSpectrum<T>::size(); i < e; ++i)
+        result[i] = std::pow(x[i], y);
+
+    return result;
+}
+
+template <typename T>
+inline renderer::RGBSpectrum<T> pow(
+    const renderer::RGBSpectrum<T>& x,
+    const renderer::RGBSpectrum<T>& y)
+{
+    renderer::RGBSpectrum<T> result;
+
+    for (size_t i = 0, e = renderer::RGBSpectrum<T>::size(); i < e; ++i)
+        result[i] = std::pow(x[i], y[i]);
+
+    return result;
+}
+
+template <typename T>
+inline renderer::RGBSpectrum<T> log(const renderer::RGBSpectrum<T>& s)
+{
+    renderer::RGBSpectrum<T> result;
+
+    for (size_t i = 0, e = renderer::RGBSpectrum<T>::size(); i < e; ++i)
+        result[i] = std::log(s[i]);
+
+    return result;
+}
+
+template <typename T>
+inline renderer::RGBSpectrum<T> exp(const renderer::RGBSpectrum<T>& s)
+{
+    renderer::RGBSpectrum<T> result;
+
+    for (size_t i = 0, e = renderer::RGBSpectrum<T>::size(); i < e; ++i)
+        result[i] = std::exp(s[i]);
+
+    return result;
+}
+
+
+template <typename T>
 inline bool is_saturated(const renderer::RGBSpectrum<T>& s)
 {
     for (size_t i = 0, e = renderer::RGBSpectrum<T>::size(); i < e; ++i)
@@ -1066,71 +1137,15 @@ inline bool is_finite(const renderer::RGBSpectrum<T>& s)
 }
 
 template <typename T>
-inline renderer::RGBSpectrum<T> sqrt(const renderer::RGBSpectrum<T>& s)
+inline bool is_finite_non_neg(const renderer::RGBSpectrum<T>& s)
 {
-    renderer::RGBSpectrum<T> result;
-
     for (size_t i = 0, e = renderer::RGBSpectrum<T>::size(); i < e; ++i)
-        result[i] = std::sqrt(s[i]);
+    {
+        if (!FP<T>::is_finite_non_neg(s[i]))
+            return false;
+    }
 
-    return result;
-}
-
-#ifdef APPLESEED_USE_SSE
-
-APPLESEED_FORCE_INLINE renderer::RGBSpectrum<float> sqrt(const renderer::RGBSpectrum<float>& s)
-{
-    renderer::RGBSpectrum<float> result;
-    _mm_store_ps(&result[ 0], _mm_sqrt_ps(_mm_load_ps(&s[ 0])));
-    return result;
-}
-
-#endif  // APPLESEED_USE_SSE
-
-template <typename T>
-inline renderer::RGBSpectrum<T> pow(const renderer::RGBSpectrum<T>& x, const T y)
-{
-    renderer::RGBSpectrum<T> result;
-
-    for (size_t i = 0, e = renderer::RGBSpectrum<T>::size(); i < e; ++i)
-        result[i] = std::pow(x[i], y);
-
-    return result;
-}
-
-template <typename T>
-inline renderer::RGBSpectrum<T> pow(
-    const renderer::RGBSpectrum<T>& x,
-    const renderer::RGBSpectrum<T>& y)
-{
-    renderer::RGBSpectrum<T> result;
-
-    for (size_t i = 0, e = renderer::RGBSpectrum<T>::size(); i < e; ++i)
-        result[i] = std::pow(x[i], y[i]);
-
-    return result;
-}
-
-template <typename T>
-inline renderer::RGBSpectrum<T> log(const renderer::RGBSpectrum<T>& s)
-{
-    renderer::RGBSpectrum<T> result;
-
-    for (size_t i = 0, e = renderer::RGBSpectrum<T>::size(); i < e; ++i)
-        result[i] = std::log(s[i]);
-
-    return result;
-}
-
-template <typename T>
-inline renderer::RGBSpectrum<T> exp(const renderer::RGBSpectrum<T>& s)
-{
-    renderer::RGBSpectrum<T> result;
-
-    for (size_t i = 0, e = renderer::RGBSpectrum<T>::size(); i < e; ++i)
-        result[i] = std::exp(s[i]);
-
-    return result;
+    return true;
 }
 
 template <typename T>

@@ -30,10 +30,6 @@
 // Interface header.
 #include "shadingresult.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/types.h"
-#include "foundation/utility/casts.h"
-
 using namespace foundation;
 
 namespace renderer
@@ -43,43 +39,19 @@ namespace renderer
 // ShadingResult class implementation.
 //
 
-namespace
-{
-    inline bool is_valid_scalar(const float x)
-    {
-        const uint32 ix = binary_cast<uint32>(x);
-        const uint32 sign = (ix & 0x80000000u) >> 31;
-        const uint32 exponent = (ix >> 23) & 255;
-        const uint32 mantissa = ix & 0x007FFFFFu;
-        const bool is_neg = sign == 1 && ix != 0x80000000u;
-        const bool is_nan = exponent == 255 && mantissa != 0;
-        const bool is_inf = (ix & 0x7FFFFFFFu) == 0x7F800000u;
-        return !is_neg && !is_nan && !is_inf;
-    }
-
-    inline bool is_valid_color(const Color4f& c)
-    {
-        return
-            is_valid_scalar(c[0]) &&
-            is_valid_scalar(c[1]) &&
-            is_valid_scalar(c[2]) &&
-            is_valid_scalar(c[3]);
-    }
-}
-
 bool ShadingResult::is_main_valid() const
 {
-    return is_valid_color(m_main);
+    return is_finite_non_neg(m_main);
 }
 
 bool ShadingResult::is_valid() const
 {
-    if (!is_main_valid())
+    if (!is_finite_non_neg(m_main))
         return false;
 
     for (size_t i = 0, e = m_aov_count; i < e; ++i)
     {
-        if (!is_valid_color(m_aovs[i]))
+        if (!is_finite_non_neg(m_aovs[i]))
             return false;
     }
 

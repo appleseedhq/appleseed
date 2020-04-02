@@ -32,11 +32,14 @@
 #include "renderer/modeling/object/object.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/ray.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstdint>
 
 // Forward declarations.
 namespace renderer  { class ParamArray; }
@@ -55,30 +58,39 @@ class APPLESEED_DLLSYMBOL ProceduralObject
   public:
     struct IntersectionResult
     {
-        bool                    m_hit;
-        double                  m_distance;
-        foundation::Vector3d    m_geometric_normal;
-        foundation::Vector3d    m_shading_normal;
-        foundation::Vector2f    m_uv;
-        foundation::uint32      m_material_slot;
+        bool                        m_hit;
+        double                      m_distance;
+        foundation::Vector3d        m_geometric_normal;
+        foundation::Vector3d        m_shading_normal;
+        foundation::Vector2f        m_uv;
+        std::uint32_t               m_material_slot;
     };
 
     // Compute the intersection between a ray expressed in object space and
     // the surface of this object and return detailed intersection results.
     virtual void intersect(
-        const ShadingRay&       ray,
-        IntersectionResult&     result) const = 0;
+        const ShadingRay&           ray,
+        IntersectionResult&         result) const = 0;
 
     // Compute the intersection between a ray expressed in object space and
     // the surface of this object and simply return whether there was a hit.
     virtual bool intersect(
-        const ShadingRay&       ray) const = 0;
+        const ShadingRay&           ray) const = 0;
+
+    // Compute a front point, a back point and the geometric normal in object
+    // instance space for a given ray with origin being a point on the surface
+    // of the object.
+    virtual void refine_and_offset(
+        const foundation::Ray3d&    obj_inst_ray,
+        foundation::Vector3d&       obj_inst_front_point,
+        foundation::Vector3d&       obj_inst_back_point,
+        foundation::Vector3d&       obj_inst_geo_normal) const = 0;
 
   protected:
     // Constructor.
     ProceduralObject(
-        const char*             name,
-        const ParamArray&       params);
+        const char*                 name,
+        const ParamArray&           params);
 };
 
 }   // namespace renderer

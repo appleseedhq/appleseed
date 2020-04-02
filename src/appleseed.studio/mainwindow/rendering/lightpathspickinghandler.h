@@ -36,8 +36,8 @@
 #include <QObject>
 
 // Forward declarations.
+namespace appleseed { namespace qtcommon { class MouseCoordinatesTracker; } }
 namespace appleseed { namespace studio { class LightPathsWidget; } }
-namespace appleseed { namespace studio { class MouseCoordinatesTracker; } }
 namespace renderer  { class Project; }
 class QEvent;
 
@@ -51,9 +51,9 @@ class LightPathsPickingHandler
 
   public:
     LightPathsPickingHandler(
-        LightPathsWidget*                   light_paths_widget,
-        const MouseCoordinatesTracker&      mouse_tracker,
-        const renderer::Project&            project);
+        LightPathsWidget*                           light_paths_widget,
+        const qtcommon::MouseCoordinatesTracker&    mouse_tracker,
+        const renderer::Project&                    project);
 
     ~LightPathsPickingHandler() override;
 
@@ -63,10 +63,10 @@ class LightPathsPickingHandler
     void pick(const foundation::AABB2i& rect) const;
 
   private:
-    LightPathsWidget*                       m_light_paths_widget;
-    const MouseCoordinatesTracker&          m_mouse_tracker;
-    const renderer::Project&                m_project;
-    bool                                    m_enabled;
+    LightPathsWidget*                               m_light_paths_widget;
+    const qtcommon::MouseCoordinatesTracker&        m_mouse_tracker;
+    const renderer::Project&                        m_project;
+    bool                                            m_enabled;
 
     bool eventFilter(QObject* object, QEvent* event) override;
 };

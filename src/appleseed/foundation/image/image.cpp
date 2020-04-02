@@ -32,10 +32,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/tile.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cassert>
+#include <cstdint>
 #include <cstring>
 
 namespace foundation
@@ -135,7 +135,7 @@ Image::Image(
                 {
                     const size_t ix = tx * m_props.m_tile_width + px;
                     const size_t iy = ty * m_props.m_tile_height + py;
-                    const uint8* source_pixel = source.pixel(ix, iy);
+                    const std::uint8_t* source_pixel = source.pixel(ix, iy);
 
                     Pixel::convert(
                         source_props.m_pixel_format,

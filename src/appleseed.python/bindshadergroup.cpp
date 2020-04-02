@@ -35,9 +35,9 @@
 #include "renderer/api/shadergroup.h"
 
 // appleseed.foundation headers.
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/platform/python.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/autoreleaseptr.h"
 
 // Standard headers.
 #include <cstddef>

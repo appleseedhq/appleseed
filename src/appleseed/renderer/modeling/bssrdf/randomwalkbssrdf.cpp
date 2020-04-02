@@ -42,6 +42,7 @@
 #include "renderer/modeling/bssrdf/sss.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/cdf.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/phasefunction.h"
@@ -49,9 +50,8 @@
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/memory/arena.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/arena.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/poison.h"
 
@@ -207,6 +207,7 @@ namespace
             const void*             data,
             const ShadingPoint&     outgoing_point,
             const Vector3f&         outgoing_dir,
+            const int               modes,
             BSSRDFSample&           bssrdf_sample,
             BSDFSample&             bsdf_sample) const override
         {
@@ -251,6 +252,7 @@ namespace
                         create_glass_inputs(shading_context.get_arena(), values),
                         outgoing_point,
                         outgoing_dir,
+                        modes,
                         bssrdf_sample,
                         bsdf_sample,
                         volume_scattering_occurred,
@@ -391,30 +393,33 @@ namespace
             bssrdf_sample.m_incoming_point.flip_side();
 
             // Sample the BSDF at the incoming point.
+            BSDF::LocalGeometry local_geometry;
+            local_geometry.m_shading_point = &bssrdf_sample.m_incoming_point;
+            local_geometry.m_geometric_normal = Vector3f(bssrdf_sample.m_incoming_point.get_geometric_normal());
+            local_geometry.m_shading_basis = Basis3f(bssrdf_sample.m_incoming_point.get_shading_basis());
             bsdf_sample.set_to_absorption();
-            bsdf_sample.m_shading_point = &bssrdf_sample.m_incoming_point;
-            bsdf_sample.m_geometric_normal = Vector3f(bssrdf_sample.m_incoming_point.get_geometric_normal());
-            bsdf_sample.m_shading_basis = Basis3f(bssrdf_sample.m_incoming_point.get_shading_basis());
-            bsdf_sample.m_outgoing = Dual3f(bsdf_sample.m_geometric_normal);      // chosen arbitrarily (no outgoing direction at the incoming point)
             bssrdf_sample.m_brdf->sample(
                 sampling_context,
                 bssrdf_sample.m_brdf_data,
                 false,
                 true,
-                bssrdf_sample.m_modes,
+                local_geometry,
+                Dual3f(local_geometry.m_geometric_normal),  // chosen arbitrarily (no outgoing direction at the incoming point)
+                modes,
                 bsdf_sample);
             if (bsdf_sample.get_mode() == ScatteringMode::None)
                 return false;
 
-            const float cos_in = std::min(std::abs(dot(
-                bsdf_sample.m_geometric_normal,
-                bsdf_sample.m_incoming.get_value())), 1.0f);
             float fi;
             if (values->m_fresnel_weight == 0.0f)
                 fi = 1.0f;
             else
             {
                 // Fresnel factor at incoming direction.
+                const float cos_in =
+                    std::min(
+                        std::abs(dot(local_geometry.m_geometric_normal, bsdf_sample.m_incoming.get_value())),
+                        1.0f);
                 fresnel_transmittance_dielectric(fi, values->m_precomputed.m_eta, cos_in);
                 fi = lerp(1.0f, fi, values->m_fresnel_weight);
             }
@@ -608,6 +613,7 @@ namespace
             GlassBSDFInputValues*   glass_inputs,
             const ShadingPoint&     outgoing_point,
             const Vector3f&         outgoing_dir,
+            const int               modes,
             BSSRDFSample&           bssrdf_sample,
             BSDFSample&             bsdf_sample,
             bool&                   volume_scattering_occurred,
@@ -639,22 +645,30 @@ namespace
 
                 // Sample glass BSDF.
                 m_glass_bsdf->prepare_inputs(shading_context.get_arena(), *shading_point_ptr, glass_inputs);
-                bsdf_sample.m_shading_point = shading_point_ptr;
-                bsdf_sample.m_geometric_normal = Vector3f(shading_point_ptr->get_geometric_normal());
-                bsdf_sample.m_shading_basis = Basis3f(shading_point_ptr->get_shading_basis());
-                bsdf_sample.m_outgoing = Dual3f(-direction);
+                BSDF::LocalGeometry local_geometry;
+                local_geometry.m_shading_point = shading_point_ptr;
+                local_geometry.m_geometric_normal = Vector3f(shading_point_ptr->get_geometric_normal());
+                local_geometry.m_shading_basis = Basis3f(shading_point_ptr->get_shading_basis());
                 bsdf_sample.set_to_absorption();
-                m_glass_bsdf->sample(sampling_context, glass_inputs, false, true, ScatteringMode::All, bsdf_sample);
+                m_glass_bsdf->sample(
+                    sampling_context,
+                    glass_inputs,
+                    false,
+                    true,
+                    local_geometry,
+                    Dual3f(-direction),
+                    ScatteringMode::All,
+                    bsdf_sample);
                 const bool crossing_interface =
-                    dot(bsdf_sample.m_outgoing.get_value(), bsdf_sample.m_geometric_normal) *
-                    dot(bsdf_sample.m_incoming.get_value(), bsdf_sample.m_geometric_normal) < 0.0;
+                    dot(-direction, local_geometry.m_geometric_normal) *
+                    dot(bsdf_sample.m_incoming.get_value(), local_geometry.m_geometric_normal) < 0.0;
                 if (bsdf_sample.get_mode() == ScatteringMode::None)
                     return false;
 
                 assert(n_iteration != 1 || crossing_interface);  // no reflection should happen at the entry point
                 if (n_iteration != 1 && crossing_interface)
                 {
-                    if (!ScatteringMode::has_glossy(bssrdf_sample.m_modes))
+                    if (!ScatteringMode::has_glossy(modes))
                         return false;
 
                     // The ray was refracted with zero scattering.

@@ -31,10 +31,12 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/platform/types.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstdint>
 
 namespace foundation
 {
@@ -49,16 +51,16 @@ class APPLESEED_DLLSYMBOL DefaultProcessorTimer
 {
   public:
     // Get the timer frequency, in Hz.
-    uint64 frequency();
+    std::uint64_t frequency();
 
     // Read the timer value.
-    uint64 read();
+    std::uint64_t read();
 
     // For benchmarking, read the timer value before the benchmark starts.
-    uint64 read_start() { return read(); }
+    std::uint64_t read_start() { return read(); }
 
     // For benchmarking, read the timer value after the benchmark ends.
-    uint64 read_end() { return read(); }
+    std::uint64_t read_end() { return read(); }
 };
 
 
@@ -72,16 +74,16 @@ class APPLESEED_DLLSYMBOL DefaultWallclockTimer
 {
   public:
     // Get the timer frequency, in Hz.
-    uint64 frequency();
+    std::uint64_t frequency();
 
     // Read the timer value.
-    uint64 read();
+    std::uint64_t read();
 
     // For benchmarking, read the timer value before the benchmark starts.
-    uint64 read_start() { return read(); }
+    std::uint64_t read_start() { return read(); }
 
     // For benchmarking, read the timer value after the benchmark ends.
-    uint64 read_end() { return read(); }
+    std::uint64_t read_end() { return read(); }
 };
 
 }   // namespace foundation

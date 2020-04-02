@@ -35,7 +35,7 @@
 #include <QObject>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class ProjectManager; } }
+namespace appleseed { namespace qtcommon { class ProjectManager; } }
 namespace renderer  { class Project; }
 namespace Ui        { class SearchPathsWindow; }
 class QWidget;
@@ -56,7 +56,7 @@ class SearchPathsWindow
     // Constructor.
     SearchPathsWindow(
         const renderer::Project&    project,
-        ProjectManager&             project_manager,
+        qtcommon::ProjectManager&   project_manager,
         QWidget*                    parent = nullptr);
 
     // Destructor.

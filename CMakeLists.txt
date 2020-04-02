@@ -117,6 +117,7 @@ write_compiler_detection_header (
         cxx_defaulted_functions
         cxx_deleted_functions
         cxx_generalized_initializers
+        cxx_attribute_deprecated
 )
 
 
@@ -126,6 +127,7 @@ write_compiler_detection_header (
 
 option (WITH_CLI                            "Build appleseed.cli"                                       ON)
 option (WITH_STUDIO                         "Build appleseed.studio"                                    ON)
+option (WITH_BENCH                          "Build appleseed.bench"                                     ON)
 option (WITH_TOOLS                          "Build appleseed tools"                                     ON)
 option (WITH_PYTHON2_BINDINGS               "Build Python bindings for Python 2"                        ON)
 option (WITH_PYTHON3_BINDINGS               "Build Python bindings for Python 3"                        OFF)
@@ -133,7 +135,7 @@ option (WITH_DISNEY_MATERIAL                "Build Disney material"             
 option (WITH_EMBREE                         "Include support for Embree intersection backend"           OFF)
 option (WITH_GPU                            "Build GPU support"                                         OFF)
 option (WITH_SPECTRAL_SUPPORT               "Include support for spectral colors"                       ON)
-option (WITH_DOXYGEN                        "Generate API reference with Doxygen"                       ON)
+option (WITH_DOXYGEN                        "Generate API reference with Doxygen"                       OFF)
 option (INSTALL_HEADERS                     "Install header files"                                      ON)
 option (INSTALL_TESTS                       "Install unit tests and benchmarks"                         ON)
 option (INSTALL_API_EXAMPLES                "Install API examples (requires header files)"              ON)
@@ -189,7 +191,6 @@ else ()
 endif ()
 
 if (WITH_SPECTRAL_SUPPORT)
-    set (APPLESEED_WITH_SPECTRAL_SUPPORT ON)
     add_definitions (-DAPPLESEED_WITH_SPECTRAL_SUPPORT)
 endif ()
 
@@ -219,7 +220,7 @@ endif ()
 
 
 #--------------------------------------------------------------------------------------------------
-# Auto-generate version headers.
+# Auto-generate version header.
 #--------------------------------------------------------------------------------------------------
 
 set (appleseed_version_major    2)
@@ -227,8 +228,10 @@ set (appleseed_version_minor    1)
 set (appleseed_version_patch    0)
 set (appleseed_version_maturity beta)
 
-configure_file (${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/version.h.in
-                ${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/version.h)
+configure_file (
+    ${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/version.h.in
+    ${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/version.h
+)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -292,6 +295,8 @@ if (USE_FIND_PACKAGE_FOR_LZ4)
 endif ()
 
 if (WITH_STUDIO)
+    add_definitions (-DAPPLESEED_WITH_OCIO)
+
     if (USE_STATIC_OCIO)
         add_definitions (-DOCIO_STATIC_BUILD)
     endif ()
@@ -431,10 +436,6 @@ endif ()
 # Definitions common to all configurations.
 #
 
-set (preprocessor_definitions_common
-    ${preprocessor_definitions_common}
-)
-
 # $ORIGIN support in rpath.
 if (UNIX AND NOT APPLE)
     set (USE_RPATH_ORIGIN TRUE)
@@ -496,7 +497,6 @@ endif ()
 set (preprocessor_definitions_debug
     ${preprocessor_definitions_debug}
     ${preprocessor_definitions_common}
-    DEBUG
     _DEBUG
 )
 
@@ -519,10 +519,22 @@ set (preprocessor_definitions_profile
     ${preprocessor_definitions_ship}        # the Profile configuration inherits from the Ship configuration
 )
 
-# Add the SHIP preprocessor definition only after the Profile configuration is set.
+# Add symbols identifying configurations.
+set (preprocessor_definitions_debug
+    ${preprocessor_definitions_debug}
+    APPLESEED_DEBUG
+)
+set (preprocessor_definitions_release
+    ${preprocessor_definitions_release}
+    APPLESEED_RELEASE
+)
+set (preprocessor_definitions_profile
+    ${preprocessor_definitions_profile}
+    APPLESEED_PROFILE
+)
 set (preprocessor_definitions_ship
     ${preprocessor_definitions_ship}
-    SHIP
+    APPLESEED_SHIP
 )
 
 # A convenience macro to apply the preprocessor definitions to all configurations of a given target.
@@ -563,8 +575,10 @@ endmacro ()
 # Auto-generate build options header.
 #--------------------------------------------------------------------------------------------------
 
-configure_file (${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/buildoptions.h.in
-                ${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/buildoptions.h)
+configure_file (
+    ${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/buildoptions.h.in
+    ${PROJECT_SOURCE_DIR}/src/appleseed/foundation/core/buildoptions.h
+)
 
 
 #--------------------------------------------------------------------------------------------------
@@ -655,8 +669,12 @@ add_subdirectory (src/thirdparty/murmurhash3)
 add_subdirectory (src/appleseed)
 add_subdirectory (src/appleseed.shaders)
 
-if (WITH_CLI OR WITH_STUDIO OR WITH_TOOLS)
-    add_subdirectory (src/appleseed.shared)
+if (WITH_CLI OR WITH_STUDIO OR WITH_BENCH OR WITH_TOOLS)
+    add_subdirectory (src/appleseed.common)
+endif ()
+
+if (WITH_STUDIO OR WITH_BENCH)
+    add_subdirectory (src/appleseed.qtcommon)
 endif ()
 
 if (WITH_CLI)
@@ -693,6 +711,10 @@ if (WITH_STUDIO)
     add_subdirectory (src/appleseed.studio)
 endif ()
 
+if (WITH_BENCH)
+    add_subdirectory (src/appleseed.bench)
+endif ()
+
 if (WITH_TOOLS)
     add_subdirectory (src/tools/animatecamera)
     add_subdirectory (src/tools/convertmeshfile)
@@ -711,7 +733,11 @@ if (WITH_DOXYGEN)
     find_package (Doxygen)
 
     if (DOXYGEN_FOUND)
-        configure_file (${PROJECT_SOURCE_DIR}/scripts/appleseed.doxyfile.in ${PROJECT_BINARY_DIR}/appleseed.doxyfile @ONLY)
+        configure_file (
+            ${PROJECT_SOURCE_DIR}/scripts/appleseed.doxyfile.in
+            ${PROJECT_BINARY_DIR}/appleseed.doxyfile
+            @ONLY
+        )
 
         add_custom_target (
             genarate_api_reference ${DOXYGEN_EXECUTABLE} ${PROJECT_BINARY_DIR}/appleseed.doxyfile

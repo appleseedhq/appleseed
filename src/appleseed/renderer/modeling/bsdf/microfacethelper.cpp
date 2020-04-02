@@ -48,7 +48,6 @@
 #include <cmath>
 
 using namespace foundation;
-
 namespace bf = boost::filesystem;
 
 namespace renderer
@@ -216,7 +215,7 @@ void write_microfacet_directional_albedo_tables(
 {
     const bf::path dir(directory);
 
-    const GGXMDF ggx;
+    const GGXMDF ggx = {};
     const MDFAlbedoTable ggx_table(ggx);
     ggx_table.write_table_to_image(dir / "glossy_ggx_albedo_table.exr");
     ggx_table.write_table_to_cpp_array(

@@ -31,7 +31,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/datetime.h"
-#include "foundation/platform/types.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -39,6 +38,9 @@
 // Boost headers.
 #include "boost/date_time/gregorian/gregorian.hpp"
 #include "boost/date_time/posix_time/posix_time.hpp"
+
+// Standard headers.
+#include <cstdint>
 
 namespace foundation
 {
@@ -52,9 +54,9 @@ class APPLESEED_DLLSYMBOL BenchmarkDataPoint
         const boost::posix_time::ptime& date,
         const double                    ticks);
 
-    static uint64 ptime_to_microseconds(const boost::posix_time::ptime& time);
+    static std::uint64_t ptime_to_microseconds(const boost::posix_time::ptime& time);
 
-    static boost::posix_time::ptime microseconds_to_ptime(const uint64 microseconds);
+    static boost::posix_time::ptime microseconds_to_ptime(const std::uint64_t microseconds);
 
     boost::posix_time::ptime get_date() const;
 
@@ -65,8 +67,8 @@ class APPLESEED_DLLSYMBOL BenchmarkDataPoint
     bool operator<(const BenchmarkDataPoint& rhs) const;
 
   private:
-    uint64  m_date_microseconds;
-    double  m_ticks;
+    std::uint64_t   m_date_microseconds;
+    double          m_ticks;
 };
 
 
@@ -91,12 +93,12 @@ inline BenchmarkDataPoint::BenchmarkDataPoint(
 {
 }
 
-inline uint64 BenchmarkDataPoint::ptime_to_microseconds(const boost::posix_time::ptime& time)
+inline std::uint64_t BenchmarkDataPoint::ptime_to_microseconds(const boost::posix_time::ptime& time)
 {
     return (time - benchmark_impl::Epoch).total_microseconds();
 }
 
-inline boost::posix_time::ptime BenchmarkDataPoint::microseconds_to_ptime(const uint64 microseconds)
+inline boost::posix_time::ptime BenchmarkDataPoint::microseconds_to_ptime(const std::uint64_t microseconds)
 {
     return benchmark_impl::Epoch + microseconds_to_time_duration(microseconds);
 }

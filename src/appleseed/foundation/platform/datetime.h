@@ -30,14 +30,14 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/platform/types.h"
-#include "foundation/utility/string.h"
+#include "foundation/string/string.h"
 
 // Boost headers.
 #include "boost/date_time/gregorian/gregorian.hpp"
 #include "boost/date_time/posix_time/posix_time.hpp"
 
 // Standard headers.
+#include <cstdint>
 #include <iterator>
 #include <sstream>
 #include <string>
@@ -45,7 +45,7 @@
 namespace foundation
 {
 
-boost::posix_time::time_duration microseconds_to_time_duration(uint64 microseconds);
+boost::posix_time::time_duration microseconds_to_time_duration(std::uint64_t microseconds);
 
 template <> std::string to_string(const boost::posix_time::ptime& time);
 template <> std::string to_string(const boost::posix_time::time_duration& td);
@@ -56,17 +56,17 @@ template <> std::string to_string(const boost::gregorian::date& date);
 // Implementation.
 //
 
-inline boost::posix_time::time_duration microseconds_to_time_duration(uint64 microseconds)
+inline boost::posix_time::time_duration microseconds_to_time_duration(std::uint64_t microseconds)
 {
     using namespace boost::posix_time;
 
-    uint64 seconds = microseconds / 1000000;
+    std::uint64_t seconds = microseconds / 1000000;
     microseconds -= seconds * 1000000;
 
-    uint64 minutes = seconds / 60;
+    std::uint64_t minutes = seconds / 60;
     seconds -= minutes * 60;
 
-    uint64 hours = minutes / 60;
+    std::uint64_t hours = minutes / 60;
     minutes -= hours * 60;
 
     return

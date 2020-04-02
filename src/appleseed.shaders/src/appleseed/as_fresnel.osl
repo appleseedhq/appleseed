@@ -34,7 +34,7 @@ shader as_fresnel
 [[
     string help = "A viewer Fresnel term.",
     string icon = "asFresnel.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_fresnel.html#label-as-fresnel",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_fresnel.html",
 
     string as_node_name = "asFresnel",
     string as_category = "utility",
@@ -208,7 +208,7 @@ shader as_fresnel
             k = color(in_complex_kappa);
         }
 
-        float costheta = dot(normalize(N), -I);
+        float costheta = max(0.0, dot(normalize(N), -I));
 
         for (int i = 0; i < 3; ++i)
         {

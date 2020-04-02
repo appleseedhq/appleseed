@@ -40,6 +40,7 @@
 
 // Boost headers.
 #include "boost/filesystem.hpp"
+#include "boost/range/iterator_range.hpp"
 #include "boost/thread/locks.hpp"
 #include "boost/thread/mutex.hpp"
 
@@ -159,12 +160,12 @@ struct PluginStore::Impl
 
     void load_all_plugins_from_path_no_lock(bf::path path)
     {
-        path = safe_canonical(path);
+        path = safe_weakly_canonical(path);
 
         // Only consider directories.
         if (!bf::exists(path) || !bf::is_directory(path))
         {
-            RENDERER_LOG_WARNING("not scanning %s for plugins since it doesn't exist or it isn't a directory.",
+            RENDERER_LOG_DEBUG("not scanning %s for plugins since it doesn't exist or it isn't a directory.",
                 path.string().c_str());
             return;
         }
@@ -172,20 +173,18 @@ struct PluginStore::Impl
         RENDERER_LOG_INFO("scanning %s for plugins...", path.string().c_str());
 
         // Iterate over all files in this directory.
-        for (bf::directory_iterator i(path), e; i != e; ++i)
+        for (const bf::path& entry_path : boost::make_iterator_range(bf::directory_iterator(path)))
         {
-            const bf::path& filepath = i->path();
-
             // Only consider files.
-            if (!bf::is_regular_file(filepath))
+            if (!bf::is_regular_file(entry_path))
                 continue;
 
             // Only consider shared libraries.
-            if (lower_case(filepath.extension().string()) != SharedLibrary::get_default_file_extension())
+            if (lower_case(entry_path.extension().string()) != SharedLibrary::get_default_file_extension())
                 continue;
 
             // Load the plugin and invoke plugin handlers.
-            load_plugin_and_invoke_handlers_no_lock(filepath.string().c_str());
+            load_plugin_and_invoke_handlers_no_lock(entry_path.string().c_str());
         }
     }
 };

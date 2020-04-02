@@ -32,7 +32,7 @@
 #include <QObject>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class MouseCoordinatesTracker; } }
+namespace appleseed { namespace qtcommon { class MouseCoordinatesTracker; } }
 namespace renderer  { class Project; }
 class QEvent;
 class QWidget;
@@ -47,9 +47,9 @@ class PixelInspectorHandler
 
   public:
     PixelInspectorHandler(
-        QWidget*                            widget,
-        const MouseCoordinatesTracker&      mouse_tracker,
-        const renderer::Project&            project);
+        QWidget*                                    widget,
+        const qtcommon::MouseCoordinatesTracker&    mouse_tracker,
+        const renderer::Project&                    project);
 
     ~PixelInspectorHandler() override;
 
@@ -58,10 +58,10 @@ class PixelInspectorHandler
     void update_tooltip_visibility();
 
   private:
-    QWidget*                                m_widget;
-    const MouseCoordinatesTracker&          m_mouse_tracker;
-    const renderer::Project&                m_project;
-    bool                                    m_enabled;
+    QWidget*                                        m_widget;
+    const qtcommon::MouseCoordinatesTracker&        m_mouse_tracker;
+    const renderer::Project&                        m_project;
+    bool                                            m_enabled;
 
     bool eventFilter(QObject* object, QEvent* event) override;
 

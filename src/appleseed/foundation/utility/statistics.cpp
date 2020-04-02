@@ -165,7 +165,7 @@ Statistics::Entry::Entry(
 Statistics::IntegerEntry::IntegerEntry(
     const std::string&          name,
     const std::string&          unit,
-    const int64                 value)
+    const std::int64_t          value)
   : Entry(name, unit)
   , m_value(value)
 {
@@ -194,7 +194,7 @@ std::string Statistics::IntegerEntry::to_string() const
 Statistics::UnsignedIntegerEntry::UnsignedIntegerEntry(
     const std::string&          name,
     const std::string&          unit,
-    const uint64                value)
+    const std::uint64_t         value)
   : Entry(name, unit)
   , m_value(value)
 {

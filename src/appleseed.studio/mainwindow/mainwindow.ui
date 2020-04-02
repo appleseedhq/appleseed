@@ -24,7 +24,16 @@
   </property>
   <widget class="QWidget" name="main_window_contents">
    <layout class="QGridLayout" name="gridLayout_3">
-    <property name="margin">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
      <number>0</number>
     </property>
     <item row="0" column="0">
@@ -352,7 +361,7 @@
   </action>
   <action name="action_help_about">
    <property name="text">
-    <string>&amp;About...</string>
+    <string>&amp;About</string>
    </property>
   </action>
   <action name="action_diagnostics_override_shading_no_override">
@@ -367,21 +376,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+0</string>
-   </property>
-  </action>
-  <action name="action_navigation_inspect">
-   <property name="text">
-    <string>&amp;Inspect</string>
-   </property>
-  </action>
-  <action name="action_navigation_fly">
-   <property name="text">
-    <string>&amp;Fly</string>
-   </property>
-  </action>
-  <action name="action_navigation_freeze">
-   <property name="text">
-    <string>Free&amp;ze</string>
    </property>
   </action>
   <action name="action_rendering_start_final_rendering">
@@ -449,19 +443,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+S</string>
-   </property>
-  </action>
-  <action name="action_clear_open_recent_menu">
-   <property name="text">
-    <string>Clear Menu</string>
-   </property>
-  </action>
-  <action name="action_tools_watch_file_changes">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Watch File Changes</string>
    </property>
   </action>
   <action name="action_file_monitor_project">

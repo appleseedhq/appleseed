@@ -40,6 +40,8 @@
 #include "mainwindow/project/objectinstanceitem.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/rendering/renderingmanager.h"
+
+// appleseed.qtcommon headers.
 #include "utility/miscellaneous.h"
 
 // appleseed.renderer headers.
@@ -57,6 +59,7 @@
 #include <memory>
 #include <vector>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 

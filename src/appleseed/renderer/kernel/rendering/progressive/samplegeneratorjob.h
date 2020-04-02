@@ -33,11 +33,11 @@
 #include "renderer/global/globaltypes.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/types.h"
 #include "foundation/utility/job.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 // Forward declarations.
 namespace renderer  { class ISampleGenerator; }
@@ -51,15 +51,33 @@ class SampleGeneratorJob
   : public foundation::IJob
 {
   public:
-    // Number of samples per job as a function of the number of samples already rendered.
-    static foundation::uint64 samples_to_samples_per_job(
-        const foundation::uint64    samples);
+    struct SamplingProfile
+    {
+        // Duration of the interruptible phase.
+        // The higher this value, the more refined is the image but the lower is the interactivity.
+        std::uint64_t   m_samples_in_uninterruptible_phase = 32 * 32 * 2;
+
+        // Duration of the linear phase.
+        std::uint64_t   m_samples_in_linear_phase = 500 * 1000;
+
+        // Refinement rates of the image in the different phases.
+        // The higher the refinement rates, the lower the parallelism / CPU efficiency.
+        std::uint64_t   m_samples_per_job_in_linear_phase = 250;
+        std::uint64_t   m_max_samples_per_job_in_exponential_phase = 250 * 1000;
+
+        // Shape of the curve in the exponential phase.
+        double          m_curve_exponent_in_exponential_phase = 2.0;
+
+        // Return the number of samples to be rendered by a job as a function of the number of samples already rendered.
+        std::uint64_t get_job_sample_count(const std::uint64_t samples) const;
+    };
 
     // Constructor.
     SampleGeneratorJob(
         SampleAccumulationBuffer&   buffer,
         ISampleGenerator*           sample_generator,
         SampleCounter&              sample_counter,
+        const SamplingProfile&      sampling_profile,
         const Spectrum::Mode        spectrum_mode,
         foundation::JobQueue&       job_queue,
         const size_t                job_index,
@@ -72,6 +90,7 @@ class SampleGeneratorJob
     SampleAccumulationBuffer&       m_buffer;
     ISampleGenerator*               m_sample_generator;
     SampleCounter&                  m_sample_counter;
+    const SamplingProfile           m_sampling_profile;
     const Spectrum::Mode            m_spectrum_mode;
     foundation::JobQueue&           m_job_queue;
     const size_t                    m_job_index;

@@ -34,7 +34,7 @@
 #include <QPoint>
 
 // Forward declarations.
-namespace appleseed { namespace studio { class MouseCoordinatesTracker; } }
+namespace appleseed { namespace qtcommon { class MouseCoordinatesTracker; } }
 class QEvent;
 class QRect;
 class QRubberBand;
@@ -51,8 +51,8 @@ class RenderRegionHandler
   public:
     // Default mode is RectangleSelectionMode.
     RenderRegionHandler(
-        QWidget*                            widget,
-        const MouseCoordinatesTracker&      mouse_tracker);
+        QWidget*                                    widget,
+        const qtcommon::MouseCoordinatesTracker&    mouse_tracker);
 
     ~RenderRegionHandler() override;
 
@@ -71,12 +71,12 @@ class RenderRegionHandler
     void signal_render_region(const QRect& rect);
 
   private:
-    QWidget*                                m_widget;
-    const MouseCoordinatesTracker&          m_mouse_tracker;
-    bool                                    m_enabled;
-    Mode                                    m_mode;
-    QRubberBand*                            m_rubber_band;
-    QPoint                                  m_origin;
+    QWidget*                                        m_widget;
+    const qtcommon::MouseCoordinatesTracker&        m_mouse_tracker;
+    bool                                            m_enabled;
+    Mode                                            m_mode;
+    QRubberBand*                                    m_rubber_band;
+    QPoint                                          m_origin;
 
     bool eventFilter(QObject* object, QEvent* event) override;
 };

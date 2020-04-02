@@ -30,9 +30,9 @@
 #include "shaderquery.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/apistring.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/searchpaths.h"
 

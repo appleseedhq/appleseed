@@ -36,6 +36,9 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// Standard headers.
+#include <cstdint>
+
 namespace foundation
 {
 
@@ -43,7 +46,7 @@ namespace foundation
 // A unique identifier.
 //
 
-typedef uint64 UniqueID;
+typedef std::uint64_t UniqueID;
 
 
 //

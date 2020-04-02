@@ -36,16 +36,18 @@
 #include "mainwindow/project/objectitem.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/rendering/renderingmanager.h"
-#include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
+
+// appleseed.qtcommon headers.
+#include "utility/miscellaneous.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/transform.h"
-#include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/uid.h"
 
@@ -62,6 +64,7 @@
 #include <cassert>
 #include <cstddef>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 namespace bf = boost::filesystem;
@@ -143,7 +146,7 @@ void ObjectCollectionItem::slot_import_objects()
 void ObjectCollectionItem::import_objects(const QStringList& filepaths)
 {
     for (int i = 0; i < filepaths.size(); ++i)
-        insert_objects(QDir::toNativeSeparators(filepaths[i]).toStdString());
+        insert_objects(filepaths[i].toStdString());
 }
 
 void ObjectCollectionItem::insert_objects(const std::string& path) const

@@ -42,6 +42,7 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/image/regularspectrum.h"
@@ -52,7 +53,6 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
 #include <cassert>
@@ -491,6 +491,8 @@ DictionaryArray PreethamEnvironmentEDFFactory::get_input_metadata() const
     DictionaryArray metadata;
 
     add_common_sky_input_metadata(metadata);
+
+    add_common_input_metadata(metadata);
 
     return metadata;
 }

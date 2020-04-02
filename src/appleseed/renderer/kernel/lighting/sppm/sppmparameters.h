@@ -48,37 +48,40 @@ struct SPPMParameters
 
     const Spectrum::Mode        m_spectrum_mode;
     const SamplingContext::Mode m_sampling_mode;
+    const std::size_t           m_pass_count;
 
     const PhotonType            m_photon_type;
 
-    const Mode                  m_dl_mode;                              // direct lighting mode
-    const bool                  m_enable_ibl;                           // is image-based lighting enabled?
-    const bool                  m_enable_caustics;                      // are caustics enabled?
+    const Mode                  m_dl_mode;                                  // direct lighting mode
+    const bool                  m_enable_ibl;                               // is image-based lighting enabled?
+    const bool                  m_enable_caustics;                          // are caustics enabled?
 
-    const size_t                m_light_photon_count;                   // number of photons emitted from the lights
-    const size_t                m_env_photon_count;                     // number of photons emitted from the environment
-    const size_t                m_photon_packet_size;                   // number of photons per tracing job
+    const std::size_t           m_light_photon_count;                       // number of photons emitted from the lights
+    const std::size_t           m_env_photon_count;                         // number of photons emitted from the environment
+    const std::size_t           m_photon_packet_size;                       // number of photons per tracing job
 
-    const size_t                m_photon_tracing_max_bounces;           // maximum number of photon bounces, ~0 for unlimited
-    const size_t                m_photon_tracing_rr_min_path_length;    // minimum photon tracing path length before Russian Roulette kicks in, ~0 for unlimited
+    const bool                  m_enable_importons;                         // are importons enabled?
+    const float                 m_importon_lookup_radius_percents;          // importon lookup radius as a percentage of the scene diameter
+    const std::size_t           m_photon_tracing_max_bounces;               // maximum number of photon bounces, ~0 for unlimited
+    const std::size_t           m_photon_tracing_rr_min_path_length;        // minimum photon tracing path length before Russian Roulette kicks in, ~0 for unlimited
 
-    const size_t                m_path_tracing_max_bounces;             // maximum number of path bounces, ~0 for unlimited
-    const size_t                m_path_tracing_rr_min_path_length;      // minimum path tracing path length before Russian Roulette kicks in, ~0 for unlimited
-    const float                 m_path_tracing_max_ray_intensity;       // clamp each ray contribution with this value if it's higher than 0
-    const bool                  m_path_tracing_has_max_ray_intensity;   // tells if rays contribution should be clamped or not
+    const std::size_t           m_path_tracing_max_bounces;                 // maximum number of path bounces, ~0 for unlimited
+    const std::size_t           m_path_tracing_rr_min_path_length;          // minimum path tracing path length before Russian Roulette kicks in, ~0 for unlimited
+    const float                 m_path_tracing_max_ray_intensity;           // clamp each ray contribution with this value if it's higher than 0
+    const bool                  m_path_tracing_has_max_ray_intensity;       // tells if rays contribution should be clamped or not
 
     const float                 m_transparency_threshold;
-    const size_t                m_max_iterations;                       // maximum number of iteration during path tracing
+    const std::size_t           m_max_iterations;                           // maximum number of iteration during path tracing
 
-    const float                 m_initial_radius_percents;              // initial lookup radius as a percentage of the scene diameter
-    const float                 m_alpha;                                // radius shrinking control
-    const size_t                m_max_photons_per_estimate;             // maximum number of photons per density estimation
-    const float                 m_dl_light_sample_count;                // number of light samples used to estimate direct illumination in ray traced mode
-    const float                 m_dl_low_light_threshold;               // light contribution threshold to disable shadow rays
+    const float                 m_initial_photon_lookup_radius_percents;    // initial photon lookup radius as a percentage of the scene diameter
+    const float                 m_alpha;                                    // radius shrinking control
+    const std::size_t           m_max_photons_per_estimate;                 // maximum number of photons per density estimation
+    const float                 m_dl_light_sample_count;                    // number of light samples used to estimate direct illumination in ray traced mode
+    const float                 m_dl_low_light_threshold;                   // light contribution threshold to disable shadow rays
     float                       m_rcp_dl_light_sample_count;
 
-    const bool                  m_view_photons;                         // debug mode to visualize the photons
-    const float                 m_view_photons_radius;                  // lookup radius when visualizing photons
+    const bool                  m_view_photons;                             // debug mode to visualize the photons
+    const float                 m_view_photons_radius;                      // lookup radius when visualizing photons
 
     explicit SPPMParameters(const ParamArray& params);
 

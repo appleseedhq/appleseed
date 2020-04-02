@@ -39,12 +39,12 @@
 #include "renderer/modeling/scene/scene.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
 #include <cstddef>
@@ -60,7 +60,7 @@ Color3f compute_screen_space_velocity_color(
 {
     Color3f result;
 
-    const Camera* camera = shading_point.get_scene().get_active_camera();
+    const Camera* camera = shading_point.get_scene().get_render_data().m_active_camera;
     assert(camera);
 
     const Vector3d& p = shading_point.get_point();

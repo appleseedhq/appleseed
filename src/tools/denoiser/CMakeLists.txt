@@ -34,6 +34,12 @@
 set (sources
     main.cpp
 )
+if (WIN32)
+    set (sources
+        ${sources}
+        windowsapp.manifest
+    )
+endif ()
 list (APPEND denoiser_sources
     ${sources}
 )

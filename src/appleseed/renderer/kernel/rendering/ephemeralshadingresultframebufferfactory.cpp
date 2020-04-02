@@ -49,10 +49,15 @@ void EphemeralShadingResultFrameBufferFactory::release()
     delete this;
 }
 
+void EphemeralShadingResultFrameBufferFactory::clear()
+{
+    // Nothing to do.
+}
+
 ShadingResultFrameBuffer* EphemeralShadingResultFrameBufferFactory::create(
     const Frame&                frame,
-    const size_t                tile_x,
-    const size_t                tile_y,
+    const std::size_t           tile_x,
+    const std::size_t           tile_y,
     const AABB2u&               tile_bbox)
 {
     const Tile& tile = frame.image().tile(tile_x, tile_y);

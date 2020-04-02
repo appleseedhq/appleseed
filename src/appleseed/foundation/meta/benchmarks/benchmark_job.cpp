@@ -28,9 +28,9 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/log/log.h"
 #include "foundation/utility/benchmark.h"
 #include "foundation/utility/job.h"
-#include "foundation/utility/log.h"
 
 // Standard headers.
 #include <cstddef>

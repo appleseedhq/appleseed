@@ -29,8 +29,8 @@
 
 #pragma once
 
-// appleseed.studio headers.
-#include "mainwindow/rendering/renderingtimer.h"
+// appleseed.renderer headers.
+#include "renderer/api/project.h"
 
 // Qt headers.
 #include <QLabel>
@@ -51,19 +51,17 @@ class StatusBar
     Q_OBJECT
 
   public:
-    StatusBar();
-
     void set_text(const std::string& text);
 
-    void start_rendering_time_display(RenderingTimer* rendering_timer);
+    void start_rendering_time_display(renderer::RenderingTimer* rendering_timer);
 
     // It is safe to call this method even if rendering time display
     // hasn't started or has already been stopped.
     void stop_rendering_time_display();
 
   private:
-    RenderingTimer* m_rendering_timer;
-    int             m_timer_id;
+    renderer::RenderingTimer*   m_rendering_timer = nullptr;
+    int                         m_timer_id = -1;
 
     void timerEvent(QTimerEvent* event) override;
 };

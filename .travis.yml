@@ -26,15 +26,10 @@
 # THE SOFTWARE.
 #
 
-sudo: false
-
 language: cpp
 
-os:
-  - linux
-  - osx
-
 dist: xenial
+osx_image: xcode10
 
 addons:
   apt:
@@ -53,11 +48,9 @@ install:
   - if [ -n "$GCC_VERSION" ]; then export CC="${CC}-${GCC_VERSION}"; fi
   - if [ -n "$GCC_VERSION" ]; then export CXX="${CXX}-${GCC_VERSION}"; fi
 
-compiler:
-  - clang
-  - gcc
-
 matrix:
+  fast_finish: true
+
   include:
     - os: linux
       compiler: gcc
@@ -67,17 +60,8 @@ matrix:
       compiler: gcc
       env: GCC_VERSION=7
 
-  exclude:
     - os: osx
-      compiler: gcc
-
-    - os: linux
       compiler: clang
-
-    - os: linux
-      compiler: gcc
-
-  fast_finish: true
 
 script:
   - if [ $TRAVIS_OS_NAME == linux ]; then chmod +x ./scripts/travis/build-linux.sh ; ./scripts/travis/build-linux.sh ; fi

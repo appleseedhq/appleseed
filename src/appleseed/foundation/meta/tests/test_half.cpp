@@ -29,7 +29,6 @@
 // appleseed.foundation headers.
 #include "foundation/math/fp.h"
 #include "foundation/math/half.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/test.h"
 
 // OpenEXR headers.
@@ -39,6 +38,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 using namespace foundation;
 
@@ -48,7 +48,7 @@ TEST_SUITE(Foundation_Math_Half)
     {
         for (size_t i = 0x0000; i <= 0xFFFF; ++i)
         {
-            const Half expected_half = Half::from_bits(static_cast<uint16>(i));
+            const Half expected_half = Half::from_bits(static_cast<std::uint16_t>(i));
             const float expected_float = half_to_float(expected_half);
 
             const Half actual_half = float_to_half(expected_float);
@@ -66,7 +66,7 @@ TEST_SUITE(Foundation_Math_Half)
     {
         for (size_t i = 0x0000; i <= 0xFFFF; ++i)
         {
-            const Half expected_half = Half::from_bits(static_cast<uint16>(i));
+            const Half expected_half = Half::from_bits(static_cast<std::uint16_t>(i));
             const float expected_float = half_to_float(expected_half);
 
             const Half actual_half = float_to_half_alt(expected_float);
@@ -84,7 +84,7 @@ TEST_SUITE(Foundation_Math_Half)
     {
         for (size_t i = 0x0000; i <= 0xFFFF; ++i)
         {
-            const Half expected_half = Half::from_bits(static_cast<uint16>(i));
+            const Half expected_half = Half::from_bits(static_cast<std::uint16_t>(i));
             const float expected_float = half_to_float(expected_half);
 
             const Half actual_half = fast_float_to_half(expected_float);
@@ -101,11 +101,11 @@ TEST_SUITE(Foundation_Math_Half)
         {
             // Construct an Imath's half then convert it to a float.
             half imath_half;
-            imath_half.setBits(static_cast<uint16>(i));
+            imath_half.setBits(static_cast<std::uint16_t>(i));
             const float imath_float = static_cast<float>(imath_half);
 
             // Construct an appleseed's Half then convert it to a float using half_to_float().
-            const Half as_half = Half::from_bits(static_cast<uint16>(i));
+            const Half as_half = Half::from_bits(static_cast<std::uint16_t>(i));
             const float as_float = half_to_float(as_half);
 
             if (FP<float>::is_qnan(imath_float))
@@ -122,7 +122,7 @@ TEST_SUITE(Foundation_Math_Half)
         {
             // Generate a float via Imath's half.
             half x;
-            x.setBits(static_cast<uint16>(i));
+            x.setBits(static_cast<std::uint16_t>(i));
             const float f = x;
 
             const half imath_half(f);

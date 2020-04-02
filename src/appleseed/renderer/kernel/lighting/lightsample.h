@@ -33,12 +33,13 @@
 #include "renderer/kernel/lighting/lighttypes.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/hash.h"
-#include "foundation/utility/containers/hashtable.h"
+#include "foundation/containers/hashtable.h"
+#include "foundation/hash/hash.h"
 #include "foundation/utility/uid.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 #include <vector>
 
 // Forward declarations.
@@ -56,8 +57,8 @@ class EmittingShapeKey
 {
   public:
     foundation::UniqueID            m_assembly_instance_uid;
-    foundation::uint32              m_object_instance_index;
-    foundation::uint32              m_primitive_index;
+    std::uint32_t                   m_object_instance_index;
+    std::uint32_t                   m_primitive_index;
 
     EmittingShapeKey();
     EmittingShapeKey(
@@ -129,9 +130,9 @@ inline EmittingShapeKey::EmittingShapeKey(
     const foundation::UniqueID              assembly_instance_uid,
     const size_t                            object_instance_index,
     const size_t                            primitive_index)
-  : m_assembly_instance_uid(static_cast<foundation::uint32>(assembly_instance_uid))
-  , m_object_instance_index(static_cast<foundation::uint32>(object_instance_index))
-  , m_primitive_index(static_cast<foundation::uint32>(primitive_index))
+  : m_assembly_instance_uid(static_cast<std::uint32_t>(assembly_instance_uid))
+  , m_object_instance_index(static_cast<std::uint32_t>(object_instance_index))
+  , m_primitive_index(static_cast<std::uint32_t>(primitive_index))
 {
 }
 
@@ -152,7 +153,7 @@ inline size_t EmittingShapeKeyHasher::operator()(const EmittingShapeKey& key) co
 {
     return
         foundation::mix_uint32(
-            static_cast<foundation::uint32>(key.m_assembly_instance_uid),
+            static_cast<std::uint32_t>(key.m_assembly_instance_uid),
             key.m_object_instance_index,
             key.m_primitive_index);
 }

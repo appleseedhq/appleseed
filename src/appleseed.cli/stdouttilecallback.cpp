@@ -39,10 +39,10 @@
 #include "foundation/image/pixel.h"
 #include "foundation/image/tile.h"
 #include "foundation/platform/thread.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 #include <cstdio>
 
 // Platform headers.
@@ -82,7 +82,9 @@ namespace
         void on_tile_begin(
             const Frame*        frame,
             const size_t        tile_x,
-            const size_t        tile_y) override
+            const size_t        tile_y,
+            const size_t        thread_index,
+            const size_t        thread_count) override
         {
             boost::mutex::scoped_lock lock(m_mutex);
 
@@ -139,13 +141,13 @@ namespace
             // Build and write tiles header.
             // This header is sent only once and can contains AOVs and frame informations.
             const bool beauty_only = (m_export_options == StdOutTileCallbackFactory::TileOutputOptions::BeautyOnly);
-            const size_t chunk_size = 1 * sizeof(uint32);
+            const size_t chunk_size = 1 * sizeof(std::uint32_t);
             const size_t plane_count = beauty_only ? 1 : 1 + frame.aovs().size();
-            const uint32 header[] =
+            const std::uint32_t header[] =
             {
-                static_cast<uint32>(ChunkTypeTilesHeader),
-                static_cast<uint32>(chunk_size),
-                static_cast<uint32>(plane_count),
+                static_cast<std::uint32_t>(ChunkTypeTilesHeader),
+                static_cast<std::uint32_t>(chunk_size),
+                static_cast<std::uint32_t>(plane_count),
             };
             fwrite(header, sizeof(header), 1, stdout);
 
@@ -174,14 +176,14 @@ namespace
         {
             // Build and write AOV header.
             const size_t name_len = strlen(name);
-            const size_t chunk_size = 3 * sizeof(uint32) + name_len * sizeof(char);
-            const uint32 header[] =
+            const size_t chunk_size = 3 * sizeof(std::uint32_t) + name_len * sizeof(char);
+            const std::uint32_t header[] =
             {
-                static_cast<uint32>(ChunkTypePlaneDefinition),
-                static_cast<uint32>(chunk_size),
-                static_cast<uint32>(index),
-                static_cast<uint32>(name_len),
-                static_cast<uint32>(img.properties().m_channel_count)
+                static_cast<std::uint32_t>(ChunkTypePlaneDefinition),
+                static_cast<std::uint32_t>(chunk_size),
+                static_cast<std::uint32_t>(index),
+                static_cast<std::uint32_t>(name_len),
+                static_cast<std::uint32_t>(img.properties().m_channel_count)
             };
             fwrite(header, sizeof(header), 1, stdout);
             fwrite(name, sizeof(char), name_len, stdout);
@@ -204,15 +206,15 @@ namespace
 
             // Build and write highlight tile header.
             // This header is sent to allow highlighting tiles being rendered.
-            const size_t chunk_size = 4 * sizeof(uint32);
-            const uint32 header[] =
+            const size_t chunk_size = 4 * sizeof(std::uint32_t);
+            const std::uint32_t header[] =
             {
-                static_cast<uint32>(ChunkTypeTileHighlight),
-                static_cast<uint32>(chunk_size),
-                static_cast<uint32>(x),
-                static_cast<uint32>(y),
-                static_cast<uint32>(w),
-                static_cast<uint32>(h)
+                static_cast<std::uint32_t>(ChunkTypeTileHighlight),
+                static_cast<std::uint32_t>(chunk_size),
+                static_cast<std::uint32_t>(x),
+                static_cast<std::uint32_t>(y),
+                static_cast<std::uint32_t>(w),
+                static_cast<std::uint32_t>(h)
             };
             fwrite(header, sizeof(header), 1, stdout);
         }
@@ -267,17 +269,17 @@ namespace
 
             // Build and write tile header.
             // This header contains information about the tile AOV that will be written.
-            const size_t chunk_size = 6 * sizeof(uint32) + w * h * c * sizeof(float);
-            const uint32 header[] =
+            const size_t chunk_size = 6 * sizeof(std::uint32_t) + w * h * c * sizeof(float);
+            const std::uint32_t header[] =
             {
-                static_cast<uint32>(ChunkTypeTileData),
-                static_cast<uint32>(chunk_size),
-                static_cast<uint32>(plane_index),
-                static_cast<uint32>(x),
-                static_cast<uint32>(y),
-                static_cast<uint32>(w),
-                static_cast<uint32>(h),
-                static_cast<uint32>(c),
+                static_cast<std::uint32_t>(ChunkTypeTileData),
+                static_cast<std::uint32_t>(chunk_size),
+                static_cast<std::uint32_t>(plane_index),
+                static_cast<std::uint32_t>(x),
+                static_cast<std::uint32_t>(y),
+                static_cast<std::uint32_t>(w),
+                static_cast<std::uint32_t>(h),
+                static_cast<std::uint32_t>(c),
             };
             fwrite(header, sizeof(header), 1, stdout);
 

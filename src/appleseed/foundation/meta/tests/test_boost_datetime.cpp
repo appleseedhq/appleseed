@@ -29,7 +29,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/datetime.h"
-#include "foundation/utility/string.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/test.h"
 
 // Boost headers.

@@ -50,13 +50,13 @@
 namespace foundation {
 namespace knn {
 
-template <typename T, size_t N>
+template <typename T, std::size_t N>
 class Query
   : public NonCopyable
 {
   public:
     typedef T ValueType;
-    static const size_t Dimension = N;
+    static const std::size_t Dimension = N;
 
     typedef Vector<T, N> VectorType;
     typedef Tree<T, N> TreeType;
@@ -99,7 +99,7 @@ class Query
         const NodeType*     m_node;
         VectorType          m_dvec;
 
-        NodeEntry() {}
+        NodeEntry() = default;
 
         NodeEntry(
             const NodeType*     node,
@@ -109,11 +109,6 @@ class Query
           , m_node(node)
           , m_dvec(dvec)
         {
-        }
-
-        bool operator<(const NodeEntry& rhs) const
-        {
-            return m_dvec_square_norm > rhs.m_dvec_square_norm;
         }
     };
 
@@ -137,7 +132,7 @@ typedef Query<double, 3> Query3d;
 #define FOUNDATION_KNN_QUERY_STATS(x)
 #endif
 
-template <typename T, size_t N>
+template <typename T, std::size_t N>
 inline Query<T, N>::Query(
     const TreeType&         tree,
     AnswerType&             answer)
@@ -146,7 +141,7 @@ inline Query<T, N>::Query(
 {
 }
 
-template <typename T, size_t N>
+template <typename T, std::size_t N>
 inline void Query<T, N>::run(
     const VectorType&       query_point
 #ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
@@ -163,7 +158,7 @@ inline void Query<T, N>::run(
         );
 }
 
-template <typename T, size_t N>
+template <typename T, std::size_t N>
 inline void Query<T, N>::run(
     const VectorType&       query_point,
     const ValueType         query_max_square_distance
@@ -177,62 +172,67 @@ inline void Query<T, N>::run(
     m_answer.clear();
 
     FOUNDATION_KNN_QUERY_STATS(++stats.m_query_count);
-    FOUNDATION_KNN_QUERY_STATS(size_t fetched_node_count = 0);
-    FOUNDATION_KNN_QUERY_STATS(size_t visited_leaf_count = 0);
-    FOUNDATION_KNN_QUERY_STATS(size_t tested_point_count = 0);
+    FOUNDATION_KNN_QUERY_STATS(std::size_t fetched_node_count = 0);
+    FOUNDATION_KNN_QUERY_STATS(std::size_t visited_leaf_count = 0);
+    FOUNDATION_KNN_QUERY_STATS(std::size_t tested_point_count = 0);
 
     const VectorType* APPLESEED_RESTRICT points = &m_tree.m_points.front();
-    const NodeType* APPLESEED_RESTRICT nodes = &m_tree.m_nodes.front();
-    const size_t max_answer_size = m_answer.m_max_size;
+    const NodeType* APPLESEED_RESTRICT root_node = &m_tree.m_nodes.front();
+    const std::size_t max_answer_size = m_answer.m_max_size;
+    const NodeType* APPLESEED_RESTRICT node;
+
+    const std::size_t IdealLeafSize = 10;
 
     //
     // Step 1:
     //
     //   Find the deepest node of the tree (leaf node or interior node) that contains
     //   the query point and enough other points to compute a maximum search distance.
-    //   This descent is very fast since no nodes are pushed to a stack, and it will
-    //   allow us to compute an initial maximum search distance, which will speed up
-    //   the "real" search later on.
+    //   This descent is very fast since no node is pushed to the stack, and it allows
+    //   us to compute an initial maximum search distance which that speed up the real
+    //   search later on.
     //
 
-    const NodeType* APPLESEED_RESTRICT node = nodes;
+    // Start at the root.
+    node = root_node;
 
     FOUNDATION_KNN_QUERY_STATS(++fetched_node_count);
 
     // In any case, we must stop when we reach a leaf node.
     while (node->is_interior())
     {
-        const size_t split_dim = node->get_split_dim();
+        const std::size_t split_dim = node->get_split_dim();
         const ValueType split_abs = node->get_split_abs();
         const ValueType split_dist = query_point[split_dim] - split_abs;
 
-        const NodeType* APPLESEED_RESTRICT child_node = nodes + node->get_child_node_index();
-
+        // Figure out which child node to follow (the one that contains the query point).
         // Points on the split plane belong to the right child node.
-        if (split_dist >= ValueType(0.0))
-            ++child_node;
+        const std::size_t follow_index = split_dist >= ValueType(0.0) ? 1 : 0;
+        const NodeType* APPLESEED_RESTRICT follow_node = root_node + node->get_child_node_index() + follow_index;
 
         FOUNDATION_KNN_QUERY_STATS(++fetched_node_count);
 
-        // The child node contains too few points.
-        if (child_node->get_point_count() < max_answer_size)
+        // Stop at the parent node if the child node contains too few points.
+        if (follow_node->get_point_count() < max_answer_size)
         {
-            // Keep the child node anyway if its sibling is too far.
-            // Otherwise keep the current node.
-            if (square(split_dist) > query_max_square_distance)
-                node = child_node;
+            // That said, there is no point in choosing the current (parent) node over the
+            // child node since the sibling child node is too far anyway. We're better off
+            // choosing the child node even if it doesn't contain enough points.
+            // todo: it doesn't look like this has any positive (or negative) effect.
+            // if (square(split_dist) > query_max_square_distance)
+            //     node = follow_node;
             break;
         }
 
-        // The child node contains enough points.
-        node = child_node;
+        // Continue with the child node.
+        node = follow_node;
     }
 
     //
     // Step 2:
     //
     //   Collect all the points in this node (if it's a leaf node) or below this node
-    //   (if it's an interior node), and compute an initial maximum search distance.
+    //   (if it's an interior node) and compute an initial maximum search distance.
     //
 
     ValueType max_square_dist(0.0);
@@ -240,7 +240,7 @@ inline void Query<T, N>::run(
     {
         FOUNDATION_KNN_QUERY_STATS(++visited_leaf_count);
 
-        size_t point_index = node->get_point_index();
+        std::size_t point_index = node->get_point_index();
         const VectorType* APPLESEED_RESTRICT point_ptr = points + point_index;
         const VectorType* APPLESEED_RESTRICT point_end = point_ptr + node->get_point_count();
 
@@ -306,32 +306,35 @@ inline void Query<T, N>::run(
     //
 
 #define ORDER_NODE_ENTRIES(LhsIndex, RhsIndex)                                                  \
-    if (node_queue[node_queue_size - (LhsIndex)].m_dvec_square_norm <                           \
-        node_queue[node_queue_size - (RhsIndex)].m_dvec_square_norm)                            \
+    if (node_stack[node_stack_size - (LhsIndex)].m_dvec_square_norm <                           \
+        node_stack[node_stack_size - (RhsIndex)].m_dvec_square_norm)                            \
     {                                                                                           \
-        const NodeEntry tmp = node_queue[node_queue_size - (LhsIndex)];                         \
-        node_queue[node_queue_size - (LhsIndex)] = node_queue[node_queue_size - (RhsIndex)];    \
-        node_queue[node_queue_size - (RhsIndex)] = tmp;                                         \
+        const NodeEntry tmp = node_stack[node_stack_size - (LhsIndex)];                         \
+        node_stack[node_stack_size - (LhsIndex)] = node_stack[node_stack_size - (RhsIndex)];    \
+        node_stack[node_stack_size - (RhsIndex)] = tmp;                                         \
     }
 
-    const size_t NodeQueueSize = 128;
-    NodeEntry node_queue[NodeQueueSize];
-    size_t node_queue_size = 0;
+    static constexpr std::size_t NodeStackSize = 128;
+    NodeEntry node_stack[NodeStackSize];
+    std::size_t node_stack_size = 0;
 
-    node = nodes;
+    // Start at the root.
+    node = root_node;
+
+    FOUNDATION_KNN_QUERY_STATS(++fetched_node_count);
 
     while (node->is_interior())
     {
-        const size_t split_dim = node->get_split_dim();
+        const std::size_t split_dim = node->get_split_dim();
         const ValueType split_abs = node->get_split_abs();
-        const ValueType distance = query_point[split_dim] - split_abs;
+        const ValueType split_dist = query_point[split_dim] - split_abs;
 
-        // Figure out which node to follow and which node to push.
+        // Figure out which child node to follow (the one that contains the query point) and which one to push.
         // Points on the split plane belong to the right child node.
-        const size_t select = distance < ValueType(0.0) ? 1 : 0;
-        const NodeType* APPLESEED_RESTRICT left_child_node = nodes + node->get_child_node_index();
-        const NodeType* APPLESEED_RESTRICT follow_node = left_child_node + 1 - select;
-        const NodeType* APPLESEED_RESTRICT queue_node = left_child_node + select;
+        const std::size_t follow_index = split_dist >= ValueType(0.0) ? 1 : 0;
+        const NodeType* APPLESEED_RESTRICT left_child_node = root_node + node->get_child_node_index();
+        const NodeType* APPLESEED_RESTRICT follow_node = left_child_node + follow_index;
+        const NodeType* APPLESEED_RESTRICT stack_node = left_child_node + 1 - follow_index;
 
         FOUNDATION_KNN_QUERY_STATS(++fetched_node_count);
 
@@ -340,18 +343,18 @@ inline void Query<T, N>::run(
             break;
 
         // Push the node that we don't visit now to the node stack.
-        const ValueType square_distance = distance * distance;
-        if (square_distance < max_square_dist)
+        const ValueType square_split_dist = square(split_dist);
+        if (square_split_dist < max_square_dist)
         {
             VectorType dvec(0.0);
-            dvec[split_dim] = distance;
+            dvec[split_dim] = split_dist;
 
             // Push the node to the node stack.
-            assert(node_queue_size < NodeQueueSize);
-            node_queue[node_queue_size++] = NodeEntry(queue_node, dvec, square_distance);
+            assert(node_stack_size < NodeStackSize);
+            node_stack[node_stack_size++] = NodeEntry(stack_node, dvec, square_split_dist);
 
             // Order the top levels of the node stack.
-            if (node_queue_size >= 4)
+            if (node_stack_size >= 4)
             {
                 ORDER_NODE_ENTRIES(4, 3);
                 ORDER_NODE_ENTRIES(2, 1);
@@ -361,6 +364,7 @@ inline void Query<T, N>::run(
             }
         }
 
+        // Continue with the child node.
         node = follow_node;
     }
 
@@ -372,12 +376,11 @@ inline void Query<T, N>::run(
     //   as the closest node is farther than our current maximum search distance.
     //
 
-    const size_t IdealLeafSize = 20;
-
-    while (node_queue_size-- > 0)
+    while (node_stack_size > 0)
     {
-        const NodeEntry* top_entry = node_queue + node_queue_size;
+        --node_stack_size;
 
+        const NodeEntry* top_entry = node_stack + node_stack_size;
         if (top_entry->m_dvec_square_norm >= max_square_dist)
             continue;
 
@@ -389,16 +392,16 @@ inline void Query<T, N>::run(
 
         while (node->is_interior())
         {
-            const size_t split_dim = node->get_split_dim();
+            const std::size_t split_dim = node->get_split_dim();
             const ValueType split_abs = node->get_split_abs();
-            const ValueType distance = query_point[split_dim] - split_abs;
+            const ValueType split_dist = query_point[split_dim] - split_abs;
 
-            // Figure out which node to follow and which node to push.
+            // Figure out which child node to follow (the one that contains the query point) and which one to push.
             // Points on the split plane belong to the right child node.
-            const size_t select = distance < ValueType(0.0) ? 1 : 0;
-            const NodeType* APPLESEED_RESTRICT left_child_node = nodes + node->get_child_node_index();
-            const NodeType* APPLESEED_RESTRICT follow_node = left_child_node + 1 - select;
-            const NodeType* APPLESEED_RESTRICT queue_node = left_child_node + select;
+            const std::size_t follow_index = split_dist >= ValueType(0.0) ? 1 : 0;
+            const NodeType* APPLESEED_RESTRICT left_child_node = root_node + node->get_child_node_index();
+            const NodeType* APPLESEED_RESTRICT follow_node = left_child_node + follow_index;
+            const NodeType* APPLESEED_RESTRICT stack_node = left_child_node + 1 - follow_index;
 
             FOUNDATION_KNN_QUERY_STATS(++fetched_node_count);
 
@@ -407,17 +410,17 @@ inline void Query<T, N>::run(
                 break;
 
             // Push the node that we don't visit now to the node stack.
-            if (distance * distance < max_square_dist)
+            if (square(split_dist) < max_square_dist)
             {
                 VectorType dvec = parent_dvec;
-                dvec[split_dim] = distance;
+                dvec[split_dim] = split_dist;
 
                 // Push the node to the node stack.
-                assert(node_queue_size < NodeQueueSize);
-                node_queue[node_queue_size++] = NodeEntry(queue_node, dvec, square_norm(dvec));
+                assert(node_stack_size < NodeStackSize);
+                node_stack[node_stack_size++] = NodeEntry(stack_node, dvec, square_norm(dvec));
 
                 // Order the top levels of the node stack.
-                if (node_queue_size >= 4)
+                if (node_stack_size >= 4)
                 {
                     ORDER_NODE_ENTRIES(4, 3);
                     ORDER_NODE_ENTRIES(2, 1);
@@ -427,12 +430,13 @@ inline void Query<T, N>::run(
                 }
             }
 
+            // Continue with the child node.
             node = follow_node;
         }
 
         FOUNDATION_KNN_QUERY_STATS(++visited_leaf_count);
 
-        size_t point_index = node->get_point_index();
+        std::size_t point_index = node->get_point_index();
         const VectorType* APPLESEED_RESTRICT point_ptr = points + point_index;
         const VectorType* APPLESEED_RESTRICT point_end = point_ptr + node->get_point_count();
 
@@ -471,7 +475,7 @@ inline void Query<T, N>::run(
 
 #ifdef FOUNDATION_KNN_ENABLE_QUERY_STATS
 
-template <typename T, size_t N>
+template <typename T, std::size_t N>
 inline void Query<T, N>::run(
     const VectorType&       query_point) const
 {
@@ -479,7 +483,7 @@ inline void Query<T, N>::run(
     run(query_point, stats);
 }
 
-template <typename T, size_t N>
+template <typename T, std::size_t N>
 inline void Query<T, N>::run(
     const VectorType&       query_point,
     const ValueType         query_max_square_distance) const

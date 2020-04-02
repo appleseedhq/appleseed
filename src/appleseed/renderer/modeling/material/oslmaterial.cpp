@@ -41,8 +41,8 @@
 #include "renderer/modeling/shadergroup/shadergroup.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 using namespace foundation;
 
@@ -92,22 +92,37 @@ namespace
             return false;
         }
 
+        bool on_render_begin(
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnRenderBeginRecorder&  recorder,
+            IAbortSwitch*           abort_switch) override
+        {
+            if (!Material::on_render_begin(project, parent, recorder, abort_switch))
+                return false;
+
+            bool success = true;
+            success = success && m_osl_bsdf->on_render_begin(project, parent, recorder, abort_switch);
+            success = success && m_osl_bssrdf->on_render_begin(project, parent, recorder, abort_switch);
+            success = success && m_osl_edf->on_render_begin(project, parent, recorder, abort_switch);
+
+            return success;
+        }
+
         bool on_frame_begin(
             const Project&          project,
             const BaseGroup*        parent,
             OnFrameBeginRecorder&   recorder,
-            IAbortSwitch*           abort_switch = nullptr) override
+            IAbortSwitch*           abort_switch) override
         {
             if (!Material::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
 
-            if (!m_osl_bsdf->on_frame_begin(project, parent, recorder, abort_switch))
-                return false;
-
-            if (!m_osl_bssrdf->on_frame_begin(project, parent, recorder, abort_switch))
-                return false;
-
-            if (!m_osl_edf->on_frame_begin(project, parent, recorder, abort_switch))
+            bool success = true;
+            success = success && m_osl_bsdf->on_frame_begin(project, parent, recorder, abort_switch);
+            success = success && m_osl_bssrdf->on_frame_begin(project, parent, recorder, abort_switch);
+            success = success && m_osl_edf->on_frame_begin(project, parent, recorder, abort_switch);
+            if (!success)
                 return false;
 
             m_render_data.m_shader_group = get_uncached_osl_surface();

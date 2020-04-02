@@ -31,8 +31,8 @@
 #include "searchpaths.h"
 
 // appleseed.foundation headers.
+#include "foundation/string/string.h"
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/string.h"
 
 // Boost headers.
 #include "boost/filesystem/operations.hpp"

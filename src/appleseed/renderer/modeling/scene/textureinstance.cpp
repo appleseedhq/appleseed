@@ -34,15 +34,16 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/modeling/scene/basegroup.h"
 #include "renderer/modeling/texture/texture.h"
+#include "renderer/modeling/texture/tileptr.h"
 #include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/tile.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/makevector.h"
 
 // Standard headers.
@@ -130,7 +131,7 @@ void TextureInstance::release()
     delete this;
 }
 
-uint64 TextureInstance::compute_signature() const
+std::uint64_t TextureInstance::compute_signature() const
 {
     return
         m_texture
@@ -197,9 +198,10 @@ namespace
             {
                 for (size_t x = 0; x < props.m_tile_count_x; ++x)
                 {
-                    const Tile* tile = texture.load_tile(x, y);
-                    const bool has_transparency = has_transparent_pixels(*tile);
-                    texture.unload_tile(x, y, tile);
+                    const TilePtr tile_ptr = texture.load_tile(x, y);
+                    const bool has_transparency = has_transparent_pixels(*tile_ptr.get_tile());
+                    if (tile_ptr.has_ownership())
+                        delete tile_ptr.get_tile();
 
                     if (has_transparency)
                         return TextureAlphaModeAlphaChannel;

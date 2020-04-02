@@ -31,17 +31,17 @@
 #include "benchmarkaggregator.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/benchmark/benchmarkdatapoint.h"
 #include "foundation/utility/benchmark/benchmarkseries.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/string.h"
 #include "foundation/utility/xercesc.h"
 
 // Boost headers.
 #include "boost/date_time/posix_time/posix_time.hpp"
-#include "boost/filesystem/operations.hpp"
-#include "boost/filesystem/path.hpp"
+#include "boost/filesystem.hpp"
+#include "boost/range/iterator_range.hpp"
 #include "boost/regex.hpp"
 
 // Xerces-C++ headers.
@@ -67,10 +67,10 @@ namespace
 {
     Dictionary& push(Dictionary& dictionary, const std::string& name)
     {
-        if (!dictionary.dictionaries().exist(name))
-            dictionary.dictionaries().insert(name, Dictionary());
+        if (!dictionary.dictionaries().exist(name.c_str()))
+            dictionary.dictionaries().insert(name.c_str(), Dictionary());
 
-        return dictionary.dictionaries().get(name);
+        return dictionary.dictionaries().get(name.c_str());
     }
 
     const DOMNode* find_next_element_node(const DOMNode* node)
@@ -175,12 +175,12 @@ struct BenchmarkAggregator::Impl
 
                     UniqueID series_uid;
 
-                    if (cases_dic.strings().exist(name))
-                        series_uid = cases_dic.get<UniqueID>(name);
+                    if (cases_dic.strings().exist(name.c_str()))
+                        series_uid = cases_dic.get<UniqueID>(name.c_str());
                     else
                     {
                         series_uid = new_guid();
-                        cases_dic.insert(name, series_uid);
+                        cases_dic.insert(name.c_str(), series_uid);
                     }
 
                     scan_results(node, date, m_series[series_uid]);
@@ -301,12 +301,10 @@ void BenchmarkAggregator::scan_directory(const char* path)
     if (!bf::is_directory(path))
         return;
 
-    for (bf::directory_iterator i(path), e; i != e; ++i)
+    for (const bf::path& entry_path : boost::make_iterator_range(bf::directory_iterator(path)))
     {
-        if (!bf::is_regular_file(i->status()))
-            continue;
-
-        scan_file(i->path().string().c_str());
+        if (bf::is_regular_file(entry_path))
+            scan_file(entry_path.string().c_str());
     }
 }
 

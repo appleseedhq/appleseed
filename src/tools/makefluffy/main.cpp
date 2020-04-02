@@ -29,7 +29,7 @@
 // makefluffy headers.
 #include "commandlinehandler.h"
 
-// appleseed.shared headers.
+// appleseed.common headers.
 #include "application/application.h"
 #include "application/superlogger.h"
 
@@ -47,8 +47,8 @@
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/memory/autoreleaseptr.h"
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/filter.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/uid.h"
@@ -66,7 +66,7 @@
 #include <vector>
 
 using namespace appleseed::makefluffy;
-using namespace appleseed::shared;
+using namespace appleseed::common;
 using namespace foundation;
 using namespace renderer;
 namespace bf = boost::filesystem;

@@ -29,20 +29,13 @@
 // Interface header.
 #include "iesparser.h"
 
-// Boost headers.
-#include "boost/algorithm/string.hpp"
-#include "boost/algorithm/cxx11/any_of.hpp"
-#include "boost/lexical_cast.hpp"
-#include "boost/regex.hpp"
-
-// Standard headers.
-#include <string>
-#include <vector>
-
-// Foundation headers.
+// appleseed.foundation headers.
 #include "foundation/math/scalar.h"
 #include "foundation/utility/countof.h"
-#include "foundation/utility/foreach.h"
+
+// Boost headers.
+#include "boost/algorithm/cxx11/any_of.hpp"
+#include "boost/regex.hpp"
 
 namespace foundation
 {
@@ -70,9 +63,9 @@ namespace
     {
         try
         {
-            *value = boost::lexical_cast<ValueType>(str);
+            *value = from_string<ValueType>(str);
         }
-        catch (boost::bad_lexical_cast&)
+        catch (const ExceptionStringConversionError&)
         {
             return false;
         }
@@ -85,9 +78,9 @@ namespace
     {
         try
         {
-            *value = boost::lexical_cast<ValueType>(str);
+            *value = from_string<ValueType>(str);
         }
-        catch (boost::bad_lexical_cast&)
+        catch (const ExceptionStringConversionError&)
         {
             return false;
         }
@@ -153,13 +146,13 @@ namespace
         output->clear();
         output->reserve(tokens.size());
 
-        for (each< std::vector<std::string>> token = tokens; token; ++token)
+        for (const std::string& token : tokens)
         {
             try
             {
-                output->push_back(boost::lexical_cast<ValueType>(*token));
+                output->push_back(from_string<ValueType>(token));
             }
-            catch (boost::bad_lexical_cast&)
+            catch (const ExceptionStringConversionError&)
             {
                 return false;
             }
@@ -404,9 +397,9 @@ void IESParser::parse_tilt_data(std::istream& input_stream)
     int number_of_tilt_entries;
     try
     {
-        number_of_tilt_entries = boost::lexical_cast<int>(m_line);
+        number_of_tilt_entries = from_string<int>(m_line);
     }
-    catch (boost::bad_lexical_cast&)
+    catch (const ExceptionStringConversionError&)
     {
         throw ParsingException(
             "Wrong number of tilt entries: expected an integer value", m_line_counter);
@@ -573,13 +566,13 @@ void IESParser::parse_photometric_data(std::istream& input_stream)
 void IESParser::parse_candela_values(std::istream& input_stream)
 {
     m_candela_values.resize(m_number_of_horizontal_angles);
-    for (each<PhotometricGrid> i = m_candela_values; i; ++i)
+    for (std::vector<double>& i : m_candela_values)
     {
         try
         {
-            *i = parse_to_vector<double>(input_stream, m_number_of_vertical_angles);
+            i = parse_to_vector<double>(input_stream, m_number_of_vertical_angles);
         }
-        catch (boost::bad_lexical_cast&)
+        catch (const ExceptionStringConversionError&)
         {
             throw ParsingException(
                 "Error while parsing candela values: "
@@ -596,7 +589,7 @@ void IESParser::parse_angles(std::istream& input_stream)
     {
         m_vertical_angles = parse_to_vector<double>(input_stream, m_number_of_vertical_angles);
     }
-    catch (boost::bad_lexical_cast&)
+    catch (const ExceptionStringConversionError&)
     {
         throw ParsingException(
             "Error while parsing vertical angles: "
@@ -656,7 +649,7 @@ void IESParser::parse_angles(std::istream& input_stream)
     {
         m_horizontal_angles = parse_to_vector<double>(input_stream, m_number_of_horizontal_angles);
     }
-    catch (boost::bad_lexical_cast&)
+    catch (const ExceptionStringConversionError&)
     {
         throw ParsingException(
             "Error while parsing horizontal angles: "

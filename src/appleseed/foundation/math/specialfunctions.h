@@ -26,8 +26,7 @@
 // THE SOFTWARE.
 //
 
-#ifndef APPLESEED_FOUNDATION_MATH_SPECIAL_FUNCTIONS_H
-#define APPLESEED_FOUNDATION_MATH_SPECIAL_FUNCTIONS_H
+#pragma once
 
 namespace foundation
 {
@@ -42,6 +41,12 @@ float erf_inv(const float x);
 float gamma(const float x);
 float gamma_fraction(const float num, const float denom);
 
-}       // namespace foundation
+// Bessel function.
+float bessel(const float x);
+float log_bessel(const float x);
 
-#endif  // !APPLESEED_FOUNDATION_MATH_SPECIAL_FUNCTIONS_H
+// Logistic function.
+float logistic(const float location, const float scale);
+float logistic_cdf(const float location, const float scale);
+
+}       // namespace foundation

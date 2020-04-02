@@ -45,10 +45,10 @@
 #include "renderer/api/texture.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/transform.h"
-#include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/memory/autoreleaseptr.h"
 
 // Qt headers.
 #include <QObject>
@@ -188,7 +188,7 @@ inline renderer::EnvironmentEDF* ProjectBuilder::edit_entity(
     const foundation::Dictionary&       values) const
 {
     foundation::auto_release_ptr<renderer::EnvironmentEDF> new_entity(create_entity<renderer::EnvironmentEDF>(values));
-    renderer::EnvironmentEDF* new_entity_ptr = new_entity.get(); 
+    renderer::EnvironmentEDF* new_entity_ptr = new_entity.get();
 
     copy_transform_sequence(old_entity, new_entity_ptr);
 
@@ -232,7 +232,7 @@ inline renderer::ObjectInstance* ProjectBuilder::edit_entity(
     const std::string name = get_entity_name(values);
 
     foundation::Dictionary clean_values(values);
-    clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
+    clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter.c_str());
 
     foundation::auto_release_ptr<renderer::ObjectInstance> new_entity(
         renderer::ObjectInstanceFactory::create(
@@ -263,7 +263,7 @@ inline renderer::TextureInstance* ProjectBuilder::edit_entity(
     const std::string name = get_entity_name(values);
 
     foundation::Dictionary clean_values(values);
-    clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
+    clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter.c_str());
 
     foundation::auto_release_ptr<renderer::TextureInstance> new_entity(
         renderer::TextureInstanceFactory::create(
@@ -309,11 +309,11 @@ foundation::auto_release_ptr<Entity> ProjectBuilder::create_entity(
     typedef MultiModelEntityEditorFormFactory<FactoryRegistrarType> EntityEditorFormFactoryType;
 
     const std::string name = get_entity_name(values);
-    const std::string model = values.get<std::string>(EntityEditorFormFactoryType::ModelParameter);
+    const std::string model = values.get<std::string>(EntityEditorFormFactoryType::ModelParameter.c_str());
 
     foundation::Dictionary clean_values(values);
-    clean_values.strings().remove(EntityEditorFormFactoryType::NameParameter);
-    clean_values.strings().remove(EntityEditorFormFactoryType::ModelParameter);
+    clean_values.strings().remove(EntityEditorFormFactoryType::NameParameter.c_str());
+    clean_values.strings().remove(EntityEditorFormFactoryType::ModelParameter.c_str());
 
     const FactoryRegistrarType& factory_registrar = m_project.get_factory_registrar<Entity>();
     const FactoryType* factory = factory_registrar.lookup(model.c_str());
@@ -329,7 +329,7 @@ inline foundation::auto_release_ptr<renderer::ColorEntity> ProjectBuilder::creat
     const std::string name = get_entity_name(values);
 
     foundation::Dictionary clean_values(values);
-    clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
+    clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter.c_str());
 
     return renderer::ColorEntityFactory::create(name.c_str(), clean_values);
 }
@@ -343,11 +343,11 @@ inline foundation::auto_release_ptr<renderer::Texture> ProjectBuilder::create_en
     typedef MultiModelEntityEditorFormFactory<FactoryRegistrarType> EntityEditorFormFactoryType;
 
     const std::string name = get_entity_name(values);
-    const std::string model = values.get<std::string>(EntityEditorFormFactoryType::ModelParameter);
+    const std::string model = values.get<std::string>(EntityEditorFormFactoryType::ModelParameter.c_str());
 
     foundation::Dictionary clean_values(values);
-    clean_values.strings().remove(EntityEditorFormFactoryType::NameParameter);
-    clean_values.strings().remove(EntityEditorFormFactoryType::ModelParameter);
+    clean_values.strings().remove(EntityEditorFormFactoryType::NameParameter.c_str());
+    clean_values.strings().remove(EntityEditorFormFactoryType::ModelParameter.c_str());
 
     const FactoryRegistrarType& factory_registrar = m_project.get_factory_registrar<renderer::Texture>();
     const FactoryType* factory = factory_registrar.lookup(model.c_str());
@@ -363,7 +363,7 @@ inline foundation::auto_release_ptr<renderer::Environment> ProjectBuilder::creat
     const std::string name = get_entity_name(values);
 
     foundation::Dictionary clean_values(values);
-    clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
+    clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter.c_str());
 
     return renderer::EnvironmentFactory::create(name.c_str(), clean_values);
 }
@@ -375,7 +375,7 @@ inline foundation::auto_release_ptr<renderer::ShaderGroup> ProjectBuilder::creat
     const std::string name = get_entity_name(values);
 
     foundation::Dictionary clean_values(values);
-    clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter);
+    clean_values.strings().remove(EntityEditorFormFactoryBase::NameParameter.c_str());
 
     return renderer::ShaderGroupFactory::create(name.c_str(), clean_values);
 }

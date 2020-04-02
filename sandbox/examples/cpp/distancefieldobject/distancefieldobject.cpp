@@ -37,7 +37,8 @@
 #include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/hash.h"
+#include "foundation/containers/dictionary.h"
+#include "foundation/hash/hash.h"
 #include "foundation/math/intersection/rayaabb.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/rng/distribution.h"
@@ -45,12 +46,11 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/casts.h"
+#include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/searchpaths.h"
-#include "foundation/utility/string.h"
 
 // appleseed.main headers.
 #include "main/dllvisibility.h"
@@ -102,11 +102,11 @@ namespace
         }
 
         // Access materials slots.
-        size_t get_material_slot_count() const override
+        std::size_t get_material_slot_count() const override
         {
             return 1;
         }
-        const char* get_material_slot(const size_t index) const override
+        const char* get_material_slot(const std::size_t index) const override
         {
             return "default";
         }
@@ -219,15 +219,15 @@ namespace
 
         static float prim_mandelbulb(const asf::Vector3f& p)
         {
-            const float Power = 8.0f;
-            const float Bailout = 4.0f;
-            const size_t Iterations = 20;
+            constexpr float Power = 8.0f;
+            constexpr float Bailout = 4.0f;
+            constexpr std::size_t Iterations = 20;
 
             asf::Vector3f z = p;
             float dr = 1.0f;
             float r = 0.0f;
 
-            for (size_t i = 0; i < Iterations; ++i)
+            for (std::size_t i = 0; i < Iterations; ++i)
             {
                 r = asf::norm(z);
                 if (r > Bailout)
@@ -239,12 +239,12 @@ namespace
                 dr = std::pow(r, Power - 1.0f) * Power * dr + 1.0f;
 
                 // Scale and rotate the point.
-                float zr = std::pow(r, Power);
+                const float zr = std::pow(r, Power);
                 theta *= Power;
                 phi *= Power;
 
-                // convert back to cartesian coordinates
-                z = zr * asf::Vector3f(sin(theta)*cos(phi), sin(phi)*sin(theta), cos(theta));
+                // Convert back to cartesian coordinates.
+                z = zr * asf::Vector3f(std::sin(theta) * std::cos(phi), std::sin(phi) * std::sin(theta), std::cos(theta));
                 z += p;
             }
 
@@ -288,7 +288,7 @@ namespace
 
             auto t = std::max(clipped_ray.m_tmin, Epsilon);
 
-            for (size_t i = 0; t < clipped_ray.m_tmax; ++i)
+            for (std::size_t i = 0; t < clipped_ray.m_tmax; ++i)
             {
                 const auto p = clipped_ray.point_at(t);
                 const auto d = compute_distance(p);

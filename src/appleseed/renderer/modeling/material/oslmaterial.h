@@ -32,8 +32,8 @@
 #include "renderer/modeling/material/imaterialfactory.h"
 
 // appleseed.foundation headers.
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"

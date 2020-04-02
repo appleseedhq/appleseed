@@ -31,19 +31,20 @@
 #include "loggerbenchmarklistener.h"
 
 // appleseed.foundation headers.
+#include "foundation/log/log.h"
 #include "foundation/platform/types.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/benchmark/benchmarklistenerbase.h"
 #include "foundation/utility/benchmark/benchmarksuite.h"
 #include "foundation/utility/benchmark/ibenchmarkcase.h"
 #include "foundation/utility/benchmark/timingresult.h"
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/log.h"
-#include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <ios>
 #include <string>
 #include <vector>
@@ -196,7 +197,7 @@ namespace
                 "  %s: %s %s %s",
                 benchmark_case.get_name(),
                 timing_result.m_ticks >= 1000.0
-                    ? pretty_uint(static_cast<uint64>(timing_result.m_ticks)).c_str()
+                    ? pretty_uint(static_cast<std::uint64_t>(timing_result.m_ticks)).c_str()
                     : pretty_scalar(timing_result.m_ticks).c_str(),
                 plural(timing_result.m_ticks, "tick").c_str(),
                 callrate_string.c_str());

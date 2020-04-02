@@ -108,6 +108,12 @@ set (main_sources
     main/commandlinehandler.h
     main/main.cpp
 )
+if (WIN32)
+    set (main_sources
+        ${main_sources}
+        main/windowsapp.manifest
+    )
+endif ()
 list (APPEND appleseed.studio_sources
     ${main_sources}
 )
@@ -184,8 +190,6 @@ set (mainwindow_project_sources
     mainwindow/project/projectexplorer.h
     mainwindow/project/projectitem.cpp
     mainwindow/project/projectitem.h
-    mainwindow/project/projectmanager.cpp
-    mainwindow/project/projectmanager.h
     mainwindow/project/sceneitem.cpp
     mainwindow/project/sceneitem.h
     mainwindow/project/searchpathswindow.cpp
@@ -268,7 +272,6 @@ set (mainwindow_rendering_sources
     mainwindow/rendering/renderclipboardhandler.h
     mainwindow/rendering/renderingmanager.cpp
     mainwindow/rendering/renderingmanager.h
-    mainwindow/rendering/renderingtimer.h
     mainwindow/rendering/renderregionhandler.cpp
     mainwindow/rendering/renderregionhandler.h
     mainwindow/rendering/rendertab.cpp
@@ -297,15 +300,11 @@ set (mainwindow_sources
     mainwindow/falsecolorswindow.cpp
     mainwindow/falsecolorswindow.h
     mainwindow/falsecolorswindow.ui
-    mainwindow/logwidget.cpp
-    mainwindow/logwidget.h
     mainwindow/mainwindow.cpp
     mainwindow/mainwindow.h
     mainwindow/mainwindow.ui
     mainwindow/minimizebutton.cpp
     mainwindow/minimizebutton.h
-    mainwindow/qtlogtarget.cpp
-    mainwindow/qtlogtarget.h
     mainwindow/renderingsettingswindow.cpp
     mainwindow/renderingsettingswindow.h
     mainwindow/renderingsettingswindow.ui
@@ -317,17 +316,6 @@ list (APPEND appleseed.studio_sources
 )
 source_group ("mainwindow" FILES
     ${mainwindow_sources}
-)
-
-set (meta_tests_sources
-    meta/tests/test_interop.cpp
-    meta/tests/test_projectmanager.cpp
-)
-list (APPEND appleseed.studio_sources
-    ${meta_tests_sources}
-)
-source_group ("meta\\tests" FILES
-    ${meta_tests_sources}
 )
 
 set (python_sources
@@ -355,28 +343,9 @@ source_group ("python\\studio" FILES
 )
 
 set (utility_sources
-    utility/chartwidget.cpp
-    utility/chartwidget.h
-    utility/doubleslider.cpp
-    utility/doubleslider.h
-    utility/foldablepanelwidget.cpp
-    utility/foldablepanelwidget.h
     utility/inputwidgetproxies.cpp
     utility/inputwidgetproxies.h
-    utility/interop.h
-    utility/miscellaneous.cpp
-    utility/miscellaneous.h
-    utility/mousecoordinatestracker.cpp
-    utility/mousecoordinatestracker.h
-    utility/mousewheelfocuseventfilter.cpp
-    utility/mousewheelfocuseventfilter.h
-    utility/scrollareapanhandler.cpp
-    utility/scrollareapanhandler.h
     utility/settingskeys.h
-    utility/treewidget.cpp
-    utility/treewidget.h
-    utility/widgetzoomhandler.cpp
-    utility/widgetzoomhandler.h
     utility/windowbase.cpp
     utility/windowbase.h
 )
@@ -503,7 +472,8 @@ endif ()
 
 include_directories (
     .
-    ../appleseed.shared
+    ../appleseed.common
+    ../appleseed.qtcommon
     ${OPENCOLORIO_INCLUDE_DIRS}
     ${PYTHON_INCLUDE_DIRS}
 )
@@ -527,7 +497,8 @@ link_against_ocio (appleseed.studio)
 
 target_link_libraries (appleseed.studio
     appleseed
-    appleseed.shared
+    appleseed.common
+    appleseed.qtcommon
     ${Boost_LIBRARIES}
     Qt5::Core
     Qt5::Concurrent

@@ -35,7 +35,7 @@
 #include "renderer/kernel/aov/aovaccumulator.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/string.h"
+#include "foundation/string/string.h"
 
 // Standard headers.
 #include <string>
@@ -103,7 +103,7 @@ void PixelRendererBase::on_pixel_end(
         if (m_invalid_pixel_count <= MaxWarningsPerThread)
         {
             RENDERER_LOG_WARNING(
-                "%s sample%s at pixel (%d, %d) had nan, negative or infinite components and %s ignored.",
+                "%s sample%s at pixel (%d, %d) had NaN, negative or infinite components and %s ignored.",
                 pretty_uint(m_invalid_sample_count).c_str(),
                 m_invalid_sample_count > 1 ? "s" : "",
                 pi.x, pi.y,

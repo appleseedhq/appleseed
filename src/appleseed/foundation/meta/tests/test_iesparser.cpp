@@ -27,17 +27,15 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/string/string.h"
 #include "foundation/utility/iesparser.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
-#include <iostream>
 #include <fstream>
+#include <iostream>
 #include <sstream>
-
-// Boost headers.
-#include "boost/lexical_cast.hpp"
 
 using namespace foundation;
 
@@ -250,13 +248,13 @@ TEST_SUITE(Foundation_Utility_Iesparser)
         {
             std::istringstream input_stream("0 1 2.0 3 4");
             parser.reset(input_stream);
-            EXPECT_EXCEPTION(boost::bad_lexical_cast,
+            EXPECT_EXCEPTION(ExceptionStringConversionError,
                 parser.parse_to_vector<int>(input_stream, 5));
         }
         {
             std::istringstream input_stream("0.0\n1.0\n+ 3.0\n4.0");
             parser.reset(input_stream);
-            EXPECT_EXCEPTION(boost::bad_lexical_cast,
+            EXPECT_EXCEPTION(ExceptionStringConversionError,
                 parser.parse_to_vector<double>(input_stream, 4));
         }
     }

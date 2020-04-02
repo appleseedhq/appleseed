@@ -32,7 +32,9 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/atomic.h"
-#include "foundation/platform/types.h"
+
+// Standard headers.
+#include <cstdint>
 
 namespace renderer
 {
@@ -45,17 +47,17 @@ class SampleCounter
   : public foundation::NonCopyable
 {
   public:
-    explicit SampleCounter(const foundation::uint64 max_sample_count);
+    explicit SampleCounter(const std::uint64_t max_sample_count);
 
     void clear();
 
-    foundation::uint64 read() const;
+    std::uint64_t read() const;
 
-    foundation::uint64 reserve(const foundation::uint64 n);
+    std::uint64_t reserve(const std::uint64_t n);
 
   private:
-    const foundation::uint64            m_max_sample_count;
-    boost::atomic<foundation::uint64>   m_sample_count;
+    const std::uint64_t             m_max_sample_count;
+    boost::atomic<std::uint64_t>    m_sample_count;
 };
 
 }   // namespace renderer

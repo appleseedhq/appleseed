@@ -56,13 +56,13 @@
 #include "foundation/image/image.h"
 #include "foundation/image/regularspectrum.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
-#include "foundation/utility/arena.h"
+#include "foundation/memory/arena.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/statistics.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 #include <limits>
 #include <string>
 
@@ -170,14 +170,14 @@ namespace
         {
 #ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCE
 
-            const uint64 last_texture_cache_hit_count = m_texture_cache.get_hit_count();
-            const uint64 last_texture_cache_miss_count = m_texture_cache.get_miss_count();
+            const std::uint64_t last_texture_cache_hit_count = m_texture_cache.get_hit_count();
+            const std::uint64_t last_texture_cache_miss_count = m_texture_cache.get_miss_count();
 
 #endif
 
             // Construct a primary ray.
             ShadingRay primary_ray;
-            m_scene.get_active_camera()->spawn_ray(
+            m_scene.get_render_data().m_active_camera->spawn_ray(
                 sampling_context,
                 Dual2d(image_point, m_image_point_dx, m_image_point_dy),
                 primary_ray);
@@ -272,8 +272,8 @@ namespace
 
 #ifdef DEBUG_DISPLAY_TEXTURE_CACHE_PERFORMANCE
 
-            const uint64 delta_hit_count = m_texture_cache.get_hit_count() - last_texture_cache_hit_count;
-            const uint64 delta_miss_count = m_texture_cache.get_miss_count() - last_texture_cache_miss_count;
+            const std::uint64_t delta_hit_count = m_texture_cache.get_hit_count() - last_texture_cache_hit_count;
+            const std::uint64_t delta_miss_count = m_texture_cache.get_miss_count() - last_texture_cache_miss_count;
 
             if (delta_hit_count + delta_miss_count == 0)
             {

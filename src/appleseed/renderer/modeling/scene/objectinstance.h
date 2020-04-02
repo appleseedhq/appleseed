@@ -36,10 +36,9 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/api/apiarray.h"
-#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
 
 // appleseed.main headers.
@@ -48,6 +47,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
@@ -91,7 +91,7 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     void release() override;
 
     // Compute and return the unique signature of this instance.
-    foundation::uint64 compute_signature() const override;
+    std::uint64_t compute_signature() const override;
 
     // Return the name of the instantiated object.
     const char* get_object_name() const;
@@ -99,30 +99,15 @@ class APPLESEED_DLLSYMBOL ObjectInstance
     // Return the transform of this instance.
     const foundation::Transformd& get_transform() const;
 
-    // Return true if the transform of this instance swaps handedness.
-    bool transform_swaps_handedness() const;
-
     // Return true if the normals of this instance must be flipped.
     bool must_flip_normals() const;
 
     // Return or set visibility flags of this instance.
-    foundation::uint32 get_vis_flags() const;
-    void set_vis_flags(const foundation::uint32 flags);
+    std::uint32_t get_vis_flags() const;
+    void set_vis_flags(const std::uint32_t flags);
 
     // Return the medium priority of this instance.
-    foundation::int8 get_medium_priority() const;
-
-    enum RayBiasMethod
-    {
-        RayBiasMethodNone,                  // no ray bias for this object instance
-        RayBiasMethodNormal,                // shift the ray's origin along the surface's geometric normal
-        RayBiasMethodIncomingDirection,     // shift the ray's origin along the incoming ray's direction
-        RayBiasMethodOutgoingDirection      // shift the ray's origin along the outgoing ray's direction
-    };
-
-    // Return the ray bias settings. The bias distance is expressed in world space.
-    RayBiasMethod get_ray_bias_method() const;
-    double get_ray_bias_distance() const;
+    std::int8_t get_medium_priority() const;
 
     // Check if this object instance is in the same SSS set as another.
     bool is_in_same_sss_set(const ObjectInstance& other) const;
@@ -193,17 +178,34 @@ class APPLESEED_DLLSYMBOL ObjectInstance
         OnFrameBeginRecorder&       recorder,
         foundation::IAbortSwitch*   abort_switch = nullptr) override;
 
+    void on_frame_end(
+        const Project&              project,
+        const BaseGroup*            parent) override;
+
+    struct APPLESEED_DLLSYMBOL RenderData
+    {
+        bool    m_transform_swaps_handedness;       // true if the transform of this instance swaps handedness
+        float   m_shadow_terminator_freq_mult;      // see renderer/utility/shadowterminator.h
+
+        RenderData();
+
+        void clear();
+    };
+
+    // Return render-time data of this entity.
+    // Render-time data are available between on_frame_begin() and on_frame_end() calls.
+    const RenderData& get_render_data() const;
+
   private:
     friend class ObjectInstanceFactory;
 
     struct Impl;
     Impl* impl;
 
-    foundation::uint32  m_vis_flags;
-    foundation::int8    m_medium_priority;
-    RayBiasMethod       m_ray_bias_method;
-    double              m_ray_bias_distance;
-    bool                m_transform_swaps_handedness;
+    RenderData          m_render_data;
+
+    std::uint32_t       m_vis_flags;
+    std::int8_t         m_medium_priority;
     bool                m_flip_normals;
 
     Object*             m_object;
@@ -249,39 +251,25 @@ class APPLESEED_DLLSYMBOL ObjectInstanceFactory
 // ObjectInstance class implementation.
 //
 
-inline bool ObjectInstance::transform_swaps_handedness() const
-{
-    return m_transform_swaps_handedness;
-}
 
 inline bool ObjectInstance::must_flip_normals() const
 {
     return m_flip_normals;
 }
 
-inline foundation::uint32 ObjectInstance::get_vis_flags() const
+inline std::uint32_t ObjectInstance::get_vis_flags() const
 {
     return m_vis_flags;
 }
 
-inline void ObjectInstance::set_vis_flags(const foundation::uint32 flags)
+inline void ObjectInstance::set_vis_flags(const std::uint32_t flags)
 {
     m_vis_flags = flags;
 }
 
-inline foundation::int8 ObjectInstance::get_medium_priority() const
+inline std::int8_t ObjectInstance::get_medium_priority() const
 {
     return m_medium_priority;
-}
-
-inline ObjectInstance::RayBiasMethod ObjectInstance::get_ray_bias_method() const
-{
-    return m_ray_bias_method;
-}
-
-inline double ObjectInstance::get_ray_bias_distance() const
-{
-    return m_ray_bias_distance;
 }
 
 inline Object& ObjectInstance::get_object() const
@@ -298,6 +286,11 @@ inline const MaterialArray& ObjectInstance::get_front_materials() const
 inline const MaterialArray& ObjectInstance::get_back_materials() const
 {
     return m_back_materials;
+}
+
+inline const ObjectInstance::RenderData& ObjectInstance::get_render_data() const
+{
+    return m_render_data;
 }
 
 }   // namespace renderer

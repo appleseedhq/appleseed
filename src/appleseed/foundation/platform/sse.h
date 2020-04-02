@@ -33,8 +33,8 @@
     #error SSE support not enabled.
 #endif
 
-// appleseed.foundation headers.
-#include "foundation/platform/types.h"
+// Standard headers.
+#include <cstdint>
 
 //
 // x86 intrinsics headers.
@@ -57,21 +57,21 @@ struct M128Fields
 {
     union
     {
-        __m128      m128;
-        __m128d     m128d;
-        __m128i     m128i;
+        __m128          m128;
+        __m128d         m128d;
+        __m128i         m128i;
 
-        float       f32[4];
-        double      f64[2];
+        float           f32[4];
+        double          f64[2];
 
-        int8        i8[16];
-        int16       i16[8];
-        int32       i32[4];
-        int64       i64[2];
-        uint8       u8[16];
-        uint16      u16[8];
-        uint32      u32[4];
-        uint64      u64[2];
+        std::int8_t     i8[16];
+        std::int16_t    i16[8];
+        std::int32_t    i32[4];
+        std::int64_t    i64[2];
+        std::uint8_t    u8[16];
+        std::uint16_t   u16[8];
+        std::uint32_t   u32[4];
+        std::uint64_t   u64[2];
     };
 };
 

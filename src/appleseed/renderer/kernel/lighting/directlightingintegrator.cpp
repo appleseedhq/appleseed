@@ -312,8 +312,10 @@ void DirectLightingIntegrator::take_single_material_sample(
             const float material_prob_area = sample_probability * cos_on / static_cast<float>(square_distance);
 
             // Compute the probability density wrt. surface area measure of the light sample.
-            const float light_prob_area = m_light_sampler.evaluate_pdf(
-                light_shading_point, m_material_sampler.get_shading_point());
+            const float light_prob_area =
+                m_light_sampler.evaluate_pdf(
+                    light_shading_point,
+                    m_material_sampler.get_shading_point());
 
             // Apply the weighting function.
             weight *=
@@ -445,6 +447,7 @@ void DirectLightingIntegrator::add_emitting_shape_sample_contribution(
         -Vector3f(incoming),
         edf_value);
 
+    // Compute geometric term.
     const float g = static_cast<float>(cos_on * rcp_sample_square_distance);
 
     // Apply MIS weighting.
@@ -506,14 +509,18 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
 
     // Compute the transmission factor between the light sample and the shading point.
     Spectrum transmission;
-    m_material_sampler.trace_between(
-        m_shading_context,
-        emission_position,
-        transmission);
+    if (light->get_flags() & Light::CastShadows)
+    {
+        m_material_sampler.trace_between(
+            m_shading_context,
+            emission_position,
+            transmission);
 
-    // Discard occluded samples.
-    if (is_zero(transmission))
-        return;
+        // Discard occluded samples.
+        if (is_zero(transmission))
+            return;
+    }
+    else transmission.set(1.0f);
 
     // Evaluate the BSDF (or volume).
     DirectShadingComponents material_value;

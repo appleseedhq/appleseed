@@ -31,7 +31,7 @@
 #include "commandlinehandler.h"
 #include "stdouttilecallback.h"
 
-// appleseed.shared headers.
+// appleseed.common headers.
 #include "application/application.h"
 #include "application/progresstilecallback.h"
 #include "application/superlogger.h"
@@ -48,15 +48,15 @@
 #include "renderer/api/utility.h"
 
 // appleseed.foundation headers.
+#include "foundation/log/log.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/platform/console.h"
 #include "foundation/platform/debugger.h"
 #include "foundation/platform/thread.h"
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/benchmark.h"
 #include "foundation/utility/filter.h"
-#include "foundation/utility/log.h"
 #include "foundation/utility/searchpaths.h"
-#include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 
 // appleseed.main headers.
@@ -67,13 +67,15 @@
 #include "boost/filesystem/path.hpp"
 
 // Standard headers.
+#include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <cstdlib>
 #include <memory>
 #include <string>
 
 using namespace appleseed::cli;
-using namespace appleseed::shared;
+using namespace appleseed::common;
 using namespace foundation;
 using namespace renderer;
 namespace bf = boost::filesystem;
@@ -264,7 +266,7 @@ namespace
         {
             params.insert_path(
                 "uniform_pixel_renderer.samples",
-                g_cl.m_samples.values()[1]);
+                g_cl.m_samples.value());
         }
 
         if (g_cl.m_passes.is_set())
@@ -295,7 +297,7 @@ namespace
             const std::string value = s.substr(equal_pos + 1);
 
             // Insert the parameter.
-            params.insert_path(path, value);
+            params.insert_path(path.c_str(), value);
         }
     }
 
@@ -327,7 +329,7 @@ namespace
 
         if (g_cl.m_noise_seed.is_set())
         {
-            const uint32 noise_seed = static_cast<uint32>(g_cl.m_noise_seed.value());
+            const std::uint32_t noise_seed = static_cast<std::uint32_t>(g_cl.m_noise_seed.value());
             new_params.insert("noise_seed", noise_seed);
         }
 
@@ -475,7 +477,7 @@ namespace
 #endif
 
         LOG_DEBUG(g_logger, "executing '%s'", command.c_str());
-        std::system(command.c_str());   // needs std:: qualifier
+        std::system(command.c_str());
     }
 
 #endif
@@ -597,7 +599,7 @@ namespace
         LOG_INFO(
             g_logger,
             "rendering finished in %s.",
-            pretty_time(rendering_result.m_render_time, 3).c_str());
+            pretty_time(project->get_rendering_timer().get_seconds(), 3).c_str());
 
         bool success = true;
 
@@ -704,13 +706,13 @@ namespace
             auto result = renderer.render(renderer_controller);
             if (result.m_status != MasterRenderer::RenderingResult::Succeeded)
                 return false;
-            total_time_seconds = result.m_render_time;
+            total_time_seconds = project->get_rendering_timer().get_seconds();
 
             // Render a second time.
             result = renderer.render(renderer_controller);
             if (result.m_status != MasterRenderer::RenderingResult::Succeeded)
                 return false;
-            render_time_seconds = result.m_render_time;
+            render_time_seconds = project->get_rendering_timer().get_seconds();
         }
 
         // Write the frame to disk.

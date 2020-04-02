@@ -32,11 +32,11 @@
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <limits>
 
 namespace foundation
@@ -68,11 +68,11 @@ namespace aabbtriangle_impl
     // (or on the face itself, since the boundary of the bounding box is
     // considered to belong to the bounding box), or to 0 otherwise.
     template <typename T>
-    inline uint8 classify_vertex(
+    inline std::uint8_t classify_vertex(
         const AABB<T, 3>&   bbox,
         const Vector<T, 3>& v)
     {
-        uint8 mask = 0;
+        std::uint8_t mask = 0;
         if (v[0] >= bbox.min[0]) mask |= 1u << 0;
         if (v[1] >= bbox.min[1]) mask |= 1u << 1;
         if (v[2] >= bbox.min[2]) mask |= 1u << 2;
@@ -89,7 +89,7 @@ namespace aabbtriangle_impl
         const AABB<T, 3>&   bbox,
         const Vector<T, 3>& s0,
         const Vector<T, 3>& s1,
-        const uint8         mask)
+        const std::uint8_t  mask)
     {
         // If the segment [s0, s1] does not straddle the plane of the
         // bounding box face along the specified dimension, it cannot
@@ -302,13 +302,13 @@ bool intersect(
 
     // If any of the three vertices is inside the bounding box, then
     // the triangle and the bounding box intersect.
-    const uint8 mask0 = aabbtriangle_impl::classify_vertex(bbox, v0);
+    const std::uint8_t mask0 = aabbtriangle_impl::classify_vertex(bbox, v0);
     if (mask0 == 0x3F)
         return true;
-    const uint8 mask1 = aabbtriangle_impl::classify_vertex(bbox, v1);
+    const std::uint8_t mask1 = aabbtriangle_impl::classify_vertex(bbox, v1);
     if (mask1 == 0x3F)
         return true;
-    const uint8 mask2 = aabbtriangle_impl::classify_vertex(bbox, v2);
+    const std::uint8_t mask2 = aabbtriangle_impl::classify_vertex(bbox, v2);
     if (mask2 == 0x3F)
         return true;
 
@@ -319,7 +319,7 @@ bool intersect(
 
     // If any edge of the triangle intersects any face of the bounding box,
     // then the triangle and the bounding box intersect.
-    const uint8 mask01 = mask0 ^ mask1;
+    const std::uint8_t mask01 = mask0 ^ mask1;
     if (aabbtriangle_impl::check_edge_face<T, 0, 0, 0>(bbox, v0, v1, mask01) ||
         aabbtriangle_impl::check_edge_face<T, 0, 1, 1>(bbox, v0, v1, mask01) ||
         aabbtriangle_impl::check_edge_face<T, 0, 2, 2>(bbox, v0, v1, mask01) ||
@@ -327,7 +327,7 @@ bool intersect(
         aabbtriangle_impl::check_edge_face<T, 1, 1, 4>(bbox, v0, v1, mask01) ||
         aabbtriangle_impl::check_edge_face<T, 1, 2, 5>(bbox, v0, v1, mask01))
         return true;
-    const uint8 mask02 = mask0 ^ mask2;
+    const std::uint8_t mask02 = mask0 ^ mask2;
     if (aabbtriangle_impl::check_edge_face<T, 0, 0, 0>(bbox, v0, v2, mask02) ||
         aabbtriangle_impl::check_edge_face<T, 0, 1, 1>(bbox, v0, v2, mask02) ||
         aabbtriangle_impl::check_edge_face<T, 0, 2, 2>(bbox, v0, v2, mask02) ||
@@ -335,7 +335,7 @@ bool intersect(
         aabbtriangle_impl::check_edge_face<T, 1, 1, 4>(bbox, v0, v2, mask02) ||
         aabbtriangle_impl::check_edge_face<T, 1, 2, 5>(bbox, v0, v2, mask02))
         return true;
-    const uint8 mask12 = mask1 ^ mask2;
+    const std::uint8_t mask12 = mask1 ^ mask2;
     if (aabbtriangle_impl::check_edge_face<T, 0, 0, 0>(bbox, v1, v2, mask12) ||
         aabbtriangle_impl::check_edge_face<T, 0, 1, 1>(bbox, v1, v2, mask12) ||
         aabbtriangle_impl::check_edge_face<T, 0, 2, 2>(bbox, v1, v2, mask12) ||

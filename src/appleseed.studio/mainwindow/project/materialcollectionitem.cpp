@@ -41,10 +41,12 @@
 #include "mainwindow/project/materialitem.h"
 #include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/project/tools.h"
-#include "utility/miscellaneous.h"
 #include "utility/settingskeys.h"
 
-// appleseed.shared headers.
+// appleseed.qtcommon headers.
+#include "utility/miscellaneous.h"
+
+// appleseed.common headers.
 #include "application/application.h"
 
 // appleseed.renderer headers.
@@ -68,7 +70,8 @@
 #include <string>
 #include <utility>
 
-using namespace appleseed::shared;
+using namespace appleseed::common;
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 namespace bf = boost::filesystem;
@@ -168,8 +171,6 @@ void MaterialCollectionItem::slot_import_disney()
 
     if (!filepath.isEmpty())
     {
-        filepath = QDir::toNativeSeparators(filepath);
-
         const bf::path root_path(Application::get_root_path());
         const bf::path schema_file_path = root_path / "schemas" / "settings.xsd";
 

@@ -29,11 +29,11 @@
 // Interface header.
 #include "shadingray.h"
 
-// Standard headers.
-#include <cstddef>
-
 // appleseed.renderer headers.
 #include "renderer/modeling/material/material.h"
+
+// Standard headers.
+#include <cstddef>
 
 using namespace foundation;
 
@@ -44,11 +44,11 @@ void ShadingRay::copy_media_from(const ShadingRay& source)
 {
     assert(m_medium_count == 0);
 
-    const uint8 n = source.m_medium_count;
+    const std::uint8_t n = source.m_medium_count;
 
     m_medium_count = n;
 
-    for (uint8 i = 0; i < n; ++i)
+    for (std::uint8_t i = 0; i < n; ++i)
         m_media[i] = source.m_media[i];
 }
 
@@ -60,9 +60,9 @@ void ShadingRay::add_medium(
 {
     assert(m_medium_count == 0);
 
-    const int8 medium_priority = object_instance->get_medium_priority();
-    const uint8 n = source.m_medium_count;
-    uint8 i = 0, j = 0;
+    const std::int8_t medium_priority = object_instance->get_medium_priority();
+    const std::uint8_t n = source.m_medium_count;
+    std::uint8_t i = 0, j = 0;
 
     while (i < n && source.m_media[i].m_object_instance->get_medium_priority() >= medium_priority)
         m_media[j++] = source.m_media[i++];
@@ -87,9 +87,9 @@ void ShadingRay::remove_medium(
 {
     assert(m_medium_count == 0);
 
-    uint8 j = 0;
+    std::uint8_t j = 0;
 
-    for (uint8 i = 0, e = source.m_medium_count; i < e; ++i)
+    for (std::uint8_t i = 0, e = source.m_medium_count; i < e; ++i)
     {
         if (source.m_media[i].m_object_instance != object_instance)
             m_media[j++] = source.m_media[i];

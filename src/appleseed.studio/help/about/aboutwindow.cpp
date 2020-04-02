@@ -37,9 +37,9 @@
 #include "foundation/core/appleseed.h"
 #include "foundation/core/thirdparties.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/apistringpair.h"
-#include "foundation/utility/string.h"
 
 // Qt headers.
 #include <QKeySequence>

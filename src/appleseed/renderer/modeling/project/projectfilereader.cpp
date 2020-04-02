@@ -70,14 +70,14 @@
 #include "renderer/modeling/postprocessingstage/ipostprocessingstagefactory.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstagefactoryregistrar.h"
+#include "renderer/modeling/project-builtin/cornellboxproject.h"
+#include "renderer/modeling/project-builtin/defaultproject.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/configurationcontainer.h"
 #include "renderer/modeling/project/eventcounters.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/project/projectfileupdater.h"
 #include "renderer/modeling/project/projectformatrevision.h"
-#include "renderer/modeling/project-builtin/cornellboxproject.h"
-#include "renderer/modeling/project-builtin/defaultproject.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyfactoryregistrar.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
@@ -101,26 +101,26 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
+#include "foundation/log/log.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
+#include "foundation/memory/memory.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/types.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/apiarray.h"
 #include "foundation/utility/api/apistring.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/iterators.h"
-#include "foundation/utility/log.h"
-#include "foundation/utility/memory.h"
 #include "foundation/utility/otherwise.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/stopwatch.h"
-#include "foundation/utility/string.h"
 #include "foundation/utility/xercesc.h"
 #include "foundation/utility/zip.h"
 
@@ -556,7 +556,7 @@ namespace
                 ParameterElementHandler* param_handler =
                     static_cast<ParameterElementHandler*>(handler);
                 m_params.insert_path(
-                    param_handler->get_name(),
+                    param_handler->get_name().c_str(),
                     param_handler->get_value());
             }
             break;
@@ -566,7 +566,7 @@ namespace
                 ParametersElementHandler* params_handler =
                     static_cast<ParametersElementHandler*>(handler);
                 m_params.dictionaries().insert(
-                    params_handler->get_name(),
+                    params_handler->get_name().c_str(),
                     params_handler->get_parameters());
             }
             break;
@@ -1719,13 +1719,13 @@ namespace
                     const std::string& material_name = assign_mat_handler->get_material_name();
 
                     if (material_side == "front")
-                        m_front_material_mappings.insert(material_slot, material_name);
+                        m_front_material_mappings.insert(material_slot.c_str(), material_name);
                     else if (material_side == "back")
-                        m_back_material_mappings.insert(material_slot, material_name);
+                        m_back_material_mappings.insert(material_slot.c_str(), material_name);
                     else if (material_side == "both")
                     {
-                        m_front_material_mappings.insert(material_slot, material_name);
-                        m_back_material_mappings.insert(material_slot, material_name);
+                        m_front_material_mappings.insert(material_slot.c_str(), material_name);
+                        m_back_material_mappings.insert(material_slot.c_str(), material_name);
                     }
                 }
                 break;

@@ -38,15 +38,15 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/matrix.h"
-#include "foundation/math/triangulator.h"
-#include "foundation/math/transform.h"
 #include "foundation/math/scalar.h"
+#include "foundation/math/transform.h"
+#include "foundation/math/triangulator.h"
 #include "foundation/math/vector.h"
+#include "foundation/memory/autoreleaseptr.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/otherwise.h"
-#include "foundation/utility/string.h"
 
 // appleseed.main headers.
 #include "main/dllvisibility.h"
@@ -56,10 +56,10 @@
 #include <Alembic/AbcGeom/All.h>
 
 // Standard headers.
+#include <algorithm>
 #include <cstddef>
 #include <string>
 #include <vector>
-#include <algorithm>
 
 namespace
 {

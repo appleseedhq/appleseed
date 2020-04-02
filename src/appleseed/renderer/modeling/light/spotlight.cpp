@@ -39,6 +39,7 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/distance.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/sampling/mappings.h"
@@ -46,7 +47,6 @@
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
 #include <cmath>
@@ -81,7 +81,6 @@ namespace
             m_inputs.declare("intensity", InputFormatSpectralIlluminance);
             m_inputs.declare("intensity_multiplier", InputFormatFloat, "1.0");
             m_inputs.declare("exposure", InputFormatFloat, "0.0");
-            m_inputs.declare("exposure_multiplier", InputFormatFloat, "1.0");
         }
 
         void release() override
@@ -94,20 +93,20 @@ namespace
             return Model;
         }
 
-        bool on_frame_begin(
+        bool on_render_begin(
             const Project&          project,
             const BaseGroup*        parent,
-            OnFrameBeginRecorder&   recorder,
+            OnRenderBeginRecorder&  recorder,
             IAbortSwitch*           abort_switch) override
         {
-            if (!Light::on_frame_begin(project, parent, recorder, abort_switch))
+            if (!Light::on_render_begin(project, parent, recorder, abort_switch))
                 return false;
 
-            m_intensity_source = m_inputs.source("intensity");
-            m_intensity_multiplier_source = m_inputs.source("intensity_multiplier");
-            m_exposure_source = m_inputs.source("exposure");
-            m_exposure_multiplier_source = m_inputs.source("exposure_multiplier");
-            check_non_zero_emission(m_intensity_source, m_intensity_multiplier_source);
+            check_non_zero_emission("intensity", "intensity_multiplier");
+
+            InputValues values;
+            get_inputs().evaluate_uniforms(&values);
+            m_exposure_multiplier = std::pow(2.0f, values.m_exposure);
 
             const double inner_half_angle = deg_to_rad(m_params.get_required<double>("inner_angle", 20.0) / 2.0);
             const double outer_half_angle = deg_to_rad(m_params.get_required<double>("outer_angle", 30.0) / 2.0);
@@ -178,14 +177,9 @@ namespace
             Spectrum    m_intensity;                // emitted intensity in W.sr^-1
             float       m_intensity_multiplier;     // emitted intensity multiplier
             float       m_exposure;                 // emitted intensity multiplier in f-stops
-            float       m_exposure_multiplier;      // emitted intensity exposure multiplier
         };
 
-        const Source*   m_intensity_source;
-        const Source*   m_intensity_multiplier_source;
-        const Source*   m_exposure_source;
-        const Source*   m_exposure_multiplier_source;
-
+        float           m_exposure_multiplier;
         double          m_cos_inner_half_angle;
         double          m_cos_outer_half_angle;
         double          m_rcp_screen_half_size;
@@ -219,9 +213,8 @@ namespace
 
             InputValues values;
             m_inputs.evaluate(shading_context.get_texture_cache(), SourceInputs(uv), &values);
-
             radiance = values.m_intensity;
-            radiance *= values.m_intensity_multiplier * std::pow(2.0f, values.m_exposure * values.m_exposure_multiplier);
+            radiance *= values.m_intensity_multiplier * m_exposure_multiplier;
 
             if (cos_theta < m_cos_inner_half_angle)
             {
@@ -289,29 +282,18 @@ DictionaryArray SpotLightFactory::get_input_metadata() const
         Dictionary()
             .insert("name", "exposure")
             .insert("label", "Exposure")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary().insert("texture_instance", "Texture Instances"))
-            .insert("use", "optional")
-            .insert("default", "0.0")
-            .insert("help", "Light exposure"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "exposure_multiplier")
-            .insert("label", "Exposure Multiplier")
             .insert("type", "numeric")
             .insert("min",
                 Dictionary()
-                    .insert("value", "-64.0")
+                    .insert("value", "-8.0")
                     .insert("type", "soft"))
             .insert("max",
                 Dictionary()
-                    .insert("value", "64.0")
+                    .insert("value", "8.0")
                     .insert("type", "soft"))
-            .insert("default", "1.0")
             .insert("use", "optional")
-            .insert("help", "Spotlight exposure multiplier"));
+            .insert("default", "0.0")
+            .insert("help", "Light exposure"));
 
     metadata.push_back(
         Dictionary()
@@ -362,7 +344,7 @@ DictionaryArray SpotLightFactory::get_input_metadata() const
                     .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "0.0")
-            .insert("help", "Rotate the spot light around its axis; only useful when using the light intensity is textured (gobo)"));
+            .insert("help", "Rotate the spot light around the emission axis; only useful when the light intensity is textured (gobo)"));
 
     add_common_input_metadata(metadata);
 

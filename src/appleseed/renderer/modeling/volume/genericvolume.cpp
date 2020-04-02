@@ -30,11 +30,11 @@
 #include "genericvolume.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/fp.h"
 #include "foundation/math/phasefunction.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/makevector.h"
 
 // appleseed.renderer headers.

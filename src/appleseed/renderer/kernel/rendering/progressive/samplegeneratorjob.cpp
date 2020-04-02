@@ -41,6 +41,7 @@
 #include "foundation/image/image.h"
 #include "foundation/math/scalar.h"
 #include "foundation/platform/defaulttimers.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/stopwatch.h"
 
 // Standard headers.
@@ -52,12 +53,35 @@ using namespace foundation;
 namespace renderer
 {
 
+//
+// SampleGeneratorJob::SamplingProfile class implementation.
+//
+
+std::uint64_t SampleGeneratorJob::SamplingProfile::get_job_sample_count(const std::uint64_t samples) const
+{
+    if (samples < m_samples_in_linear_phase)
+        return m_samples_per_job_in_linear_phase;
+
+    const double x = (samples - m_samples_in_linear_phase) * 0.001;
+    const std::uint64_t y =
+        m_samples_per_job_in_linear_phase +
+        truncate<std::uint64_t>(std::pow(x, m_curve_exponent_in_exponential_phase));
+
+    return std::min(y, m_max_samples_per_job_in_exponential_phase);
+}
+
+
+//
+// SampleGeneratorJob class implementation.
+//
+
 //#define PRINT_DETAILED_PROGRESS
 
 SampleGeneratorJob::SampleGeneratorJob(
     SampleAccumulationBuffer&   buffer,
     ISampleGenerator*           sample_generator,
     SampleCounter&              sample_counter,
+    const SamplingProfile&      sampling_profile,
     const Spectrum::Mode        spectrum_mode,
     JobQueue&                   job_queue,
     const size_t                job_index,
@@ -65,45 +89,12 @@ SampleGeneratorJob::SampleGeneratorJob(
   : m_buffer(buffer)
   , m_sample_generator(sample_generator)
   , m_sample_counter(sample_counter)
+  , m_sampling_profile(sampling_profile)
   , m_spectrum_mode(spectrum_mode)
   , m_job_queue(job_queue)
   , m_job_index(job_index)
   , m_abort_switch(abort_switch)
 {
-}
-
-namespace
-{
-    // Duration of the interruptible phase.
-    // The higher this value, the more refined is the image but the lower is the interactivity.
-    const uint64 SamplesInUninterruptiblePhase = 32 * 32 * 2;
-
-    // Duration of the linear phase.
-    const uint64 SamplesInLinearPhase = 500 * 1000;
-
-    // Refinement rates of the image in the different phases.
-    // The higher the refinement rates, the lower the parallelism / CPU efficiency.
-    const uint64 SamplesPerJobInLinearPhase = 250;
-    const uint64 MaxSamplesPerJobInExponentialPhase = 250 * 1000;
-
-    // Shape of the curve in the exponential phase.
-    const double CurveExponentInExponentialPhase = 2.0;
-
-    // Constraints.
-    static_assert(
-        SamplesInUninterruptiblePhase >= SamplesPerJobInLinearPhase,
-        "In renderer::SampleGeneratorJob, the uninterruptible phase must have at least as many samples as the linear phase");
-}
-
-uint64 SampleGeneratorJob::samples_to_samples_per_job(const uint64 samples)
-{
-    if (samples < SamplesInLinearPhase)
-        return SamplesPerJobInLinearPhase;
-
-    const double x = (samples - SamplesInLinearPhase) * 0.001;
-    const uint64 y = SamplesPerJobInLinearPhase + truncate<uint64>(std::pow(x, CurveExponentInExponentialPhase));
-
-    return std::min(y, MaxSamplesPerJobInExponentialPhase);
 }
 
 void SampleGeneratorJob::execute(const size_t thread_index)
@@ -119,12 +110,11 @@ void SampleGeneratorJob::execute(const size_t thread_index)
 
     // We will base the number of samples to be rendered by this job on
     // the number of samples already reserved (not necessarily rendered).
-    const uint64 current_sample_count = m_sample_counter.read();
+    const std::uint64_t current_sample_count = m_sample_counter.read();
 
     // Reserve a number of samples to be rendered by this job.
-    const uint64 acquired_sample_count =
-        m_sample_counter.reserve(
-            samples_to_samples_per_job(current_sample_count));
+    const std::uint64_t job_sample_count = m_sampling_profile.get_job_sample_count(current_sample_count);
+    const std::uint64_t acquired_sample_count = m_sample_counter.reserve(job_sample_count);
 
     // Terminate this job is there are no more samples to render.
     if (acquired_sample_count == 0)
@@ -133,7 +123,7 @@ void SampleGeneratorJob::execute(const size_t thread_index)
     // The first phase is uninterruptible in order to always have something to
     // show during navigation. todo: the renderer freezes if it cannot generate
     // samples during this phase; fix.
-    const bool abortable = current_sample_count > SamplesInUninterruptiblePhase;
+    const bool abortable = current_sample_count > m_sampling_profile.m_samples_in_uninterruptible_phase;
 
     // Render the samples and store them into the accumulation buffer.
     if (abortable)

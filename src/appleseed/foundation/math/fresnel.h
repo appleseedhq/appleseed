@@ -29,7 +29,7 @@
 
 #pragma once
 
-// Foundation headers.
+// appleseed.foundation headers.
 #include "foundation/math/scalar.h"
 
 // Standard headers.
@@ -145,6 +145,23 @@ void normal_reflectance_dielectric(
 //   [3] Memo on Fresnel equations.
 //       https://seblagarde.wordpress.com/2013/04/29/memo-on-fresnel-equations
 //
+//   [4] Fresnel Equations Considered Harmful.
+//       http://renderwonk.com/publications/mam2019/naty_mam2019.pdf
+//
+
+template <typename SpectrumType, typename T>
+void fresnel_reflectance_lazanyi_schlick(
+    SpectrumType&           reflectance,
+    const SpectrumType&     normal_reflectance,
+    const T                 cos_theta_i,
+    const SpectrumType&     edge_tint);
+
+template <typename SpectrumType, typename T>
+void fresnel_lazanyi_schlick_a(
+    SpectrumType&           a,
+    const SpectrumType&     normal_reflectance,
+    const SpectrumType&     edge_tint,
+    const T                 edge_tint_weight);
 
 // Compute the Fresnel reflectance for a conductor for unpolarized light.
 template <typename SpectrumType, typename T>
@@ -459,6 +476,66 @@ void normal_reflectance_dielectric(
     den += eta;
     normal_reflectance /= den;
     normal_reflectance *= normal_reflectance;
+}
+
+template <typename SpectrumType, typename T>
+void fresnel_reflectance_lazanyi_schlick(
+    SpectrumType&           reflectance,
+    const SpectrumType&     normal_reflectance,
+    const T                 cos_theta_i,
+    const SpectrumType&     a)
+{
+    //
+    // F = r + (1 - r) * [1 - cos(theta)]^5 - a * cos(theta) * [1 - cos(theta)]^6
+    //
+
+    typedef typename impl::GetValueType<SpectrumType>::ValueType ValueType;
+
+    assert(cos_theta_i >= T(0.0) && cos_theta_i <= T(1.0));
+
+    const T k1 = T(1.0) - cos_theta_i;
+    const T k2 = k1 * k1;
+    const T k5 = k2 * k2 * k1;
+    const T k6 = k5 * k1;
+
+    reflectance = SpectrumType(T(1.0));
+    reflectance -= normal_reflectance;
+    reflectance *= static_cast<ValueType>(k5);
+    reflectance += normal_reflectance;
+
+    SpectrumType h(a);
+    h *= cos_theta_i * k6;
+    reflectance -= h;
+
+    clamp(reflectance, T(0.0), T(1.0));
+}
+
+template <typename SpectrumType, typename T>
+void fresnel_lazanyi_schlick_a(
+    SpectrumType&           a,
+    const SpectrumType&     normal_reflectance,
+    const SpectrumType&     edge_tint,
+    const T                 edge_tint_weight)
+{
+    //
+    //      r + (1 - r) * [1 - cos(theta_max)]^5 - h
+    // a = ------------------------------------------
+    //      cos(theta_max) * [1 - cos(theta_max)]^6
+    //
+
+    const T cos_theta_max = std::cos(T(1.4259339988793673));
+    const T k1 = T(1.0) - cos_theta_max;
+    const T k2 = k1 * k1;
+    const T k4 = k2  * k2 ;
+    const T k5 = k4 * k1;
+    const T k6 = k5 * k1;
+
+    a = SpectrumType(T(1.0));
+    a -= normal_reflectance;
+    a *= k5;
+    a += normal_reflectance;
+    a -= edge_tint;
+    a *= edge_tint_weight / (cos_theta_max * k6 );
 }
 
 template <typename SpectrumType, typename T>

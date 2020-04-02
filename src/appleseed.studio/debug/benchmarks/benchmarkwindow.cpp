@@ -33,15 +33,14 @@
 // UI definition header.
 #include "ui_benchmarkwindow.h"
 
-// appleseed.shared headers.
+// appleseed.common headers.
 #include "application/application.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/types.h"
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/containers/dictionary.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/countof.h"
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/string.h"
 
 // Boost headers.
 #include "boost/date_time/posix_time/posix_time.hpp"
@@ -59,10 +58,12 @@
 #include <QVariant>
 
 // Standard headers.
+#include <cstdint>
 #include <string>
 #include <utility>
 
-using namespace appleseed::shared;
+using namespace appleseed::common;
+using namespace appleseed::qtcommon;
 using namespace boost;
 using namespace foundation;
 namespace bf = boost::filesystem;
@@ -124,10 +125,6 @@ void BenchmarkWindow::build_connections()
     connect(
         m_ui->treewidget_benchmarks, SIGNAL(itemSelectionChanged()),
         this, SLOT(slot_rebuild_charts()));
-
-    connect(
-        m_ui->checkbox_equidistant, SIGNAL(stateChanged(int)),
-        this, SLOT(slot_on_equidistant_checkbox_state_changed(int)));
 }
 
 namespace
@@ -186,41 +183,11 @@ void BenchmarkWindow::enable_widgets(const bool enabled)
     m_ui->pushbutton_run->setEnabled(enabled);
 }
 
-namespace
-{
-    struct ToolTipFormatter
-      : public IToolTipFormatter
-    {
-        QString format(const Vector2d& point) const override
-        {
-            const uint64 date_microseconds = static_cast<uint64>(point.x);
-            const posix_time::ptime date =
-                BenchmarkDataPoint::microseconds_to_ptime(date_microseconds);
-            const std::string date_string = posix_time::to_simple_string(date);
-
-            const std::string ticks_string =
-                pretty_scalar(point.y) + " " +
-                plural(point.y, "tick");
-
-            return
-                QString("%1\n%2")
-                    .arg(QString::fromStdString(date_string))
-                    .arg(QString::fromStdString(ticks_string));
-        }
-    };
-}
-
 std::unique_ptr<ChartBase> BenchmarkWindow::create_chart(
     const UniqueID      case_uid,
     const size_t        chart_index) const
 {
-    std::unique_ptr<LineChart> chart(new LineChart());
-
-    chart->set_equidistant(m_ui->checkbox_equidistant->isChecked());
-
-    chart->set_grid_brush(QBrush(QColor(60, 60, 60, 255)));
-
-    static QColor CurveColors[] =
+    static const QColor CurveColors[] =
     {
         QColor(190, 140,  50, 255),
         QColor(160,  30,  30, 255),
@@ -232,22 +199,37 @@ std::unique_ptr<ChartBase> BenchmarkWindow::create_chart(
         QColor(160, 160, 160, 255)
     };
 
+    std::unique_ptr<LineChart> chart(new LineChart());
+
+    chart->set_grid_brush(QBrush(QColor(60, 60, 60, 255)));
     chart->set_curve_brush(QBrush(CurveColors[chart_index % COUNT_OF(CurveColors)]));
 
-    std::unique_ptr<IToolTipFormatter> formatter(new ToolTipFormatter());
-    chart->set_tooltip_formatter(std::move(formatter));
+    chart->set_tooltip_formatter(
+        [](const Vector2d& point, const QVariant& data) -> QString
+        {
+            const std::uint64_t date_microseconds = data.toULongLong();
+            const posix_time::ptime date = BenchmarkDataPoint::microseconds_to_ptime(date_microseconds);
+
+            return
+                QString("%1\n%2 tick%3")
+                    .arg(QString::fromStdString(posix_time::to_simple_string(date)))
+                    .arg(QString::fromStdString(pretty_scalar(point.y)))
+                    .arg(point.y > 1 ? "s" : "");
+        });
 
     const BenchmarkSeries& series = m_benchmark_aggregator.get_series(case_uid);
 
-    for (size_t i = 0; i < series.size(); ++i)
+    for (size_t i = 0, e = series.size(); i < e; ++i)
     {
         const BenchmarkDataPoint& point = series[i];
 
-        const double x =
-            static_cast<double>(
-                BenchmarkDataPoint::ptime_to_microseconds(point.get_date()));
+        const std::uint64_t date_microseconds =
+            BenchmarkDataPoint::ptime_to_microseconds(point.get_date());
 
-        chart->add_point(x, point.get_ticks());
+        chart->add_point(
+            static_cast<double>(i),
+            point.get_ticks(),
+            static_cast<qulonglong>(date_microseconds));
     }
 
     return std::unique_ptr<ChartBase>(std::move(chart));
@@ -288,11 +270,6 @@ void BenchmarkWindow::slot_rebuild_charts()
     }
 
     m_chart_widget.update();
-}
-
-void BenchmarkWindow::slot_on_equidistant_checkbox_state_changed(int state)
-{
-    slot_rebuild_charts();
 }
 
 }   // namespace studio

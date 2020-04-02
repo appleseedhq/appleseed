@@ -32,7 +32,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/version.h"
-#include "foundation/utility/string.h"
+#include "foundation/string/string.h"
 
 // Standard headers.
 #include <sstream>
@@ -72,10 +72,16 @@ const char* Appleseed::get_lib_version()
 
 const char* Appleseed::get_lib_configuration()
 {
-#ifdef DEBUG
+#if defined APPLESEED_DEBUG
     return "Debug";
-#else
+#elif defined APPLESEED_RELEASE
     return "Release";
+#elif defined APPLESEED_PROFILE
+    return "Profile";
+#elif defined APPLESEED_SHIP
+    return "Ship";
+#else
+    return "Unknown";
 #endif
 }
 

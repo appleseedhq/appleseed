@@ -34,7 +34,7 @@ shader as_texture3d
 [[
     string help = "A field3d format 3D texture lookup node.",
     string icon = "asTexture3D.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_texture.html#label-as-texture3d",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/texture/as_texture3d.html",
 
     string as_node_name = "asTexture3D",
     string as_category = "texture3d",

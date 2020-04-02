@@ -31,10 +31,12 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/platform/types.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstdint>
 
 namespace foundation
 {
@@ -43,7 +45,7 @@ namespace foundation
 // A version identifier.
 //
 
-typedef uint64 VersionID;
+typedef std::uint64_t VersionID;
 
 
 //

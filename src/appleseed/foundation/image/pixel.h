@@ -32,7 +32,6 @@
 // appleseed.foundation headers.
 #include "foundation/math/half.h"
 #include "foundation/math/scalar.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/otherwise.h"
 
 // appleseed.main headers.
@@ -41,6 +40,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 
 namespace foundation
 {
@@ -186,9 +186,9 @@ inline size_t Pixel::size(PixelFormat format)
 }
 
 template <>
-inline void Pixel::convert_to_format<uint8>(
-    const uint8*            src_begin,
-    const uint8*            src_end,
+inline void Pixel::convert_to_format<std::uint8_t>(
+    const std::uint8_t*     src_begin,
+    const std::uint8_t*     src_end,
     const size_t            src_stride,
     const PixelFormat       dest_format,
     void*                   dest,
@@ -200,10 +200,10 @@ inline void Pixel::convert_to_format<uint8>(
 
     switch (dest_format)
     {
-      case PixelFormatUInt8:                // lossless uint8 -> uint8
+      case PixelFormatUInt8:                // lossless std::uint8_t -> std::uint8_t
         {
-            uint8* typed_dest = reinterpret_cast<uint8*>(dest);
-            for (const uint8* it = src_begin; it < src_end; it += src_stride)
+            std::uint8_t* typed_dest = reinterpret_cast<std::uint8_t*>(dest);
+            for (const std::uint8_t* it = src_begin; it < src_end; it += src_stride)
             {
                 *typed_dest = *it;
                 typed_dest += dest_stride;
@@ -211,32 +211,32 @@ inline void Pixel::convert_to_format<uint8>(
         }
         break;
 
-      case PixelFormatUInt16:               // lossless uint8 -> uint16
+      case PixelFormatUInt16:               // lossless std::uint8_t -> std::uint16_t
         {
-            uint16* typed_dest = reinterpret_cast<uint16*>(dest);
-            for (const uint8* it = src_begin; it < src_end; it += src_stride)
+            std::uint16_t* typed_dest = reinterpret_cast<std::uint16_t*>(dest);
+            for (const std::uint8_t* it = src_begin; it < src_end; it += src_stride)
             {
-                *typed_dest = static_cast<uint16>(*it) * (65535 / 255);
+                *typed_dest = static_cast<std::uint16_t>(*it) * (65535 / 255);
                 typed_dest += dest_stride;
             }
         }
         break;
 
-      case PixelFormatUInt32:               // lossless uint8 -> uint32
+      case PixelFormatUInt32:               // lossless std::uint8_t -> std::uint32_t
         {
-            uint32* typed_dest = reinterpret_cast<uint32*>(dest);
-            for (const uint8* it = src_begin; it < src_end; it += src_stride)
+            std::uint32_t* typed_dest = reinterpret_cast<std::uint32_t*>(dest);
+            for (const std::uint8_t* it = src_begin; it < src_end; it += src_stride)
             {
-                *typed_dest = static_cast<uint32>(*it) * (4294967295u / 255);
+                *typed_dest = static_cast<std::uint32_t>(*it) * (4294967295u / 255);
                 typed_dest += dest_stride;
             }
         }
         break;
 
-      case PixelFormatHalf:                 // lossless uint8 -> half
+      case PixelFormatHalf:                 // lossless std::uint8_t -> half
         {
             Half* typed_dest = reinterpret_cast<Half*>(dest);
-            for (const uint8* it = src_begin; it < src_end; it += src_stride)
+            for (const std::uint8_t* it = src_begin; it < src_end; it += src_stride)
             {
                 *typed_dest = static_cast<Half>(static_cast<float>(*it) * (1.0f / 255));
                 typed_dest += dest_stride;
@@ -244,10 +244,10 @@ inline void Pixel::convert_to_format<uint8>(
         }
         break;
 
-      case PixelFormatFloat:                // lossless uint8 -> float
+      case PixelFormatFloat:                // lossless std::uint8_t -> float
         {
             float* typed_dest = reinterpret_cast<float*>(dest);
-            for (const uint8* it = src_begin; it < src_end; it += src_stride)
+            for (const std::uint8_t* it = src_begin; it < src_end; it += src_stride)
             {
                 *typed_dest = static_cast<float>(*it) * (1.0f / 255);
                 typed_dest += dest_stride;
@@ -255,10 +255,10 @@ inline void Pixel::convert_to_format<uint8>(
         }
         break;
 
-      case PixelFormatDouble:               // lossless uint8 -> double
+      case PixelFormatDouble:               // lossless std::uint8_t -> double
         {
             double* typed_dest = reinterpret_cast<double*>(dest);
-            for (const uint8* it = src_begin; it < src_end; it += src_stride)
+            for (const std::uint8_t* it = src_begin; it < src_end; it += src_stride)
             {
                 *typed_dest = static_cast<double>(*it) * (1.0 / 255);
                 typed_dest += dest_stride;
@@ -271,9 +271,9 @@ inline void Pixel::convert_to_format<uint8>(
 }
 
 template <>
-inline void Pixel::convert_to_format<uint16>(
-    const uint16*           src_begin,
-    const uint16*           src_end,
+inline void Pixel::convert_to_format<std::uint16_t>(
+    const std::uint16_t*    src_begin,
+    const std::uint16_t*    src_end,
     const size_t            src_stride,
     const PixelFormat       dest_format,
     void*                   dest,
@@ -285,21 +285,21 @@ inline void Pixel::convert_to_format<uint16>(
 
     switch (dest_format)
     {
-      case PixelFormatUInt8:                // lossy uint16 -> uint8
+      case PixelFormatUInt8:                // lossy std::uint16_t -> std::uint8_t
         {
-            uint8* typed_dest = reinterpret_cast<uint8*>(dest);
-            for (const uint16* it = src_begin; it < src_end; it += src_stride)
+            std::uint8_t* typed_dest = reinterpret_cast<std::uint8_t*>(dest);
+            for (const std::uint16_t* it = src_begin; it < src_end; it += src_stride)
             {
-                *typed_dest = static_cast<uint8>(*it >> 8);
+                *typed_dest = static_cast<std::uint8_t>(*it >> 8);
                 typed_dest += dest_stride;
             }
         }
         break;
 
-      case PixelFormatUInt16:               // lossless uint16 -> uint16
+      case PixelFormatUInt16:               // lossless std::uint16_t -> std::uint16_t
         {
-            uint16* typed_dest = reinterpret_cast<uint16*>(dest);
-            for (const uint16* it = src_begin; it < src_end; it += src_stride)
+            std::uint16_t* typed_dest = reinterpret_cast<std::uint16_t*>(dest);
+            for (const std::uint16_t* it = src_begin; it < src_end; it += src_stride)
             {
                 *typed_dest = *it;
                 typed_dest += dest_stride;
@@ -307,21 +307,21 @@ inline void Pixel::convert_to_format<uint16>(
         }
         break;
 
-      case PixelFormatUInt32:               // lossless uint16 -> uint32
+      case PixelFormatUInt32:               // lossless std::uint16_t -> std::uint32_t
         {
-            uint32* typed_dest = reinterpret_cast<uint32*>(dest);
-            for (const uint16* it = src_begin; it < src_end; it += src_stride)
+            std::uint32_t* typed_dest = reinterpret_cast<std::uint32_t*>(dest);
+            for (const std::uint16_t* it = src_begin; it < src_end; it += src_stride)
             {
-                *typed_dest = static_cast<uint32>(*it) * (4294967295u / 65535);
+                *typed_dest = static_cast<std::uint32_t>(*it) * (4294967295u / 65535);
                 typed_dest += dest_stride;
             }
         }
         break;
 
-      case PixelFormatHalf:                 // lossy uint16 -> half
+      case PixelFormatHalf:                 // lossy std::uint16_t -> half
         {
             Half* typed_dest = reinterpret_cast<Half*>(dest);
-            for (const uint16* it = src_begin; it < src_end; it += src_stride)
+            for (const std::uint16_t* it = src_begin; it < src_end; it += src_stride)
             {
                 *typed_dest = static_cast<Half>(static_cast<float>(*it) * (1.0f / 65535));
                 typed_dest += dest_stride;
@@ -329,10 +329,10 @@ inline void Pixel::convert_to_format<uint16>(
         }
         break;
 
-      case PixelFormatFloat:                // lossless uint16 -> float
+      case PixelFormatFloat:                // lossless std::uint16_t -> float
         {
             float* typed_dest = reinterpret_cast<float*>(dest);
-            for (const uint16* it = src_begin; it < src_end; it += src_stride)
+            for (const std::uint16_t* it = src_begin; it < src_end; it += src_stride)
             {
                 *typed_dest = static_cast<float>(*it) * (1.0f / 65535);
                 typed_dest += dest_stride;
@@ -340,10 +340,10 @@ inline void Pixel::convert_to_format<uint16>(
         }
         break;
 
-      case PixelFormatDouble:               // lossless uint16 -> double
+      case PixelFormatDouble:               // lossless std::uint16_t -> double
         {
             double* typed_dest = reinterpret_cast<double*>(dest);
-            for (const uint16* it = src_begin; it < src_end; it += src_stride)
+            for (const std::uint16_t* it = src_begin; it < src_end; it += src_stride)
             {
                 *typed_dest = static_cast<double>(*it) * (1.0 / 65535);
                 typed_dest += dest_stride;
@@ -356,9 +356,9 @@ inline void Pixel::convert_to_format<uint16>(
 }
 
 template <>
-inline void Pixel::convert_to_format<uint32>(
-    const uint32*           src_begin,
-    const uint32*           src_end,
+inline void Pixel::convert_to_format<std::uint32_t>(
+    const std::uint32_t*    src_begin,
+    const std::uint32_t*    src_end,
     const size_t            src_stride,
     const PixelFormat       dest_format,
     void*                   dest,
@@ -370,32 +370,32 @@ inline void Pixel::convert_to_format<uint32>(
 
     switch (dest_format)
     {
-      case PixelFormatUInt8:                // lossy uint32 -> uint8
+      case PixelFormatUInt8:                // lossy std::uint32_t -> std::uint8_t
         {
-            uint8* typed_dest = reinterpret_cast<uint8*>(dest);
-            for (const uint32* it = src_begin; it < src_end; it += src_stride)
+            std::uint8_t* typed_dest = reinterpret_cast<std::uint8_t*>(dest);
+            for (const std::uint32_t* it = src_begin; it < src_end; it += src_stride)
             {
-                *typed_dest = static_cast<uint8>(*it >> 24);
+                *typed_dest = static_cast<std::uint8_t>(*it >> 24);
                 typed_dest += dest_stride;
             }
         }
         break;
 
-      case PixelFormatUInt16:               // lossy uint32 -> uint16
+      case PixelFormatUInt16:               // lossy std::uint32_t -> std::uint16_t
         {
-            uint16* typed_dest = reinterpret_cast<uint16*>(dest);
-            for (const uint32* it = src_begin; it < src_end; it += src_stride)
+            std::uint16_t* typed_dest = reinterpret_cast<std::uint16_t*>(dest);
+            for (const std::uint32_t* it = src_begin; it < src_end; it += src_stride)
             {
-                *typed_dest = static_cast<uint16>(*it >> 16);
+                *typed_dest = static_cast<std::uint16_t>(*it >> 16);
                 typed_dest += dest_stride;
             }
         }
         break;
 
-      case PixelFormatUInt32:               // lossless uint32 -> uint32
+      case PixelFormatUInt32:               // lossless std::uint32_t -> std::uint32_t
         {
-            uint32* typed_dest = reinterpret_cast<uint32*>(dest);
-            for (const uint32* it = src_begin; it < src_end; it += src_stride)
+            std::uint32_t* typed_dest = reinterpret_cast<std::uint32_t*>(dest);
+            for (const std::uint32_t* it = src_begin; it < src_end; it += src_stride)
             {
                 *typed_dest = *it;
                 typed_dest += dest_stride;
@@ -403,10 +403,10 @@ inline void Pixel::convert_to_format<uint32>(
         }
         break;
 
-      case PixelFormatHalf:                 // lossy uint32 -> half
+      case PixelFormatHalf:                 // lossy std::uint32_t -> half
         {
             Half* typed_dest = reinterpret_cast<Half*>(dest);
-            for (const uint32* it = src_begin; it < src_end; it += src_stride)
+            for (const std::uint32_t* it = src_begin; it < src_end; it += src_stride)
             {
                 *typed_dest = static_cast<Half>(static_cast<float>(*it) * (1.0f / 4294967295u));
                 typed_dest += dest_stride;
@@ -414,10 +414,10 @@ inline void Pixel::convert_to_format<uint32>(
         }
         break;
 
-      case PixelFormatFloat:                // lossy uint32 -> float
+      case PixelFormatFloat:                // lossy std::uint32_t -> float
         {
             float* typed_dest = reinterpret_cast<float*>(dest);
-            for (const uint32* it = src_begin; it < src_end; it += src_stride)
+            for (const std::uint32_t* it = src_begin; it < src_end; it += src_stride)
             {
                 *typed_dest = static_cast<float>(*it) * (1.0f / 4294967295u);
                 typed_dest += dest_stride;
@@ -425,10 +425,10 @@ inline void Pixel::convert_to_format<uint32>(
         }
         break;
 
-      case PixelFormatDouble:               // lossless uint32 -> double
+      case PixelFormatDouble:               // lossless std::uint32_t -> double
         {
             double* typed_dest = reinterpret_cast<double*>(dest);
-            for (const uint32* it = src_begin; it < src_end; it += src_stride)
+            for (const std::uint32_t* it = src_begin; it < src_end; it += src_stride)
             {
                 *typed_dest = static_cast<double>(*it) * (1.0 / 4294967295u);
                 typed_dest += dest_stride;
@@ -455,37 +455,37 @@ inline void Pixel::convert_to_format<Half>(
 
     switch (dest_format)
     {
-      case PixelFormatUInt8:                // lossy half -> uint8
+      case PixelFormatUInt8:                // lossy half -> std::uint8_t
         {
-            uint8* typed_dest = reinterpret_cast<uint8*>(dest);
+            std::uint8_t* typed_dest = reinterpret_cast<std::uint8_t*>(dest);
             for (const Half* it = src_begin; it < src_end; it += src_stride)
             {
                 const float val = clamp(*it * 256.0f, 0.0f, 255.0f);
-                *typed_dest = truncate<uint8>(val);
+                *typed_dest = truncate<std::uint8_t>(val);
                 typed_dest += dest_stride;
             }
         }
         break;
 
-      case PixelFormatUInt16:               // lossy half -> uint16
+      case PixelFormatUInt16:               // lossy half -> std::uint16_t
         {
-            uint16* typed_dest = reinterpret_cast<uint16*>(dest);
+            std::uint16_t* typed_dest = reinterpret_cast<std::uint16_t*>(dest);
             for (const Half* it = src_begin; it < src_end; it += src_stride)
             {
                 const float val = clamp(*it * 65536.0f, 0.0f, 65535.0f);
-                *typed_dest = truncate<uint16>(val);
+                *typed_dest = truncate<std::uint16_t>(val);
                 typed_dest += dest_stride;
             }
         }
         break;
 
-      case PixelFormatUInt32:               // lossy half -> uint32
+      case PixelFormatUInt32:               // lossy half -> std::uint32_t
         {
-            uint32* typed_dest = reinterpret_cast<uint32*>(dest);
+            std::uint32_t* typed_dest = reinterpret_cast<std::uint32_t*>(dest);
             for (const Half* it = src_begin; it < src_end; it += src_stride)
             {
                 const double val = clamp(static_cast<double>(*it) * 4294967296.0, 0.0, 4294967295.0);
-                *typed_dest = truncate<uint32>(val);
+                *typed_dest = truncate<std::uint32_t>(val);
                 typed_dest += dest_stride;
             }
         }
@@ -543,38 +543,38 @@ inline void Pixel::convert_to_format<float>(
 
     switch (dest_format)
     {
-      case PixelFormatUInt8:                // lossy float -> uint8
+      case PixelFormatUInt8:                // lossy float -> std::uint8_t
         {
             // todo: optimize this case using SSE?
-            uint8* typed_dest = reinterpret_cast<uint8*>(dest);
+            std::uint8_t* typed_dest = reinterpret_cast<std::uint8_t*>(dest);
             for (const float* it = src_begin; it < src_end; it += src_stride)
             {
                 const float val = clamp(*it * 256.0f, 0.0f, 255.0f);
-                *typed_dest = truncate<uint8>(val);
+                *typed_dest = truncate<std::uint8_t>(val);
                 typed_dest += dest_stride;
             }
         }
         break;
 
-      case PixelFormatUInt16:               // lossy float -> uint16
+      case PixelFormatUInt16:               // lossy float -> std::uint16_t
         {
-            uint16* typed_dest = reinterpret_cast<uint16*>(dest);
+            std::uint16_t* typed_dest = reinterpret_cast<std::uint16_t*>(dest);
             for (const float* it = src_begin; it < src_end; it += src_stride)
             {
                 const float val = clamp(*it * 65536.0f, 0.0f, 65535.0f);
-                *typed_dest = truncate<uint16>(val);
+                *typed_dest = truncate<std::uint16_t>(val);
                 typed_dest += dest_stride;
             }
         }
         break;
 
-      case PixelFormatUInt32:               // lossy float -> uint32
+      case PixelFormatUInt32:               // lossy float -> std::uint32_t
         {
-            uint32* typed_dest = reinterpret_cast<uint32*>(dest);
+            std::uint32_t* typed_dest = reinterpret_cast<std::uint32_t*>(dest);
             for (const float* it = src_begin; it < src_end; it += src_stride)
             {
                 const double val = clamp(static_cast<double>(*it) * 4294967296.0, 0.0, 4294967295.0);
-                *typed_dest = truncate<uint32>(val);
+                *typed_dest = truncate<std::uint32_t>(val);
                 typed_dest += dest_stride;
             }
         }
@@ -632,37 +632,37 @@ inline void Pixel::convert_to_format<double>(
 
     switch (dest_format)
     {
-      case PixelFormatUInt8:                // lossy double -> uint8
+      case PixelFormatUInt8:                // lossy double -> std::uint8_t
         {
-            uint8* typed_dest = reinterpret_cast<uint8*>(dest);
+            std::uint8_t* typed_dest = reinterpret_cast<std::uint8_t*>(dest);
             for (const double* it = src_begin; it < src_end; it += src_stride)
             {
                 const double val = clamp(*it * 256.0, 0.0, 255.0);
-                *typed_dest = truncate<uint8>(val);
+                *typed_dest = truncate<std::uint8_t>(val);
                 typed_dest += dest_stride;
             }
         }
         break;
 
-      case PixelFormatUInt16:               // lossy double -> uint16
+      case PixelFormatUInt16:               // lossy double -> std::uint16_t
         {
-            uint16* typed_dest = reinterpret_cast<uint16*>(dest);
+            std::uint16_t* typed_dest = reinterpret_cast<std::uint16_t*>(dest);
             for (const double* it = src_begin; it < src_end; it += src_stride)
             {
                 const double val = clamp(*it * 65536.0, 0.0, 65535.0);
-                *typed_dest = truncate<uint16>(val);
+                *typed_dest = truncate<std::uint16_t>(val);
                 typed_dest += dest_stride;
             }
         }
         break;
 
-      case PixelFormatUInt32:               // lossy double -> uint32
+      case PixelFormatUInt32:               // lossy double -> std::uint32_t
         {
-            uint32* typed_dest = reinterpret_cast<uint32*>(dest);
+            std::uint32_t* typed_dest = reinterpret_cast<std::uint32_t*>(dest);
             for (const double* it = src_begin; it < src_end; it += src_stride)
             {
                 const double val = clamp(*it * 4294967296.0, 0.0, 4294967295.0);
-                *typed_dest = truncate<uint32>(val);
+                *typed_dest = truncate<std::uint32_t>(val);
                 typed_dest += dest_stride;
             }
         }
@@ -706,12 +706,12 @@ inline void Pixel::convert_to_format<double>(
 }
 
 template <>
-inline void Pixel::convert_from_format<uint8>(
+inline void Pixel::convert_from_format<std::uint8_t>(
     const PixelFormat       src_format,
     const void*             src_begin,
     const void*             src_end,
     const size_t            src_stride,
-    uint8*                  dest,
+    std::uint8_t*           dest,
     const size_t            dest_stride)
 {
     assert(src_begin);
@@ -720,9 +720,9 @@ inline void Pixel::convert_from_format<uint8>(
 
     switch (src_format)
     {
-      case PixelFormatUInt8:                // lossless uint8 -> uint8
+      case PixelFormatUInt8:                // lossless std::uint8_t -> std::uint8_t
         {
-            const uint8* it = reinterpret_cast<const uint8*>(src_begin);
+            const std::uint8_t* it = reinterpret_cast<const std::uint8_t*>(src_begin);
             for (; it < src_end; it += src_stride)
             {
                 *dest = *it;
@@ -731,59 +731,59 @@ inline void Pixel::convert_from_format<uint8>(
         }
         break;
 
-      case PixelFormatUInt16:               // lossy uint16 -> uint8
+      case PixelFormatUInt16:               // lossy std::uint16_t -> std::uint8_t
         {
-            const uint16* it = reinterpret_cast<const uint16*>(src_begin);
-            for (; it < reinterpret_cast<const uint16*>(src_end); it += src_stride)
+            const std::uint16_t* it = reinterpret_cast<const std::uint16_t*>(src_begin);
+            for (; it < reinterpret_cast<const std::uint16_t*>(src_end); it += src_stride)
             {
-                *dest = static_cast<uint8>(*it >> 8);
+                *dest = static_cast<std::uint8_t>(*it >> 8);
                 dest += dest_stride;
             }
         }
         break;
 
-      case PixelFormatUInt32:               // lossy uint32 -> uint8
+      case PixelFormatUInt32:               // lossy std::uint32_t -> std::uint8_t
         {
-            const uint32* it = reinterpret_cast<const uint32*>(src_begin);
-            for (; it < reinterpret_cast<const uint32*>(src_end); it += src_stride)
+            const std::uint32_t* it = reinterpret_cast<const std::uint32_t*>(src_begin);
+            for (; it < reinterpret_cast<const std::uint32_t*>(src_end); it += src_stride)
             {
-                *dest = static_cast<uint8>(*it >> 24);
+                *dest = static_cast<std::uint8_t>(*it >> 24);
                 dest += dest_stride;
             }
         }
         break;
 
-      case PixelFormatHalf:                 // lossy half -> uint8
+      case PixelFormatHalf:                 // lossy half -> std::uint8_t
         {
             const Half* it = reinterpret_cast<const Half*>(src_begin);
             for (; it < reinterpret_cast<const Half*>(src_end); it += src_stride)
             {
                 const Half val = static_cast<Half>(clamp(*it * 256.0f, 0.0f, 255.0f));
-                *dest = truncate<uint8>(val);
+                *dest = truncate<std::uint8_t>(val);
                 dest += dest_stride;
             }
         }
         break;
 
-      case PixelFormatFloat:                // lossy float -> uint8
+      case PixelFormatFloat:                // lossy float -> std::uint8_t
         {
             const float* it = reinterpret_cast<const float*>(src_begin);
             for (; it < reinterpret_cast<const float*>(src_end); it += src_stride)
             {
                 const float val = clamp(*it * 256.0f, 0.0f, 255.0f);
-                *dest = truncate<uint8>(val);
+                *dest = truncate<std::uint8_t>(val);
                 dest += dest_stride;
             }
         }
         break;
 
-      case PixelFormatDouble:               // lossy double -> uint8
+      case PixelFormatDouble:               // lossy double -> std::uint8_t
         {
             const double* it = reinterpret_cast<const double*>(src_begin);
             for (; it < reinterpret_cast<const double*>(src_end); it += src_stride)
             {
                 const double val = clamp(*it * 256.0, 0.0, 255.0);
-                *dest = truncate<uint8>(val);
+                *dest = truncate<std::uint8_t>(val);
                 dest += dest_stride;
             }
         }
@@ -794,12 +794,12 @@ inline void Pixel::convert_from_format<uint8>(
 }
 
 template <>
-inline void Pixel::convert_from_format<uint16>(
+inline void Pixel::convert_from_format<std::uint16_t>(
     const PixelFormat       src_format,
     const void*             src_begin,
     const void*             src_end,
     const size_t            src_stride,
-    uint16*                 dest,
+    std::uint16_t*          dest,
     const size_t            dest_stride)
 {
     assert(src_begin);
@@ -808,21 +808,21 @@ inline void Pixel::convert_from_format<uint16>(
 
     switch (src_format)
     {
-      case PixelFormatUInt8:                // lossless uint8 -> uint16
+      case PixelFormatUInt8:                // lossless std::uint8_t -> std::uint16_t
         {
-            const uint8* it = reinterpret_cast<const uint8*>(src_begin);
-            for (; it < reinterpret_cast<const uint8*>(src_end); it += src_stride)
+            const std::uint8_t* it = reinterpret_cast<const std::uint8_t*>(src_begin);
+            for (; it < reinterpret_cast<const std::uint8_t*>(src_end); it += src_stride)
             {
-                *dest = static_cast<uint16>(*it) * (65535 / 255);
+                *dest = static_cast<std::uint16_t>(*it) * (65535 / 255);
                 dest += dest_stride;
             }
         }
         break;
 
-      case PixelFormatUInt16:               // lossless uint16 -> uint16
+      case PixelFormatUInt16:               // lossless std::uint16_t -> std::uint16_t
         {
-            const uint16* it = reinterpret_cast<const uint16*>(src_begin);
-            for (; it < reinterpret_cast<const uint16*>(src_end); it += src_stride)
+            const std::uint16_t* it = reinterpret_cast<const std::uint16_t*>(src_begin);
+            for (; it < reinterpret_cast<const std::uint16_t*>(src_end); it += src_stride)
             {
                 *dest = *it;
                 dest += dest_stride;
@@ -830,48 +830,48 @@ inline void Pixel::convert_from_format<uint16>(
         }
         break;
 
-      case PixelFormatUInt32:               // lossy uint32 -> uint16
+      case PixelFormatUInt32:               // lossy std::uint32_t -> std::uint16_t
         {
-            const uint32* it = reinterpret_cast<const uint32*>(src_begin);
-            for (; it < reinterpret_cast<const uint32*>(src_end); it += src_stride)
+            const std::uint32_t* it = reinterpret_cast<const std::uint32_t*>(src_begin);
+            for (; it < reinterpret_cast<const std::uint32_t*>(src_end); it += src_stride)
             {
-                *dest = static_cast<uint16>(*it >> 16);
+                *dest = static_cast<std::uint16_t>(*it >> 16);
                 dest += dest_stride;
             }
         }
         break;
 
-      case PixelFormatHalf:                 // lossy half -> uint16
+      case PixelFormatHalf:                 // lossy half -> std::uint16_t
         {
             const Half* it = reinterpret_cast<const Half*>(src_begin);
             for (; it < reinterpret_cast<const Half*>(src_end); it += src_stride)
             {
                 const Half val = static_cast<Half>(clamp(*it * 65536.0f, 0.0f, 65535.0f));
-                *dest = truncate<uint16>(val);
+                *dest = truncate<std::uint16_t>(val);
                 dest += dest_stride;
             }
         }
         break;
 
-      case PixelFormatFloat:                // lossy float -> uint16
+      case PixelFormatFloat:                // lossy float -> std::uint16_t
         {
             const float* it = reinterpret_cast<const float*>(src_begin);
             for (; it < reinterpret_cast<const float*>(src_end); it += src_stride)
             {
                 const float val = clamp(*it * 65536.0f, 0.0f, 65535.0f);
-                *dest = truncate<uint16>(val);
+                *dest = truncate<std::uint16_t>(val);
                 dest += dest_stride;
             }
         }
         break;
 
-      case PixelFormatDouble:               // lossy double -> uint16
+      case PixelFormatDouble:               // lossy double -> std::uint16_t
         {
             const double* it = reinterpret_cast<const double*>(src_begin);
             for (; it < reinterpret_cast<const double*>(src_end); it += src_stride)
             {
                 const double val = clamp(*it * 65536.0, 0.0, 65535.0);
-                *dest = truncate<uint16>(val);
+                *dest = truncate<std::uint16_t>(val);
                 dest += dest_stride;
             }
         }
@@ -882,12 +882,12 @@ inline void Pixel::convert_from_format<uint16>(
 }
 
 template <>
-inline void Pixel::convert_from_format<uint32>(
+inline void Pixel::convert_from_format<std::uint32_t>(
     const PixelFormat       src_format,
     const void*             src_begin,
     const void*             src_end,
     const size_t            src_stride,
-    uint32*                 dest,
+    std::uint32_t*          dest,
     const size_t            dest_stride)
 {
     assert(src_begin);
@@ -896,32 +896,32 @@ inline void Pixel::convert_from_format<uint32>(
 
     switch (src_format)
     {
-      case PixelFormatUInt8:                // lossless uint8 -> uint32
+      case PixelFormatUInt8:                // lossless std::uint8_t -> std::uint32_t
         {
-            const uint8* it = reinterpret_cast<const uint8*>(src_begin);
-            for (; it < reinterpret_cast<const uint8*>(src_end); it += src_stride)
+            const std::uint8_t* it = reinterpret_cast<const std::uint8_t*>(src_begin);
+            for (; it < reinterpret_cast<const std::uint8_t*>(src_end); it += src_stride)
             {
-                *dest = static_cast<uint32>(*it) * (4294967295u / 255);
+                *dest = static_cast<std::uint32_t>(*it) * (4294967295u / 255);
                 dest += dest_stride;
             }
         }
         break;
 
-      case PixelFormatUInt16:               // lossless uint16 -> uint32
+      case PixelFormatUInt16:               // lossless std::uint16_t -> std::uint32_t
         {
-            const uint16* it = reinterpret_cast<const uint16*>(src_begin);
-            for (; it < reinterpret_cast<const uint16*>(src_end); it += src_stride)
+            const std::uint16_t* it = reinterpret_cast<const std::uint16_t*>(src_begin);
+            for (; it < reinterpret_cast<const std::uint16_t*>(src_end); it += src_stride)
             {
-                *dest = static_cast<uint32>(*it) * (4294967295u / 65535);
+                *dest = static_cast<std::uint32_t>(*it) * (4294967295u / 65535);
                 dest += dest_stride;
             }
         }
         break;
 
-      case PixelFormatUInt32:               // lossless uint32 -> uint32
+      case PixelFormatUInt32:               // lossless std::uint32_t -> std::uint32_t
         {
-            const uint32* it = reinterpret_cast<const uint32*>(src_begin);
-            for (; it < reinterpret_cast<const uint32*>(src_end); it += src_stride)
+            const std::uint32_t* it = reinterpret_cast<const std::uint32_t*>(src_begin);
+            for (; it < reinterpret_cast<const std::uint32_t*>(src_end); it += src_stride)
             {
                 *dest = *it;
                 dest += dest_stride;
@@ -929,37 +929,37 @@ inline void Pixel::convert_from_format<uint32>(
         }
         break;
 
-      case PixelFormatHalf:                 // lossy half -> uint32
+      case PixelFormatHalf:                 // lossy half -> std::uint32_t
         {
             const Half* it = reinterpret_cast<const Half*>(src_begin);
             for (; it < reinterpret_cast<const Half*>(src_end); it += src_stride)
             {
                 const double val = clamp(static_cast<double>(*it) * 4294967296.0, 0.0, 4294967295.0);
-                *dest = truncate<uint32>(val);
+                *dest = truncate<std::uint32_t>(val);
                 dest += dest_stride;
             }
         }
         break;
 
-      case PixelFormatFloat:                // lossy float -> uint32
+      case PixelFormatFloat:                // lossy float -> std::uint32_t
         {
             const float* it = reinterpret_cast<const float*>(src_begin);
             for (; it < reinterpret_cast<const float*>(src_end); it += src_stride)
             {
                 const double val = clamp(static_cast<double>(*it) * 4294967296.0, 0.0, 4294967295.0);
-                *dest = truncate<uint32>(val);
+                *dest = truncate<std::uint32_t>(val);
                 dest += dest_stride;
             }
         }
         break;
 
-      case PixelFormatDouble:               // lossy double -> uint32
+      case PixelFormatDouble:               // lossy double -> std::uint32_t
         {
             const double* it = reinterpret_cast<const double*>(src_begin);
             for (; it < reinterpret_cast<const double*>(src_end); it += src_stride)
             {
                 const double val = clamp(*it * 4294967296.0, 0.0, 4294967295.0);
-                *dest = truncate<uint32>(val);
+                *dest = truncate<std::uint32_t>(val);
                 dest += dest_stride;
             }
         }
@@ -984,10 +984,10 @@ inline void Pixel::convert_from_format<float>(
 
     switch (src_format)
     {
-      case PixelFormatUInt8:                // lossless uint8 -> float
+      case PixelFormatUInt8:                // lossless std::uint8_t -> float
         {
-            const uint8* it = reinterpret_cast<const uint8*>(src_begin);
-            for (; it < reinterpret_cast<const uint8*>(src_end); it += src_stride)
+            const std::uint8_t* it = reinterpret_cast<const std::uint8_t*>(src_begin);
+            for (; it < reinterpret_cast<const std::uint8_t*>(src_end); it += src_stride)
             {
                 *dest = static_cast<float>(*it) * (1.0f / 255);
                 dest += dest_stride;
@@ -995,10 +995,10 @@ inline void Pixel::convert_from_format<float>(
         }
         break;
 
-      case PixelFormatUInt16:               // lossless uint16 -> float
+      case PixelFormatUInt16:               // lossless std::uint16_t -> float
         {
-            const uint16* it = reinterpret_cast<const uint16*>(src_begin);
-            for (; it < reinterpret_cast<const uint16*>(src_end); it += src_stride)
+            const std::uint16_t* it = reinterpret_cast<const std::uint16_t*>(src_begin);
+            for (; it < reinterpret_cast<const std::uint16_t*>(src_end); it += src_stride)
             {
                 *dest = static_cast<float>(*it) * (1.0f / 65535);
                 dest += dest_stride;
@@ -1006,10 +1006,10 @@ inline void Pixel::convert_from_format<float>(
         }
         break;
 
-      case PixelFormatUInt32:               // lossy uint32 -> float
+      case PixelFormatUInt32:               // lossy std::uint32_t -> float
         {
-            const uint32* it = reinterpret_cast<const uint32*>(src_begin);
-            for (; it < reinterpret_cast<const uint32*>(src_end); it += src_stride)
+            const std::uint32_t* it = reinterpret_cast<const std::uint32_t*>(src_begin);
+            for (; it < reinterpret_cast<const std::uint32_t*>(src_end); it += src_stride)
             {
                 *dest = static_cast<float>(*it) * (1.0f / 4294967295u);
                 dest += dest_stride;
@@ -1069,10 +1069,10 @@ inline void Pixel::convert_from_format<double>(
 
     switch (src_format)
     {
-      case PixelFormatUInt8:                // lossless uint8 -> double
+      case PixelFormatUInt8:                // lossless std::uint8_t -> double
         {
-            const uint8* it = reinterpret_cast<const uint8*>(src_begin);
-            for (; it < reinterpret_cast<const uint8*>(src_end); it += src_stride)
+            const std::uint8_t* it = reinterpret_cast<const std::uint8_t*>(src_begin);
+            for (; it < reinterpret_cast<const std::uint8_t*>(src_end); it += src_stride)
             {
                 *dest = static_cast<double>(*it) * (1.0 / 255);
                 dest += dest_stride;
@@ -1080,10 +1080,10 @@ inline void Pixel::convert_from_format<double>(
         }
         break;
 
-      case PixelFormatUInt16:               // lossless uint16 -> double
+      case PixelFormatUInt16:               // lossless std::uint16_t -> double
         {
-            const uint16* it = reinterpret_cast<const uint16*>(src_begin);
-            for (; it < reinterpret_cast<const uint16*>(src_end); it += src_stride)
+            const std::uint16_t* it = reinterpret_cast<const std::uint16_t*>(src_begin);
+            for (; it < reinterpret_cast<const std::uint16_t*>(src_end); it += src_stride)
             {
                 *dest = static_cast<double>(*it) * (1.0 / 65535);
                 dest += dest_stride;
@@ -1091,10 +1091,10 @@ inline void Pixel::convert_from_format<double>(
         }
         break;
 
-      case PixelFormatUInt32:               // lossless uint32 -> double
+      case PixelFormatUInt32:               // lossless std::uint32_t -> double
         {
-            const uint32* it = reinterpret_cast<const uint32*>(src_begin);
-            for (; it < reinterpret_cast<const uint32*>(src_end); it += src_stride)
+            const std::uint32_t* it = reinterpret_cast<const std::uint32_t*>(src_begin);
+            for (; it < reinterpret_cast<const std::uint32_t*>(src_end); it += src_stride)
             {
                 *dest = static_cast<double>(*it) * (1.0 / 4294967295u);
                 dest += dest_stride;
@@ -1154,30 +1154,30 @@ inline void Pixel::convert(
 
     switch (src_format)
     {
-      case PixelFormatUInt8:                // uint8 -> destination format
-        convert_to_format<uint8>(
-            reinterpret_cast<const uint8*>(src_begin),
-            reinterpret_cast<const uint8*>(src_end),
+      case PixelFormatUInt8:                // std::uint8_t -> destination format
+        convert_to_format<std::uint8_t>(
+            reinterpret_cast<const std::uint8_t*>(src_begin),
+            reinterpret_cast<const std::uint8_t*>(src_end),
             src_stride,
             dest_format,
             dest,
             dest_stride);
         break;
 
-      case PixelFormatUInt16:               // uint16 -> destination format
-        convert_to_format<uint16>(
-            reinterpret_cast<const uint16*>(src_begin),
-            reinterpret_cast<const uint16*>(src_end),
+      case PixelFormatUInt16:               // std::uint16_t -> destination format
+        convert_to_format<std::uint16_t>(
+            reinterpret_cast<const std::uint16_t*>(src_begin),
+            reinterpret_cast<const std::uint16_t*>(src_end),
             src_stride,
             dest_format,
             dest,
             dest_stride);
         break;
 
-      case PixelFormatUInt32:               // uint32 -> destination format
-        convert_to_format<uint32>(
-            reinterpret_cast<const uint32*>(src_begin),
-            reinterpret_cast<const uint32*>(src_end),
+      case PixelFormatUInt32:               // std::uint32_t -> destination format
+        convert_to_format<std::uint32_t>(
+            reinterpret_cast<const std::uint32_t*>(src_begin),
+            reinterpret_cast<const std::uint32_t*>(src_end),
             src_stride,
             dest_format,
             dest,

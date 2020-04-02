@@ -35,7 +35,7 @@
 #include "renderer/modeling/shadergroup/shadercompiler.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/autoreleaseptr.h"
 
 // Standard headers.
 #include <memory>

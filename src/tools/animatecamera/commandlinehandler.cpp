@@ -30,14 +30,14 @@
 // Interface header.
 #include "commandlinehandler.h"
 
-// appleseed.shared headers.
+// appleseed.common headers.
 #include "application/superlogger.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/log.h"
+#include "foundation/log/log.h"
 #include "foundation/utility/makevector.h"
 
-using namespace appleseed::shared;
+using namespace appleseed::common;
 using namespace foundation;
 
 namespace appleseed {

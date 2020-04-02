@@ -50,7 +50,6 @@
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/poison.h"
 
 // OSL headers.
@@ -62,6 +61,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 
 // Forward declarations.
 namespace renderer  { class Object; }
@@ -155,11 +155,9 @@ class ShadingPoint
     // Return the intersection point in world space.
     const foundation::Vector3d& get_point() const;
 
-    // Return the intersection point in world space, with per-object-instance ray bias applied.
-    foundation::Vector3d get_biased_point(const foundation::Vector3d& direction) const;
-
-    // Return the intersection point in assembly instance space, properly offset to avoid self-intersections.
-    const foundation::Vector3d& get_offset_point(const foundation::Vector3d& asm_inst_direction) const;
+    // Return the intersection point, properly offset to avoid self-intersections.
+    // The intersection point and direction space depends on the primitive type.
+    const foundation::Vector3d& get_offset_point(const foundation::Vector3d& direction) const;
 
     // Return the world space partial derivatives of the intersection point wrt. a given UV set.
     const foundation::Vector3d& get_dpdu(const size_t uvset) const;
@@ -311,27 +309,26 @@ class ShadingPoint
         HasTriangleVertexTangents       = 1UL << 2,
         HasUV0                          = 1UL << 3,
         HasPoint                        = 1UL << 4,
-        HasBiasedPoint                  = 1UL << 5,
-        HasRefinedPoints                = 1UL << 6,
-        HasWorldSpaceDerivatives        = 1UL << 7,
-        HasGeometricNormal              = 1UL << 8,
-        HasOriginalShadingNormal        = 1UL << 9,
-        HasShadingBasis                 = 1UL << 10,
-        HasWorldSpaceTriangleVertices   = 1UL << 11,
-        HasMaterials                    = 1UL << 12,
-        HasWorldSpacePointVelocity      = 1UL << 13,
-        HasAlpha                        = 1UL << 14,
-        HasPerVertexColor               = 1UL << 15,
-        HasScreenSpaceDerivatives       = 1UL << 16,
-        HasOSLShaderGlobals             = 1UL << 17
+        HasRefinedPoints                = 1UL << 5,
+        HasWorldSpaceDerivatives        = 1UL << 6,
+        HasGeometricNormal              = 1UL << 7,
+        HasOriginalShadingNormal        = 1UL << 8,
+        HasShadingBasis                 = 1UL << 9,
+        HasWorldSpaceTriangleVertices   = 1UL << 10,
+        HasMaterials                    = 1UL << 11,
+        HasWorldSpacePointVelocity      = 1UL << 12,
+        HasAlpha                        = 1UL << 13,
+        HasPerVertexColor               = 1UL << 14,
+        HasScreenSpaceDerivatives       = 1UL << 15,
+        HasOSLShaderGlobals             = 1UL << 16
     };
-    mutable foundation::uint32          m_members;
+    mutable std::uint32_t               m_members;
 
     // Source geometry (derived from primary intersection results).
     mutable const Assembly*             m_assembly;                     // hit assembly
     mutable ObjectInstance*             m_object_instance;              // hit object instance
     mutable Object*                     m_object;                       // hit object
-    mutable foundation::uint32          m_primitive_pa;                 // hit primitive attribute index
+    mutable std::uint32_t               m_primitive_pa;                 // hit primitive attribute index
     mutable GVector2                    m_v0_uv, m_v1_uv, m_v2_uv;      // texture coordinates from UV set #0 at triangle vertices
     mutable GVector3                    m_v0, m_v1, m_v2;               // object instance space triangle vertices
     mutable GVector3                    m_n0, m_n1, m_n2;               // object instance space triangle vertex normals
@@ -342,7 +339,6 @@ class ShadingPoint
     mutable foundation::Vector2f        m_duvdx;                        // screen space partial derivative of the texture coords wrt. X
     mutable foundation::Vector2f        m_duvdy;                        // screen space partial derivative of the texture coords wrt. Y
     mutable foundation::Vector3d        m_point;                        // world space intersection point
-    mutable foundation::Vector3d        m_biased_point;                 // world space intersection point with per-object-instance bias applied
     mutable foundation::Vector3d        m_dpdu;                         // world space partial derivative of the intersection point wrt. U
     mutable foundation::Vector3d        m_dpdv;                         // world space partial derivative of the intersection point wrt. V
     mutable foundation::Vector3d        m_dndu;                         // world space partial derivative of the intersection normal wrt. U
@@ -361,9 +357,9 @@ class ShadingPoint
     mutable foundation::Color3f         m_color;                        // per-vertex interpolated color at intersection point
 
     // Data required to avoid self-intersections.
-    mutable foundation::Vector3d        m_asm_inst_geo_normal;          // assembly instance space geometric normal to hit primitive
-    mutable foundation::Vector3d        m_asm_inst_front_point;         // hit point refined to front, in assembly instance space
-    mutable foundation::Vector3d        m_asm_inst_back_point;          // hit point refined to back, in assembly instance space
+    mutable foundation::Vector3d        m_refine_space_geo_normal;       // primitive-specific space geometric normal to hit primitive (non unit-length)
+    mutable foundation::Vector3d        m_refine_space_front_point;      // hit point refined to front, in primitive specific space
+    mutable foundation::Vector3d        m_refine_space_back_point;       // hit point refined to back, in primitive specific space
 
     // OSL-related data.
     mutable OSLObjectTransformInfo      m_obj_transform_info;
@@ -605,15 +601,15 @@ inline const foundation::Vector3d& ShadingPoint::get_point() const
     return m_point;
 }
 
-inline const foundation::Vector3d& ShadingPoint::get_offset_point(const foundation::Vector3d& asm_inst_direction) const
+inline const foundation::Vector3d& ShadingPoint::get_offset_point(const foundation::Vector3d& direction) const
 {
     assert(hit_surface());
     assert(m_members & HasRefinedPoints);
 
     return
-        foundation::dot(m_asm_inst_geo_normal, asm_inst_direction) > 0.0
-            ? m_asm_inst_front_point
-            : m_asm_inst_back_point;
+        foundation::dot(m_refine_space_geo_normal, direction) > 0.0
+            ? m_refine_space_front_point
+            : m_refine_space_back_point;
 }
 
 inline const foundation::Vector3d& ShadingPoint::get_dpdu(const size_t uvset) const

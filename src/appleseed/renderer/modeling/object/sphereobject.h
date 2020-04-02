@@ -33,8 +33,8 @@
 #include "renderer/modeling/object/proceduralobject.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/ray.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -50,7 +50,7 @@ namespace renderer
 //
 // A sphere object.
 //
-// The sphere is assumed to be centered at the origin.
+// The sphere is centered at the origin and is of radius 1.
 //
 
 class APPLESEED_DLLSYMBOL SphereObject
@@ -62,20 +62,14 @@ class APPLESEED_DLLSYMBOL SphereObject
 
     const char* get_model() const override;
 
-    bool on_frame_begin(
-        const Project&              project,
-        const BaseGroup*            parent,
-        OnFrameBeginRecorder&       recorder,
-        foundation::IAbortSwitch*   abort_switch) override;
-
     GAABB3 compute_local_bbox() const override;
 
     size_t get_material_slot_count() const override;
 
     const char* get_material_slot(const size_t index) const override;
 
-    foundation::Vector3d get_uncached_center() const;
-    double get_uncached_radius() const;
+    foundation::Vector3d get_center() const;
+    double get_radius() const;
 
     void intersect(
         const ShadingRay&           ray,
@@ -83,11 +77,14 @@ class APPLESEED_DLLSYMBOL SphereObject
 
     bool intersect(const ShadingRay& ray) const override;
 
+    void refine_and_offset(
+        const foundation::Ray3d&    obj_inst_ray,
+        foundation::Vector3d&       obj_inst_front_point,
+        foundation::Vector3d&       obj_inst_back_point,
+        foundation::Vector3d&       obj_inst_geo_normal) const override;
+
   private:
     friend class SphereObjectFactory;
-
-    struct Impl;
-    Impl* impl;
 
     // Constructor.
     SphereObject(

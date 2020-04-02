@@ -30,7 +30,7 @@
 // convertmeshfile headers.
 #include "commandlinehandler.h"
 
-// appleseed.shared headers.
+// appleseed.common headers.
 #include "application/application.h"
 #include "application/superlogger.h"
 
@@ -42,9 +42,9 @@
 #include "foundation/mesh/imeshbuilder.h"
 #include "foundation/mesh/imeshwalker.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/log.h"
+#include "foundation/log/log.h"
 
 // Standard headers.
 #include <cstddef>
@@ -55,7 +55,7 @@
 #include <vector>
 
 using namespace appleseed::convertmeshfile;
-using namespace appleseed::shared;
+using namespace appleseed::common;
 using namespace foundation;
 
 namespace

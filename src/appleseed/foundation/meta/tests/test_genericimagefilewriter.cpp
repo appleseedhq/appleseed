@@ -135,8 +135,8 @@ TEST_SUITE(Foundation_Image_GenericImageFileWriter)
         {
             for (size_t x = 0; x < image_size; ++x)
             {
-                const float dx = std::abs(half_image_size - static_cast<float>(x));
-                const float dy = std::abs(half_image_size - static_cast<float>(y));
+                const float dx = std::abs(static_cast<float>(x) - half_image_size);
+                const float dy = std::abs(static_cast<float>(y) - half_image_size);
                 const float d = std::sqrt(dx * dx + dy * dy);
                 const float nd = saturate(d / half_diagonal_length);
                 const float c = fit(nd, 0.0f, 1.0f, 0.6f, 0.5f);

@@ -38,8 +38,10 @@
 #include "mainwindow/project/itemregistry.h"
 #include "mainwindow/project/projectbuilder.h"
 #include "mainwindow/rendering/renderingmanager.h"
+
+// appleseed.qtcommon headers.
 #include "utility/miscellaneous.h"
-#include "utility/treewidget.h"
+#include "widgets/treewidget.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/entity.h"
@@ -174,7 +176,7 @@ void EntityItem<Entity, ParentEntity, CollectionItem>::edit(const foundation::Di
 
     // Move the item to its sorted position.
     if (!m_fixed_position && old_entity_name != new_entity_name)
-        move_to_sorted_position(this);
+        qtcommon::move_to_sorted_position(this);
 }
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>
@@ -183,7 +185,7 @@ void EntityItem<Entity, ParentEntity, CollectionItem>::delete_multiple(const QLi
     Base::m_editor_context.m_rendering_manager.schedule_or_execute(
         std::unique_ptr<RenderingManager::IScheduledAction>(
             new EntityDeletionAction<EntityItem>(
-                qlist_static_cast<EntityItem*>(items))));
+                qtcommon::qlist_static_cast<EntityItem*>(items))));
 }
 
 template <typename Entity, typename ParentEntity, typename CollectionItem>

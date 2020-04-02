@@ -34,12 +34,15 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/vector.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/iostreamop.h"
-#include "foundation/utility/string.h"
+
+// Standard headers.
+#include <cstdint>
 
 namespace bpy = boost::python;
 using namespace foundation;
@@ -115,7 +118,7 @@ namespace
 
             if (PyLong_Check(value.ptr()))
             {
-                bpy::extract<int64> extractor(value);
+                bpy::extract<std::int64_t> extractor(value);
                 if (extractor.check())
                 {
                     result.insert(key_extractor(), extractor());
@@ -221,7 +224,7 @@ namespace
 
         try // int / long
         {
-            const int64 d = from_string<int64>(str);
+            const std::int64_t d = from_string<std::int64_t>(str);
             return bpy::object(d);
         }
         catch (const ExceptionStringConversionError&) {}

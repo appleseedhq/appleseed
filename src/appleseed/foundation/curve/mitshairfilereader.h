@@ -31,8 +31,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/curve/icurvefilereader.h"
-#include "foundation/platform/compiler.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/compiler.h"
 
 // Standard headers.
 #include <cstddef>

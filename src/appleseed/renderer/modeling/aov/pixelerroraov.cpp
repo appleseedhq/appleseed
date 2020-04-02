@@ -35,13 +35,13 @@
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/image/analysis.h"
 #include "foundation/image/color.h"
 #include "foundation/image/colormap.h"
 #include "foundation/image/colormapdata.h"
 #include "foundation/image/image.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
 #include <algorithm>

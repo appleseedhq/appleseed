@@ -45,17 +45,16 @@
 #include "renderer/utility/settingsparsing.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
+#include "foundation/hash/hash.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/filtersamplingtable.h"
-#include "foundation/math/hash.h"
 #include "foundation/math/population.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
-#include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/utility/statistics.h"
 
 // OpenImageIO headers.
@@ -66,6 +65,7 @@
 
 // Standard headers.
 #include <cmath>
+#include <cstdint>
 
 using namespace foundation;
 using namespace OIIO;
@@ -133,7 +133,7 @@ namespace
             Tile&                       tile,
             TileStack&                  aov_tiles,
             const AABB2i&               tile_bbox,
-            const uint32                pass_hash,
+            const std::uint32_t         pass_hash,
             const Vector2i&             pi,
             const Vector2i&             pt,
             AOVAccumulatorContainer&    aov_accumulators,
@@ -146,7 +146,7 @@ namespace
             // Create a sampling context.
             const size_t frame_width = frame.image().properties().m_canvas_width;
             const size_t pixel_index = pi.y * frame_width + pi.x;
-            const size_t instance = hash_uint32(static_cast<uint32>(pass_hash + pixel_index));
+            const size_t instance = hash_uint32(static_cast<std::uint32_t>(pass_hash + pixel_index));
             SamplingContext::RNGType rng(pass_hash, instance);
             SamplingContext sampling_context(
                 rng,
@@ -257,7 +257,7 @@ namespace
         auto_release_ptr<ISampleRenderer>      m_sample_renderer;
         const size_t                           m_min_sample_count;
         const size_t                           m_max_sample_count;
-        Population<uint64>                     m_total_sampling_dim;
+        Population<std::uint64_t>              m_total_sampling_dim;
     };
 }
 

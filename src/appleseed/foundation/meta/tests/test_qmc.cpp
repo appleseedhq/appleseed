@@ -40,8 +40,8 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/arch.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/gnuplotfile.h"
-#include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 #include "foundation/utility/testutils.h"
 

@@ -33,7 +33,7 @@
 #include "renderer/modeling/camera/icamerafactory.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"

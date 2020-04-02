@@ -39,6 +39,7 @@
 #include "renderer/modeling/bsdf/disneybrdf.h"
 #include "renderer/modeling/bsdf/glassbsdf.h"
 #include "renderer/modeling/bsdf/glossybrdf.h"
+#include "renderer/modeling/bsdf/hairbsdf.h"
 #include "renderer/modeling/bsdf/metalbrdf.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
 #include "renderer/modeling/bsdf/orennayarbrdf.h"
@@ -56,8 +57,8 @@
 #include "foundation/math/cdf.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/scalar.h"
-#include "foundation/utility/arena.h"
-#include "foundation/utility/memory.h"
+#include "foundation/memory/arena.h"
+#include "foundation/memory/memory.h"
 #include "foundation/utility/otherwise.h"
 
 // OSL headers.
@@ -470,7 +471,7 @@ namespace
             values->m_specular_tint = saturate(p->specular_tint);
             values->m_anisotropic = clamp(p->anisotropic, -1.0f, 1.0f);
             values->m_roughness = clamp(p->roughness, 0.0001f, 1.0f);
-            values->m_sheen = saturate(p->sheen);
+            values->m_sheen = std::max(p->sheen, 0.0f);
             values->m_sheen_tint = saturate(p->sheen_tint);
             values->m_clearcoat = std::max(p->clearcoat, 0.0f);
             values->m_clearcoat_gloss = clamp(p->clearcoat_gloss, 0.0001f, 1.0f);
@@ -727,6 +728,80 @@ namespace
         }
     };
 
+    struct HairClosure
+    {
+        struct Params
+        {
+            OSL::Color3     reflectance;
+            float           melanin;
+            float           melanin_redness;
+            float           eta;
+            float           beta_M;
+            float           beta_N;
+            float           alpha;
+        };
+
+        static const char* name()
+        {
+            return "as_hair";
+        }
+
+        static ClosureID id()
+        {
+            return HairID;
+        }
+
+        static int modes()
+        {
+            return ScatteringMode::Glossy;
+        }
+
+        static void register_closure(OSLShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_COLOR_PARAM(Params, reflectance),
+                CLOSURE_FLOAT_PARAM(Params, melanin),
+                CLOSURE_FLOAT_PARAM(Params, melanin_redness),
+                CLOSURE_FLOAT_PARAM(Params, eta),
+                CLOSURE_FLOAT_PARAM(Params, beta_M),
+                CLOSURE_FLOAT_PARAM(Params, beta_N),
+                CLOSURE_FLOAT_PARAM(Params, alpha),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
+            g_closure_convert_funs[id()] = &convert_closure;
+            g_closure_get_modes_funs[id()] = &modes;
+        }
+
+        static void convert_closure(
+            CompositeSurfaceClosure&    composite_closure,
+            const Basis3f&              shading_basis,
+            const void*                 osl_params,
+            const Color3f&              weight,
+            Arena&                      arena)
+        {
+            const Params* p = static_cast<const Params*>(osl_params);
+
+            HairBSDFInputValues* values =
+                composite_closure.add_closure<HairBSDFInputValues>(
+                    id(),
+                    shading_basis,
+                    weight,
+                    Vector3f(0.0f),
+                    arena);
+
+            values->m_reflectance.set(Color3f(p->reflectance), g_std_lighting_conditions, Spectrum::Reflectance);
+            values->m_melanin = saturate(p->melanin);
+            values->m_melanin_redness = saturate(p->melanin_redness);
+            values->m_eta = max(p->eta, 0.001f);
+            values->m_beta_M = p->beta_M;
+            values->m_beta_N = p->beta_N;
+            values->m_alpha = p->alpha;
+        }
+    };
+
     struct HoldoutClosure
     {
         struct Params
@@ -804,6 +879,7 @@ namespace
             OSL::Vec3       T;
             OSL::Color3     normal_reflectance;
             OSL::Color3     edge_tint;
+            float           edge_tint_weight;
             float           roughness;
             float           anisotropy;
             float           energy_compensation;
@@ -842,6 +918,7 @@ namespace
                 CLOSURE_VECTOR_PARAM(Params, T),
                 CLOSURE_COLOR_PARAM(Params, normal_reflectance),
                 CLOSURE_COLOR_PARAM(Params, edge_tint),
+                CLOSURE_FLOAT_PARAM(Params, edge_tint_weight),
                 CLOSURE_FLOAT_PARAM(Params, roughness),
                 CLOSURE_FLOAT_PARAM(Params, anisotropy),
                 CLOSURE_FLOAT_KEYPARAM(Params, energy_compensation, "energy_compensation"),
@@ -873,6 +950,7 @@ namespace
 
             values->m_normal_reflectance.set(Color3f(p->normal_reflectance), g_std_lighting_conditions, Spectrum::Reflectance);
             values->m_edge_tint.set(Color3f(p->edge_tint), g_std_lighting_conditions, Spectrum::Reflectance);
+            values->m_edge_tint_weight = saturate(p->edge_tint_weight);
             values->m_reflectance_multiplier = 1.0f;
             values->m_roughness = std::max(p->roughness, 0.0f);
             values->m_anisotropy = clamp(p->anisotropy, -1.0f, 1.0f);
@@ -1685,10 +1763,9 @@ void CompositeClosure::compute_closure_shading_basis(
     const float normal_square_norm = square_norm(normal);
     if APPLESEED_LIKELY(normal_square_norm != 0.0f)
     {
-        const float rcp_normal_norm = 1.0f / std::sqrt(normal_square_norm);
         m_bases[m_closure_count] =
             Basis3f(
-                normal * rcp_normal_norm,
+                normal / std::sqrt(normal_square_norm),
                 original_shading_basis.get_tangent_u());
     }
     else
@@ -1709,12 +1786,10 @@ void CompositeClosure::compute_closure_shading_basis(
         const float normal_square_norm = square_norm(normal);
         if APPLESEED_LIKELY(normal_square_norm != 0.0f)
         {
-            const float rcp_normal_norm = 1.0f / std::sqrt(normal_square_norm);
-            const float rcp_tangent_norm = 1.0f / std::sqrt(tangent_square_norm);
             m_bases[m_closure_count] =
                 Basis3f(
-                    normal * rcp_normal_norm,
-                    tangent * rcp_tangent_norm);
+                    normal / std::sqrt(normal_square_norm),
+                    tangent / std::sqrt(tangent_square_norm));
         }
         else
         {
@@ -1738,14 +1813,14 @@ InputValues* CompositeClosure::add_closure(
     const Vector3f&             normal,
     Arena&                      arena)
 {
-    return do_add_closure<InputValues>(
-        closure_type,
-        original_shading_basis,
-        weight,
-        normal,
-        false,
-        Vector3f(0.0f),
-        arena);
+    return
+        do_add_closure<InputValues, false>(
+            closure_type,
+            original_shading_basis,
+            weight,
+            normal,
+            Vector3f(0.0f),
+            arena);
 }
 
 template <typename InputValues>
@@ -1757,23 +1832,22 @@ InputValues* CompositeClosure::add_closure(
     const Vector3f&             tangent,
     Arena&                      arena)
 {
-    return do_add_closure<InputValues>(
-        closure_type,
-        original_shading_basis,
-        weight,
-        normal,
-        true,
-        tangent,
-        arena);
+    return
+        do_add_closure<InputValues, true>(
+            closure_type,
+            original_shading_basis,
+            weight,
+            normal,
+            tangent,
+            arena);
 }
 
-template <typename InputValues>
+template <typename InputValues, bool HasTangent>
 InputValues* CompositeClosure::do_add_closure(
     const ClosureID             closure_type,
     const Basis3f&              original_shading_basis,
     const Color3f&              weight,
     const Vector3f&             normal,
-    const bool                  has_tangent,
     const Vector3f&             tangent,
     Arena&                      arena)
 {
@@ -1791,9 +1865,9 @@ InputValues* CompositeClosure::do_add_closure(
     m_weights[m_closure_count].set(weight, g_std_lighting_conditions, Spectrum::Reflectance);
     m_scalar_weights[m_closure_count] = w;
 
-    if (!has_tangent)
-        compute_closure_shading_basis(normal, original_shading_basis);
-    else compute_closure_shading_basis(normal, tangent, original_shading_basis);
+    if (HasTangent)
+        compute_closure_shading_basis(normal, tangent, original_shading_basis);
+    else compute_closure_shading_basis(normal, original_shading_basis);
 
     m_closure_types[m_closure_count] = closure_type;
 
@@ -2391,6 +2465,7 @@ void register_closures(OSLShadingSystem& shading_system)
     register_closure<EmissionClosure>(shading_system);
     register_closure<GlassClosure>(shading_system);
     register_closure<GlossyClosure>(shading_system);
+    register_closure<HairClosure>(shading_system);
     register_closure<HoldoutClosure>(shading_system);
     register_closure<MatteClosure>(shading_system);
     register_closure<MetalClosure>(shading_system);

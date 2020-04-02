@@ -32,7 +32,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/atomic.h"
-#include "foundation/platform/types.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -42,6 +41,9 @@
 #include "boost/thread/locks.hpp"
 #include "boost/thread/mutex.hpp"
 #include "boost/thread/thread.hpp"
+
+// Standard headers.
+#include <cstdint>
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
@@ -59,8 +61,8 @@ namespace foundation
 APPLESEED_DLLSYMBOL void set_current_thread_name(const char* name);
 
 // Suspend the current thread for a given number of milliseconds.
-APPLESEED_DLLSYMBOL void sleep(const uint32 ms);
-APPLESEED_DLLSYMBOL void sleep(const uint32 ms, IAbortSwitch& abort_switch);
+APPLESEED_DLLSYMBOL void sleep(const std::uint32_t ms);
+APPLESEED_DLLSYMBOL void sleep(const std::uint32_t ms, IAbortSwitch& abort_switch);
 
 // Give up the remainder of the current thread's time slice, to allow other threads to run.
 APPLESEED_DLLSYMBOL void yield();
@@ -101,18 +103,18 @@ class Spinlock
 
 struct NoWaitPolicy
 {
-    static void pause(const uint32 iteration) {}
+    static void pause(const std::uint32_t iteration) {}
 };
 
 struct YieldWaitPolicy
 {
-    static void pause(const uint32 iteration) { yield(); }
+    static void pause(const std::uint32_t iteration) { yield(); }
 };
 
-template <uint32 ms>
+template <std::uint32_t ms>
 struct SleepWaitPolicy
 {
-    static void pause(const uint32 iteration) { sleep(ms); }
+    static void pause(const std::uint32_t iteration) { sleep(ms); }
 };
 
 template <typename WaitPolicy = NoWaitPolicy>
@@ -153,8 +155,8 @@ class ReadWriteLock
     };
 
   private:
-    boost::atomic<uint32>   m_readers;
-    boost::mutex            m_mutex;
+    boost::atomic<std::uint32_t>    m_readers;
+    boost::mutex                    m_mutex;
 };
 
 
@@ -285,7 +287,7 @@ class APPLESEED_DLLSYMBOL ThreadFlag
     bool is_set() const;
 
   private:
-    mutable volatile uint32 m_flag;
+    mutable volatile std::uint32_t m_flag;
 };
 
 
@@ -373,7 +375,7 @@ inline bool ReadWriteLock<WaitPolicy>::try_lock_write()
         return false;
 
     // Wait until active readers have terminated.
-    for (uint32 i = 0; m_readers > 0; ++i)
+    for (std::uint32_t i = 0; m_readers > 0; ++i)
         WaitPolicy::pause(i);
 
     return true;
@@ -386,7 +388,7 @@ inline void ReadWriteLock<WaitPolicy>::lock_write()
     m_mutex.lock();
 
     // Wait until active readers have terminated.
-    for (uint32 i = 0; m_readers > 0; ++i)
+    for (std::uint32_t i = 0; m_readers > 0; ++i)
         WaitPolicy::pause(i);
 }
 

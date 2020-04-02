@@ -37,16 +37,16 @@
 #include "renderer/kernel/shading/shadingray.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/alignedvector.h"
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/bvh.h"
-#include "foundation/platform/types.h"
-#include "foundation/utility/alignedvector.h"
+#include "foundation/memory/poolallocator.h"
 #include "foundation/utility/lazy.h"
-#include "foundation/utility/poolallocator.h"
 #include "foundation/utility/uid.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <vector>
@@ -97,10 +97,10 @@ class CurveTree
 
     struct LeafUserData
     {
-        foundation::uint32  m_curve1_offset;
-        foundation::uint32  m_curve1_count;
-        foundation::uint32  m_curve3_offset;
-        foundation::uint32  m_curve3_count;
+        std::uint32_t       m_curve1_offset;
+        std::uint32_t       m_curve1_count;
+        std::uint32_t       m_curve3_offset;
+        std::uint32_t       m_curve3_count;
     };
 
     const Arguments         m_arguments;
@@ -279,7 +279,7 @@ inline bool CurveLeafVisitor::visit(
     size_t hit_curve_index = ~size_t(0);
     GScalar u, v, t = ray.m_tmax;
 
-    for (foundation::uint32 i = 0; i < user_data.m_curve1_count; ++i, ++curve_index)
+    for (std::uint32_t i = 0; i < user_data.m_curve1_count; ++i, ++curve_index)
     {
         const Curve1Type& curve = m_tree.m_curves1[user_data.m_curve1_offset + i];
         if (Curve1IntersectorType::intersect(curve, ray, m_xfm_matrix, u, v, t))
@@ -294,7 +294,7 @@ inline bool CurveLeafVisitor::visit(
 
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(curve1_curve_count));
 
-    for (foundation::uint32 i = 0; i < user_data.m_curve3_count; ++i, ++curve_index)
+    for (std::uint32_t i = 0; i < user_data.m_curve3_count; ++i, ++curve_index)
     {
         const Curve3Type& curve = m_tree.m_curves3[user_data.m_curve3_offset + i];
         if (Curve3IntersectorType::intersect(curve, ray, m_xfm_matrix, u, v, t))
@@ -346,7 +346,7 @@ inline bool CurveLeafProbeVisitor::visit(
 {
     const CurveTree::LeafUserData& user_data = node.get_user_data<CurveTree::LeafUserData>();
 
-    for (foundation::uint32 i = 0; i < user_data.m_curve1_count; ++i)
+    for (std::uint32_t i = 0; i < user_data.m_curve1_count; ++i)
     {
         const Curve1Type& curve = m_tree.m_curves1[user_data.m_curve1_offset + i];
         if (Curve1IntersectorType::intersect(curve, ray, m_xfm_matrix))
@@ -359,7 +359,7 @@ inline bool CurveLeafProbeVisitor::visit(
 
     FOUNDATION_BVH_TRAVERSAL_STATS(stats.m_intersected_items.insert(curve1_curve_count));
 
-    for (foundation::uint32 i = 0; i < user_data.m_curve3_count; ++i)
+    for (std::uint32_t i = 0; i < user_data.m_curve3_count; ++i)
     {
         const Curve3Type& curve = m_tree.m_curves3[user_data.m_curve3_offset + i];
         if (Curve3IntersectorType::intersect(curve, ray, m_xfm_matrix))

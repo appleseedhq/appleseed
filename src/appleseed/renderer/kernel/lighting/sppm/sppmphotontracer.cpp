@@ -34,11 +34,12 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/intersection/intersector.h"
-#include "renderer/kernel/lighting/sppm/sppmphoton.h"
 #include "renderer/kernel/lighting/forwardlightsampler.h"
 #include "renderer/kernel/lighting/pathtracer.h"
 #include "renderer/kernel/lighting/pathvertex.h"
 #include "renderer/kernel/lighting/scatteringmode.h"
+#include "renderer/kernel/lighting/sppm/sppmimportonmap.h"
+#include "renderer/kernel/lighting/sppm/sppmphoton.h"
 #include "renderer/kernel/lighting/tracer.h"
 #include "renderer/kernel/shading/oslshadergroupexec.h"
 #include "renderer/kernel/shading/oslshadingsystem.h"
@@ -62,25 +63,25 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/hash/hash.h"
 #include "foundation/math/basis.h"
-#include "foundation/math/hash.h"
+#include "foundation/math/knn/knn_anyquery.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
+#include "foundation/memory/arena.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/timers.h"
-#include "foundation/utility/arena.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/job.h"
 #include "foundation/utility/statistics.h"
 #include "foundation/utility/stopwatch.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <algorithm>
 #include <cassert>
-#include <cstddef>
 
 using namespace foundation;
 
@@ -97,6 +98,8 @@ namespace
     {
         Spectrum                    m_initial_flux;     // initial particle flux (in W)
         const SPPMParameters&       m_params;
+        const SPPMImportonMap*      m_importon_map;
+        const float                 m_importon_lookup_radius;
         const bool                  m_store_direct;
         const bool                  m_store_indirect;
         const bool                  m_store_caustics;
@@ -105,12 +108,16 @@ namespace
         PathVisitor(
             const Spectrum&         initial_flux,
             const SPPMParameters&   params,
+            const SPPMImportonMap*  importon_map,
+            const float             importon_lookup_radius,
             const bool              store_direct,
             const bool              store_indirect,
             const bool              store_caustics,
             SPPMPhotonVector&       photons)
           : m_initial_flux(initial_flux)
           , m_params(params)
+          , m_importon_map(importon_map)
+          , m_importon_lookup_radius(importon_lookup_radius)
           , m_store_direct(store_direct)
           , m_store_indirect(store_indirect)
           , m_store_caustics(store_caustics)
@@ -118,7 +125,9 @@ namespace
         {
         }
 
-        void on_first_diffuse_bounce(const PathVertex& vertex)
+        void on_first_diffuse_bounce(
+            const PathVertex&           vertex,
+            const Spectrum&             albedo)
         {
         }
 
@@ -159,12 +168,22 @@ namespace
                 if (vertex.m_bsdf->is_purely_specular())
                     return;
 
+                const Vector3f point(vertex.get_point());
+
+                // Check the importon map if there is one.
+                if (m_importon_map != nullptr)
+                {
+                    const knn::AnyQuery3f query(*m_importon_map);
+                    if (!query.run(point, square(m_importon_lookup_radius)))
+                        return;
+                }
+
                 if (m_params.m_photon_type == SPPMParameters::Monochromatic)
                 {
                     // Choose a wavelength at random.
                     vertex.m_sampling_context.split_in_place(1, 1);
-                    const uint32 wavelength =
-                        truncate<uint32>(
+                    const std::uint32_t wavelength =
+                        truncate<std::uint32_t>(
                             vertex.m_sampling_context.next2<double>() * Spectrum::size());
 
                     // Create and store a new photon.
@@ -176,7 +195,7 @@ namespace
                         m_initial_flux[wavelength] *
                         Spectrum::size() *
                         vertex.m_throughput[wavelength];
-                    m_photons.push_back(Vector3f(vertex.get_point()), photon);
+                    m_photons.push_back(point, photon);
                 }
                 else
                 {
@@ -188,7 +207,7 @@ namespace
                     photon.m_geometric_normal = Vector3f(vertex.get_geometric_normal());
                     photon.m_flux = m_initial_flux;
                     photon.m_flux *= vertex.m_throughput;
-                    m_photons.push_back(Vector3f(vertex.get_point()), photon);
+                    m_photons.push_back(point, photon);
                 }
             }
         }
@@ -197,6 +216,7 @@ namespace
         {
         }
     };
+
 
     //
     // Volume visitor that does nothing.
@@ -219,6 +239,7 @@ namespace
         }
     };
 
+
     //
     // A job to trace a packet of photons from area lights and non-physical lights.
     //
@@ -230,6 +251,8 @@ namespace
         LightPhotonTracingJob(
             const Scene&                    scene,
             const LightTargetArray&         photon_targets,
+            const SPPMImportonMap*          importon_map,
+            const float                     importon_lookup_radius,
             const ForwardLightSampler&      light_sampler,
             const TraceContext&             trace_context,
             TextureStore&                   texture_store,
@@ -239,10 +262,12 @@ namespace
             SPPMPhotonVector&               global_photons,
             const size_t                    photon_begin,
             const size_t                    photon_end,
-            const uint32                    pass_hash,
+            const std::uint32_t             pass_hash,
             IAbortSwitch&                   abort_switch)
           : m_scene(scene)
           , m_photon_targets(photon_targets)
+          , m_importon_map(importon_map)
+          , m_importon_lookup_radius(importon_lookup_radius)
           , m_light_sampler(light_sampler)
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache)
@@ -262,7 +287,7 @@ namespace
           , m_pass_hash(pass_hash)
           , m_abort_switch(abort_switch)
         {
-            const Camera* camera = scene.get_active_camera();
+            const Camera* camera = scene.get_render_data().m_active_camera;
             m_shutter_open_begin_time = camera->get_shutter_open_begin_time();
             m_shutter_close_end_time = camera->get_shutter_close_end_time();
         }
@@ -281,7 +306,7 @@ namespace
                 m_arena,
                 thread_index);
 
-            const size_t instance = hash_uint32(static_cast<uint32>(m_pass_hash + m_photon_begin));
+            const size_t instance = hash_uint32(static_cast<std::uint32_t>(m_pass_hash + m_photon_begin));
             SamplingContext::RNGType rng(m_pass_hash, instance);
             SamplingContext sampling_context(
                 rng,
@@ -308,6 +333,8 @@ namespace
       private:
         const Scene&                m_scene;
         const LightTargetArray&     m_photon_targets;
+        const SPPMImportonMap*      m_importon_map;
+        const float                 m_importon_lookup_radius;
         const ForwardLightSampler&  m_light_sampler;
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
@@ -319,7 +346,7 @@ namespace
         SPPMPhotonVector&           m_global_photons;
         const size_t                m_photon_begin;
         const size_t                m_photon_end;
-        const uint32                m_pass_hash;
+        const std::uint32_t         m_pass_hash;
         IAbortSwitch&               m_abort_switch;
         SPPMPhotonVector            m_local_photons;
         float                       m_shutter_open_begin_time;
@@ -429,6 +456,8 @@ namespace
             PathVisitor path_visitor(
                 initial_flux,
                 m_params,
+                m_importon_map,
+                m_importon_lookup_radius,
                 m_params.m_dl_mode == SPPMParameters::SPPM, // store direct lighting photons?
                 cast_indirect_light,
                 m_params.m_enable_caustics,
@@ -492,6 +521,8 @@ namespace
             PathVisitor path_visitor(
                 initial_flux,
                 m_params,
+                m_importon_map,
+                m_importon_lookup_radius,
                 m_params.m_dl_mode == SPPMParameters::SPPM, // store direct lighting photons?
                 cast_indirect_light,
                 m_params.m_enable_caustics,
@@ -526,6 +557,8 @@ namespace
         EnvironmentPhotonTracingJob(
             const Scene&                scene,
             const LightTargetArray&     photon_targets,
+            const SPPMImportonMap*      importon_map,
+            const float                 importon_lookup_radius,
             const TraceContext&         trace_context,
             TextureStore&               texture_store,
             OIIOTextureSystem&          oiio_texture_system,
@@ -534,10 +567,12 @@ namespace
             SPPMPhotonVector&           global_photons,
             const size_t                photon_begin,
             const size_t                photon_end,
-            const uint32                pass_hash,
+            const std::uint32_t         pass_hash,
             IAbortSwitch&               abort_switch)
           : m_scene(scene)
           , m_photon_targets(photon_targets)
+          , m_importon_map(importon_map)
+          , m_importon_lookup_radius(importon_lookup_radius)
           , m_env_edf(*scene.get_environment()->get_environment_edf())
           , m_texture_cache(texture_store)
           , m_intersector(trace_context, m_texture_cache)
@@ -562,7 +597,7 @@ namespace
             m_scene_radius = scene_data.m_radius;
             m_safe_scene_diameter = scene_data.m_safe_diameter;
 
-            const Camera* camera = scene.get_active_camera();
+            const Camera* camera = scene.get_render_data().m_active_camera;
             m_shutter_open_begin_time = camera->get_shutter_open_begin_time();
             m_shutter_close_end_time = camera->get_shutter_close_end_time();
         }
@@ -581,7 +616,7 @@ namespace
                 m_arena,
                 thread_index);
 
-            const size_t instance = hash_uint32(static_cast<uint32>(m_pass_hash + m_photon_begin));
+            const size_t instance = hash_uint32(static_cast<std::uint32_t>(m_pass_hash + m_photon_begin));
             SamplingContext::RNGType rng(m_pass_hash, instance);
             SamplingContext sampling_context(
                 rng,
@@ -608,6 +643,8 @@ namespace
       private:
         const Scene&                m_scene;
         const LightTargetArray&     m_photon_targets;
+        const SPPMImportonMap*      m_importon_map;
+        const float                 m_importon_lookup_radius;
         const EnvironmentEDF&       m_env_edf;
         TextureCache                m_texture_cache;
         Intersector                 m_intersector;
@@ -619,7 +656,7 @@ namespace
         SPPMPhotonVector&           m_global_photons;
         const size_t                m_photon_begin;
         const size_t                m_photon_end;
-        const uint32                m_pass_hash;
+        const std::uint32_t         m_pass_hash;
         IAbortSwitch&               m_abort_switch;
         SPPMPhotonVector            m_local_photons;
         float                       m_shutter_open_begin_time;
@@ -700,6 +737,8 @@ namespace
             PathVisitor path_visitor(
                 initial_flux,
                 m_params,
+                m_importon_map,
+                m_importon_lookup_radius,
                 true,
                 cast_indirect_light,
                 m_params.m_enable_caustics,
@@ -808,7 +847,9 @@ namespace
 
 void SPPMPhotonTracer::trace_photons(
     SPPMPhotonVector&       photons,
-    const uint32            pass_hash,
+    const SPPMImportonMap*  importon_map,
+    const float             importon_lookup_radius,
+    const std::uint32_t     pass_hash,
     JobQueue&               job_queue,
     IAbortSwitch&           abort_switch)
 {
@@ -830,8 +871,10 @@ void SPPMPhotonTracer::trace_photons(
     {
         schedule_light_photon_tracing_jobs(
             photon_targets,
-            photons,
+            importon_map,
+            importon_lookup_radius,
             pass_hash,
+            photons,
             job_queue,
             job_count,
             emitted_photon_count,
@@ -841,8 +884,10 @@ void SPPMPhotonTracer::trace_photons(
     {
         schedule_environment_photon_tracing_jobs(
             photon_targets,
-            photons,
+            importon_map,
+            importon_lookup_radius,
             pass_hash,
+            photons,
             job_queue,
             job_count,
             emitted_photon_count,
@@ -860,12 +905,16 @@ void SPPMPhotonTracer::trace_photons(
     Statistics statistics;
     statistics.insert("tracing jobs", job_count);
     statistics.insert_time("tracing time", stopwatch.measure().get_seconds());
+    statistics.insert("emitted", emitted_photon_count);
+    statistics.insert(
+        "stored",
+        pretty_uint(photons.size()) +
+        " (" + pretty_percent(photons.size(), emitted_photon_count) + ")");
     statistics.insert("total emitted", m_total_emitted_photon_count);
     statistics.insert(
         "total stored",
-        pretty_uint(m_total_stored_photon_count) + " (" +
-        pretty_percent(m_total_stored_photon_count, m_total_emitted_photon_count) +
-        ")");
+        pretty_uint(m_total_stored_photon_count) +
+        " (" + pretty_percent(m_total_stored_photon_count, m_total_emitted_photon_count) + ")");
     RENDERER_LOG_DEBUG("%s",
         StatisticsVector::make(
             "sppm photon tracing statistics",
@@ -874,8 +923,10 @@ void SPPMPhotonTracer::trace_photons(
 
 void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
     const LightTargetArray& photon_targets,
+    const SPPMImportonMap*  importon_map,
+    const float             importon_lookup_radius,
+    const std::uint32_t     pass_hash,
     SPPMPhotonVector&       photons,
-    const uint32            pass_hash,
     JobQueue&               job_queue,
     size_t&                 job_count,
     size_t&                 emitted_photon_count,
@@ -895,6 +946,8 @@ void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
             new LightPhotonTracingJob(
                 m_scene,
                 photon_targets,
+                importon_map,
+                importon_lookup_radius,
                 m_light_sampler,
                 m_trace_context,
                 m_texture_store,
@@ -914,8 +967,10 @@ void SPPMPhotonTracer::schedule_light_photon_tracing_jobs(
 
 void SPPMPhotonTracer::schedule_environment_photon_tracing_jobs(
     const LightTargetArray& photon_targets,
+    const SPPMImportonMap*  importon_map,
+    const float             importon_lookup_radius,
+    const std::uint32_t     pass_hash,
     SPPMPhotonVector&       photons,
-    const uint32            pass_hash,
     JobQueue&               job_queue,
     size_t&                 job_count,
     size_t&                 emitted_photon_count,
@@ -935,6 +990,8 @@ void SPPMPhotonTracer::schedule_environment_photon_tracing_jobs(
             new EnvironmentPhotonTracingJob(
                 m_scene,
                 photon_targets,
+                importon_map,
+                importon_lookup_radius,
                 m_trace_context,
                 m_texture_store,
                 m_oiio_texture_system,

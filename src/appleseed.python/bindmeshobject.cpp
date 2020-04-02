@@ -35,8 +35,8 @@
 #include "renderer/api/object.h"
 
 // appleseed.foundation headers.
+#include "foundation/hash/murmurhash.h"
 #include "foundation/platform/python.h"
-#include "foundation/utility/murmurhash.h"
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.

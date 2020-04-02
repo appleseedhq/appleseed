@@ -29,9 +29,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exception.h"
-#include "foundation/platform/types.h"
-#include "foundation/utility/alignedallocator.h"
-#include "foundation/utility/poolallocator.h"
+#include "foundation/memory/alignedallocator.h"
+#include "foundation/memory/poolallocator.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.

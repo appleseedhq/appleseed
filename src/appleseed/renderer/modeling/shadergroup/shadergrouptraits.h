@@ -29,13 +29,13 @@
 #pragma once
 
 // appleseed.renderer headers.
-#include "renderer/modeling/shadergroup/shadergroup.h"
 #include "renderer/modeling/entity/entitytraits.h"
 #include "renderer/modeling/scene/containers.h"
+#include "renderer/modeling/shadergroup/shadergroup.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/containers/dictionary.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/utility/iostreamop.h"
 
 namespace renderer

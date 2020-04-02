@@ -69,6 +69,7 @@ class Tree
     size_t get_memory_size() const;
 
   private:
+    template <typename, size_t> friend class AnyQuery;
     template <typename, size_t> friend class Builder;
     template <typename, size_t> friend class Query;
     template <typename> friend class TreeStatistics;

@@ -35,6 +35,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 namespace renderer
 {
@@ -66,24 +67,36 @@ namespace
         }
 
         void on_tile_begin(
-            const Frame*    frame,
-            const size_t    tile_x,
-            const size_t    tile_y) override
+            const Frame*            frame,
+            const size_t            tile_x,
+            const size_t            tile_y,
+            const size_t            thread_index,
+            const size_t            thread_count) override
         {
-            m_controller->add_on_tile_begin_callback(frame, tile_x, tile_y);
+            m_controller->add_on_tile_begin_callback(frame, tile_x, tile_y, thread_index, thread_count);
         }
 
         void on_tile_end(
-            const Frame*    frame,
-            const size_t    tile_x,
-            const size_t    tile_y) override
+            const Frame*            frame,
+            const size_t            tile_x,
+            const size_t            tile_y) override
         {
             m_controller->add_on_tile_end_callback(frame, tile_x, tile_y);
         }
 
-        void on_progressive_frame_update(const Frame* frame) override
+        void on_progressive_frame_update(
+            const Frame&            frame,
+            const double            time,
+            const std::uint64_t     samples,
+            const double            samples_per_pixel,
+            const std::uint64_t     samples_per_second) override
         {
-            m_controller->add_on_progressive_frame_update_callback(frame);
+            m_controller->add_on_progressive_frame_update_callback(
+                frame,
+                time,
+                samples,
+                samples_per_pixel,
+                samples_per_second);
         }
 
       private:

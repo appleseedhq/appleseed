@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2017-2018 Luis Barrancos, The appleseedhq Organization
+// Copyright (c) 2017-2019 Luis Barrancos, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,7 @@ shader as_subsurface
 [[
     string help = "SubSurface Scattering material.",
     string icon = "asSubsurface.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_subsurface.html#label-as-subsurface",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_subsurface.html",
 
     string as_node_name = "asSubsurface",
     string as_category = "shader",
@@ -49,7 +49,7 @@ shader as_subsurface
         string as_maya_attribute_name = "sssProfile",
         string as_maya_attribute_short_name = "ssp",
         string widget = "mapper",
-        string options = "Better Dipole:0|Directional Dipole:1|Gaussian:2|Normalized Diffusion:3|Standard Dipole:4|Diffuse Random Walk:5",
+        string options = "Better Dipole:0|Directional Dipole:1|Gaussian:2|Normalized Diffusion:3|Standard Dipole:4|Diffuse Random Walk:5|Glassy Random Walk:6",
         string label = "Subsurface Profile",
         string page = "Subsurface",
         int as_maya_attribute_connectable = 0,
@@ -57,14 +57,16 @@ shader as_subsurface
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 0
     ]],
     color in_color = color(0.87, 0.31, 0.12)
     [[
         string as_maya_attribute_name = "color",
         string as_maya_attribute_short_name = "c",
         string label = "Reflectance",
-        string page = "Subsurface"
+        string page = "Subsurface",
+        int as_max_param_id = 1
     ]],
     float in_sss_amount = 1.0
     [[
@@ -74,14 +76,16 @@ shader as_subsurface
         float max = 1.0,
         string label = "Subsurface Weight",
         string page = "Subsurface",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 3
     ]],
     color in_sss_mfp = color(0.13, 0.69, 0.88)
     [[
         string as_maya_attribute_name = "meanFreePath",
         string as_maya_attribute_short_name = "mfp",
         string label = "Depth",
-        string page = "Subsurface"
+        string page = "Subsurface",
+        int as_max_param_id = 5
     ]],
     float in_sss_mfp_scale = 1.0
     [[
@@ -90,7 +94,26 @@ shader as_subsurface
         float min = 0.0,
         float softmax = 1.0,
         string label = "Depth Scale",
-        string page = "Subsurface"
+        string page = "Subsurface",
+        int as_max_param_id = 7
+    ]],
+    float in_volume_anisotropy = 0.0
+    [[
+        string as_maya_attribute_name = "volumeAnisotropy",
+        string as_maya_attribute_short_name = "sva",
+        string widget = "slider",
+        float min = -1.0,
+        float max = 1.0,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        string label = "Volume Anisotropy",
+        string page = "Subsurface",
+        int as_max_param_id = 36,
+        string help = "Scattering anisotropy, with negative values producing back scattering, 0 producing isotropic scattering, and positive values producing forward scattering",
+        int divider = 1
     ]],
     int in_sss_maximum_ray_depth = 8
     [[
@@ -106,7 +129,8 @@ shader as_subsurface
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 9
     ]],
     float in_ior = 1.41
     [[
@@ -115,7 +139,8 @@ shader as_subsurface
         float min = 1.0,
         float softmax = 3.0,
         string label = "Index of Refraction",
-        string page = "Fresnel"
+        string page = "Fresnel",
+        int as_max_param_id = 10
     ]],
     float in_fresnel_weight = 1.0
     [[
@@ -125,7 +150,8 @@ shader as_subsurface
         float max = 1.0,
         string label = "Fresnel Weight",
         string page = "Fresnel.Advanced",
-        string help = "A value of 0.0 disables scaling the subsurface scattering term by the Fresnel. It should match the specular weight ideally."
+        string help = "A value of 0.0 disables scaling the subsurface scattering term by the Fresnel. It should match the specular weight ideally.",
+        int as_max_param_id = 12
     ]],
     float in_specular_weight = 1.0
     [[
@@ -134,7 +160,8 @@ shader as_subsurface
         float min = 0.0,
         float max = 1.0,
         string label = "Specular Weight",
-        string page = "Specular"
+        string page = "Specular",
+        int as_max_param_id = 14
     ]],
     float in_specular_roughness = 0.3
     [[
@@ -143,7 +170,8 @@ shader as_subsurface
         float min = 0.0,
         float max = 1.0,
         string label = "Specular Roughness",
-        string page = "Specular"
+        string page = "Specular",
+        int as_max_param_id = 16
     ]],
     float in_anisotropy_amount = 0.0
     [[
@@ -152,7 +180,8 @@ shader as_subsurface
         float min = 0.0,
         float max = 1.0,
         string label = "Anisotropy Amount",
-        string page = "Specular.Anisotropy"
+        string page = "Specular.Anisotropy",
+        int as_max_param_id = 18
     ]],
     float in_anisotropy_angle = 0.0
     [[
@@ -163,7 +192,8 @@ shader as_subsurface
         string label = "Anisotropy Angle",
         string page = "Specular.Anisotropy",
         string help = "Anisotropy angle in [0,1], mapping to [0,360] degrees.",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 20
     ]],
     int in_anisotropy_mode = 0
     [[
@@ -179,7 +209,8 @@ shader as_subsurface
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 22
     ]],
     color in_anisotropy_map = color(0)
     [[
@@ -188,7 +219,8 @@ shader as_subsurface
         string label = "Anisotropy Vector Map",
         string page = "Specular.Anisotropy",
         string help = "Anisotropy vector map, with XY encoded in RG channels.",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 23
     ]],
     vector in_anisotropy_direction = vector(0)
     [[
@@ -196,7 +228,8 @@ shader as_subsurface
         string as_maya_attribute_short_name = "and",
         string label = "Anisotropy Vector",
         string page = "Specular.Anisotropy",
-        string help = "Explicit anisotropy vector, such as the vector output by a tangent field node."
+        string help = "Explicit anisotropy vector, such as the vector output by a tangent field node.",
+        int as_max_param_id = 25
     ]],
     normal in_bump_normal = N
     [[
@@ -204,7 +237,8 @@ shader as_subsurface
         string as_maya_attribute_short_name = "n",
         string label = "Bump Normal",
         string page = "Bump",
-        string help = "The default bump normal."
+        string help = "The default bump normal.",
+        int as_max_param_id = 27
     ]],
     int in_enable_matte = 0
     [[
@@ -218,7 +252,8 @@ shader as_subsurface
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 28
     ]],
     float in_matte_opacity = 0.0
     [[
@@ -229,7 +264,8 @@ shader as_subsurface
         string label = "Matte Opacity",
         string page = "Matte Opacity",
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 29
     ]],
     color in_matte_opacity_color = color(1,0.5,0)
     [[
@@ -238,7 +274,8 @@ shader as_subsurface
         string label = "Matte Opacity Color",
         string page = "Matte Opacity",
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 31
     ]],
     vector Tn = vector(0)
     [[
@@ -246,7 +283,8 @@ shader as_subsurface
         int as_maya_attribute_hidden = 1,
         string widget = "null",
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 33
     ]],
     vector Bn = vector(0)
     [[
@@ -254,7 +292,8 @@ shader as_subsurface
         int as_maya_attribute_hidden = 1,
         string widget = "null",
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 34
     ]],
 
     output closure color out_outColor = 0
@@ -262,7 +301,8 @@ shader as_subsurface
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
         string widget = "null",
-        string label = "Output Color"
+        string label = "Output Color",
+        int as_max_param_id = 35
     ]],
     output closure color out_outMatteOpacity = 0
     [[
@@ -272,7 +312,8 @@ shader as_subsurface
         string label = "Output Matte",
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 35
     ]]
 )
 {
@@ -304,40 +345,54 @@ shader as_subsurface
 
     color albedo = clamp(in_sss_amount * in_color, 0.01, 0.99);
 
-    string sss_profile;
-
-    if (in_sss_profile == 0)
+    if (in_sss_profile == 6) // glass random walk
     {
-        sss_profile = "better_dipole";
-    }
-    else if (in_sss_profile == 1)
-    {
-        sss_profile = "directional_dipole";
-    }
-    else if (in_sss_profile == 2)
-    {
-        sss_profile = "gaussian";
-    }
-    else if (in_sss_profile == 3)
-    {
-        sss_profile = "normalized_diffusion";
-    }
-    else if (in_sss_profile == 4)
-    {
-        sss_profile = "standard_dipole";
+        out_outColor += as_randomwalk_glass(
+            Nn,
+            albedo,
+            in_sss_mfp_scale * in_sss_mfp,
+            in_ior,
+            in_specular_roughness,
+            "fresnel_weight", 1.0,
+            "volume_anisotropy", in_volume_anisotropy);
     }
     else
     {
-        sss_profile = "randomwalk"; // diffuse random walk
-    }
+        string sss_profile;
 
-    out_outColor += as_subsurface(
-        sss_profile,
-        Nn,
-        albedo,
-        in_sss_mfp_scale * in_sss_mfp,
-        in_ior,
-        "fresnel_weight", in_fresnel_weight);
+        if (in_sss_profile == 0)
+        {
+            sss_profile = "better_dipole";
+        }
+        else if (in_sss_profile == 1)
+        {
+            sss_profile = "directional_dipole";
+        }
+        else if (in_sss_profile == 2)
+        {
+            sss_profile = "gaussian";
+        }
+        else if (in_sss_profile == 3)
+        {
+            sss_profile = "normalized_diffusion";
+        }
+        else if (in_sss_profile == 4)
+        {
+            sss_profile = "standard_dipole";
+        }
+        else
+        {
+            sss_profile = "randomwalk"; // diffuse random walk
+        }
+
+        out_outColor += as_subsurface(
+            sss_profile,
+            Nn,
+            albedo,
+            in_sss_mfp_scale * in_sss_mfp,
+            in_ior,
+            "fresnel_weight", in_fresnel_weight);
+    }
 
     if (in_specular_weight > 0.0)
     {
@@ -353,9 +408,7 @@ shader as_subsurface
                         (vector) in_anisotropy_map * 2.0 - 1.0);
 
                     tangent = normalize(
-                        vector_map[0] * Tn +
-                        vector_map[1] * Bn +
-                        vector_map[2] * Nn);
+                        vector_map[0] * Tn + vector_map[1] * Bn);
                 }
             }
             else

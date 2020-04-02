@@ -26,13 +26,18 @@
 // THE SOFTWARE.
 //
 
+#include "appleseed/math/as_math_helpers.h"
 #include "appleseed/transform/as_transform_helpers.h"
+
+#ifndef AS_SWITCH_NUM_IMAGES
+#define AS_SWITCH_NUM_IMAGES    8
+#endif
 
 shader as_switch_texture
 [[
     string help = "Texture variation utility shader.",
     string icon = "asSwitchTexture.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_switch_texture.html#label-as-switch-texture",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/utilities/as_switch_texture.html",
 
     string as_node_name = "asSwitchTexture",
     string as_category = "utility",
@@ -183,12 +188,11 @@ shader as_switch_texture
     ]]
 )
 {
-    color textures[8] = {
+    color textures[AS_SWITCH_NUM_IMAGES] = {
             in_color, in_color1, in_color2, in_color3,
             in_color4, in_color5, in_color6, in_color7};
 
-    int len = arraylength(textures) - 1, hash_id = 0;
-
+    int hash_id = 0, index;
     float grey_id = 0.0;
     color cell_id = color(0);
 
@@ -201,9 +205,15 @@ shader as_switch_texture
         cell_id,
         grey_id);
 
-    int index = (in_cycle_mode == 0)
-        ? (int) mod(hash_id, len)
-        : (int) clamp(grey_id * len, 0, len);
+    if (in_cycle_mode == 0)
+    {
+        index = remainder(hash_id, AS_SWITCH_NUM_IMAGES);
+    }
+    else
+    {
+        int upper_bound = AS_SWITCH_NUM_IMAGES - 1;
+        index = (int) clamp(grey_id * upper_bound, 0, upper_bound);
+    }
 
     out_outColor = textures[index];
 }

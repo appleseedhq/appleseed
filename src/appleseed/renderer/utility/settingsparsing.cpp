@@ -34,10 +34,10 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/platform/system.h"
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/makevector.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <algorithm>

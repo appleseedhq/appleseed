@@ -45,21 +45,21 @@
 #include "renderer/utility/settingsparsing.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/core/concepts/noncopyable.h"
-#include "foundation/math/hash.h"
+#include "foundation/hash/hash.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/platform/thread.h"
-#include "foundation/platform/types.h"
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/foreach.h"
 #include "foundation/utility/job.h"
 #include "foundation/utility/statistics.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <string>
 #include <vector>
@@ -344,9 +344,9 @@ namespace
                     }
 
                     if (m_pass_count > 1)
-                        RENDERER_LOG_INFO("--- beginning rendering pass %s ---", pretty_uint(pass + 1).c_str());
+                        RENDERER_LOG_INFO("--- beginning rendering pass #%s ---", pretty_uint(pass + 1).c_str());
 
-                    // Invoke the pre-pass callback if there is one.
+                    // Invoke on_pass_begin() on the pass callback if there is one.
                     if (m_pass_callback)
                     {
                         assert(!m_job_queue.has_scheduled_or_running_jobs());
@@ -359,13 +359,14 @@ namespace
                         tile_callback->on_tiled_frame_begin(&m_frame);
 
                     // Create tile jobs.
-                    const uint32 pass_hash = mix_uint32(m_frame.get_noise_seed(), static_cast<uint32>(pass));
+                    const std::uint32_t pass_hash = mix_uint32(m_frame.get_noise_seed(), static_cast<std::uint32_t>(pass));
                     TileJobFactory::TileJobVector tile_jobs;
                     m_tile_job_factory.create(
                         m_frame,
                         m_tile_ordering,
                         m_tile_renderers,
                         m_tile_callbacks,
+                        m_thread_count,
                         pass_hash,
                         m_spectrum_mode,
                         tile_jobs,
@@ -382,7 +383,7 @@ namespace
                     for (auto tile_callback : m_tile_callbacks)
                         tile_callback->on_tiled_frame_end(&m_frame);
 
-                    // Invoke the post-pass callback if there is one.
+                    // Invoke on_pass_end() on the pass callback if there is one.
                     if (m_pass_callback)
                     {
                         assert(!m_job_queue.has_scheduled_or_running_jobs());
@@ -455,7 +456,7 @@ namespace
                     for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
                     {
                         for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
-                            tile_callback->on_tile_begin(&m_frame, tx, ty);
+                            tile_callback->on_tile_begin(&m_frame, tx, ty, 0, 1);
                     }
                 }
             }

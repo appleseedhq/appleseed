@@ -37,7 +37,7 @@
 #include "foundation/platform/windows.h"
 #endif
 #include "foundation/utility/job/iabortswitch.h"
-#include "foundation/utility/log.h"
+#include "foundation/log/log.h"
 
 // Boost headers.
 #include "boost/chrono.hpp"
@@ -70,7 +70,13 @@ namespace foundation
     //
     // Reference:
     //
+    //   How to: Set a Thread Name in Native Code
     //   https://msdn.microsoft.com/en-us/library/xcb2z8hs.aspx
+    //
+    // Also:
+    //
+    //   Issue 2692213003: Use Windows 10 thread naming API, SetThreadDescription (Closed)
+    //   https://codereview.chromium.org/2692213003
     //
 
 #pragma pack(push, 8)
@@ -135,24 +141,24 @@ namespace foundation
 
 #endif
 
-void sleep(const uint32 ms)
+void sleep(const std::uint32_t ms)
 {
     this_thread::sleep_for(chrono::milliseconds(ms));
 }
 
-void sleep(const uint32 ms, IAbortSwitch& abort_switch)
+void sleep(const std::uint32_t ms, IAbortSwitch& abort_switch)
 {
     const chrono::milliseconds one_ms(1);
 
     DefaultWallclockTimer timer;
 
-    const uint64 freq = timer.frequency();
-    const uint64 start_time = timer.read_start();
+    const std::uint64_t freq = timer.frequency();
+    const std::uint64_t start_time = timer.read_start();
 
     while (!abort_switch.is_aborted())
     {
-        const uint64 elapsed_ticks = timer.read_end() - start_time;
-        const uint64 elapsed_ms = (1000 * elapsed_ticks) / freq;
+        const std::uint64_t elapsed_ticks = timer.read_end() - start_time;
+        const std::uint64_t elapsed_ms = (1000 * elapsed_ticks) / freq;
 
         if (elapsed_ms >= ms)
             break;
@@ -168,14 +174,16 @@ void yield()
 
 
 //
-// ProcessPriorityContext class implementation (Windows).
-//
-// Reference:
-//
-//   http://msdn.microsoft.com/en-us/library/windows/desktop/ms685100(v=vs.85).aspx
+// ProcessPriorityContext class implementation.
 //
 
 #ifdef _WIN32
+
+    //
+    // Reference:
+    //
+    //   http://msdn.microsoft.com/en-us/library/windows/desktop/ms685100(v=vs.85).aspx
+    //
 
     namespace
     {
@@ -244,6 +252,7 @@ void yield()
         const ProcessPriority   priority,
         Logger*                 logger)
     {
+        // todo: implement.
     }
 
     ProcessPriorityContext::~ProcessPriorityContext()
@@ -254,14 +263,16 @@ void yield()
 
 
 //
-// ThreadPriorityContext class implementation (Windows).
-//
-// Reference:
-//
-//   http://msdn.microsoft.com/en-us/library/windows/desktop/ms685100(v=vs.85).aspx
+// ThreadPriorityContext class implementation.
 //
 
 #ifdef _WIN32
+
+    //
+    // Reference:
+    //
+    //   http://msdn.microsoft.com/en-us/library/windows/desktop/ms685100(v=vs.85).aspx
+    //
 
     namespace
     {
@@ -330,6 +341,7 @@ void yield()
         const ProcessPriority   priority,
         Logger*                 logger)
     {
+        // todo: implement.
     }
 
     ThreadPriorityContext::~ThreadPriorityContext()
@@ -340,7 +352,7 @@ void yield()
 
 
 //
-// BenchmarkingThreadContext class implementation (Windows).
+// BenchmarkingThreadContext class implementation.
 //
 
 #ifdef _WIN32
@@ -349,7 +361,7 @@ void yield()
     {
         ProcessPriorityContext  m_process_priority_context;
         ThreadPriorityContext   m_thread_priority_context;
-        uint64                  m_thread_affinity_mask;
+        std::uint64_t           m_thread_affinity_mask;
 
         explicit Impl(Logger* logger)
           : m_process_priority_context(ProcessPriorityHighest, logger)
@@ -378,6 +390,7 @@ void yield()
 
     BenchmarkingThreadContext::BenchmarkingThreadContext(Logger* logger)
     {
+        // todo: implement.
     }
 
     BenchmarkingThreadContext::~BenchmarkingThreadContext()

@@ -36,11 +36,11 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/bitmask.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 #include <vector>
 
 // Forward declarations.
@@ -127,9 +127,9 @@ class IntersectionFilter
         foundation::BitMask2    m_bitmask;
     };
 
-    foundation::uint64                  m_obj_alpha_map_signature;
+    std::uint64_t                       m_obj_alpha_map_signature;
     AlphaMask*                          m_obj_alpha_mask;
-    std::vector<foundation::uint64>     m_material_alpha_map_signatures;
+    std::vector<std::uint64_t>          m_material_alpha_map_signatures;
     std::vector<AlphaMask*>             m_material_alpha_masks;
     std::vector<foundation::Vector2f>   m_uv;
 
@@ -138,12 +138,12 @@ class IntersectionFilter
         const EntityType&               entity,
         TextureCache&                   texture_cache,
         IntersectionFilter::AlphaMask*& mask,
-        foundation::uint64&             signature);
+        std::uint64_t&                  signature);
 
     static AlphaMask* create_alpha_mask(
-        const Source*           alpha_map,
-        TextureCache&           texture_cache,
-        double&                 transparency);
+        const Source*                   alpha_map,
+        TextureCache&                   texture_cache,
+        double&                         transparency);
 };
 
 

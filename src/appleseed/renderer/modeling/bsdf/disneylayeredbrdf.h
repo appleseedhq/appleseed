@@ -34,9 +34,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
+#include "foundation/math/dual.h"
 #include "foundation/math/vector.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/autoreleaseptr.h"
 
 // Standard headers.
 #include <cstddef>
@@ -85,6 +86,8 @@ class DisneyLayeredBRDF
         const void*                     data,
         const bool                      adjoint,
         const bool                      cosine_mult,
+        const LocalGeometry&            local_geometry,
+        const foundation::Dual3f&       outgoing,
         const int                       modes,
         BSDFSample&                     sample) const override;
 
@@ -92,8 +95,7 @@ class DisneyLayeredBRDF
         const void*                     data,
         const bool                      adjoint,
         const bool                      cosine_mult,
-        const foundation::Vector3f&     geometric_normal,
-        const foundation::Basis3f&      shading_basis,
+        const LocalGeometry&            local_geometry,
         const foundation::Vector3f&     outgoing,
         const foundation::Vector3f&     incoming,
         const int                       modes,
@@ -102,8 +104,7 @@ class DisneyLayeredBRDF
     float evaluate_pdf(
         const void*                     data,
         const bool                      adjoint,
-        const foundation::Vector3f&     geometric_normal,
-        const foundation::Basis3f&      shading_basis,
+        const LocalGeometry&            local_geometry,
         const foundation::Vector3f&     outgoing,
         const foundation::Vector3f&     incoming,
         const int                       modes) const override;

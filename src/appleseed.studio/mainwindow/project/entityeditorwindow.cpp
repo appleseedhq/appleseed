@@ -33,7 +33,7 @@
 // UI definition header.
 #include "ui_entityeditorwindow.h"
 
-// appleseed.studio headers.
+// appleseed.qtcommon headers.
 #include "utility/miscellaneous.h"
 
 // Qt headers.
@@ -45,6 +45,7 @@
 // Standard headers.
 #include <utility>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 

@@ -28,11 +28,11 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/containers/alignedvector.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/bvh.h"
 #include "foundation/math/ray.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/alignedvector.h"
 #include "foundation/utility/iostreamop.h"
 #include "foundation/utility/test.h"
 

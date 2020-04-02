@@ -31,6 +31,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <cstdint>
 #include <list>
 
 using namespace foundation;
@@ -46,50 +47,64 @@ namespace
       public:
         explicit TileCallbackCollection(std::list<ITileCallbackFactory*> factories)
         {
-            for (auto i : factories)
-                m_callbacks.push_back(i->create());
+            for (ITileCallbackFactory* factory : factories)
+                m_callbacks.push_back(factory->create());
         }
 
         void release() override
         {
-            for (auto i : m_callbacks)
-                i->release();
+            for (ITileCallback* callback : m_callbacks)
+                callback->release();
         }
 
         void on_tiled_frame_begin(const Frame* frame) override
         {
-            for (auto i : m_callbacks)
-                i->on_tiled_frame_begin(frame);
+            for (ITileCallback* callback : m_callbacks)
+                callback->on_tiled_frame_begin(frame);
         }
 
         void on_tiled_frame_end(const Frame* frame) override
         {
-            for (auto i : m_callbacks)
-                i->on_tiled_frame_end(frame);
+            for (ITileCallback* callback : m_callbacks)
+                callback->on_tiled_frame_end(frame);
         }
 
         void on_tile_begin(
-            const Frame* frame,
-            const size_t tile_x,
-            const size_t tile_y) override
+            const Frame*            frame,
+            const size_t            tile_x,
+            const size_t            tile_y,
+            const size_t            thread_index,
+            const size_t            thread_count) override
         {
-            for (auto i : m_callbacks)
-                i->on_tile_begin(frame, tile_x, tile_y);
+            for (ITileCallback* callback : m_callbacks)
+                callback->on_tile_begin(frame, tile_x, tile_y, thread_index, thread_count);
         }
         
         void on_tile_end(
-            const Frame* frame,
-            const size_t tile_x,
-            const size_t tile_y) override
+            const Frame*            frame,
+            const size_t            tile_x,
+            const size_t            tile_y) override
         {
-            for (auto i : m_callbacks)
-                i->on_tile_end(frame, tile_x, tile_y);
+            for (ITileCallback* callback : m_callbacks)
+                callback->on_tile_end(frame, tile_x, tile_y);
         }
 
-        void on_progressive_frame_update(const Frame* frame) override
+        void on_progressive_frame_update(
+            const Frame&            frame,
+            const double            time,
+            const std::uint64_t     samples,
+            const double            samples_per_pixel,
+            const std::uint64_t     samples_per_second) override
         {
-            for (auto i : m_callbacks)
-                i->on_progressive_frame_update(frame);
+            for (ITileCallback* callback : m_callbacks)
+            {
+                callback->on_progressive_frame_update(
+                    frame,
+                    time,
+                    samples,
+                    samples_per_pixel,
+                    samples_per_second);
+            }
         }
 
       private:

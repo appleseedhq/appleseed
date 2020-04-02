@@ -34,9 +34,9 @@
 #include "renderer/global/globallogger.h"
 
 // appleseed.foundation headers.
+#include "foundation/log/log.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/python.h"
-#include "foundation/utility/log.h"
 
 // Standard headers.
 #include <cstddef>

@@ -37,6 +37,7 @@
 #include "renderer/utility/messagecontext.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/colormap.h"
@@ -50,15 +51,15 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/defaulttimers.h"
+#include "foundation/platform/types.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/countof.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/otherwise.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/stopwatch.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <algorithm>
@@ -135,7 +136,7 @@ namespace
                 m_params.get_optional<std::string>(
                     "color_map",
                     "inferno",
-                    make_vector("inferno", "jet", "magma", "plasma", "viridis", "custom"),
+                    make_vector("inferno", "jet", "magma", "plasma", "viridis", "turbo", "custom"),
                     context);
 
             if (color_map == "inferno")
@@ -148,6 +149,8 @@ namespace
                 m_color_map.set_palette_from_array(PlasmaColorMapLinearRGB, countof(PlasmaColorMapLinearRGB) / 3);
             else if (color_map == "viridis")
                 m_color_map.set_palette_from_array(ViridisColorMapLinearRGB, countof(ViridisColorMapLinearRGB) / 3);
+            else if (color_map == "turbo")
+                m_color_map.set_palette_from_array(TurboColorMapLinearRGB, countof(TurboColorMapLinearRGB) / 3);
             else
             {
                 assert(color_map == "custom");
@@ -693,6 +696,7 @@ DictionaryArray ColorMapPostProcessingStageFactory::get_input_metadata() const
                     .insert("Magma", "magma")
                     .insert("Plasma", "plasma")
                     .insert("Viridis", "viridis")
+                    .insert("Turbo", "turbo")
                     .insert("Custom", "custom"))
             .insert("use", "required")
             .insert("default", "inferno")

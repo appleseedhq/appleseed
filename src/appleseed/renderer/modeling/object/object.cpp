@@ -39,6 +39,21 @@ namespace renderer
 {
 
 //
+// Object::RenderData class implementation.
+//
+
+Object::RenderData::RenderData()
+{
+    clear();
+}
+
+void Object::RenderData::clear()
+{
+    m_alpha_map = nullptr;
+}
+
+
+//
 // Object class implementation.
 //
 
@@ -56,7 +71,6 @@ Object::Object(
     const char*         name,
     const ParamArray&   params)
   : ConnectableEntity(g_class_uid, params)
-  , m_alpha_map(nullptr)
 {
     set_name(name);
 }
@@ -93,7 +107,8 @@ bool Object::on_frame_begin(
     if (!ConnectableEntity::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
 
-    m_alpha_map = get_uncached_alpha_map();
+    m_render_data.clear();
+    m_render_data.m_alpha_map = get_uncached_alpha_map();
 
     return true;
 }
@@ -102,7 +117,7 @@ void Object::on_frame_end(
     const Project&          project,
     const BaseGroup*        parent)
 {
-    m_alpha_map = nullptr;
+    m_render_data.clear();
 
     ConnectableEntity::on_frame_end(project, parent);
 }

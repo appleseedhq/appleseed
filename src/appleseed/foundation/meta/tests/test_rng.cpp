@@ -34,12 +34,12 @@
 #ifdef APPLESEED_USE_SSE
 #include "foundation/math/rng/simdmersennetwister.h"
 #endif
-#include "foundation/platform/types.h"
 #include "foundation/utility/countof.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 #include <limits>
 
 using namespace foundation;
@@ -48,14 +48,14 @@ TEST_SUITE(Foundation_Math_RNG)
 {
     struct FakeRNG
     {
-        const uint32 m_value;
+        const std::uint32_t m_value;
 
-        explicit FakeRNG(const uint32 value)
+        explicit FakeRNG(const std::uint32_t value)
           : m_value(value)
         {
         }
 
-        uint32 rand_uint32() const
+        std::uint32_t rand_uint32() const
         {
             return m_value;
         }
@@ -69,7 +69,7 @@ TEST_SUITE(Foundation_Math_RNG)
     {
         FakeRNG rng(0x00000000);
 
-        const int32 value = rand_int31(rng);
+        const std::int32_t value = rand_int31(rng);
 
         EXPECT_EQ(0, value);
     }
@@ -78,7 +78,7 @@ TEST_SUITE(Foundation_Math_RNG)
     {
         FakeRNG rng(0xFFFFFFFF);
 
-        const int32 value = rand_int31(rng);
+        const std::int32_t value = rand_int31(rng);
 
         EXPECT_EQ(0x7FFFFFFF, value);
     }
@@ -91,7 +91,7 @@ TEST_SUITE(Foundation_Math_RNG)
     {
         FakeRNG rng(0x00000000);
 
-        const int32 value = rand_int1(rng, -12, 42);
+        const std::int32_t value = rand_int1(rng, -12, 42);
 
         EXPECT_EQ(-12, value);
     }
@@ -100,7 +100,7 @@ TEST_SUITE(Foundation_Math_RNG)
     {
         FakeRNG rng(0xFFFFFFFF);
 
-        const int32 value = rand_int1(rng, -12, 42);
+        const std::int32_t value = rand_int1(rng, -12, 42);
 
         EXPECT_EQ(42, value);
     }
@@ -350,7 +350,7 @@ TEST_SUITE(Foundation_Math_RNG_PCG)
 {
     TEST_CASE(CheckFirstValues)
     {
-        static const uint32 Expected[1000] =
+        static const std::uint32_t Expected[1000] =
         {
              465482994u, 3895364073u, 1746730475u, 3759121132u, 2984354868u,
             3193308813u,  719162516u, 2669372405u,  952099657u, 3848281661u,
@@ -565,7 +565,7 @@ TEST_SUITE(Foundation_Math_RNG_SerialMersenneTwister)
 {
     TEST_CASE(CheckThousandFirstOutputValues)
     {
-        static const uint32 Expected[1000] =
+        static const std::uint32_t Expected[1000] =
         {
             1067595299u,  955945823u,  477289528u, 4107218783u, 4228976476u,
             3344332714u, 3355579695u,  227628506u,  810200273u, 2591290167u,
@@ -769,7 +769,7 @@ TEST_SUITE(Foundation_Math_RNG_SerialMersenneTwister)
             2643151863u, 3896204135u, 2416995901u, 1397735321u, 3460025646u
         };
 
-        static const uint32 InitKey[] = { 0x123u, 0x234u, 0x345u, 0x456u };
+        static const std::uint32_t InitKey[] = { 0x123u, 0x234u, 0x345u, 0x456u };
         SerialMersenneTwister rng(InitKey, countof(InitKey));
 
         for (size_t i = 0; i < 1000; ++i)
@@ -783,7 +783,7 @@ TEST_SUITE(Foundation_Math_RNG_SimdMersenneTwister)
 {
     TEST_CASE(CheckThousandFirstOutputValues)
     {
-        static const uint32 Expected[1000] =
+        static const std::uint32_t Expected[1000] =
         {
             3886407011u, 4281800351u,  111076728u,   81347708u, 3833203606u,
              556297090u, 4292688708u,  260342669u, 3323730357u,  155924424u,
@@ -987,7 +987,7 @@ TEST_SUITE(Foundation_Math_RNG_SimdMersenneTwister)
             2130137889u,  585288649u, 2141196576u, 1291263962u, 3837327574u
         };
 
-        static const uint32 InitKey[] = { 0x123u, 0x234u, 0x345u, 0x456u };
+        static const std::uint32_t InitKey[] = { 0x123u, 0x234u, 0x345u, 0x456u };
         SimdMersenneTwister rng(InitKey, countof(InitKey));
 
         for (size_t i = 0; i < 1000; ++i)

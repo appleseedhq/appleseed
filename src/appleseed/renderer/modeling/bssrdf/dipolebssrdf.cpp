@@ -33,9 +33,9 @@
 #include "renderer/modeling/bssrdf/dipolebssrdffactory.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 using namespace foundation;
 
@@ -114,21 +114,24 @@ bool DipoleBSSRDF::sample(
     const void*             data,
     const ShadingPoint&     outgoing_point,
     const Vector3f&         outgoing_dir,
+    const int               modes,
     BSSRDFSample&           bssrdf_sample,
     BSDFSample&             bsdf_sample) const
 {
     const DipoleBSSRDFInputValues* values =
         static_cast<const DipoleBSSRDFInputValues*>(data);
 
-    return do_sample(
-        shading_context,
-        sampling_context,
-        data,
-        values->m_base_values,
-        outgoing_point,
-        outgoing_dir,
-        bssrdf_sample,
-        bsdf_sample);
+    return
+        do_sample(
+            shading_context,
+            sampling_context,
+            data,
+            values->m_base_values,
+            outgoing_point,
+            outgoing_dir,
+            modes,
+            bssrdf_sample,
+            bsdf_sample);
 }
 
 void DipoleBSSRDF::evaluate(
@@ -143,15 +146,16 @@ void DipoleBSSRDF::evaluate(
     const DipoleBSSRDFInputValues* values =
         static_cast<const DipoleBSSRDFInputValues*>(data);
 
-    return do_evaluate(
-        data,
-        values->m_base_values,
-        outgoing_point,
-        outgoing_dir,
-        incoming_point,
-        incoming_dir,
-        modes,
-        value);
+    return
+        do_evaluate(
+            data,
+            values->m_base_values,
+            outgoing_point,
+            outgoing_dir,
+            incoming_point,
+            incoming_dir,
+            modes,
+            value);
 }
 
 

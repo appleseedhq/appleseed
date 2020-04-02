@@ -36,6 +36,7 @@ shader as_max_glass_material
     float                Ior = 1.5,
     string               Distribution = "ggx"
     [[
+        string widget = "null",
         int as_deprecated = 1
     ]],
     float                Roughness = 0.1,

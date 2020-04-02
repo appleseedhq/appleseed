@@ -36,8 +36,8 @@
 #include "renderer/utility/settingsparsing.h"
 
 // appleseed.foundation headers.
+#include "foundation/string/string.h"
 #include "foundation/utility/makevector.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <string>
@@ -97,6 +97,7 @@ namespace
 SPPMParameters::SPPMParameters(const ParamArray& params)
   : m_spectrum_mode(get_spectrum_mode(params))
   , m_sampling_mode(get_sampling_context_mode(params))
+  , m_pass_count(params.get_optional<size_t>("passes", 1))
   , m_photon_type(get_photon_type(params, "photon_type", "poly"))
   , m_dl_mode(get_mode(params, "dl_mode", "rt"))
   , m_enable_ibl(params.get_optional<bool>("enable_ibl", true))
@@ -104,6 +105,8 @@ SPPMParameters::SPPMParameters(const ParamArray& params)
   , m_light_photon_count(params.get_optional<size_t>("light_photons_per_pass", 1000000))
   , m_env_photon_count(params.get_optional<size_t>("env_photons_per_pass", 1000000))
   , m_photon_packet_size(params.get_optional<size_t>("photon_packet_size", 100000))
+  , m_enable_importons(params.get_optional<bool>("enable_importons", true))
+  , m_importon_lookup_radius_percents(params.get_optional<float>("importon_lookup_radius", 5.0f))
   , m_photon_tracing_max_bounces(fixup_bounces(params.get_optional<int>("photon_tracing_max_bounces", -1)))
   , m_photon_tracing_rr_min_path_length(fixup_path_length(params.get_optional<size_t>("photon_tracing_rr_min_path_length", 6)))
   , m_path_tracing_max_bounces(fixup_bounces(params.get_optional<int>("path_tracing_max_bounces", -1)))
@@ -112,7 +115,7 @@ SPPMParameters::SPPMParameters(const ParamArray& params)
   , m_path_tracing_has_max_ray_intensity(params.strings().exist("path_tracing_max_ray_intensity"))
   , m_transparency_threshold(params.get_optional<float>("transparency_threshold", 0.001f))
   , m_max_iterations(params.get_optional<size_t>("max_iterations", 100))
-  , m_initial_radius_percents(params.get_optional<float>("initial_radius", 0.1f))
+  , m_initial_photon_lookup_radius_percents(params.get_optional<float>("initial_photon_lookup_radius", 0.1f))
   , m_alpha(params.get_optional<float>("alpha", 0.7f))
   , m_max_photons_per_estimate(params.get_optional<size_t>("max_photons_per_estimate", 100))
   , m_dl_light_sample_count(params.get_optional<float>("dl_light_samples", 1.0f))
@@ -133,29 +136,33 @@ void SPPMParameters::print() const
         "sppm settings:\n"
         "  photon type                   %s\n"
         "  dl                            %s\n"
-        "  ibl                           %s",
+        "  ibl                           %s\n"
+        "  importons                     %s",
         m_photon_type == Monochromatic ? "monochromatic" : "polychromatic",
         m_dl_mode == RayTraced ? "ray traced" :
         m_dl_mode == SPPM ? "sppm" : "off",
-        m_enable_ibl ? "on" : "off");
+        m_enable_ibl ? "on" : "off",
+        m_enable_importons ? "on" : "off");
 
     RENDERER_LOG_INFO(
         "sppm photon tracing settings:\n"
         "  light photons                 %s\n"
         "  environment photons           %s\n"
         "  max bounces                   %s\n"
-        "  russian roulette start bounce %s",
+        "  russian roulette start bounce %s\n"
+        "  importon lookup radius        %s%%",
         pretty_uint(m_light_photon_count).c_str(),
         pretty_uint(m_env_photon_count).c_str(),
         m_photon_tracing_max_bounces == ~size_t(0) ? "unlimited" : pretty_uint(m_photon_tracing_max_bounces).c_str(),
-        m_photon_tracing_rr_min_path_length == ~size_t(0) ? "unlimited" : pretty_uint(m_photon_tracing_rr_min_path_length).c_str());
+        m_photon_tracing_rr_min_path_length == ~size_t(0) ? "unlimited" : pretty_uint(m_photon_tracing_rr_min_path_length).c_str(),
+        pretty_scalar(m_importon_lookup_radius_percents, 3).c_str());
 
     RENDERER_LOG_INFO(
         "sppm path tracing settings:\n"
         "  max bounces                   %s\n"
         "  max ray intensity             %s\n"
         "  russian roulette start bounce %s\n"
-        "  initial radius                %s%%\n"
+        "  initial photon lookup radius  %s%%\n"
         "  alpha                         %s\n"
         "  max photons per estimate      %s\n"
         "  dl light samples              %s\n"
@@ -163,7 +170,7 @@ void SPPMParameters::print() const
         m_path_tracing_max_bounces == ~size_t(0) ? "unlimited" : pretty_uint(m_path_tracing_max_bounces).c_str(),
         m_path_tracing_has_max_ray_intensity ? pretty_scalar(m_path_tracing_max_ray_intensity).c_str() : "unlimited",
         m_path_tracing_rr_min_path_length == ~size_t(0) ? "unlimited" : pretty_uint(m_path_tracing_rr_min_path_length).c_str(),
-        pretty_scalar(m_initial_radius_percents, 3).c_str(),
+        pretty_scalar(m_initial_photon_lookup_radius_percents, 3).c_str(),
         pretty_scalar(m_alpha, 1).c_str(),
         pretty_uint(m_max_photons_per_estimate).c_str(),
         pretty_scalar(m_dl_light_sample_count).c_str(),

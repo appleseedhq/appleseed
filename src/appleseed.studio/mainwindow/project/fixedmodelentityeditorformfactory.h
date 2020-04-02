@@ -32,7 +32,7 @@
 #include "mainwindow/project/entityeditorformfactorybase.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/containers/dictionary.h"
 
 // Standard headers.
 #include <cstddef>
@@ -93,7 +93,7 @@ void FixedModelEntityEditorFormFactory<FactoryRegistrar>::update(
 
     metadata.push_back(
         foundation::Dictionary()
-            .insert("name", ModelParameter)
+            .insert("name", ModelParameter.c_str())
             .insert("label", "Model")
             .insert("type", "enumeration")
             .insert("items", model_items)

@@ -28,12 +28,12 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/platform/types.h"
+#include "foundation/memory/poolallocator.h"
 #include "foundation/utility/benchmark.h"
-#include "foundation/utility/poolallocator.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 
 using namespace foundation;
@@ -49,13 +49,13 @@ BENCHMARK_SUITE(Foundation_Utility_PoolAllocator)
 
         void repeated_allocation_deallocation()
         {
-            uint32* p = m_allocator.allocate(1);
+            std::uint32_t* p = m_allocator.allocate(1);
             m_allocator.deallocate(p, 1);
         }
 
         void first_allocated_first_deallocated_batch()
         {
-            uint32* p[N];
+            std::uint32_t* p[N];
 
             for (size_t i = 0; i < N; ++i)
                 p[i] = m_allocator.allocate(1);
@@ -66,7 +66,7 @@ BENCHMARK_SUITE(Foundation_Utility_PoolAllocator)
 
         void first_allocated_last_deallocated_batch()
         {
-            uint32* p[N];
+            std::uint32_t* p[N];
 
             for (size_t i = 0; i < N; ++i)
                 p[i] = m_allocator.allocate(1);
@@ -76,8 +76,8 @@ BENCHMARK_SUITE(Foundation_Utility_PoolAllocator)
         }
     };
 
-    typedef std::allocator<uint32> DefaultAllocator;
-    typedef PoolAllocator<uint32, N> PoolAllocator;
+    typedef std::allocator<std::uint32_t> DefaultAllocator;
+    typedef PoolAllocator<std::uint32_t, N> PoolAllocator;
 
     BENCHMARK_CASE_F(RepeatedAllocation_PoolAllocator, Fixture<PoolAllocator>)
     {

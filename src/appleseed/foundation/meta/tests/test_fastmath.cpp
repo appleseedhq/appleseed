@@ -155,7 +155,7 @@ TEST_SUITE(Foundation_Math_FastMath)
     }
 
     //
-    // Pow2(x).
+    // 2^x
     //
 
     float scalar_std_pow2(const float x)
@@ -234,13 +234,13 @@ TEST_SUITE(Foundation_Math_FastMath)
             "unit tests/outputs/test_fastmath_pow2.gnuplot",
             functions,
             countof(functions),
-            0.0f,
-            1.0f,
-            1000);
+            -2.0f,
+            +10.0f,
+            10000);
     }
 
     //
-    // Log2(x).
+    // log2(x)
     //
 
     float scalar_std_log2(const float x)
@@ -325,7 +325,7 @@ TEST_SUITE(Foundation_Math_FastMath)
     }
 
     //
-    // Pow(x).
+    // x^e
     //
 
     const float Exponent = 2.4f;
@@ -432,7 +432,7 @@ TEST_SUITE(Foundation_Math_FastMath)
     }
 
     //
-    // Log(x).
+    // log(x)
     //
 
     void vector_std_log(float x[4])
@@ -512,7 +512,7 @@ TEST_SUITE(Foundation_Math_FastMath)
     }
 
     //
-    // Exp(x).
+    // exp(x)
     //
 
     void vector_std_exp(float x[4])
@@ -586,13 +586,34 @@ TEST_SUITE(Foundation_Math_FastMath)
             "unit tests/outputs/test_fastmath_exp.gnuplot",
             functions,
             countof(functions),
-            0.0f,
-            1.0f,
+            -2.0f,
+            +10.0f,
+            10000);
+    }
+
+    // 
+    // acos(x)
+    //
+
+    TEST_CASE(PlotAcosFunctions)
+    {
+        const FuncDef<float (*)(float)> functions[] =
+        {
+            { "std::acos", "black", std::acos },
+            { "foundation::fast_acos", "green", fast_acos }
+        };
+
+        plot_functions(
+            "unit tests/outputs/test_fastmath_acos.gnuplot",
+            functions,
+            countof(functions),
+            -1.0f,
+            +1.0f,
             1000);
     }
 
     //
-    // Rcp(x).
+    // 1/x
     //
 
     TEST_CASE(ScalarFastRcp)
@@ -626,7 +647,7 @@ TEST_SUITE(Foundation_Math_FastMath)
     }
 
     //
-    // Sqrt(x).
+    // sqrt(x)
     //
 
     TEST_CASE(ScalarFastSqrt)
@@ -660,7 +681,7 @@ TEST_SUITE(Foundation_Math_FastMath)
     }
 
     //
-    // RcpSqrt(x).
+    // 1/sqrt(x)
     //
 
     float rcp_sqrt(const float x)

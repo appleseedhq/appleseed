@@ -41,7 +41,7 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 #include "foundation/image/colorspace.h"
-#include "foundation/utility/arena.h"
+#include "foundation/memory/arena.h"
 
 // Standard headers.
 #include <cassert>
@@ -144,6 +144,8 @@ void DisneyLayeredBRDF::sample(
     const void*                 data,
     const bool                  adjoint,
     const bool                  cosine_mult,
+    const LocalGeometry&        local_geometry,
+    const Dual3f&               outgoing,
     const int                   modes,
     BSDFSample&                 sample) const
 {
@@ -155,6 +157,8 @@ void DisneyLayeredBRDF::sample(
         data,
         adjoint,
         cosine_mult,
+        local_geometry,
+        outgoing,
         modes,
         sample);
 }
@@ -163,8 +167,7 @@ float DisneyLayeredBRDF::evaluate(
     const void*                 data,
     const bool                  adjoint,
     const bool                  cosine_mult,
-    const Vector3f&             geometric_normal,
-    const Basis3f&              shading_basis,
+    const LocalGeometry&        local_geometry,
     const Vector3f&             outgoing,
     const Vector3f&             incoming,
     const int                   modes,
@@ -173,23 +176,22 @@ float DisneyLayeredBRDF::evaluate(
     if (m_parent->get_layer_count() == 0)
         return 0.0f;
 
-    return m_brdf->evaluate(
-        data,
-        adjoint,
-        cosine_mult,
-        geometric_normal,
-        shading_basis,
-        outgoing,
-        incoming,
-        modes,
-        value);
+    return
+        m_brdf->evaluate(
+            data,
+            adjoint,
+            cosine_mult,
+            local_geometry,
+            outgoing,
+            incoming,
+            modes,
+            value);
 }
 
 float DisneyLayeredBRDF::evaluate_pdf(
     const void*                 data,
     const bool                  adjoint,
-    const Vector3f&             geometric_normal,
-    const Basis3f&              shading_basis,
+    const LocalGeometry&        local_geometry,
     const Vector3f&             outgoing,
     const Vector3f&             incoming,
     const int                   modes) const
@@ -197,14 +199,14 @@ float DisneyLayeredBRDF::evaluate_pdf(
     if (m_parent->get_layer_count() == 0)
         return 0.0f;
 
-    return m_brdf->evaluate_pdf(
-        data,
-        adjoint,
-        geometric_normal,
-        shading_basis,
-        outgoing,
-        incoming,
-        modes);
+    return
+        m_brdf->evaluate_pdf(
+            data,
+            adjoint,
+            local_geometry,
+            outgoing,
+            incoming,
+            modes);
 }
 
 }   // namespace renderer

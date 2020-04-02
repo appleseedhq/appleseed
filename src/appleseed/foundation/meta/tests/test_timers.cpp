@@ -29,8 +29,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/timers.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/test.h"
+
+// Standard headers.
+#include <cstdint>
 
 using namespace foundation;
 
@@ -47,8 +49,8 @@ TEST_SUITE(Foundation_Platform_Timers)
     TEST_CASE(TestX86TimerValues)
     {
         X86Timer timer;
-        const uint64 val1 = timer.read();
-        const uint64 val2 = timer.read();
+        const std::uint64_t val1 = timer.read();
+        const std::uint64_t val2 = timer.read();
         EXPECT_TRUE(val1 <= val2);
     }
 
@@ -63,8 +65,8 @@ TEST_SUITE(Foundation_Platform_Timers)
     TEST_CASE(TestDefaultProcessorTimerValues)
     {
         DefaultProcessorTimer timer;
-        const uint64 val1 = timer.read();
-        const uint64 val2 = timer.read();
+        const std::uint64_t val1 = timer.read();
+        const std::uint64_t val2 = timer.read();
         EXPECT_TRUE(val1 <= val2);
     }
 
@@ -77,8 +79,8 @@ TEST_SUITE(Foundation_Platform_Timers)
     TEST_CASE(TestDefaultWallclockTimerValues)
     {
         DefaultWallclockTimer timer;
-        const uint64 val1 = timer.read();
-        const uint64 val2 = timer.read();
+        const std::uint64_t val1 = timer.read();
+        const std::uint64_t val2 = timer.read();
         EXPECT_TRUE(val1 <= val2);
     }
 }

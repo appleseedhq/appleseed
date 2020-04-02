@@ -31,8 +31,10 @@
 
 // appleseed.studio headers.
 #include "debug/benchmarks/benchmarkrunnerthread.h"
-#include "utility/chartwidget.h"
 #include "utility/windowbase.h"
+
+// appleseed.qtcommon headers.
+#include "widgets/chartwidget.h"
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
@@ -69,7 +71,7 @@ class BenchmarkWindow
     // Not wrapped in std::unique_ptr<> to avoid pulling in the UI definition code.
     Ui::BenchmarkWindow*                m_ui;
 
-    ChartWidget                         m_chart_widget;
+    qtcommon::ChartWidget               m_chart_widget;
 
     BenchmarkRunnerThread               m_benchmark_runner_thread;
     foundation::BenchmarkAggregator     m_benchmark_aggregator;
@@ -82,7 +84,7 @@ class BenchmarkWindow
 
     void enable_widgets(const bool enabled);
 
-    std::unique_ptr<ChartBase> create_chart(
+    std::unique_ptr<qtcommon::ChartBase> create_chart(
         const foundation::UniqueID      case_uid,
         const size_t                    chart_index) const;
 
@@ -90,7 +92,6 @@ class BenchmarkWindow
     void slot_run_benchmarks();
     void slot_on_benchmarks_execution_complete();
     void slot_rebuild_charts();
-    void slot_on_equidistant_checkbox_state_changed(int state);
 };
 
 }   // namespace studio

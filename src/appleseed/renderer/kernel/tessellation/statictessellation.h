@@ -35,14 +35,15 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
+#include "foundation/memory/poolallocator.h"
 #include "foundation/utility/attributeset.h"
 #include "foundation/utility/lazy.h"
 #include "foundation/utility/numerictype.h"
-#include "foundation/utility/poolallocator.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <vector>
 
 namespace renderer
@@ -274,7 +275,7 @@ inline void StaticTessellation<Primitive>::set_motion_segment_count(const size_t
                 1);
     }
 
-    m_tessellation_attributes.set_attribute(m_ms_count_cid, 0, static_cast<foundation::uint32>(count));
+    m_tessellation_attributes.set_attribute(m_ms_count_cid, 0, static_cast<std::uint32_t>(count));
 }
 
 template <typename Primitive>
@@ -283,7 +284,7 @@ inline size_t StaticTessellation<Primitive>::get_motion_segment_count() const
     if (m_ms_count_cid == foundation::AttributeSet::InvalidChannelID)
         return 0;
 
-    foundation::uint32 count;
+    std::uint32_t count;
     m_tessellation_attributes.get_attribute(m_ms_count_cid, 0, &count);
 
     return count;

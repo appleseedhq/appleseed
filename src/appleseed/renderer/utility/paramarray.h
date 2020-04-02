@@ -32,12 +32,11 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/utility/messagecontext.h"
-#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/containers/dictionary.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/foreach.h"
-#include "foundation/utility/string.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -70,7 +69,6 @@ class APPLESEED_DLLSYMBOL ParamArray
 
     // Insert an item into the dictionary.
     template <typename T> ParamArray& insert(const char* key, const T& value);
-    template <typename T> ParamArray& insert(const std::string& key, const T& value);
 
     //
     // Retrieve the value of a required parameter.
@@ -156,7 +154,6 @@ class APPLESEED_DLLSYMBOL ParamArray
 
     ParamArray& insert_path(const char* path, const char* value);
     template <typename T> ParamArray& insert_path(const char* path, const T& value);
-    template <typename T> ParamArray& insert_path(const std::string& path, const T& value);
 
     // Return true if a parameter with a given path exists.
     bool exist_path(const char* path) const;
@@ -267,20 +264,6 @@ inline ParamArray& ParamArray::insert(const char* key, const ParamArray& value)
 }
 
 template <typename T>
-inline ParamArray& ParamArray::insert(const std::string& key, const T& value)
-{
-    foundation::Dictionary::insert(key, value);
-    return *this;
-}
-
-template <>
-inline ParamArray& ParamArray::insert(const std::string& key, const ParamArray& value)
-{
-    dictionaries().insert(key, value);
-    return *this;
-}
-
-template <typename T>
 inline T ParamArray::get_required(
     const char*                 name,
     const T&                    default_value,
@@ -356,12 +339,6 @@ template <typename T>
 inline ParamArray& ParamArray::insert_path(const char* path, const T& value)
 {
     return insert_path(path, foundation::to_string(value).c_str());
-}
-
-template <typename T>
-inline ParamArray& ParamArray::insert_path(const std::string& path, const T& value)
-{
-    return insert_path(path.c_str(), value);
 }
 
 template <typename T>

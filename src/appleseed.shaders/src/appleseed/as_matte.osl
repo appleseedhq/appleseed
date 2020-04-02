@@ -30,7 +30,7 @@ shader as_matte
 [[
     string help = "Matte Material",
     string icon = "asMatte.png",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_matte_surface.html#label-as-matte-surface",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_matte_surface.html",
 
     string as_node_name = "asMatte",
     string as_category = "shader",
@@ -74,7 +74,7 @@ shader as_matte
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0
     ]],
-    color in_matte_opacity_color = color(1,0.5,0)
+    color in_matte_opacity_color = color(1, 0.5, 0)
     [[
         string as_maya_attribute_name = "matteOpacityColor",
         string as_maya_attribute_short_name = "mac",

@@ -33,6 +33,8 @@
 #include "renderer/modeling/object/proceduralobject.h"
 
 // appleseed.foundation headers.
+#include "foundation/math/ray.h"
+#include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
 
 // appleseed.main headers.
@@ -86,6 +88,12 @@ class APPLESEED_DLLSYMBOL RectangleObject
         IntersectionResult&         result) const override;
 
     bool intersect(const ShadingRay& ray) const override;
+
+    void refine_and_offset(
+        const foundation::Ray3d&    obj_inst_ray,
+        foundation::Vector3d&       obj_inst_front_point,
+        foundation::Vector3d&       obj_inst_back_point,
+        foundation::Vector3d&       obj_inst_geo_normal) const override;
 
   private:
     friend class RectangleObjectFactory;

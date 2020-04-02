@@ -31,10 +31,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
@@ -60,7 +60,7 @@ class ITileRenderer
         const Frame&                frame,
         const size_t                tile_x,
         const size_t                tile_y,
-        const foundation::uint32    pass_hash,
+        const std::uint32_t         pass_hash,
         foundation::IAbortSwitch&   abort_switch) = 0;
 
     // Retrieve performance statistics.

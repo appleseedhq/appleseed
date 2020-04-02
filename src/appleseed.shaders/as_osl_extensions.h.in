@@ -77,6 +77,7 @@ closure color as_metal(
     vector      T,
     color       normal_reflectance,
     color       edge_tint,
+    float       edge_tint_weight,
     float       roughness,
     float       anisotropic
     // keyword arguments:
@@ -142,6 +143,15 @@ closure color as_disney(
     float       sheen_tint,
     float       clearcoat,
     float       clearcoat_gloss) BUILTIN;
+
+closure color as_hair(
+    color       reflectance,
+    float       melanin,
+    float       melanin_redness,
+    float       eta,
+    float       beta_M,
+    float       beta_N,
+    float       alpha) BUILTIN;
 
 closure color as_plastic(
     normal      N,

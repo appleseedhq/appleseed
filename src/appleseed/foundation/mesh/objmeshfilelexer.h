@@ -32,8 +32,8 @@
 // appleseed.foundation headers.
 #include "foundation/mesh/objmeshfilereader.h"
 #include "foundation/platform/compiler.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/bufferedfile.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <cassert>

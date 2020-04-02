@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/intersection/intersector.h"
+#include "renderer/kernel/intersection/refining.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/modeling/camera/camera.h"
@@ -316,27 +317,25 @@ bool RendererServices::get_inverse_matrix(
 
 namespace
 {
+    bool can_transform(const OSL::TypeDesc::VECSEMANTICS vectype)
+    {
+        // We only transform points and vectors for now.
+        return
+            vectype == OSL::TypeDesc::POINT ||
+            vectype == OSL::TypeDesc::VECTOR;
+    }
 
-bool can_transform(const OSL::TypeDesc::VECSEMANTICS vectype)
-{
-    // We only transform points and vectors for now.
-    return
-        vectype == OSL::TypeDesc::POINT ||
-        vectype == OSL::TypeDesc::VECTOR;
-}
-
-void transform(
-    const OSL::Vec3&                  Pin,
-    const OSL::Matrix44&              m,
-    const OSL::TypeDesc::VECSEMANTICS vectype,
-    OSL::Vec3&                        Pout)
-{
-    if (vectype == OSL::TypeDesc::POINT)
-        Pout = Pin * m;
-    else if (vectype == OSL::TypeDesc::VECTOR)
-        m.multDirMatrix(Pin, Pout);
-}
-
+    void transform(
+        const OSL::Vec3&                  Pin,
+        const OSL::Matrix44&              m,
+        const OSL::TypeDesc::VECSEMANTICS vectype,
+        OSL::Vec3&                        Pout)
+    {
+        if (vectype == OSL::TypeDesc::POINT)
+            Pout = Pin * m;
+        else if (vectype == OSL::TypeDesc::VECTOR)
+            m.multDirMatrix(Pin, Pout);
+    }
 }
 
 bool RendererServices::transform_points(
@@ -455,7 +454,7 @@ bool RendererServices::trace(
         Vector3d front(P);
         Vector3d back = front;
 
-        Intersector::fixed_offset(
+        fixed_offset(
             parent->get_point(),
             parent->get_geometric_normal(),
             front,
@@ -1119,14 +1118,9 @@ IMPLEMENT_USER_DATA_GETTER(tn)
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
 
         const Vector3d& tn = shading_point->get_shading_basis().get_tangent_u();
-        OSL::Vec3 v(
-            static_cast<float>(tn.x),
-            static_cast<float>(tn.y),
-            static_cast<float>(tn.z));
-
-        reinterpret_cast<float*>(val)[0] = v.x;
-        reinterpret_cast<float*>(val)[1] = v.y;
-        reinterpret_cast<float*>(val)[2] = v.z;
+        reinterpret_cast<float*>(val)[0] = static_cast<float>(tn.x);
+        reinterpret_cast<float*>(val)[1] = static_cast<float>(tn.y);
+        reinterpret_cast<float*>(val)[2] = static_cast<float>(tn.z);
 
         if (derivatives)
             clear_derivatives(type, val);
@@ -1217,11 +1211,9 @@ IMPLEMENT_USER_DATA_GETTER(vertex_color)
             reinterpret_cast<const ShadingPoint*>(sg->renderstate);
 
         const Color3f& cv = shading_point->get_per_vertex_color();
-        const OSL::Color3 v(cv.r, cv.g, cv.b);
-
-        reinterpret_cast<float*>(val)[0] = v.x;
-        reinterpret_cast<float*>(val)[1] = v.y;
-        reinterpret_cast<float*>(val)[2] = v.z;
+        reinterpret_cast<float*>(val)[0] = cv.r;
+        reinterpret_cast<float*>(val)[1] = cv.g;
+        reinterpret_cast<float*>(val)[2] = cv.b;
 
         if (derivatives)
             clear_derivatives(type, val);

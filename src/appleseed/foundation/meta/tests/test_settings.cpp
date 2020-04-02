@@ -28,8 +28,11 @@
 //
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/log.h"
+#ifdef _WIN32
+#include "foundation/platform/windows.h"
+#endif
+#include "foundation/containers/dictionary.h"
+#include "foundation/log/log.h"
 #include "foundation/utility/settings.h"
 #include "foundation/utility/test.h"
 #include "foundation/utility/testutils.h"
@@ -109,13 +112,28 @@ TEST_SUITE(Foundation_Utility_SettingsFileReader)
         EXPECT_EQ("aa", m_dictionary.get<std::string>("a"));
         EXPECT_EQ("bb\nbb\nbb", m_dictionary.get<std::string>("b"));
     }
+
+    TEST_CASE_F(Read_GivenSettingsFileNameWithUTF8Encoding_ReturnsSuccess, Fixture)
+    {
+#ifdef _WIN32
+        if (!does_windows_support_utf8_code_page())
+        {
+            // todo: if the unit testing infrastructure made a logger available, we would issue a warning here.
+            return;
+        }
+#endif
+
+        const bool succeeded = read(u8"unit tests/inputs/test_settings_utf8_\u00e2\u00e9\u00ef\u00f4\u00f9.xml");
+
+        EXPECT_TRUE(succeeded);
+    }
 }
 
 TEST_SUITE(Foundation_Utility_SettingsFileWriter)
 {
     TEST_CASE(Write_GivenEmptyDictionary_WriteEmptySettingsFile)
     {
-        Dictionary dictionary;
+        const Dictionary dictionary;
 
         SettingsFileWriter writer;
         writer.write("unit tests/outputs/test_settings_emptysettingsfile.xml", dictionary);
@@ -185,5 +203,24 @@ TEST_SUITE(Foundation_Utility_SettingsFileWriter)
                 "unit tests/outputs/test_settings_settingsfilewithnewlinesinparameters.xml");
 
         EXPECT_TRUE(identical);
+    }
+
+    TEST_CASE(Write_GivenSettingsFileNameWithUTF8Encoding_ReturnsSuccess)
+    {
+#ifdef _WIN32
+        if (!does_windows_support_utf8_code_page())
+        {
+            // todo: if the unit testing infrastructure made a logger available, we would issue a warning here.
+            return;
+        }
+#endif
+
+        const Dictionary dictionary;
+
+        SettingsFileWriter writer;
+        const bool succeeded =
+            writer.write(u8"unit tests/outputs/test_settings_utf8_\u00e2\u00e9\u00ef\u00f4\u00f9.xml", dictionary);
+
+        EXPECT_TRUE(succeeded);
     }
 }

@@ -34,12 +34,14 @@
 #include "debug/tests/testwindow.h"
 #include "mainwindow/applicationsettingswindow.h"
 #include "mainwindow/falsecolorswindow.h"
-#include "mainwindow/project/projectmanager.h"
-#include "mainwindow/qtlogtarget.h"
 #include "mainwindow/rendering/renderingmanager.h"
 #include "mainwindow/rendering/rendertab.h"
 #include "mainwindow/renderingsettingswindow.h"
 #include "mainwindow/statusbar.h"
+
+// appleseed.qtcommon headers.
+#include "project/projectmanager.h"
+#include "widgets/qtlogtarget.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/utility.h"
@@ -106,7 +108,7 @@ class MainWindow
 
     void on_project_change();
 
-    ProjectManager* get_project_manager();
+    qtcommon::ProjectManager* get_project_manager();
     renderer::ParamArray& get_application_settings();
 
     QDockWidget* create_dock_widget(const char* dock_name);
@@ -116,7 +118,7 @@ class MainWindow
     void signal_application_settings_modified() const;
 
   private:
-    enum RenderingMode
+    enum class RenderingMode
     {
         NotRendering,
         InteractiveRendering,
@@ -143,7 +145,7 @@ class MainWindow
     std::vector<MinimizeButton*>                m_minimize_buttons;
 
     StatusBar                                   m_status_bar;
-    std::unique_ptr<QtLogTarget>                m_log_target;
+    std::unique_ptr<qtcommon::QtLogTarget>      m_log_target;
 
     renderer::ParamArray                        m_application_settings;
 
@@ -153,7 +155,7 @@ class MainWindow
     std::unique_ptr<BenchmarkWindow>            m_benchmark_window;
     std::unique_ptr<FalseColorsWindow>          m_false_colors_window;
 
-    ProjectManager                              m_project_manager;
+    qtcommon::ProjectManager                    m_project_manager;
     ProjectExplorer*                            m_project_explorer;
     QFileSystemWatcher*                         m_project_file_watcher;
     AttributeEditor*                            m_attribute_editor;

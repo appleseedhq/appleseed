@@ -64,6 +64,10 @@ class OSLShaderGroupExec
 
     ~OSLShaderGroupExec();
 
+    foundation::Color3f execute_background(
+        const ShaderGroup&              shader_group,
+        const foundation::Vector3f&     outgoing) const;
+
   private:
     friend class ShadingContext;
     friend class Tracer;
@@ -111,10 +115,6 @@ class OSLShaderGroupExec
     void execute_npr(
         const ShaderGroup&              shader_group,
         const ShadingPoint&             shading_point) const;
-
-    foundation::Color3f execute_background(
-        const ShaderGroup&              shader_group,
-        const foundation::Vector3f&     outgoing) const;
 
     void do_execute(
         const ShaderGroup&              shader_group,

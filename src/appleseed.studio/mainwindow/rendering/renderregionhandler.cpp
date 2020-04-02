@@ -30,8 +30,8 @@
 // Interface header.
 #include "renderregionhandler.h"
 
-// appleseed.studio headers.
-#include "utility/mousecoordinatestracker.h"
+// appleseed.qtcommon headers.
+#include "widgets/mousecoordinatestracker.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
@@ -48,6 +48,7 @@
 // Standard headers.
 #include <algorithm>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 
 namespace appleseed {

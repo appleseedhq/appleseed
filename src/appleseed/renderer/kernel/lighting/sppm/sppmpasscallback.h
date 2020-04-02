@@ -30,6 +30,9 @@
 #pragma once
 
 // appleseed.renderer headers.
+#include "renderer/kernel/lighting/sppm/sppmimporton.h"
+#include "renderer/kernel/lighting/sppm/sppmimportonmap.h"
+#include "renderer/kernel/lighting/sppm/sppmlightingengineworkingset.h"
 #include "renderer/kernel/lighting/sppm/sppmparameters.h"
 #include "renderer/kernel/lighting/sppm/sppmphoton.h"
 #include "renderer/kernel/lighting/sppm/sppmphotonmap.h"
@@ -37,19 +40,21 @@
 #include "renderer/kernel/rendering/ipasscallback.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+#include "foundation/math/vector.h"
 #include "foundation/platform/timers.h"
 #include "foundation/utility/stopwatch.h"
 
 // Standard headers.
 #include <cstddef>
 #include <memory>
+#include <vector>
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
 namespace foundation    { class JobQueue; }
 namespace renderer      { class Frame; }
 namespace renderer      { class ForwardLightSampler; }
+namespace renderer      { class IShadingResultFrameBufferFactory; }
 namespace renderer      { class OIIOTextureSystem; }
 namespace renderer      { class OSLShadingSystem; }
 namespace renderer      { class Scene; }
@@ -69,49 +74,61 @@ class SPPMPassCallback
   public:
     // Constructor.
     SPPMPassCallback(
-        const Scene&                    scene,
-        const ForwardLightSampler&      light_sampler,
-        const TraceContext&             trace_context,
-        TextureStore&                   texture_store,
-        OIIOTextureSystem&              oiio_texture_system,
-        OSLShadingSystem&               shading_system,
-        const SPPMParameters&           params);
+        const Scene&                        scene,
+        const ForwardLightSampler&          light_sampler,
+        const TraceContext&                 trace_context,
+        TextureStore&                       texture_store,
+        OIIOTextureSystem&                  oiio_texture_system,
+        OSLShadingSystem&                   shading_system,
+        IShadingResultFrameBufferFactory&   shading_result_framebuffer_factory,
+        const SPPMParameters&               params);
 
     // Delete this instance.
     void release() override;
 
     // This method is called at the beginning of a pass.
     void on_pass_begin(
-        const Frame&                    frame,
-        foundation::JobQueue&           job_queue,
-        foundation::IAbortSwitch&       abort_switch) override;
+        const Frame&                        frame,
+        foundation::JobQueue&               job_queue,
+        foundation::IAbortSwitch&           abort_switch) override;
 
     // This method is called at the end of a pass.
-    bool on_pass_end(
-        const Frame&                    frame,
-        foundation::JobQueue&           job_queue,
-        foundation::IAbortSwitch&       abort_switch) override;
+    void on_pass_end(
+        const Frame&                        frame,
+        foundation::JobQueue&               job_queue,
+        foundation::IAbortSwitch&           abort_switch) override;
 
-    // Return the i'th photon.
-    const SPPMMonoPhoton& get_mono_photon(const size_t i) const;
-    const SPPMPolyPhoton& get_poly_photon(const size_t i) const;
+    // Return the current pass number (first pass is 0).
+    std::size_t get_pass_number() const;
 
     // Return the current photon map.
     const SPPMPhotonMap& get_photon_map() const;
 
-    // Return the current lookup radius.
-    float get_lookup_radius() const;
+    // Return the current photon lookup radius.
+    float get_photon_lookup_radius() const;
+
+    // Return the i'th photon.
+    const SPPMMonoPhoton& get_mono_photon(const std::size_t i) const;
+    const SPPMPolyPhoton& get_poly_photon(const std::size_t i) const;
+
+    // Hand over a newly allocated, empty working set.
+    SPPMLightingEngineWorkingSet& acquire_working_set();
 
   private:
-    const SPPMParameters                m_params;
-    SPPMPhotonTracer                    m_photon_tracer;
-    size_t                              m_pass_number;
-    SPPMPhotonVector                    m_photons;
-    std::unique_ptr<SPPMPhotonMap>      m_photon_map;
-    float                               m_initial_lookup_radius;
-    float                               m_lookup_radius;
+    const SPPMParameters                    m_params;
+    SPPMPhotonTracer                        m_photon_tracer;
+    IShadingResultFrameBufferFactory&       m_shading_result_framebuffer_factory;
+    std::size_t                             m_pass_number;
+    SPPMPhotonVector                        m_photons;
+    std::unique_ptr<SPPMPhotonMap>          m_photon_map;
+    float                                   m_initial_photon_lookup_radius;
+    float                                   m_photon_lookup_radius;
     foundation::Stopwatch<foundation::DefaultWallclockTimer>
-                                        m_stopwatch;
+                                            m_stopwatch;
+    std::vector<std::unique_ptr<SPPMLightingEngineWorkingSet>>
+                                            m_working_sets;
+    std::unique_ptr<SPPMImportonMap>        m_importon_map;
+    float                                   m_importon_lookup_radius;
 };
 
 
@@ -119,14 +136,9 @@ class SPPMPassCallback
 // SPPMPassCallback class implementation.
 //
 
-inline const SPPMMonoPhoton& SPPMPassCallback::get_mono_photon(const size_t i) const
+inline std::size_t SPPMPassCallback::get_pass_number() const
 {
-    return m_photons.m_mono_photons[i];
-}
-
-inline const SPPMPolyPhoton& SPPMPassCallback::get_poly_photon(const size_t i) const
-{
-    return m_photons.m_poly_photons[i];
+    return m_pass_number;
 }
 
 inline const SPPMPhotonMap& SPPMPassCallback::get_photon_map() const
@@ -134,9 +146,19 @@ inline const SPPMPhotonMap& SPPMPassCallback::get_photon_map() const
     return *m_photon_map.get();
 }
 
-inline float SPPMPassCallback::get_lookup_radius() const
+inline float SPPMPassCallback::get_photon_lookup_radius() const
 {
-    return m_lookup_radius;
+    return m_photon_lookup_radius;
+}
+
+inline const SPPMMonoPhoton& SPPMPassCallback::get_mono_photon(const std::size_t i) const
+{
+    return m_photons.m_mono_photons[i];
+}
+
+inline const SPPMPolyPhoton& SPPMPassCallback::get_poly_photon(const std::size_t i) const
+{
+    return m_photons.m_poly_photons[i];
 }
 
 }   // namespace renderer

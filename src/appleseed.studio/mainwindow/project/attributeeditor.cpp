@@ -32,6 +32,8 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/ientityvalueprovider.h"
+
+// appleseed.qtcommon headers.
 #include "utility/miscellaneous.h"
 
 // appleseed.renderer headers.
@@ -43,6 +45,7 @@
 // Standard headers.
 #include <utility>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 
@@ -100,7 +103,7 @@ void AttributeEditor::edit(
 void AttributeEditor::refresh() const
 {
     if (m_entity_editor.get() && m_value_provider)
-        m_entity_editor.get()->rebuild_form(m_value_provider->get_values());
+        m_entity_editor->rebuild_form(m_value_provider->get_values());
 }
 
 }   // namespace studio

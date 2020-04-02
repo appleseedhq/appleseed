@@ -44,13 +44,14 @@
 #include "renderer/modeling/object/objecttraits.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstagetraits.h"
 #include "renderer/modeling/project/configurationcontainer.h"
+#include "renderer/modeling/project/renderingtimer.h"
 #include "renderer/modeling/scene/assemblytraits.h"
 #include "renderer/modeling/surfaceshader/surfaceshadertraits.h"
 #include "renderer/modeling/texture/texturetraits.h"
 #include "renderer/modeling/volume/volumetraits.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
 
 // appleseed.main headers.
@@ -117,6 +118,13 @@ class APPLESEED_DLLSYMBOL Project
     // Access the search paths.
     foundation::SearchPaths& search_paths() const;
 
+    // Access the plugin store.
+    PluginStore& get_plugin_store() const;
+
+    // Return the factory registrar for a given entity type (e.g. `renderer::BSDF`).
+    template <typename Entity>
+    const typename EntityTraits<Entity>::FactoryRegistrarType& get_factory_registrar() const;
+
     // Set the scene, replacing the existing scene.
     void set_scene(foundation::auto_release_ptr<Scene> scene);
 
@@ -143,21 +151,32 @@ class APPLESEED_DLLSYMBOL Project
     // Return nullptr if the project does not contain a display.
     Display* get_display() const;
 
-    // Access the plugin store.
-    PluginStore& get_plugin_store() const;
-
-    // Access the light path recorder.
-    LightPathRecorder& get_light_path_recorder() const;
-
     // Access the configurations.
     ConfigurationContainer& configurations() const;
 
     // Add the default configurations to the project.
     void add_default_configurations();
 
-    // Return the factory registrar for a given entity type (e.g. `renderer::BSDF`).
-    template <typename Entity>
-    const typename EntityTraits<Entity>::FactoryRegistrarType& get_factory_registrar() const;
+    // Access the light path recorder.
+    LightPathRecorder& get_light_path_recorder() const;
+
+#ifdef APPLESEED_WITH_EMBREE
+    // Set use Embree flag for trace context
+    void set_use_embree(const bool value);
+#endif
+
+    // Return true if the trace context has already been built.
+    bool has_trace_context() const;
+
+    // Get the trace context.
+    const TraceContext& get_trace_context() const;
+
+    // Synchronize the trace context with the scene.
+    void update_trace_context();
+
+    // Access the timer used to track and measure frame rendering time.
+    RenderingTimer& get_rendering_timer();
+    const RenderingTimer& get_rendering_timer() const;
 
     // Expose asset file paths referenced by this entity to the outside.
     void collect_asset_paths(foundation::StringArray& paths) const override;
@@ -169,19 +188,9 @@ class APPLESEED_DLLSYMBOL Project
         OnFrameBeginRecorder&           recorder,
         foundation::IAbortSwitch*       abort_switch = nullptr) override;
 
-    // Return true if the trace context has already been built.
-    bool has_trace_context() const;
-
-    // Get the trace context.
-    const TraceContext& get_trace_context() const;
-
-    // Synchronize the trace context with the scene.
-    void update_trace_context();
-
-#ifdef APPLESEED_WITH_EMBREE
-    // Set use Embree flag for trace context
-    void set_use_embree(const bool value);
-#endif
+    void on_frame_end(
+        const Project&                  project,
+        const BaseGroup*                parent) override;
 
   private:
     friend class ProjectFactory;

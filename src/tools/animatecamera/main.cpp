@@ -31,7 +31,7 @@
 #include "animationpath.h"
 #include "commandlinehandler.h"
 
-// appleseed.shared headers.
+// appleseed.common headers.
 #include "application/application.h"
 #include "application/superlogger.h"
 
@@ -48,10 +48,10 @@
 #include "foundation/math/transform.h"
 #include "foundation/math/vector.h"
 #include "foundation/platform/types.h"
-#include "foundation/utility/autoreleaseptr.h"
-#include "foundation/utility/containers/dictionary.h"
-#include "foundation/utility/log.h"
-#include "foundation/utility/string.h"
+#include "foundation/memory/autoreleaseptr.h"
+#include "foundation/containers/dictionary.h"
+#include "foundation/log/log.h"
+#include "foundation/string/string.h"
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"
@@ -69,7 +69,7 @@
 #include <vector>
 
 using namespace appleseed::animatecamera;
-using namespace appleseed::shared;
+using namespace appleseed::common;
 using namespace foundation;
 using namespace renderer;
 namespace bf = boost::filesystem;

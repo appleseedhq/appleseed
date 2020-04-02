@@ -31,7 +31,6 @@
 
 // appleseed.studio headers.
 #include "mainwindow/rendering/qtrenderercontroller.h"
-#include "mainwindow/rendering/renderingtimer.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
@@ -40,8 +39,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/platform/thread.h"
-#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/searchpaths.h"
 
@@ -71,7 +70,7 @@ class RenderingManager
     Q_OBJECT
 
   public:
-    enum RenderingMode
+    enum class RenderingMode
     {
         InteractiveRendering,
         FinalRendering
@@ -168,12 +167,10 @@ class RenderingManager
     RenderingMode                               m_rendering_mode;
     RenderTab*                                  m_render_tab;
 
-    std::unique_ptr<renderer::TileCallbackCollectionFactory>      
+    std::unique_ptr<renderer::TileCallbackCollectionFactory>
                                                 m_tile_callback_factory;
     std::unique_ptr<renderer::MasterRenderer>   m_master_renderer;
     std::unique_ptr<QThread>                    m_master_renderer_thread;
-
-    RenderingTimer                              m_rendering_timer;
 
     typedef std::vector<IScheduledAction*> ScheduledActionCollection;
     typedef std::map<std::string, IStickyAction*> StickyActionCollection;

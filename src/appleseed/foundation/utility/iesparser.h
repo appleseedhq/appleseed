@@ -28,20 +28,18 @@
 
 #pragma once
 
+// appleseed.foundation headers.
+#include "foundation/core/exceptions/exception.h"
+#include "foundation/string/string.h"
+#include "foundation/utility/test.h"
+
 // Boost headers.
 #include "boost/algorithm/string.hpp"
-#include "boost/lexical_cast.hpp"
-#include "boost/unordered_map.hpp"
 
 // Standard headers.
 #include <string>
+#include <unordered_map>
 #include <vector>
-
-// Foundation headers.
-#include "foundation/core/exceptions/exception.h"
-#include "foundation/utility/foreach.h"
-#include "foundation/utility/string.h"
-#include "foundation/utility/test.h"
 
 DECLARE_TEST_CASE(Foundation_Utility_Iesparser, ParseFormat);
 DECLARE_TEST_CASE(Foundation_Utility_Iesparser, ReadLine_IgnoreEmptyLines);
@@ -103,7 +101,7 @@ class IESParser
     };
 
     // Dictionary containing IES file keywords and corresponding values.
-    typedef boost::unordered_map<std::string, std::string> KeywordsDictionary;
+    typedef std::unordered_map<std::string, std::string> KeywordsDictionary;
 
     // Type of IES file format.
     enum Format
@@ -394,17 +392,14 @@ class IESParser
             boost::split(tokens, m_line, isspace, boost::token_compress_on);
             if (output.size() + tokens.size() > count)
             {
-                std::string expected_number_of_values =
-                    boost::lexical_cast<std::string>(count - output.size());
+                const std::string expected_number_of_values = to_string(count - output.size());
                 static const char* ErrorMsg = "Too many values in the line, expected {0}";
                 throw ParsingException(
                     format(ErrorMsg, expected_number_of_values).c_str(), m_line_counter);
             }
 
-            for (each<std::vector<std::string>> token = tokens; token; ++token)
-            {
-                output.push_back(boost::lexical_cast<ValueType>(*token));
-            }
+            for (const std::string& token : tokens)
+                output.push_back(from_string<ValueType>(token));
 
             read_trimmed_line(input_stream);
         }

@@ -32,7 +32,6 @@
 // appleseed.foundation headers.
 #include "foundation/math/rng/distribution.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/types.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
@@ -40,6 +39,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 
 namespace foundation
 {
@@ -157,10 +157,11 @@ inline void random_permutation(
     // Shuffle.
     for (size_t i = 0; i < size - 1; ++i)
     {
-        const size_t j = rand_int1(
-            rng,
-            static_cast<int32>(i),
-            static_cast<int32>(size - 1));
+        const size_t j =
+            rand_int1(
+                rng,
+                static_cast<std::int32_t>(i),
+                static_cast<std::int32_t>(size - 1));
 
         const size_t tmp = perm[i];
         perm[i] = perm[j];

@@ -27,6 +27,7 @@
 //
 
 // appleseed.foundation headers.
+#include "foundation/hash/hash.h"
 #include "foundation/image/color.h"
 #include "foundation/image/colormap.h"
 #include "foundation/image/colormapdata.h"
@@ -34,23 +35,22 @@
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
 #include "foundation/image/pixel.h"
-#include "foundation/math/hash.h"
 #include "foundation/math/rng/xoroshiro128plus.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/gnuplotfile.h"
-#include "foundation/utility/string.h"
 #include "foundation/utility/test.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <vector>
 
 using namespace foundation;
 
-TEST_SUITE(Foundation_Math_Hash)
+TEST_SUITE(Foundation_Hash_Hash)
 {
     struct HistogramFixture
     {
@@ -148,7 +148,7 @@ TEST_SUITE(Foundation_Math_Hash)
 
     TEST_CASE_F(HashUInt32_Histogram_Sequential, HistogramFixture)
     {
-        for (uint32 i = 0; i < SampleCount; ++i)
+        for (std::uint32_t i = 0; i < SampleCount; ++i)
         {
             const double x = hash_uint32(i) * Rcp2Pow32<double>();
             insert_value(x);
@@ -176,7 +176,7 @@ TEST_SUITE(Foundation_Math_Hash)
 
     TEST_CASE_F(HashUInt32Wang_Histogram_Sequential, HistogramFixture)
     {
-        for (uint32 i = 0; i < SampleCount; ++i)
+        for (std::uint32_t i = 0; i < SampleCount; ++i)
         {
             const double x = hash_uint32_wang(i) * Rcp2Pow32<double>();
             insert_value(x);
@@ -204,9 +204,9 @@ TEST_SUITE(Foundation_Math_Hash)
 
     TEST_CASE_F(MixUInt32_Histogram, HistogramFixture)
     {
-        for (uint32 i = 0; i < SampleCount / 10; ++i)
+        for (std::uint32_t i = 0; i < SampleCount / 10; ++i)
         {
-            for (uint32 j = 0; j < 10; ++j)
+            for (std::uint32_t j = 0; j < 10; ++j)
             {
                 const double x = mix_uint32(i, j) * Rcp2Pow32<double>();
                 insert_value(x);
@@ -219,13 +219,13 @@ TEST_SUITE(Foundation_Math_Hash)
     }
 
     template <typename UInt> UInt rand(Xoroshiro128plus& rng);
-    template <> uint32 rand(Xoroshiro128plus& rng)
+    template <> std::uint32_t rand(Xoroshiro128plus& rng)
     {
         return rng.rand_uint32();
     }
-    template <> uint64 rand(Xoroshiro128plus& rng)
+    template <> std::uint64_t rand(Xoroshiro128plus& rng)
     {
-        uint64 x = rng.rand_uint32();
+        std::uint64_t x = rng.rand_uint32();
         x <<= 32;
         x |= rng.rand_uint32();
         return x;
@@ -312,31 +312,31 @@ TEST_SUITE(Foundation_Math_Hash)
 
     TEST_CASE_F(Identity_Avalanche, AvalancheFixture)
     {
-        plot_avalanche<uint32>(
+        plot_avalanche<std::uint32_t>(
             "test_hash_08_identity_avalanche.png",
             Trials,
-            [](const uint32 value) { return value; });
+            [](const std::uint32_t value) { return value; });
     }
 
     TEST_CASE_F(Addition_Avalanche, AvalancheFixture)
     {
-        plot_avalanche<uint32>(
+        plot_avalanche<std::uint32_t>(
             "test_hash_09_addition_avalanche.png",
             Trials,
-            [](const uint32 value) { return value + 0xDEADBEEFul; });
+            [](const std::uint32_t value) { return value + 0xDEADBEEFul; });
     }
 
     TEST_CASE_F(PrimeMultiplication_Avalanche, AvalancheFixture)
     {
-        plot_avalanche<uint32>(
+        plot_avalanche<std::uint32_t>(
             "test_hash_10_primemultiplication_avalanche.png",
             Trials,
-            [](const uint32 value) { return value * 1536399377ul; });
+            [](const std::uint32_t value) { return value * 1536399377ul; });
     }
 
     TEST_CASE_F(HashUInt32_Avalanche, AvalancheFixture)
     {
-        plot_avalanche<uint32>(
+        plot_avalanche<std::uint32_t>(
             "test_hash_11_hashuint32_avalanche.png",
             Trials,
             hash_uint32);
@@ -344,18 +344,18 @@ TEST_SUITE(Foundation_Math_Hash)
 
     TEST_CASE_F(HashUInt32Wang_Avalanche, AvalancheFixture)
     {
-        plot_avalanche<uint32>(
+        plot_avalanche<std::uint32_t>(
             "test_hash_12_hashuint32wang_avalanche.png",
             Trials,
-            [](const uint32 value) { return hash_uint32_wang(value); });
+            [](const std::uint32_t value) { return hash_uint32_wang(value); });
     }
 
     TEST_CASE_F(BobJenkinsHalf_Avalanche, AvalancheFixture)
     {
-        plot_avalanche<uint32>(
+        plot_avalanche<std::uint32_t>(
             "test_hash_13_bobjenkinshalf_avalanche.png",
             Trials,
-            [](uint32 value)
+            [](std::uint32_t value)
             {
                 value = (value + 0x479ab41d) + (value << 8);
                 value = (value ^ 0xe4aa10ce) ^ (value >> 5);
@@ -368,10 +368,10 @@ TEST_SUITE(Foundation_Math_Hash)
 
     TEST_CASE_F(BobJenkinsFull_Avalanche, AvalancheFixture)
     {
-        plot_avalanche<uint32>(
+        plot_avalanche<std::uint32_t>(
             "test_hash_14_bobjenkinsfull_avalanche.png",
             Trials,
-            [](uint32 value)
+            [](std::uint32_t value)
             {
                 value = (value + 0x7ed55d16) + (value << 12);
                 value = (value ^ 0xc761c23c) ^ (value >> 19);
@@ -385,10 +385,10 @@ TEST_SUITE(Foundation_Math_Hash)
 
     TEST_CASE_F(BobJenkinsFullNoBigConstants_Avalanche, AvalancheFixture)
     {
-        plot_avalanche<uint32>(
+        plot_avalanche<std::uint32_t>(
             "test_hash_15_bobjenkinsfullnobigconstants_avalanche.png",
             Trials,
-            [](uint32 value)
+            [](std::uint32_t value)
             {
                 value -= value << 6;
                 value ^= value >> 17;
@@ -403,7 +403,7 @@ TEST_SUITE(Foundation_Math_Hash)
 
     TEST_CASE_F(HashUInt64ToUInt32_Avalanche, AvalancheFixture)
     {
-        plot_avalanche<uint32>(
+        plot_avalanche<std::uint32_t>(
             "test_hash_16_hashuint64touint32_avalanche.png",
             Trials,
             hash_uint64_to_uint32);
@@ -411,92 +411,92 @@ TEST_SUITE(Foundation_Math_Hash)
 
     TEST_CASE_F(MixUInt32_Avalanche, AvalancheFixture)
     {
-        plot_avalanche<uint32>(
+        plot_avalanche<std::uint32_t>(
             "test_hash_17_mixuint32_avalanche.png",
             Trials,
-            [](const uint32 value) { return mix_uint32(value, 0xDEADBEEFul); });
+            [](const std::uint32_t value) { return mix_uint32(value, 0xDEADBEEFul); });
     }
 
-    static uint32 boost_hash_combine(const uint32 h1, const uint32 h2)
+    static std::uint32_t boost_hash_combine(const std::uint32_t h1, const std::uint32_t h2)
     {
-        // See foundation::combine_hashes() in foundation/math/hash.h for the constant derivation.
+        // See foundation::combine_hashes() in foundation/hash/hash.h for the constant derivation.
         return h1 ^ (h2 + 0x9E3779B9ul + (h1 << 6) + (h1 >> 2));
     }
 
     TEST_CASE_F(BoostHashCombine_Avalanche_FirstValue, AvalancheFixture)
     {
-        plot_avalanche<uint32>(
+        plot_avalanche<std::uint32_t>(
             "test_hash_18_boosthashcombine_firstvalue_avalanche.png",
             Trials,
-            [](const uint32 value)
+            [](const std::uint32_t value)
             {
-                const uint32 h1 = hash_uint32(value);
-                const uint32 h2 = 0xDEADBEEFul;
+                const std::uint32_t h1 = hash_uint32(value);
+                const std::uint32_t h2 = 0xDEADBEEFul;
                 return boost_hash_combine(h1, h2);
             });
     }
 
     TEST_CASE_F(BoostHashCombine_Avalanche_SecondValue, AvalancheFixture)
     {
-        plot_avalanche<uint32>(
+        plot_avalanche<std::uint32_t>(
             "test_hash_19_boosthashcombine_secondvalue_avalanche.png",
             Trials,
-            [](const uint32 value)
+            [](const std::uint32_t value)
             {
-                const uint32 h1 = 0xDEADBEEFul;
-                const uint32 h2 = hash_uint32(value);
+                const std::uint32_t h1 = 0xDEADBEEFul;
+                const std::uint32_t h2 = hash_uint32(value);
                 return boost_hash_combine(h1, h2);
             });
     }
 
     TEST_CASE_F(CombineHashes_32_Avalanche_FirstValue, AvalancheFixture)
     {
-        plot_avalanche<uint32>(
+        plot_avalanche<std::uint32_t>(
             "test_hash_20_combinehashes_32_firstvalue_avalanche.png",
             Trials,
-            [](const uint32 value)
+            [](const std::uint32_t value)
             {
-                const uint32 h1 = hash_uint32(value);
-                const uint32 h2 = 0xDEADBEEFul;
+                const std::uint32_t h1 = hash_uint32(value);
+                const std::uint32_t h2 = 0xDEADBEEFul;
                 return combine_hashes(h1, h2);
             });
     }
 
     TEST_CASE_F(CombineHashes_32_Avalanche_SecondValue, AvalancheFixture)
     {
-        plot_avalanche<uint32>(
+        plot_avalanche<std::uint32_t>(
             "test_hash_21_combinehashes_32_secondvalue_avalanche.png",
             Trials,
-            [](const uint32 value)
+            [](const std::uint32_t value)
             {
-                const uint32 h1 = 0xDEADBEEFul;
-                const uint32 h2 = hash_uint32(value);
+                const std::uint32_t h1 = 0xDEADBEEFul;
+                const std::uint32_t h2 = hash_uint32(value);
                 return combine_hashes(h1, h2);
             });
     }
 
     TEST_CASE_F(CombineHashes_64_Avalanche_FirstValue, AvalancheFixture)
     {
-        plot_avalanche<uint64>(
+        plot_avalanche<std::uint64_t>(
             "test_hash_22_combinehashes_64_firstvalue_avalanche.png",
             Trials,
-            [](const uint64 value)
+            [](const std::uint64_t value)
             {
-                const uint64 h1 = hash_uint64(value);
-                const uint64 h2 = 0xDEADBEEFCAFEBABEul;
+                const std::uint64_t h1 = hash_uint64(value);
+                const std::uint64_t h2 = 0xDEADBEEFCAFEBABEul;
                 return combine_hashes(h1, h2);
             });
     }
 
     TEST_CASE_F(CombineHashes_64_Avalanche_SecondValue, AvalancheFixture)
     {
-        plot_avalanche<uint64>(
+        plot_avalanche<std::uint64_t>(
             "test_hash_23_combinehashes_64_secondvalue_avalanche.png",
             Trials,
-            [](const uint64 value)
+            [](const std::uint64_t value)
             {
-                const uint64 h1 = 0xDEADBEEFCAFEBABEul;
-                const uint64 h2 = hash_uint64(value);
+                const std::uint64_t h1 = 0xDEADBEEFCAFEBABEul;
+                const std::uint64_t h2 = hash_uint64(value);
                 return combine_hashes(h1, h2);
             });
     }

@@ -33,7 +33,7 @@
 #include "renderer/modeling/project/projectfilewriter.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/utility/test.h"
 #include "foundation/utility/testutils.h"
 

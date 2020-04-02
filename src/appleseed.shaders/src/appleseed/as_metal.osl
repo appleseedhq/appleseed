@@ -32,7 +32,7 @@ shader as_metal
 [[
     string icon = "asMetal.png",
     string help = "A metal material shader.",
-    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_metal.html#label-as-metal",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_metal.html",
 
     string as_node_name = "asMetal",
     string as_category = "shader",
@@ -50,7 +50,8 @@ shader as_metal
         string as_maya_attribute_short_name = "f0",
         string label = "Face Reflectance",
         string page = "Fresnel",
-        string help = "Reflectance at normal incidence."
+        string help = "Reflectance at normal incidence.",
+        int as_max_param_id = 0
     ]],
     color in_edge_reflectance = color(1)
     [[
@@ -58,23 +59,31 @@ shader as_metal
         string as_maya_attribute_short_name = "f90",
         string label = "Edge Reflectance",
         string page = "Fresnel",
-        string help = "Reflectance at grazing incidence."
+        string help = "Reflectance at grazing incidence.",
+        int as_max_param_id = 2
+    ]],
+    float in_edge_reflectance_weight = 0.0
+    [[
+        string as_maya_attribute_name = "edgeReflectanceWeight",
+        string as_maya_attribute_short_name = "f90w",
+        string label = "Edge Reflectance Weight",
+        string page = "Fresnel",
+        string help = "Edge reflectance weight.",
+        int as_max_param_id = 26,
+        int divider = 1
     ]],
     int in_distribution = 0
     [[
         string as_maya_attribute_name = "distribution",
         string as_maya_attribute_short_name = "mdf",
-        string widget = "mapper",
-        string options = "Beckmann:0|GGX:1",
-        string label = "Distribution",
-        string page = "Specular",
+        string widget = "null",
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1,
-        int as_deprecated = 1
+        int as_deprecated = 1,
+        int as_max_param_id = 4
     ]],
     float in_roughness = 0.25
     [[
@@ -83,7 +92,8 @@ shader as_metal
         float min = 0.0,
         float max = 1.0,
         string label = "Roughness",
-        string page = "Specular"
+        string page = "Specular",
+        int as_max_param_id = 5
     ]],
     float in_energy_compensation = 1.0
     [[
@@ -108,7 +118,8 @@ shader as_metal
         float min = 0.0,
         float max = 1.0,
         string label = "Anisotropy Amount",
-        string page = "Specular.Anisotropy"
+        string page = "Specular.Anisotropy",
+        int as_max_param_id = 7
     ]],
     float in_anisotropy_angle = 0.0
     [[
@@ -119,7 +130,8 @@ shader as_metal
         string label = "Anisotropy Angle",
         string page = "Specular.Anisotropy",
         string help = "Anisotropy angle in [0,1], mapping to [0,360] degrees.",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 9
     ]],
     int in_anisotropy_mode = 0
     [[
@@ -135,7 +147,8 @@ shader as_metal
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 11
     ]],
     color in_anisotropy_map = color(0)
     [[
@@ -144,7 +157,8 @@ shader as_metal
         string label = "Anisotropy Vector Map",
         string page = "Specular.Anisotropy",
         string help = "Anisotropy vector map, with XY encoded in RG channels.",
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 12
     ]],
     vector in_anisotropy_direction = vector(0)
     [[
@@ -152,7 +166,8 @@ shader as_metal
         string as_maya_attribute_short_name = "and",
         string label = "Anisotropy Vector",
         string page = "Specular.Anisotropy",
-        string help = "Explicit anisotropy vector, such as the vector output by a tangent field node."
+        string help = "Explicit anisotropy vector, such as the vector output by a tangent field node.",
+        int as_max_param_id = 14
     ]],
 #if 0
     float in_thinfilm_thickness = 0.0
@@ -217,7 +232,8 @@ shader as_metal
         string as_maya_attribute_short_name = "n",
         string label = "Bump Normal",
         string page = "Bump",
-        string help = "The default bump normal."
+        string help = "The default bump normal.",
+        int as_max_param_id = 16
     ]],
     int in_enable_matte = 0
     [[
@@ -231,7 +247,8 @@ shader as_metal
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
         int gafferNoduleLayoutVisible = 0,
-        int divider = 1
+        int divider = 1,
+        int as_max_param_id = 17
     ]],
     float in_matte_opacity = 0.0
     [[
@@ -242,7 +259,8 @@ shader as_metal
         string label = "Matte Opacity",
         string page = "Matte Opacity",
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 18
     ]],
     color in_matte_opacity_color = color(1,0.5,0)
     [[
@@ -251,7 +269,8 @@ shader as_metal
         string label = "Matte Opacity Color",
         string page = "Matte Opacity",
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 20
     ]],
     int in_maximum_ray_depth = 100
     [[
@@ -266,7 +285,8 @@ shader as_metal
         int as_maya_attribute_keyable = 0,
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 22
     ]],
     vector Tn = vector(0)
     [[
@@ -289,7 +309,8 @@ shader as_metal
     [[
         string as_maya_attribute_name = "outColor",
         string as_maya_attribute_short_name = "oc",
-        string widget = "null"
+        string widget = "null",
+        int as_max_param_id = 25
     ]],
     output closure color out_outMatteOpacity = 0
     [[
@@ -298,7 +319,8 @@ shader as_metal
         string widget = "null",
         int as_maya_attribute_hidden = 1,
         int as_blender_input_socket = 0,
-        int gafferNoduleLayoutVisible = 0
+        int gafferNoduleLayoutVisible = 0,
+        int as_max_param_id = 25
     ]]
 )
 {
@@ -362,10 +384,7 @@ shader as_metal
                 vector vector_map = normalize(
                     (vector) in_anisotropy_map * 2.0 - 1.0);
 
-                tangent = normalize(
-                    vector_map[0] * Tn +
-                    vector_map[1] * Bn +
-                    vector_map[2] * Nn);
+                tangent = normalize(vector_map[0] * Tn + vector_map[1] * Bn);
             }
         }
         else
@@ -388,6 +407,7 @@ shader as_metal
         tangent,
         in_face_reflectance,
         in_edge_reflectance,
+        in_edge_reflectance_weight,
         in_roughness,
         in_anisotropy_amount,
         "energy_compensation", in_energy_compensation);

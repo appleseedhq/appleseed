@@ -45,27 +45,26 @@
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/input/inputbinder.h"
 #include "renderer/modeling/project/project.h"
+#include "renderer/modeling/project/renderingtimer.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/settingsparsing.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/defaulttimers.h"
-#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/job/iabortswitch.h"
 #include "foundation/utility/otherwise.h"
 #include "foundation/utility/searchpaths.h"
 #include "foundation/utility/statistics.h"
-#include "foundation/utility/stopwatch.h"
 
 // Standard headers.
 #include <algorithm>
 #include <cassert>
 #include <exception>
-#include <new>
 #include <memory>
+#include <new>
 #include <string>
 #include <vector>
 
@@ -108,7 +107,7 @@ struct MasterRenderer::Impl
 {
     Project&                            m_project;
     ParamArray                          m_params;
-    const SearchPaths&                  m_resource_search_paths;
+    SearchPaths                         m_resource_search_paths;
     ITileCallbackFactory*               m_tile_callback_factory;
     ITileCallback*                      m_tile_callback;
 
@@ -117,8 +116,6 @@ struct MasterRenderer::Impl
     ITileCallbackFactory*               m_serial_tile_callback_factory;
 
     std::unique_ptr<IRenderDevice>      m_render_device;
-
-    Stopwatch<DefaultWallclockTimer>    m_stopwatch;
 
     Impl(
         Project&                        project,
@@ -215,29 +212,30 @@ struct MasterRenderer::Impl
         try
         {
             // Render.
-            m_stopwatch.start();
-            result.m_status = do_render(
-                m_serial_renderer_controller != nullptr
-                    ? *m_serial_renderer_controller
-                    : renderer_controller);
-            m_stopwatch.measure();
-            result.m_render_time = m_stopwatch.get_seconds();
+            result.m_status =
+                do_render(
+                    m_serial_renderer_controller != nullptr
+                        ? *m_serial_renderer_controller
+                        : renderer_controller);
 
-            // Insert render time into the frame's render info.
-            // Note that the frame entity may have replaced during rendering.
+            // Retrieve frame's render info. Note that the frame entity may have been replaced during rendering.
             ParamArray& render_info = m_project.get_frame()->render_info();
-            render_info.insert("render_time", result.m_render_time);
+
+            // Insert rendering time into frame's render info.
+            render_info.insert("render_time", m_project.get_rendering_timer().get_seconds());
 
             // Don't proceed further if rendering failed.
             if (result.m_status != RenderingResult::Succeeded)
                 return result;
 
             // Post-process.
-            m_stopwatch.start();
-            postprocess(result);
-            m_stopwatch.measure();
-            result.m_post_processing_time = m_stopwatch.get_seconds();
-            render_info.insert("post_processing_time", result.m_post_processing_time);
+            RenderingTimer stopwatch;
+            stopwatch.start();
+            postprocess();
+            stopwatch.measure();
+
+            // Insert post-processing time into frame's render info.
+            render_info.insert("post_processing_time", stopwatch.get_seconds());
         }
         catch (const std::bad_alloc&)
         {
@@ -362,7 +360,6 @@ struct MasterRenderer::Impl
                 m_resource_search_paths,
                 m_tile_callback_factory,
                 abort_switch);
-
         if (!success || abort_switch.is_aborted())
         {
             recorder.on_render_end(m_project);
@@ -403,6 +400,11 @@ struct MasterRenderer::Impl
             recorder.on_render_end(m_project);
             return IRendererController::AbortRendering;
         }
+
+        // Print settings of key entities.
+        // todo: move to Project::on_render_begin()?
+        m_project.get_frame()->print_settings();
+        m_project.get_scene()->get_render_data().m_active_camera->print_settings();
 
         // Perform pre-render actions.
         if (!m_render_device->on_render_begin(recorder, &abort_switch) ||
@@ -446,6 +448,7 @@ struct MasterRenderer::Impl
             combined_renderer_controller.on_frame_begin();
 
             // Discard recorded light paths.
+            // todo: move to Project::on_frame_begin()?
             m_project.get_light_path_recorder().clear();
 
             // Perform pre-frame actions. Don't proceed if that failed.
@@ -459,13 +462,12 @@ struct MasterRenderer::Impl
                 return IRendererController::AbortRendering;
             }
 
-            // Print settings of key entities.
-            m_project.get_frame()->print_settings();
-            m_project.get_scene()->get_active_camera()->print_settings();
-
             // Render the frame.
-            const IRendererController::Status status = m_render_device->render_frame(
-                m_tile_callback_factory, combined_renderer_controller, abort_switch);
+            const IRendererController::Status status =
+                m_render_device->render_frame(
+                    m_tile_callback_factory,
+                    combined_renderer_controller,
+                    abort_switch);
 
             // Perform post-frame actions.
             recorder.on_frame_end(m_project);
@@ -486,7 +488,7 @@ struct MasterRenderer::Impl
         }
     }
 
-    void postprocess(const RenderingResult& rendering_result)
+    void postprocess()
     {
         Frame* frame = m_project.get_frame();
         assert(frame != nullptr);
@@ -498,7 +500,7 @@ struct MasterRenderer::Impl
         // Collect post-processing stages.
         std::vector<PostProcessingStage*> ordered_stages;
         ordered_stages.reserve(frame->post_processing_stages().size());
-        for (auto& stage : frame->post_processing_stages())
+        for (PostProcessingStage& stage : frame->post_processing_stages())
             ordered_stages.push_back(&stage);
 
         // Sort post-processing stages in increasing order.
@@ -527,7 +529,7 @@ struct MasterRenderer::Impl
         }
 
         // Execute post-processing stages.
-        for (auto stage : ordered_stages)
+        for (PostProcessingStage* stage : ordered_stages)
         {
             RENDERER_LOG_INFO("executing \"%s\" post-processing stage with order %d on frame \"%s\"...",
                 stage->get_path().c_str(), stage->get_order(), frame->get_path().c_str());
@@ -605,8 +607,6 @@ MasterRenderer::RenderingResult MasterRenderer::render(IRendererController& rend
 
 MasterRenderer::RenderingResult::RenderingResult()
   : m_status(Failed)
-  , m_render_time(0.0)
-  , m_post_processing_time(0.0)
 {
 }
 

@@ -37,13 +37,13 @@
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/texturing/oiiotexturesystem.h"
+#include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
-#include "renderer/kernel/texturing/texturestore.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/searchpaths.h"
 
 // Standard headers.
@@ -256,7 +256,7 @@ IRendererController::Status CPURenderDevice::render_frame(
     // Start rendering the frame.
     frame_renderer.start_rendering();
 
-    // Wait until the the frame is completed or rendering is aborted.
+    // Wait until the frame is completed or rendering is aborted.
     const IRendererController::Status status =
         wait_for_event(frame_renderer, renderer_controller);
 

@@ -35,7 +35,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/stampedptr.h"
+#include "foundation/memory/stampedptr.h"
 
 // Standard headers.
 #include <cstddef>
@@ -298,6 +298,11 @@ inline const foundation::AABB3d& EmittingShape::get_bbox() const
 inline const foundation::Vector3d& EmittingShape::get_centroid() const
 {
     return m_centroid;
+}
+
+inline float EmittingShape::evaluate_pdf_uniform() const
+{
+    return m_shape_prob * m_rcp_area;
 }
 
 inline float EmittingShape::get_average_flux() const

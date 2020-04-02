@@ -35,9 +35,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/transform.h"
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/types.h"
-#include "foundation/utility/autoreleaseptr.h"
 #include "foundation/utility/uid.h"
 
 // appleseed.main headers.
@@ -45,6 +44,7 @@
 
 // Standard headers.
 #include <cassert>
+#include <cstdint>
 
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
@@ -98,7 +98,7 @@ class APPLESEED_DLLSYMBOL TextureInstance
     void release() override;
 
     // Compute and return the unique signature of this instance.
-    foundation::uint64 compute_signature() const override;
+    std::uint64_t compute_signature() const override;
 
     // Return the name of the instantiated texture.
     const char* get_texture_name() const;

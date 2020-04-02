@@ -30,16 +30,17 @@
 #pragma once
 
 // appleseed.foundation headers.
+#include "foundation/math/scalar.h"
 #ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
-#include "foundation/platform/types.h"
+#include "foundation/memory/memory.h"
 #include "foundation/utility/casts.h"
-#include "foundation/utility/memory.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 
 namespace foundation
 {
@@ -64,9 +65,9 @@ namespace foundation
 //   foundation::fast_cos()
 //   foundation::fast_cos_full()
 //
-// were borrowed from https://code.google.com/p/fastapprox/ with minor,
-// non-functional changes. The original copyright notice for this code
-// follows:
+// were borrowed from https://code.google.com/p/fastapprox/ (alternative
+// link: https://github.com/whackashoe/fastapprox) with minor, non-
+// functional changes. The original copyright notice for this code follows:
 //
 // *=====================================================================*
 // *                   Copyright (C) 2011 Paul Mineiro                   *
@@ -117,6 +118,7 @@ namespace foundation
 //
 //   Fast square root:
 //     http://en.wikipedia.org/wiki/Methods_of_computing_square_roots
+//     https://geometrian.com/programming/tutorials/fastsqrt/index.php
 //
 //   Fast reciprocal square root:
 //     http://www.lomont.org/Math/Papers/2003/InvSqrt.pdf
@@ -152,10 +154,27 @@ float fast_cos(const float x);
 float fast_cos_full(const float x);
 float fast_cos_full_positive(const float x);    // x >= 0.0f
 
+//
+// Fast arc cosine approximation.
+//
+// Reference:
+//
+//   Cg 3.1 Toolkit Documentation
+//   https://developer.download.nvidia.com/cg/acos.html
+//
+// Of interest:
+//
+//   Inverse trigonometric functions GPU optimization for AMD GCN architecture
+//   https://seblagarde.wordpress.com/2014/12/01/inverse-trigonometric-functions-gpu-optimization-for-amd-gcn-architecture/
+//
+
+float fast_acos(const float x);
+
 // Fast reciprocal approximation.
 float fast_rcp(const float x);
 
 // Fast square root approximation.
+// todo: improve precision, it is quite poor at the moment.
 float fast_sqrt(const float x);
 
 // Fast reciprocal square root approximations.
@@ -200,13 +219,13 @@ void faster_exp(float x[4]);
 inline float fast_pow2(const float p)
 {
     // Underflow of exponential is common practice in numerical routines, so handle it here.
-    const float offset = (p < 0) ? 1.0f : 0.0f;
-    const float clipp = (p < -126) ? -126.0f : p;
+    const float offset = p < 0.0f ? 1.0f : 0.0f;
+    const float clipp = p < -126.0f ? -126.0f : p;
     const int w = static_cast<int>(clipp);
     const float z = clipp - w + offset;
-    const union { uint32 i; float f; } v =
+    const union { std::uint32_t i; float f; } v =
     {
-        static_cast<uint32>((1 << 23) * (clipp + 121.2740575f + 27.7280233f / (4.84252568f - z) - 1.49012907f * z))
+        static_cast<std::uint32_t>((1 << 23) * (clipp + 121.2740575f + 27.7280233f / (4.84252568f - z) - 1.49012907f * z))
     };
 
     return v.f;
@@ -215,10 +234,10 @@ inline float fast_pow2(const float p)
 inline float faster_pow2(const float p)
 {
     // Underflow of exponential is common practice in numerical routines, so handle it here.
-    const float clipp = (p < -126) ? -126.0f : p;
-    const union { uint32 i; float f; } v =
+    const float clipp = p < -126.0f ? -126.0f : p;
+    const union { std::uint32_t i; float f; } v =
     {
-        static_cast<uint32>((1 << 23) * (clipp + 126.94269504f))
+        static_cast<std::uint32_t>((1 << 23) * (clipp + 126.94269504f))
     };
 
     return v.f;
@@ -228,8 +247,8 @@ inline float fast_log2(const float x)
 {
     assert(x >= 0.0f);
 
-    const union { float f; uint32 i; } vx = { x };
-    const union { uint32 i; float f; } mx = { (vx.i & 0x007FFFFF) | 0x3f000000 };
+    const union { float f; std::uint32_t i; } vx = { x };
+    const union { std::uint32_t i; float f; } mx = { (vx.i & 0x007FFFFF) | 0x3f000000 };
     const float y = static_cast<float>(vx.i) * 1.1920928955078125e-7f;
 
     return y - 124.22551499f
@@ -241,7 +260,7 @@ inline float faster_log2(const float x)
 {
     assert(x >= 0.0f);
 
-    const union { float f; uint32 i; } vx = { x };
+    const union { float f; std::uint32_t i; } vx = { x };
     const float y = static_cast<float>(vx.i) * 1.1920928955078125e-7f;
 
     return y - 126.94269504f;
@@ -268,7 +287,7 @@ inline float faster_log(const float x)
 
     assert(x >= 0.0f);
 
-    const union { float f; uint32 i; } vx = { x };
+    const union { float f; std::uint32_t i; } vx = { x };
     const float y = static_cast<float>(vx.i) * 8.2629582881927490e-8f;
 
     return y - 87.989971088f;
@@ -288,10 +307,10 @@ inline float fast_sin(const float x)
 {
     static const float Q = 0.77633023248007499f;
 
-    union { float f; uint32 i; } p = { 0.22308510060189463f };
-    union { float f; uint32 i; } vx = { x };
+    union { float f; std::uint32_t i; } p = { 0.22308510060189463f };
+    union { float f; std::uint32_t i; } vx = { x };
 
-    const uint32 sign = vx.i & 0x80000000;
+    const std::uint32_t sign = vx.i & 0x80000000;
     vx.i &= 0x7FFFFFFF;
     p.i |= sign;
 
@@ -318,7 +337,7 @@ inline float fast_cos(const float x)
 {
     static const float P = 0.54641335845679634f;
 
-    union { float f; uint32 i; } vx = { x };
+    union { float f; std::uint32_t i; } vx = { x };
     vx.i &= 0x7FFFFFFF;
 
     const float qpprox = 1.0f - TwoOverPi<float>() * vx.f;
@@ -333,14 +352,29 @@ inline float fast_cos_full(const float x)
 inline float fast_cos_full_positive(const float x)
 {
     assert(x >= 0.0f);
-
     return fast_sin_full_positive(x + HalfPi<float>());
+}
+
+inline float fast_acos(const float x)
+{
+    const float negate = float(x < 0.0f);
+    const float abs_x = std::abs(x);
+    float ret = -0.0187293f;
+    ret *= abs_x;
+    ret += 0.0742610f;
+    ret *= abs_x;
+    ret -= 0.2121144f;
+    ret *= abs_x;
+    ret += 1.5707288f;
+    ret *= std::sqrt(1.0f - abs_x);
+    ret -= 2.0f * negate * ret;
+    return negate * foundation::Pi<float>() + ret;
 }
 
 inline float fast_sqrt(const float x)
 {
     assert(x >= 0.0f);
-    int32 i = binary_cast<int32>(x);
+    std::int32_t i = binary_cast<std::int32_t>(x);
     i -= 1 << 23;                               // remove last bit to not let it go to mantissa
     i = i >> 1;                                 // divide by 2
     i += 1 << 29;                               // add 64 to exponent
@@ -382,7 +416,7 @@ inline float fast_rcp_sqrt(const float x)
 {
     assert(x >= 0.0f);
     const float xhalf = 0.5f * x;
-    int32 i = binary_cast<int32>(x);
+    std::int32_t i = binary_cast<std::int32_t>(x);
     i = 0x5F375A86L - (i >> 1);                 // initial guess
     float z = binary_cast<float>(i);
     z = z * (1.5f - xhalf * z * z);             // Newton step, repeating increases accuracy
@@ -393,7 +427,7 @@ inline double fast_rcp_sqrt(const double x)
 {
     assert(x >= 0.0);
     const double xhalf = 0.5 * x;
-    int64 i = binary_cast<int64>(x);
+    std::int64_t i = binary_cast<std::int64_t>(x);
     i = 0x5FE6EC85E7DE30DALL - (i >> 1);        // initial guess
     double z = binary_cast<double>(i);
     z = z * (1.5 - xhalf * z * z);              // Newton step, repeating increases accuracy

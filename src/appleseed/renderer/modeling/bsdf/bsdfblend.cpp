@@ -40,13 +40,13 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/basis.h"
+#include "foundation/math/dual.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
+#include "foundation/memory/arena.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/arena.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
 #include <cassert>
@@ -151,6 +151,8 @@ namespace
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
+            const LocalGeometry&        local_geometry,
+            const Dual3f&               outgoing,
             const int                   modes,
             BSDFSample&                 sample) const override
         {
@@ -168,7 +170,9 @@ namespace
                 sampling_context,
                 values->m_child_inputs[bsdf_index],
                 adjoint,
-                false,              // do not multiply by |cos(incoming, normal)|
+                false,                  // do not multiply by |cos(incoming, normal)|
+                local_geometry,
+                outgoing,
                 modes,
                 sample);
         }
@@ -177,8 +181,7 @@ namespace
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
-            const Vector3f&             geometric_normal,
-            const Basis3f&              shading_basis,
+            const LocalGeometry&        local_geometry,
             const Vector3f&             outgoing,
             const Vector3f&             incoming,
             const int                   modes,
@@ -200,8 +203,7 @@ namespace
                           values->m_child_inputs[0],
                           adjoint,
                           false,                // do not multiply by |cos(incoming, normal)|
-                          geometric_normal,
-                          shading_basis,
+                          local_geometry,
                           outgoing,
                           incoming,
                           modes,
@@ -216,8 +218,7 @@ namespace
                           values->m_child_inputs[1],
                           adjoint,
                           false,                // do not multiply by |cos(incoming, normal)|
-                          geometric_normal,
-                          shading_basis,
+                          local_geometry,
                           outgoing,
                           incoming,
                           modes,
@@ -238,8 +239,7 @@ namespace
         float evaluate_pdf(
             const void*                 data,
             const bool                  adjoint,
-            const Vector3f&             geometric_normal,
-            const Basis3f&              shading_basis,
+            const LocalGeometry&        local_geometry,
             const Vector3f&             outgoing,
             const Vector3f&             incoming,
             const int                   modes) const override
@@ -258,8 +258,7 @@ namespace
                     ? m_bsdf[0]->evaluate_pdf(
                           values->m_child_inputs[0],
                           adjoint,
-                          geometric_normal,
-                          shading_basis,
+                          local_geometry,
                           outgoing,
                           incoming,
                           modes)
@@ -271,8 +270,7 @@ namespace
                     ? m_bsdf[1]->evaluate_pdf(
                           values->m_child_inputs[1],
                           adjoint,
-                          geometric_normal,
-                          shading_basis,
+                          local_geometry,
                           outgoing,
                           incoming,
                           modes)

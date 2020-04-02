@@ -38,18 +38,18 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionioerror.h"
+#include "foundation/memory/memory.h"
 #include "foundation/platform/defaulttimers.h"
 #include "foundation/platform/thread.h"
-#include "foundation/platform/types.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/bufferedfile.h"
-#include "foundation/utility/memory.h"
 #include "foundation/utility/stopwatch.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <algorithm>
 #include <cassert>
+#include <cstdint>
 #include <map>
 #include <memory>
 #include <string>
@@ -211,7 +211,7 @@ void LightPathRecorder::finalize(
         auto& index_entry = impl->m_index[y * render_width + x];
 
         // Initialize index entry if this is the first path for that pixel.
-        if (index_entry.m_begin_path == ~uint64(0))
+        if (index_entry.m_begin_path == ~std::uint64_t(0))
         {
             index_entry.m_begin_path = i;
             index_entry.m_end_path = i;
@@ -313,31 +313,31 @@ bool LightPathRecorder::write(const char* filename) const
         checked_write(file, Signature, sizeof(Signature));
 
         // Version.
-        const uint16 Version = 1;
+        const std::uint16_t Version = 1;
         checked_write(file, Version);
 
         // Number of paths.
         assert(light_path_count < 4294967296ULL);
-        checked_write(file, static_cast<uint32>(light_path_count));
+        checked_write(file, static_cast<std::uint32_t>(light_path_count));
 
         // On-disk variant of Impl::IndexEntry.
         struct StoredIndexEntry
         {
-            uint64  m_start_offset;     // byte offset in the file of the first path
-            uint16  m_path_count;       // number of paths for that pixel
+            std::uint64_t  m_start_offset;     // byte offset in the file of the first path
+            std::uint16_t  m_path_count;       // number of paths for that pixel
         };
 
         // Initialize index.
         std::vector<StoredIndexEntry> stored_index(impl->m_render_width * impl->m_render_height);
         for (auto& index_entry : stored_index)
         {
-            index_entry.m_start_offset = ~uint64(0);
+            index_entry.m_start_offset = ~std::uint64_t(0);
             index_entry.m_path_count = 0;
         }
 
         // Write index dimensions.
-        checked_write(file, static_cast<uint16>(impl->m_render_width));
-        checked_write(file, static_cast<uint16>(impl->m_render_height));
+        checked_write(file, static_cast<std::uint16_t>(impl->m_render_width));
+        checked_write(file, static_cast<std::uint16_t>(impl->m_render_height));
 
         // Write index placeholder.
         const auto index_location = file.tell();
@@ -349,7 +349,7 @@ bool LightPathRecorder::write(const char* filename) const
 
         // Collect entity names and build (entity name -> name index) dictionary.
         std::vector<std::string> entity_names;
-        std::map<const Entity*, uint16> entity_name_to_index;
+        std::map<const Entity*, std::uint16_t> entity_name_to_index;
         for (const auto& vertex : stream->m_vertices)
         {
             if (entity_name_to_index.find(vertex.m_entity) == entity_name_to_index.end())
@@ -359,7 +359,7 @@ bool LightPathRecorder::write(const char* filename) const
                 entity_name_to_index.insert(
                     std::make_pair(
                         vertex.m_entity,
-                        static_cast<uint16>(entity_names.size())));
+                        static_cast<std::uint16_t>(entity_names.size())));
 
                 // Insert the entity name into the vector.
                 entity_names.push_back(
@@ -369,11 +369,11 @@ bool LightPathRecorder::write(const char* filename) const
 
         // Write entity names.
         assert(entity_names.size() < 65536);
-        checked_write(file, static_cast<uint16>(entity_names.size()));
+        checked_write(file, static_cast<std::uint16_t>(entity_names.size()));
         for (const auto& name : entity_names)
         {
             assert(name.size() < 65536);
-            checked_write(file, static_cast<uint16>(name.size()));
+            checked_write(file, static_cast<std::uint16_t>(name.size()));
             checked_write(file, name.c_str(), name.size());
         }
 
@@ -386,8 +386,8 @@ bool LightPathRecorder::write(const char* filename) const
             auto& index_entry = stored_index[y * impl->m_render_width + x];
 
             // Initialize index entry if this is the first path for that pixel.
-            if (index_entry.m_start_offset == ~uint64(0))
-                index_entry.m_start_offset = static_cast<uint64>(file.tell());
+            if (index_entry.m_start_offset == ~std::uint64_t(0))
+                index_entry.m_start_offset = static_cast<std::uint64_t>(file.tell());
 
             // One more path for that pixel.
             assert(index_entry.m_path_count < 65535);
@@ -400,7 +400,7 @@ bool LightPathRecorder::write(const char* filename) const
             // Write number of vertices for this path.
             const auto vertex_count = path.m_vertex_end_index - path.m_vertex_begin_index;
             assert(vertex_count < 65536);
-            checked_write(file, static_cast<uint16>(vertex_count));
+            checked_write(file, static_cast<std::uint16_t>(vertex_count));
 
             // Write path vertices.
             for (auto i = path.m_vertex_begin_index; i < path.m_vertex_end_index; ++i)
@@ -466,7 +466,7 @@ void LightPathRecorder::merge_streams(
 
     clear_release_memory(source.m_paths);
 
-    const auto vertex_index_shift = static_cast<uint32>(dest.m_vertices.size());
+    const auto vertex_index_shift = static_cast<std::uint32_t>(dest.m_vertices.size());
 
     for (size_t i = old_size, e = dest.m_paths.size(); i < e; ++i)
     {

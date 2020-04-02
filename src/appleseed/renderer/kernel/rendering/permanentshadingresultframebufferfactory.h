@@ -34,7 +34,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/aabb.h"
-#include "foundation/platform/compiler.h"
 
 // Standard headers.
 #include <cstddef>
@@ -61,10 +60,12 @@ class PermanentShadingResultFrameBufferFactory
     // Delete this instance.
     void release() override;
 
+    void clear() override;
+
     ShadingResultFrameBuffer* create(
         const Frame&                frame,
-        const size_t                tile_x,
-        const size_t                tile_y,
+        const std::size_t           tile_x,
+        const std::size_t           tile_y,
         const foundation::AABB2u&   tile_bbox) override;
 
     void destroy(

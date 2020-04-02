@@ -36,12 +36,15 @@
 // appleseed.studio headers.
 #include "mainwindow/collapsiblesectionwidget.h"
 #include "mainwindow/configurationmanagerwindow.h"
-#include "mainwindow/project/projectmanager.h"
-#include "utility/foldablepanelwidget.h"
 #include "utility/inputwidgetproxies.h"
-#include "utility/miscellaneous.h"
-#include "utility/mousewheelfocuseventfilter.h"
 #include "utility/settingskeys.h"
+
+// appleseed.qtcommon headers.
+#include "project/projectmanager.h"
+#include "utility/interop.h"
+#include "utility/miscellaneous.h"
+#include "widgets/foldablepanelwidget.h"
+#include "widgets/mousewheelfocuseventfilter.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/project.h"
@@ -50,8 +53,7 @@
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/system.h"
-#include "foundation/utility/foreach.h"
-#include "foundation/utility/string.h"
+#include "foundation/string/string.h"
 
 // Qt headers.
 #include <QButtonGroup>
@@ -79,7 +81,9 @@
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
+#include <iterator>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 
@@ -169,8 +173,8 @@ namespace
         set_widget_width_for_text(widget, QString::number(value), margin, min_width);
     }
 
-    const int SpinBoxMargin = 28;
-    const int SpinBoxMinWidth = 40;
+    constexpr int SpinBoxMargin = 28;
+    constexpr int SpinBoxMinWidth = 40;
 }
 
 //
@@ -193,8 +197,8 @@ class RenderSettingsPanel
     {
         std::map<std::string, std::string> values;
 
-        for (const_each<WidgetProxyCollection> i = m_widget_proxies; i; ++i)
-            values[i->first] = i->second->get();
+        for (const auto& item : m_widget_proxies)
+            values[item.first] = item.second->get();
 
         return values;
     }
@@ -267,7 +271,10 @@ class RenderSettingsPanel
         spinbox->setRange(min, max);
         spinbox->setDecimals(decimals);
         spinbox->setSingleStep(step);
-        set_widget_width_for_value(spinbox, max, SpinBoxMargin, SpinBoxMinWidth);
+
+        QString text;
+        text.setNum(max, 'f', decimals);
+        set_widget_width_for_text(spinbox, text, SpinBoxMargin, SpinBoxMinWidth);
 
         new MouseWheelFocusEventFilter(spinbox);
 
@@ -367,22 +374,22 @@ class RenderSettingsPanel
 
     void load_directly_linked_values(const Configuration& config)
     {
-        for (const_each<DirectLinkCollection> i = m_direct_links; i; ++i)
+        for (const DirectLink& link : m_direct_links)
         {
-            const std::string default_value_path = i->m_param_path + ".default";
+            const std::string default_value_path = link.m_param_path + ".default";
             const std::string default_value =
                 m_params_metadata.get_path_optional<std::string>(
                     default_value_path.c_str(),
-                    i->m_default_value);
-            const std::string value = get_config<std::string>(config, i->m_param_path, default_value);
-            set_widget(i->m_widget_key, value);
+                    link.m_default_value);
+            const std::string value = get_config<std::string>(config, link.m_param_path, default_value);
+            set_widget(link.m_widget_key, value);
         }
     }
 
     void save_directly_linked_values(Configuration& config) const
     {
-        for (const_each<DirectLinkCollection> i = m_direct_links; i; ++i)
-            set_config(config, i->m_param_path, get_widget<std::string>(i->m_widget_key));
+        for (const DirectLink& link : m_direct_links)
+            set_config(config, link.m_param_path, get_widget<std::string>(link.m_widget_key));
     }
 
     template <typename T>
@@ -418,7 +425,7 @@ class RenderSettingsPanel
         const std::string&      param_path,
         const T&                value)
     {
-        configuration.get_parameters().insert_path(param_path, value);
+        configuration.get_parameters().insert_path(param_path.c_str(), value);
     }
 };
 
@@ -532,13 +539,11 @@ namespace
             constexpr int DefaultHours = 0;
 
             const int time_limit = m_params_metadata.get_path_optional<int>("progressive_frame_renderer.time_limit.default", -1);
+            const int hours = time_limit == -1 ? DefaultHours : time_limit / 3600;
+            const int minutes = time_limit == -1 ? DefaultMinutes : (time_limit - hours * 3600) / 60;
+            const int seconds = time_limit == -1 ? DefaultSeconds : time_limit - hours * 3600 - minutes * 60;
 
-            // Tramsform from seconds.
-            const unsigned int hours = time_limit == -1 ? DefaultHours : time_limit / 3600;
-            const unsigned int minutes = time_limit == -1 ? DefaultMinutes : (time_limit - hours * 3600) / 60;
-            const unsigned int seconds = time_limit == -1 ? DefaultSeconds : time_limit - hours * 3600 - minutes * 60;
-
-            set_widget("unlimited_time", true);
+            set_widget("unlimited_time", time_limit == -1);
             set_widget("hours", hours);
             set_widget("minutes", minutes);
             set_widget("seconds", seconds);
@@ -550,11 +555,10 @@ namespace
                 config.get_parameters().remove_path("progressive_frame_renderer.time_limit");
             else
             {
-                // Transform to seconds.
-                const unsigned int hours = get_widget<unsigned int>("hours");
-                const unsigned int minutes = get_widget<unsigned int>("minutes");
-                const unsigned int seconds = get_widget<unsigned int>("seconds");
-                const unsigned int time_limit = seconds + minutes * 60 + hours * 60 * 60;
+                const int hours = get_widget<int>("hours");
+                const int minutes = get_widget<int>("minutes");
+                const int seconds = get_widget<int>("seconds");
+                const int time_limit = hours * 60 * 60 + minutes * 60 + seconds;
                 set_config(config, "progressive_frame_renderer.time_limit", time_limit);
             }
         }
@@ -618,19 +622,20 @@ namespace
                 "shading_result_framebuffer",
                 get_widget<size_t>("general.passes") > 1 ? "permanent" : "ephemeral");
 
-            // Set the pixel and tile renderer.
-            const QString sampler = m_image_plane_sampler_combo->itemData(
-                m_image_plane_sampler_combo->currentIndex()).value<QString>();
-
-            set_config(
-                config,
-                "pixel_renderer",
-                sampler == "adaptive_tile" ? "" : sampler.toUtf8().data());
-
-            set_config(
-                config,
-                "tile_renderer",
-                sampler == "adaptive_tile" ? "adaptive" : "generic");
+            // Set the pixel and tile renderers.
+            const QString sampler =
+                m_image_plane_sampler_combo->itemData(
+                    m_image_plane_sampler_combo->currentIndex()).value<QString>();
+            if (sampler == "adaptive_tile")
+            {
+                set_config(config, "tile_renderer", "adaptive");
+                config.get_parameters().remove_path("pixel_renderer");
+            }
+            else
+            {
+                set_config(config, "tile_renderer", "generic");
+                set_config(config, "pixel_renderer", sampler);
+            }
         }
 
       private:
@@ -784,24 +789,12 @@ namespace
 
         void load_general_sampler(const Configuration& config)
         {
-            const std::string default_tr_value = m_params_metadata.get_path_optional<std::string>(
-                "tile_renderer.default", "");
-            const std::string tr_value = get_config<std::string>(
-                config, "tile_renderer", default_tr_value);
-
-            if (tr_value == "adaptive")
-            {
-                m_image_plane_sampler_combo->setCurrentIndex(1);
-                return;
-            }
-
-            const std::string default_pr_value = m_params_metadata.get_path_optional<std::string>(
-                "pixel_renderer.default", "");
-            const std::string pr_value = get_config<std::string>(
-                config, "pixel_renderer", default_pr_value);
+            const std::string tile_renderer = get_config<std::string>(config, "tile_renderer", "generic");
+            const std::string pixel_renderer = get_config<std::string>(config, "pixel_renderer", "uniform");
 
             m_image_plane_sampler_combo->setCurrentIndex(
-                pr_value == "adaptive" ? 1 : 0);
+                tile_renderer == "adaptive" ? 1 :
+                pixel_renderer == "texture" ? 2 : 0);
         }
 
       private slots:
@@ -1760,19 +1753,22 @@ namespace
 
             create_photon_type_settings(layout);
             create_components_settings(layout);
+            create_importon_tracing_settings(layout);
             create_photon_tracing_settings(layout);
             create_radiance_estimation_settings(layout);
             create_advanced_settings(layout);
 
-            create_direct_link("lighting_components.ibl",                        "sppm.enable_ibl");
-            create_direct_link("lighting_components.caustics",                   "sppm.enable_caustics");
-            create_direct_link("photon_tracing.bounces.rr_start_bounce",         "sppm.photon_tracing_rr_min_path_length");
-            create_direct_link("photon_tracing.light_photons",                   "sppm.light_photons_per_pass");
-            create_direct_link("photon_tracing.env_photons",                     "sppm.env_photons_per_pass");
-            create_direct_link("radiance_estimation.bounces.rr_start_bounce",    "sppm.path_tracing_rr_min_path_length");
-            create_direct_link("radiance_estimation.initial_radius",             "sppm.initial_radius");
-            create_direct_link("radiance_estimation.max_photons",                "sppm.max_photons_per_estimate");
-            create_direct_link("radiance_estimation.alpha",                      "sppm.alpha");
+            create_direct_link("lighting_components.ibl",                          "sppm.enable_ibl");
+            create_direct_link("lighting_components.caustics",                     "sppm.enable_caustics");
+            create_direct_link("photon_tracing.importons",                         "sppm.enable_importons");
+            create_direct_link("photon_tracing.importon_lookup_radius",            "sppm.importon_lookup_radius");
+            create_direct_link("photon_tracing.bounces.rr_start_bounce",           "sppm.photon_tracing_rr_min_path_length");
+            create_direct_link("photon_tracing.light_photons",                     "sppm.light_photons_per_pass");
+            create_direct_link("photon_tracing.env_photons",                       "sppm.env_photons_per_pass");
+            create_direct_link("radiance_estimation.bounces.rr_start_bounce",      "sppm.path_tracing_rr_min_path_length");
+            create_direct_link("radiance_estimation.initial_photon_lookup_radius", "sppm.initial_photon_lookup_radius");
+            create_direct_link("radiance_estimation.max_photons",                  "sppm.max_photons_per_estimate");
+            create_direct_link("radiance_estimation.alpha",                        "sppm.alpha");
 
             load_directly_linked_values(config);
 
@@ -1864,6 +1860,26 @@ namespace
             layout->addWidget(create_checkbox("lighting_components.caustics", "Caustics"));
         }
 
+        void create_importon_tracing_settings(QVBoxLayout* parent)
+        {
+            QGroupBox* groupbox = new QGroupBox("Importon Tracing");
+            parent->addWidget(groupbox);
+
+            QVBoxLayout* layout = new QVBoxLayout();
+            groupbox->setLayout(layout);
+
+            QFormLayout* sublayout = create_form_layout();
+            layout->addLayout(sublayout);
+
+            QCheckBox* enable_importons = create_checkbox("photon_tracing.importons", "Enable Importons");
+            enable_importons->setToolTip(m_params_metadata.get_path("sppm.enable_importons.help"));
+            sublayout->addWidget(enable_importons);
+
+            QDoubleSpinBox* importon_lookup_radius = create_double_input("photon_tracing.importon_lookup_radius", 0.001, 100.0, 3, 0.1, "%");
+            importon_lookup_radius->setToolTip(m_params_metadata.get_path("sppm.importon_lookup_radius.help"));
+            sublayout->addRow("Importon Lookup Radius:", importon_lookup_radius);
+        }
+
         void create_photon_tracing_settings(QVBoxLayout* parent)
         {
             QGroupBox* groupbox = new QGroupBox("Photon Tracing");
@@ -1899,11 +1915,11 @@ namespace
 
             create_bounce_settings(sublayout, "radiance_estimation", "sppm.path_tracing_max_bounces");
 
-            QDoubleSpinBox* initial_radius = create_double_input("radiance_estimation.initial_radius", 0.001, 100.0, 3, 0.1, "%");
-            initial_radius->setToolTip(m_params_metadata.get_path("sppm.initial_radius.help"));
-            sublayout->addRow("Initial Radius:", initial_radius);
+            QDoubleSpinBox* initial_photon_lookup_radius = create_double_input("radiance_estimation.initial_photon_lookup_radius", 0.001, 100.0, 3, 0.1, "%");
+            initial_photon_lookup_radius->setToolTip(m_params_metadata.get_path("sppm.initial_photon_lookup_radius.help"));
+            sublayout->addRow("Initial Photon Lookup Radius:", initial_photon_lookup_radius);
 
-            QSpinBox* max_photons = create_integer_input("radiance_estimation.max_photons", 8, 1000000000, 50);
+            QSpinBox* max_photons = create_integer_input("radiance_estimation.max_photons", 8, 10000, 50);
             max_photons->setToolTip(m_params_metadata.get_path("sppm.max_photons_per_estimate.help"));
             sublayout->addRow("Max Photons:", max_photons);
 
@@ -2110,7 +2126,7 @@ void RenderingSettingsWindow::reload()
     }
 
     // Sort configuration names alphabetically.
-    std::sort(config_names.begin(), config_names.end());
+    std::sort(std::begin(config_names), std::end(config_names));
 
     // This has the side effect of loading an empty configuration.
     m_current_configuration_name.clear();
@@ -2207,14 +2223,14 @@ void RenderingSettingsWindow::create_layout()
 
     root_layout->addItem(new QSpacerItem(470, 0, QSizePolicy::Expanding, QSizePolicy::Minimum));
 
-    for (const_each<PanelCollection> i = m_panels; i; ++i)
-        root_layout->addWidget(*i);
+    for (RenderSettingsPanel* panel : m_panels)
+        root_layout->addWidget(panel);
 }
 
 void RenderingSettingsWindow::set_panels_enabled(const bool enabled)
 {
-    for (const_each<PanelCollection> i = m_panels; i; ++i)
-        (*i)->container()->setEnabled(enabled);
+    for (RenderSettingsPanel* panel : m_panels)
+        panel->container()->setEnabled(enabled);
 }
 
 void RenderingSettingsWindow::load_configuration(const QString& name)
@@ -2244,8 +2260,8 @@ void RenderingSettingsWindow::save_current_configuration()
 
     Configuration& config = get_configuration(m_current_configuration_name);
 
-    for (const_each<PanelCollection> i = m_panels; i; ++i)
-        (*i)->save_config(config);
+    for (const RenderSettingsPanel* panel : m_panels)
+        panel->save_config(config);
 
     m_initial_values = get_widget_values();
 
@@ -2266,10 +2282,10 @@ std::map<std::string, std::string> RenderingSettingsWindow::get_widget_values() 
 {
     std::map<std::string, std::string> values;
 
-    for (const_each<PanelCollection> i = m_panels; i; ++i)
+    for (const RenderSettingsPanel* panel : m_panels)
     {
-        const std::map<std::string, std::string> panel_values = (*i)->get_widget_values();
-        values.insert(panel_values.begin(), panel_values.end());
+        const std::map<std::string, std::string> panel_values = panel->get_widget_values();
+        values.insert(std::begin(panel_values), std::end(panel_values));
     }
 
     return values;
@@ -2290,8 +2306,7 @@ namespace
         QMessageBox msgbox(parent);
         msgbox.setWindowTitle("Save Changes?");
         msgbox.setIcon(QMessageBox::Question);
-        msgbox.setText("This configuration has been modified.");
-        msgbox.setInformativeText("Do you want to save your changes?");
+        msgbox.setText("This configuration has been modified.\n\nDo you want to save your changes?");
         msgbox.setStandardButtons(QMessageBox::Save | QMessageBox::Discard);
         msgbox.setDefaultButton(QMessageBox::Save);
         return msgbox.exec();

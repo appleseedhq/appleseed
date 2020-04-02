@@ -32,12 +32,12 @@
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/poison.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 #include <limits>
 
 namespace foundation
@@ -148,7 +148,7 @@ class RayInfo
     // Sign of the ray direction (for the i'th component, the sign value
     // is 1 if the component is positive or null, and 0 if the component
     // is strictly negative).
-    Vector<uint32, N> m_sgn_dir;
+    Vector<std::uint32_t, N> m_sgn_dir;
 
     // Constructors.
 #if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS
@@ -184,7 +184,7 @@ class RayInfo<double, 3>
     // Sign of the ray direction (for the i'th component, the sign value
     // is 1 if the component is positive or null, and 0 if the component
     // is strictly negative).
-    APPLESEED_SIMD4_ALIGN Vector<uint32, 4> m_sgn_dir;
+    APPLESEED_SIMD4_ALIGN Vector<std::uint32_t, 4> m_sgn_dir;
 
     // Constructors.
 #if APPLESEED_COMPILER_CXX_DEFAULTED_FUNCTIONS

@@ -32,18 +32,20 @@
 // appleseed.studio headers.
 #include "mainwindow/project/expressioneditorwindow.h"
 #include "mainwindow/project/tools.h"
-#include "utility/doubleslider.h"
+#include "utility/settingskeys.h"
+
+// appleseed.qtcommon headers.
 #include "utility/interop.h"
 #include "utility/miscellaneous.h"
-#include "utility/mousewheelfocuseventfilter.h"
-#include "utility/settingskeys.h"
+#include "widgets/doubleslider.h"
+#include "widgets/mousewheelfocuseventfilter.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/material.h"
 #include "renderer/api/project.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/containers/dictionary.h"
 #include "foundation/utility/searchpaths.h"
 
 // Qt headers.
@@ -71,6 +73,7 @@
 #include <cstddef>
 #include <utility>
 
+using namespace appleseed::qtcommon;
 using namespace boost;
 using namespace foundation;
 using namespace renderer;
@@ -165,7 +168,7 @@ void DisneyMaterialLayerUI::create_input_widgets(const Dictionary& values)
         const std::string input_type = im.get<std::string>("type");
 
         im.insert("value",
-            values.strings().exist(input_name) ? values.get<std::string>(input_name) :
+            values.strings().exist(input_name.c_str()) ? values.get<std::string>(input_name.c_str()) :
             im.strings().exist("default") ? im.get<std::string>("default") :
             "");
 
@@ -293,7 +296,7 @@ namespace
 
                 search_path =
                     QDir::cleanPath(
-                        QString::fromUtf8(s.get_root_path().c_str()) +
+                        QString(s.get_root_path().c_str()) +
                         QDir::separator() +
                         search_path);
             }
@@ -307,7 +310,7 @@ namespace
 
         if (s.has_root_path())
         {
-            const QDir root_dir(QString::fromUtf8(s.get_root_path().c_str()));
+            const QDir root_dir(s.get_root_path().c_str());
             assert(root_dir.isAbsolute());
 
             QString relative_path;
@@ -343,7 +346,7 @@ void DisneyMaterialLayerUI::slot_open_file_picker(const QString& widget_name)
         widget_proxy->set(
             texture_to_expression(
                 m_project.search_paths(),
-                QDir::toNativeSeparators(filepath)));
+                filepath));
         widget_proxy->emit_signal_changed();
     }
 }

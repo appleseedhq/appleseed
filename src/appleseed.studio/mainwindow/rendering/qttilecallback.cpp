@@ -40,6 +40,7 @@
 // Standard headers.
 #include <cassert>
 #include <cstddef>
+#include <cstdint>
 
 // Forward declarations.
 namespace renderer  { class Frame; }
@@ -63,8 +64,8 @@ namespace
           : m_render_widget(render_widget)
         {
             connect(
-                this, SIGNAL(signal_update()),
-                m_render_widget, SLOT(update()),
+                this, &QtTileCallback::signal_update,
+                m_render_widget, static_cast<void (QWidget::*)(void)>(&QWidget::update),
                 Qt::QueuedConnection);
         }
 
@@ -76,10 +77,13 @@ namespace
         void on_tile_begin(
             const Frame*    frame,
             const size_t    tile_x,
-            const size_t    tile_y) override
+            const size_t    tile_y,
+            const size_t    thread_index,
+            const size_t    thread_count) override
         {
             assert(m_render_widget);
-            m_render_widget->highlight_tile(*frame, tile_x, tile_y);
+            m_render_widget->highlight_tile(*frame, tile_x, tile_y, thread_index, thread_count);
+
             emit signal_update();
         }
 
@@ -90,14 +94,20 @@ namespace
         {
             assert(m_render_widget);
             m_render_widget->blit_tile(*frame, tile_x, tile_y);
+
             emit signal_update();
         }
 
         void on_progressive_frame_update(
-            const Frame*    frame) override
+            const Frame&            frame,
+            const double            /*time*/,
+            const std::uint64_t     /*samples*/,
+            const double            /*samples_per_pixel*/,
+            const std::uint64_t     /*samples_per_second*/) override
         {
             assert(m_render_widget);
-            m_render_widget->blit_frame(*frame);
+            m_render_widget->blit_frame(frame);
+
             emit signal_update();
         }
 

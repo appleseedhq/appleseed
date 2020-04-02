@@ -36,7 +36,7 @@
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/math/aabb.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/autoreleaseptr.h"
+#include "foundation/memory/autoreleaseptr.h"
 
 // Standard headers.
 #include <cstddef>

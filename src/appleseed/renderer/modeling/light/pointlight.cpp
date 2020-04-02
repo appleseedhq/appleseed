@@ -35,12 +35,12 @@
 #include "renderer/modeling/input/inputarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/distance.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
 #include <cmath>
@@ -91,13 +91,13 @@ namespace
             return Model;
         }
 
-        bool on_frame_begin(
+        bool on_render_begin(
             const Project&          project,
             const BaseGroup*        parent,
-            OnFrameBeginRecorder&   recorder,
+            OnRenderBeginRecorder&  recorder,
             IAbortSwitch*           abort_switch) override
         {
-            if (!Light::on_frame_begin(project, parent, recorder, abort_switch))
+            if (!Light::on_render_begin(project, parent, recorder, abort_switch))
                 return false;
 
             if (!check_uniform("intensity") ||
@@ -226,16 +226,16 @@ DictionaryArray PointLightFactory::get_input_metadata() const
             .insert("name", "exposure")
             .insert("label", "Exposure")
             .insert("type", "numeric")
-            .insert("use", "optional")
-            .insert("default", "0.0")
             .insert("min",
                 Dictionary()
-                    .insert("value", "-64.0")
+                    .insert("value", "-8.0")
                     .insert("type", "soft"))
             .insert("max",
                 Dictionary()
-                    .insert("value", "64.0")
+                    .insert("value", "8.0")
                     .insert("type", "soft"))
+            .insert("use", "optional")
+            .insert("default", "0.0")
             .insert("help", "Light exposure"));
 
     add_common_input_metadata(metadata);

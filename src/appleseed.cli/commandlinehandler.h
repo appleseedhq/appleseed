@@ -29,18 +29,18 @@
 
 #pragma once
 
-// appleseed.shared headers.
+// appleseed.common headers.
 #include "application/commandlinehandlerbase.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/types.h"
 #include "foundation/utility/commandlineparser.h"
 
 // Standard headers.
+#include <cstdint>
 #include <string>
 
 // Forward declarations.
-namespace appleseed { namespace shared { class SuperLogger; } }
+namespace appleseed { namespace common { class SuperLogger; } }
 
 namespace appleseed {
 namespace cli {
@@ -50,7 +50,7 @@ namespace cli {
 //
 
 class CommandLineHandler
-  : public shared::CommandLineHandlerBase
+  : public common::CommandLineHandlerBase
 {
   public:
     // Input file.
@@ -64,7 +64,7 @@ class CommandLineHandler
     foundation::ValueOptionHandler<std::string>         m_threads;  // std::string because we need to handle 'auto'
     foundation::ValueOptionHandler<int>                 m_resolution;
     foundation::ValueOptionHandler<int>                 m_window;
-    foundation::ValueOptionHandler<foundation::uint32>  m_noise_seed;
+    foundation::ValueOptionHandler<std::uint32_t>       m_noise_seed;
     foundation::ValueOptionHandler<int>                 m_samples;
     foundation::ValueOptionHandler<int>                 m_passes;
     foundation::ValueOptionHandler<std::string>         m_override_shading;
@@ -95,7 +95,7 @@ class CommandLineHandler
     // Emit usage instructions to the logger.
     void print_program_usage(
         const char*             executable_name,
-        shared::SuperLogger&    logger) const override;
+        common::SuperLogger&    logger) const override;
 };
 
 }   // namespace cli

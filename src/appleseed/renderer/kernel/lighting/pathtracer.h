@@ -57,8 +57,8 @@
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/arena.h"
-#include "foundation/utility/string.h"
+#include "foundation/memory/arena.h"
+#include "foundation/string/string.h"
 
 // Standard headers.
 #include <algorithm>
@@ -75,11 +75,13 @@ namespace renderer
 //
 //   struct PathVisitor
 //   {
-//       void on_first_diffuse_bounce(const PathVertex& vertex);
-//   
+//       void on_first_diffuse_bounce(
+//           const PathVertex&              vertex,
+//           const Spectrum&                albedo);
+//
 //       bool accept_scattering(
-//           const ScatteringMode::Mode  prev_mode,
-//           const ScatteringMode::Mode  next_mode) const;
+//           const ScatteringMode::Mode     prev_mode,
+//           const ScatteringMode::Mode     next_mode) const;
 //
 //       void on_miss(const PathVertex& vertex);
 //       void on_hit(const PathVertex& vertex);
@@ -104,79 +106,80 @@ class PathTracer
 {
   public:
     PathTracer(
-        PathVisitor&            path_visitor,
-        VolumeVisitor&          volume_visitor,
-        const size_t            rr_min_path_length,
-        const size_t            max_bounces,
-        const size_t            max_diffuse_bounces,
-        const size_t            max_glossy_bounces,
-        const size_t            max_specular_bounces,
-        const size_t            max_volume_bounces,
-        const bool              clamp_roughness,
-        const size_t            max_iterations = 1000,
-        const double            near_start = 0.0);          // abort tracing if the first ray is shorter than this
+        PathVisitor&                path_visitor,
+        VolumeVisitor&              volume_visitor,
+        const size_t                rr_min_path_length,
+        const size_t                max_bounces,
+        const size_t                max_diffuse_bounces,
+        const size_t                max_glossy_bounces,
+        const size_t                max_specular_bounces,
+        const size_t                max_volume_bounces,
+        const bool                  clamp_roughness,
+        const size_t                max_iterations = 1000,
+        const double                near_start = 0.0);          // abort tracing if the first ray is shorter than this
 
     size_t trace(
-        SamplingContext&        sampling_context,
-        const ShadingContext&   shading_context,
-        const ShadingRay&       ray,
-        const ShadingPoint*     parent_shading_point = nullptr,
-        const bool              clear_arena = true);
+        SamplingContext&            sampling_context,
+        const ShadingContext&       shading_context,
+        const ShadingRay&           ray,
+        const ShadingPoint*         parent_shading_point = nullptr,
+        const bool                  clear_arena = true);
 
     size_t trace(
-        SamplingContext&        sampling_context,
-        const ShadingContext&   shading_context,
-        const ShadingPoint&     shading_point,
-        const bool              clear_arena = true);
+        SamplingContext&            sampling_context,
+        const ShadingContext&       shading_context,
+        const ShadingPoint&         shading_point,
+        const bool                  clear_arena = true);
 
     const ShadingPoint& get_path_vertex(const size_t i) const;
 
   private:
-    PathVisitor&                m_path_visitor;
-    VolumeVisitor&              m_volume_visitor;
-    const size_t                m_rr_min_path_length;
-    const size_t                m_max_bounces;
-    const size_t                m_max_diffuse_bounces;
-    const size_t                m_max_glossy_bounces;
-    const size_t                m_max_specular_bounces;
-    const size_t                m_max_volume_bounces;
-    const bool                  m_clamp_roughness;
-    const size_t                m_max_iterations;
-    const double                m_near_start;
-    size_t                      m_diffuse_bounces;
-    size_t                      m_glossy_bounces;
-    size_t                      m_specular_bounces;
-    size_t                      m_volume_bounces;
-    size_t                      m_iterations;
-    foundation::Arena           m_shading_point_arena;
+    PathVisitor&                    m_path_visitor;
+    VolumeVisitor&                  m_volume_visitor;
+    const size_t                    m_rr_min_path_length;
+    const size_t                    m_max_bounces;
+    const size_t                    m_max_diffuse_bounces;
+    const size_t                    m_max_glossy_bounces;
+    const size_t                    m_max_specular_bounces;
+    const size_t                    m_max_volume_bounces;
+    const bool                      m_clamp_roughness;
+    const size_t                    m_max_iterations;
+    const double                    m_near_start;
+    size_t                          m_diffuse_bounces;
+    size_t                          m_glossy_bounces;
+    size_t                          m_specular_bounces;
+    size_t                          m_volume_bounces;
+    size_t                          m_iterations;
+    foundation::Arena               m_shading_point_arena;
 
     // Determine whether a ray can pass through a surface with a given alpha value.
     static bool pass_through(
-        SamplingContext&        sampling_context,
-        const Alpha             alpha);
+        SamplingContext&            sampling_context,
+        const Alpha                 alpha);
 
     // Use Russian Roulette to cut the path without introducing bias.
     bool continue_path_rr(
-        SamplingContext&        sampling_context,
-        PathVertex&             vertex);
+        SamplingContext&            sampling_context,
+        PathVertex&                 vertex);
 
     // Apply path visitor and sample BSDF in a given path vertex.
     // If all checks are passed, build a bounced ray that continues in the sampled direction
     // and return true, otherwise return false.
     bool process_bounce(
-        SamplingContext&        sampling_context,
-        PathVertex&             vertex,
-        BSDFSample&             sample,
-        ShadingRay&             ray);
+        SamplingContext&            sampling_context,
+        PathVertex&                 vertex,
+        const BSDF::LocalGeometry&  local_geometry,
+        BSDFSample&                 sample,
+        ShadingRay&                 ray);
 
     // This method performs raymarching across the volume.
     // Returns whether the path should be continued.
     bool march(
-        SamplingContext&        sampling_context,
-        const ShadingContext&   shading_context,
-        const ShadingRay&       ray,
-        PathVertex&             vertex,
-        ShadingPoint&           shading_point);
+        SamplingContext&            sampling_context,
+        const ShadingContext&       shading_context,
+        const ShadingRay&           ray,
+        PathVertex&                 vertex,
+        ShadingPoint&               shading_point);
 };
 
 
@@ -501,13 +504,15 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         if (vertex.m_scattering_modes == ScatteringMode::None)
             break;
 
-        BSDFSample bsdf_sample(
-            vertex.m_shading_point,
-            foundation::Dual3f(vertex.m_outgoing));
+        BSDF::LocalGeometry local_geometry;
+        local_geometry.m_shading_point = vertex.m_shading_point;
+        local_geometry.m_geometric_normal = foundation::Vector3f(vertex.get_geometric_normal());
+        local_geometry.m_shading_basis = foundation::Basis3f(vertex.get_shading_basis());
+
+        BSDFSample bsdf_sample;
 
         // Subsurface scattering.
         BSSRDFSample bssrdf_sample;
-        bssrdf_sample.m_modes = vertex.m_scattering_modes;
         if (vertex.m_bssrdf)
         {
             // Sample the BSSRDF and terminate the path if no incoming point is found.
@@ -517,6 +522,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
                     vertex.m_bssrdf_data,
                     *vertex.m_shading_point,
                     foundation::Vector3f(vertex.m_outgoing.get_value()),
+                    vertex.m_scattering_modes,
                     bssrdf_sample,
                     bsdf_sample))
                 break;
@@ -547,7 +553,7 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         {
             // If there is a BSDF, compute the bounce.
             const bool continue_path =
-                process_bounce(sampling_context, vertex, bsdf_sample, next_ray);
+                process_bounce(sampling_context, vertex, local_geometry, bsdf_sample, next_ray);
 
             // Terminate the path if this scattering event is not accepted.
             if (!continue_path)
@@ -565,8 +571,10 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
             // inherit the medium list of the parent ray and add/remove the current medium.
             if (entering)
             {
-                const float ior = vertex.m_bsdf == nullptr ? 1.0f :
-                    vertex.m_bsdf->sample_ior(sampling_context, vertex.m_bsdf_data);
+                const float ior =
+                    vertex.m_bsdf == nullptr
+                        ? 1.0f
+                        : vertex.m_bsdf->sample_ior(sampling_context, vertex.m_bsdf_data);
                 next_ray.add_medium(ray, &object_instance, vertex.get_material(), ior);
             }
             else
@@ -689,6 +697,7 @@ template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
 bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     SamplingContext&            sampling_context,
     PathVertex&                 vertex,
+    const BSDF::LocalGeometry&  local_geometry,
     BSDFSample&                 sample,
     ShadingRay&                 next_ray)
 {
@@ -707,17 +716,15 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
             vertex.m_bsdf_data,
             Adjoint,
             true,       // multiply by |cos(incoming, normal)|
+            local_geometry,
+            foundation::Dual3f(vertex.m_outgoing),
             vertex.m_scattering_modes,
             sample);
 
         next_ray.m_min_roughness = m_clamp_roughness ? sample.m_min_roughness : 0.0f;
 
-        if (sample.get_mode() == ScatteringMode::Diffuse && !vertex.m_albedo_saved)
-        {
-            vertex.m_albedo = sample.m_aov_components.m_albedo;
-            vertex.m_albedo_saved = true;
-            m_path_visitor.on_first_diffuse_bounce(vertex);
-        }
+        if (vertex.m_path_length == 1 && sample.get_mode() == ScatteringMode::Diffuse)
+            m_path_visitor.on_first_diffuse_bounce(vertex, sample.m_aov_components.m_albedo);
     }
     else
     {
@@ -756,9 +763,8 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
 
     // Construct the scattered ray.
     const ShadingRay& ray = vertex.get_ray();
-    const foundation::Vector3d incoming(sample.m_incoming.get_value());
-    next_ray.m_org = vertex.m_shading_point->get_biased_point(incoming);
-    next_ray.m_dir = foundation::improve_normalization<2>(incoming);
+    next_ray.m_org = vertex.m_shading_point->get_point();
+    next_ray.m_dir = foundation::improve_normalization<2>(foundation::Vector3d(sample.m_incoming.get_value()));
     next_ray.m_time = ray.m_time;
     next_ray.m_flags = ScatteringMode::get_vis_flags(sample.get_mode()),
     next_ray.m_depth = ray.m_depth + 1;
@@ -920,7 +926,7 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
             volume_ray,
             distance_sample,
             transmission);
-        
+
         // Compute MIS weight.
         // MIS terms are:
         //  - scattering albedo,
@@ -952,12 +958,13 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
 
         // Sample phase function.
         foundation::Vector3f incoming;
-        const float pdf = volume->sample(
-            sampling_context,
-            vertex.m_volume_data,
-            volume_ray,
-            distance_sample,
-            incoming);
+        const float pdf =
+            volume->sample(
+                sampling_context,
+                vertex.m_volume_data,
+                volume_ray,
+                distance_sample,
+                incoming);
 
         // Save the scattering properties for MIS at light-emitting vertices.
         vertex.m_prev_mode = ScatteringMode::Volume;
@@ -990,7 +997,7 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::march(
     return true;
 }
 
-template<typename PathVisitor, typename VolumeVisitor, bool Adjoint>
+template <typename PathVisitor, typename VolumeVisitor, bool Adjoint>
 inline const ShadingPoint& PathTracer<PathVisitor, VolumeVisitor, Adjoint>::get_path_vertex(const size_t i) const
 {
     return reinterpret_cast<const ShadingPoint*>(m_shading_point_arena.get_storage())[i];

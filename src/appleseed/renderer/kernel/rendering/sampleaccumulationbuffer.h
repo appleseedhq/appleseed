@@ -32,10 +32,10 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 #include "foundation/platform/atomic.h"
-#include "foundation/platform/types.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
@@ -50,10 +50,10 @@ class SampleAccumulationBuffer
 {
   public:
     // Destructor.
-    virtual ~SampleAccumulationBuffer() {}
+    virtual ~SampleAccumulationBuffer() = default;
 
     // Get the number of samples stored in the buffer. Thread-safe.
-    foundation::uint64 get_sample_count() const;
+    std::uint64_t get_sample_count() const;
 
     // Reset the buffer to its initial state. Thread-safe.
     virtual void clear() = 0;
@@ -70,7 +70,7 @@ class SampleAccumulationBuffer
         foundation::IAbortSwitch&   abort_switch) = 0;
 
   protected:
-    boost::atomic<foundation::uint64> m_sample_count;
+    boost::atomic<std::uint64_t> m_sample_count;
 };
 
 
@@ -78,7 +78,7 @@ class SampleAccumulationBuffer
 // SampleAccumulationBuffer class implementation.
 //
 
-inline foundation::uint64 SampleAccumulationBuffer::get_sample_count() const
+inline std::uint64_t SampleAccumulationBuffer::get_sample_count() const
 {
     return m_sample_count;
 }

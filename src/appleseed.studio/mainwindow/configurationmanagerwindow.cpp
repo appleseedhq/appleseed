@@ -33,12 +33,14 @@
 // UI definition header.
 #include "ui_configurationmanagerwindow.h"
 
-// appleseed.studio headers.
+// appleseed.qtcommon headers.
 #include "utility/miscellaneous.h"
 
 // Qt headers.
 #include <QShortcut>
 #include <Qt>
+
+using namespace appleseed::qtcommon;
 
 namespace appleseed {
 namespace studio {

@@ -38,6 +38,7 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
@@ -45,7 +46,6 @@
 #include "foundation/math/vector.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 
 // Standard headers.
 #include <cassert>
@@ -249,6 +249,8 @@ DictionaryArray GradientEnvironmentEDFFactory::get_input_metadata() const
             .insert("use", "required")
             .insert("default", "0.7")
             .insert("help", "Zenith radiance"));
+
+    add_common_input_metadata(metadata);
 
     return metadata;
 }

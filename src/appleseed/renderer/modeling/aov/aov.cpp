@@ -39,9 +39,9 @@
 #include "foundation/image/image.h"
 #include "foundation/image/imageattributes.h"
 #include "foundation/platform/defaulttimers.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/stopwatch.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <exception>

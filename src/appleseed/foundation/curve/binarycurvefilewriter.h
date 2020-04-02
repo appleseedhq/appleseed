@@ -30,10 +30,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/curve/icurvefilewriter.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/bufferedfile.h"
 
 // Standard headers.
+#include <cstdint>
 #include <string>
 
 // Forward declarations.
@@ -67,7 +67,7 @@ class BinaryCurveFileWriter
     void write_curves(const ICurveWalker& walker);
     void write_curve_count(const ICurveWalker& walker);
     void write_basis(const ICurveWalker& walker);
-    void write_curve(const ICurveWalker& walker, const uint32 curve_id, uint32& vertex_count);
+    void write_curve(const ICurveWalker& walker, const std::uint32_t curve_id, std::uint32_t& vertex_count);
 };
 
 }   // namespace foundation

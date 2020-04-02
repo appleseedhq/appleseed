@@ -107,11 +107,9 @@ IRendererController::Status SerialRendererController::get_status() const
 void SerialRendererController::add_on_tiled_frame_begin_callback(
     const Frame*            frame)
 {
-    PendingTileCallback callback;
+    PendingTileCallback callback = {};
     callback.m_type = PendingTileCallback::OnTiledFrameBegin;
     callback.m_frame = frame;
-    callback.m_tile_x = 0;
-    callback.m_tile_y = 0;
 
     boost::mutex::scoped_lock lock(m_mutex);
     m_pending_callbacks.push_back(callback);
@@ -120,11 +118,9 @@ void SerialRendererController::add_on_tiled_frame_begin_callback(
 void SerialRendererController::add_on_tiled_frame_end_callback(
     const Frame*            frame)
 {
-    PendingTileCallback callback;
+    PendingTileCallback callback = {};
     callback.m_type = PendingTileCallback::OnTiledFrameEnd;
     callback.m_frame = frame;
-    callback.m_tile_x = 0;
-    callback.m_tile_y = 0;
 
     boost::mutex::scoped_lock lock(m_mutex);
     m_pending_callbacks.push_back(callback);
@@ -133,13 +129,17 @@ void SerialRendererController::add_on_tiled_frame_end_callback(
 void SerialRendererController::add_on_tile_begin_callback(
     const Frame*            frame,
     const size_t            tile_x,
-    const size_t            tile_y)
+    const size_t            tile_y,
+    const size_t            thread_index,
+    const size_t            thread_count)
 {
-    PendingTileCallback callback;
+    PendingTileCallback callback = {};
     callback.m_type = PendingTileCallback::OnTileBegin;
     callback.m_frame = frame;
     callback.m_tile_x = tile_x;
     callback.m_tile_y = tile_y;
+    callback.m_thread_index = thread_index;
+    callback.m_thread_count = thread_count;
 
     boost::mutex::scoped_lock lock(m_mutex);
     m_pending_callbacks.push_back(callback);
@@ -150,7 +150,7 @@ void SerialRendererController::add_on_tile_end_callback(
     const size_t            tile_x,
     const size_t            tile_y)
 {
-    PendingTileCallback callback;
+    PendingTileCallback callback = {};
     callback.m_type = PendingTileCallback::OnTileEnd;
     callback.m_frame = frame;
     callback.m_tile_x = tile_x;
@@ -160,13 +160,20 @@ void SerialRendererController::add_on_tile_end_callback(
     m_pending_callbacks.push_back(callback);
 }
 
-void SerialRendererController::add_on_progressive_frame_update_callback(const Frame* frame)
+void SerialRendererController::add_on_progressive_frame_update_callback(
+    const Frame&            frame,
+    const double            time,
+    const std::uint64_t     samples,
+    const double            samples_per_pixel,
+    const std::uint64_t     samples_per_second)
 {
-    PendingTileCallback callback;
+    PendingTileCallback callback = {};
     callback.m_type = PendingTileCallback::OnProgressiveFrameUpdate;
-    callback.m_frame = frame;
-    callback.m_tile_x = 0;
-    callback.m_tile_y = 0;
+    callback.m_frame = &frame;
+    callback.m_time = time;
+    callback.m_samples = samples;
+    callback.m_samples_per_pixel = samples_per_pixel;
+    callback.m_samples_per_second = samples_per_second;
 
     boost::mutex::scoped_lock lock(m_mutex);
     m_pending_callbacks.push_back(callback);
@@ -196,7 +203,7 @@ void SerialRendererController::exec_callback(const PendingTileCallback& cb)
         break;
 
       case PendingTileCallback::OnTileBegin:
-        m_tile_callback->on_tile_begin(cb.m_frame, cb.m_tile_x, cb.m_tile_y);
+        m_tile_callback->on_tile_begin(cb.m_frame, cb.m_tile_x, cb.m_tile_y, cb.m_thread_index, cb.m_thread_count);
         break;
 
       case PendingTileCallback::OnTileEnd:
@@ -204,7 +211,12 @@ void SerialRendererController::exec_callback(const PendingTileCallback& cb)
         break;
 
       case PendingTileCallback::OnProgressiveFrameUpdate:
-        m_tile_callback->on_progressive_frame_update(cb.m_frame);
+        m_tile_callback->on_progressive_frame_update(
+            *cb.m_frame,
+            cb.m_time,
+            cb.m_samples,
+            cb.m_samples_per_pixel,
+            cb.m_samples_per_second);
         break;
 
       assert_otherwise;

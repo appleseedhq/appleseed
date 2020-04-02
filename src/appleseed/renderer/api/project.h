@@ -39,3 +39,4 @@
 #include "renderer/modeling/project/projectfileupdater.h"
 #include "renderer/modeling/project/projectfilewriter.h"
 #include "renderer/modeling/project/projecttracker.h"
+#include "renderer/modeling/project/renderingtimer.h"

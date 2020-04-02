@@ -36,11 +36,11 @@
 #include "foundation/math/rng/xoroshiro128plus.h"
 #include "foundation/math/rng/xorshift32.h"
 #include "foundation/math/rng/xorshift64.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/benchmark.h"
 
 // Standard headers.
 #include <cstddef>
+#include <cstdint>
 
 using namespace foundation;
 
@@ -49,8 +49,8 @@ BENCHMARK_SUITE(Foundation_Math_RNG)
     template <typename RNG>
     struct Fixture
     {
-        RNG     m_rng;
-        uint32  m_dummy;
+        RNG             m_rng;
+        std::uint32_t   m_dummy;
 
         Fixture()
           : m_dummy(0)

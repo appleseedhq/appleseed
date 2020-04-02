@@ -38,6 +38,10 @@
 #include "foundation/platform/compiler.h"
 #include "foundation/platform/python.h"
 
+// Standard headers.
+#include <cstddef>
+#include <cstdint>
+
 namespace bpy = boost::python;
 using namespace foundation;
 using namespace renderer;
@@ -81,28 +85,32 @@ namespace
         }
 
         void on_tile_begin(
-            const Frame*    frame,
-            const size_t    tile_x,
-            const size_t    tile_y) override
+            const Frame*            frame,
+            const size_t            tile_x,
+            const size_t            tile_y,
+            const size_t            thread_index,
+            const size_t            thread_count) override
         {
             // Lock Python's global interpreter lock (it was released in MasterRenderer.render).
             ScopedGILLock lock;
 
             if (bpy::override f = this->get_override("on_tile_begin"))
-                f(bpy::ptr(frame), tile_x, tile_y);
+                f(bpy::ptr(frame), tile_x, tile_y, thread_index, thread_count);
         }
 
         void default_on_tile_begin(
-            const Frame*    frame,
-            const size_t    tile_x,
-            const size_t    tile_y)
+            const Frame*            frame,
+            const size_t            tile_x,
+            const size_t            tile_y,
+            const size_t            thread_index,
+            const size_t            thread_count)
         {
         }
 
         void on_tile_end(
-            const Frame*    frame,
-            const size_t    tile_x,
-            const size_t    tile_y) override
+            const Frame*            frame,
+            const size_t            tile_x,
+            const size_t            tile_y) override
         {
             // Lock Python's global interpreter lock (it was released in MasterRenderer.render).
             ScopedGILLock lock;
@@ -112,22 +120,43 @@ namespace
         }
 
         void default_on_tile_end(
-            const Frame*    frame,
-            const size_t    tile_x,
-            const size_t    tile_y)
+            const Frame*            frame,
+            const size_t            tile_x,
+            const size_t            tile_y)
         {
         }
 
-        void on_progressive_frame_update(const Frame* frame) override
+        void on_progressive_frame_update(
+            const Frame&            frame,
+            const double            time,
+            const std::uint64_t     samples,
+            const double            samples_per_pixel,
+            const std::uint64_t     samples_per_second) override
         {
             // Lock Python's global interpreter lock (it was released in MasterRenderer.render).
             ScopedGILLock lock;
 
             if (bpy::override f = this->get_override("on_progressive_frame_update"))
-                f(bpy::ptr(frame));
+                f(frame, time, samples, samples_per_pixel, samples_per_second);
         }
 
-        void default_on_progressive_frame_update(const Frame* frame)
+        // A wrapper that takes a _pointer_ to a frame, because the frame is not copyable.
+        void on_progressive_frame_update_ptr(
+            const Frame*            frame,
+            const double            time,
+            const std::uint64_t     samples,
+            const double            samples_per_pixel,
+            const std::uint64_t     samples_per_second)
+        {
+            on_progressive_frame_update(*frame, time, samples, samples_per_pixel, samples_per_second);
+        }
+
+        void default_on_progressive_frame_update_ptr(
+            const Frame*            frame,
+            const double            time,
+            const std::uint64_t     samples,
+            const double            samples_per_pixel,
+            const std::uint64_t     samples_per_second)
         {
         }
     };
@@ -140,5 +169,5 @@ void bind_tile_callback()
         .def("on_tiled_frame_end", &ITileCallback::on_tiled_frame_end, &ITileCallbackWrapper::default_on_tiled_frame_end)
         .def("on_tile_begin", &ITileCallback::on_tile_begin, &ITileCallbackWrapper::default_on_tile_begin)
         .def("on_tile_end", &ITileCallback::on_tile_end, &ITileCallbackWrapper::default_on_tile_end)
-        .def("on_progressive_frame_update", &ITileCallback::on_progressive_frame_update, &ITileCallbackWrapper::default_on_progressive_frame_update);
+        .def("on_progressive_frame_update", &ITileCallbackWrapper::on_progressive_frame_update_ptr, &ITileCallbackWrapper::default_on_progressive_frame_update_ptr);
 }

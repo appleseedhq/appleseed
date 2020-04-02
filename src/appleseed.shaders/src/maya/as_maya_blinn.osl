@@ -202,63 +202,71 @@ shader as_maya_blinn
     ]]
 )
 {
-    if (raytype("shadow") || raytype("transparency"))
-    {
-        color transparency = in_transparency;
+    int is_transparent = max(in_transparency) > 0.0 ? 1 : 0;
 
-        // Shadow attenuation: 0=constant, 1=fake caustics.
-        if (in_refractions && max(in_transparency) > 0.0)
+    if (raytype("transparency"))
+    {
+        if (is_transparent)
         {
-            transparency = mix(
-                transparency,
-                abs(dot(-I, normalize(in_normalCamera))),
-                in_shadowAttenuation
-                );
+            out_outTransparency = in_transparency * transparent();
+            out_outColor = out_outTransparency;
         }
 
-        if (max(transparency) > 0.0)
+        // We only support Maya's mode 0. For everything else, there's
+        // as_matte() and its shader pass-through.
+        if (in_matteOpacityMode == 0)
         {
-            out_outTransparency = transparency * transparent();
-            out_outColor = out_outTransparency;
+            out_outMatteOpacity = as_matte(color(0), 0.0);
+            out_outColor += out_outMatteOpacity;
+        }
+        return;
+    }
+
+    if (raytype("shadow"))
+    {
+        // Shadow attenuation, 0=constant, 1=fake caustics.
+        if (in_refractions && is_transparent)
+        {
+            out_outColor = mix(
+                in_transparency,
+                abs(dot(I, normalize(in_normalCamera))),
+                in_shadowAttenuation) * transparent();
         }
         return;
     }
 
     color opacity = 1.0 - in_transparency;
 
-    if (raytype("light") && max(in_incandescence) > 0.0)
+    if (raytype("light") && max(in_incandescence) > 0.0 && opacity != 0)
     {
         out_outColor += opacity * in_incandescence * emission();
+        return;
     }
 
     normal Nn = normalize(in_normalCamera);
 
-    if (max(in_color) > 0.0)
+    if (max(in_color) > 0.0 && opacity != 0)
     {
         out_outColor += opacity * in_diffuse * in_color * diffuse(Nn);
         out_outColor += opacity * in_translucence * in_color *
                         translucent(Nn);
     }
 
-    if (in_refractions)
+    if (in_refractions && is_transparent)
     {
+        // Maya associates the BTDF with transparency.
+
         int ray_depth = 0;
         int status = getattribute("path:ray_depth", ray_depth);
 
         if (status && ray_depth <= in_refractionLimit)
         {
-            // Maya associates transparency with the BTDF
             out_outColor += in_transparency *
                 refraction(Nn, in_refractiveIndex);
         }
     }
-    else if (max(in_transparency) > 0.0)
-    {
-        out_outTransparency = in_transparency * transparent();
-        out_outColor += out_outTransparency;
-    }
 
-    if (max(in_specularColor) > 0.0)
+    if (max(in_specularColor) > 0.0 && opacity != 0)
     {
         // Specular rolloff seems to be a simple Fresnel term, get eta, solve
         // f0=(eta-1)^2/(eta+1)^2 for eta.
@@ -269,16 +277,5 @@ shader as_maya_blinn
         float m = pow(1.0 / max(EPS, in_eccentricity), 8.0);
 
         out_outColor += opacity * in_specularColor * as_blinn(Nn, m, eta);
-    }
-
-    if (in_matteOpacityMode == 1)
-    {
-        out_outMatteOpacity = holdout();
-        out_outColor += out_outMatteOpacity;
-    }
-    else
-    {
-        out_outMatteOpacity = in_matteOpacity * holdout();
-        out_outColor += out_outMatteOpacity;
     }
 }

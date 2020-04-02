@@ -60,6 +60,7 @@ EnvironmentEDF::EnvironmentEDF(
     const char*             name,
     const ParamArray&       params)
   : ConnectableEntity(g_class_uid, params)
+  , m_flags(0)
 {
     set_name(name);
 }
@@ -72,6 +73,11 @@ bool EnvironmentEDF::on_frame_begin(
 {
     if (!ConnectableEntity::on_frame_begin(project, parent, recorder, abort_switch))
         return false;
+
+    if (m_params.get_optional<bool>("cast_shadows", true))
+        m_flags |= CastShadows;
+    else
+        m_flags &= ~CastShadows;
 
     // Make sure the environment EDF's transform is only a (sequence of) rotation.
     bool warned = false;

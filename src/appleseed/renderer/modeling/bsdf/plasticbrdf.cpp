@@ -43,14 +43,15 @@
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/basis.h"
+#include "foundation/math/dual.h"
 #include "foundation/math/fresnel.h"
 #include "foundation/math/microfacet.h"
 #include "foundation/math/minmax.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/containers/dictionary.h"
 #include "foundation/utility/makevector.h"
 #include "foundation/utility/otherwise.h"
 
@@ -145,6 +146,8 @@ namespace
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
+            const LocalGeometry&        local_geometry,
+            const Dual3f&               outgoing,
             const int                   modes,
             BSDFSample&                 sample) const override
         {
@@ -152,8 +155,7 @@ namespace
             const float alpha = microfacet_alpha_from_roughness(values->m_roughness);
 
             // Compute the microfacet normal by sampling the MDF.
-            const Vector3f& outgoing = sample.m_outgoing.get_value();
-            const Vector3f wo = sample.m_shading_basis.transform_to_local(outgoing);
+            const Vector3f wo = local_geometry.m_shading_basis.transform_to_local(outgoing.get_value());
             sampling_context.split_in_place(3, 1);
             const Vector3f s = sampling_context.next2<Vector3f>();
             const Vector3f m =
@@ -183,9 +185,9 @@ namespace
                     sample.m_value.m_glossy = values->m_specular_reflectance;
                     sample.m_value.m_glossy *= F;
                     sample.m_value.m_beauty = sample.m_value.m_glossy;
-                    sample.m_incoming = Dual3f(sample.m_shading_basis.transform_to_parent(wi));
+                    sample.m_incoming = Dual3f(local_geometry.m_shading_basis.transform_to_parent(wi));
                     sample.m_min_roughness = values->m_roughness;
-                    sample.compute_reflected_differentials();
+                    sample.compute_reflected_differentials(local_geometry, outgoing);
                 }
                 else
                 {
@@ -195,7 +197,7 @@ namespace
                     if (probability > 1.0e-6f)
                     {
                         sample.set_to_scattering(ScatteringMode::Glossy, probability);
-                        sample.m_incoming = Dual3f(sample.m_shading_basis.transform_to_parent(wi));
+                        sample.m_incoming = Dual3f(local_geometry.m_shading_basis.transform_to_parent(wi));
                         sample.m_min_roughness = values->m_roughness;
 
                         evaluate_specular(
@@ -208,7 +210,7 @@ namespace
                             sample.m_value.m_glossy);
                         sample.m_value.m_beauty = sample.m_value.m_glossy;
 
-                        sample.compute_reflected_differentials();
+                        sample.compute_reflected_differentials(local_geometry, outgoing);
                     }
                 }
             }
@@ -222,7 +224,7 @@ namespace
                 if (probability > 1.0e-6f)
                 {
                     sample.set_to_scattering(ScatteringMode::Diffuse, probability);
-                    sample.m_incoming = Dual3f(sample.m_shading_basis.transform_to_parent(wi));
+                    sample.m_incoming = Dual3f(local_geometry.m_shading_basis.transform_to_parent(wi));
                     sample.m_min_roughness = values->m_roughness;
 
                     const float Fi = fresnel_reflectance(wi, m, values->m_precomputed.m_eta);
@@ -236,7 +238,7 @@ namespace
                     sample.m_value.m_beauty = sample.m_value.m_diffuse;
                     sample.m_aov_components.m_albedo = values->m_diffuse_reflectance;
 
-                    sample.compute_reflected_differentials();
+                    sample.compute_reflected_differentials(local_geometry, outgoing);
                 }
             }
         }
@@ -245,8 +247,7 @@ namespace
             const void*                 data,
             const bool                  adjoint,
             const bool                  cosine_mult,
-            const Vector3f&             geometric_normal,
-            const Basis3f&              shading_basis,
+            const LocalGeometry&        local_geometry,
             const Vector3f&             outgoing,
             const Vector3f&             incoming,
             const int                   modes,
@@ -255,8 +256,8 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
             const float alpha = microfacet_alpha_from_roughness(values->m_roughness);
 
-            const Vector3f wo = shading_basis.transform_to_local(outgoing);
-            const Vector3f wi = shading_basis.transform_to_local(incoming);
+            const Vector3f wo = local_geometry.m_shading_basis.transform_to_local(outgoing);
+            const Vector3f wi = local_geometry.m_shading_basis.transform_to_local(incoming);
             const Vector3f m =
                 alpha == 0.0f
                     ? Vector3f(0.0f, 1.0f, 0.0f)
@@ -310,8 +311,7 @@ namespace
         float evaluate_pdf(
             const void*                 data,
             const bool                  adjoint,
-            const Vector3f&             geometric_normal,
-            const Basis3f&              shading_basis,
+            const LocalGeometry&        local_geometry,
             const Vector3f&             outgoing,
             const Vector3f&             incoming,
             const int                   modes) const override
@@ -319,8 +319,8 @@ namespace
             const InputValues* values = static_cast<const InputValues*>(data);
             const float alpha = microfacet_alpha_from_roughness(values->m_roughness);
 
-            const Vector3f wo = shading_basis.transform_to_local(outgoing);
-            const Vector3f wi = shading_basis.transform_to_local(incoming);
+            const Vector3f wo = local_geometry.m_shading_basis.transform_to_local(outgoing);
+            const Vector3f wi = local_geometry.m_shading_basis.transform_to_local(incoming);
             const Vector3f m =
                 alpha == 0.0f
                     ? Vector3f(0.0f, 1.0f, 0.0f)

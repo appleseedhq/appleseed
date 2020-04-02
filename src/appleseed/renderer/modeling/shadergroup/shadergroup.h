@@ -33,13 +33,15 @@
 #include "renderer/modeling/scene/containers.h"
 
 // appleseed.foundation headers.
+#include "foundation/memory/autoreleaseptr.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/platform/types.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/autoreleaseptr.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
+
+// Standard headers.
+#include <cstdint>
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }
@@ -173,7 +175,8 @@ class APPLESEED_DLLSYMBOL ShaderGroup
         UsesdPdTime     = 1u << 7,
         UsesAllGlobals  = UsesdPdTime
     };
-    foundation::uint32 m_flags;
+
+    std::uint32_t m_flags;
 
     // Constructor.
     explicit ShaderGroup(const char* name);

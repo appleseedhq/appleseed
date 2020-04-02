@@ -169,6 +169,7 @@ set (c_compiler_flags_ship
     /GL                                     # Enable link-time code generation
 )
 set (exe_linker_flags_ship
+    /DEBUG:NONE                             # Undo 'Generate Debug Info' set in Release configuration
     /LTCG                                   # Use Link Time Code Generation
     /INCREMENTAL:NO                         # Disable Incremental Linking
 )

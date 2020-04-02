@@ -45,7 +45,7 @@ namespace foundation
 //   Abramowitz and Stegun.
 //   http://people.math.sfu.ca/~cbm/aands/toc.htm
 //
-// Copied from from pbrt-v3.
+// Copied from pbrt-v3.
 //
 
 float erf(const float x)
@@ -131,6 +131,59 @@ float gamma_fraction(const float num, const float denom)
     const float ac2 = 1.0f / (denom * (denom + 1.0f) * (denom + 2.0f) * (denom + 3.0f) * (denom + 4.0f));
 
     return std::exp(ab1 - ab2) * (ac1 / ac2);
+}
+
+//
+// Reference:
+//
+//   https://archive.lib.msu.edu/crcmath/math/math/m/m309.htm
+//   Modified Bessel functions of the first kind.
+// 
+
+float bessel(const float x)
+{
+    const float x2 = x * x;
+    float val = 1.0f + 0.25f * x2;
+    float x_pow_2i = x2 * x2;
+    float fact_i = 1.0f;
+    std::int64_t i4 = 16;
+    for (int i = 2; i < 10; ++i)
+    {
+        fact_i *= i;
+        val += x_pow_2i / (i4 * fact_i * fact_i);
+        x_pow_2i *= x2;
+        i4 *= 4;
+    }
+    return val;
+}
+
+float log_bessel(const float x)
+{
+    // Log of Bessel function is not stable for large arguments
+    // https://publons.com/review/414383/
+    if (x > 12)
+        return x + 0.5f * (-std::log(2.0f * Pi<float>()) + std::log(1 / x) + 1.0f / (8.0f * x));
+    else
+        return std::log(bessel(x));
+}
+
+//
+// Reference:
+//
+//   https://reference.wolfram.com/language/ref/LogisticDistribution.html
+//
+
+float logistic(const float mean, const float scale)
+{
+    const float loc = std::abs(mean);
+    const float den = (1.0f + std::exp(-loc / scale)) * (1.0f + std::exp(-loc / scale));
+    const float num = -loc / scale;
+    return std::exp(num) / (scale * den);
+}
+
+float logistic_cdf(float mean, float scale)
+{
+    return 1.0f / (1.0f + std::exp(-mean / scale));
 }
 
 }   // namespace foundation
