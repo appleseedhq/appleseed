@@ -112,15 +112,6 @@ namespace
 
     convert_closure_fun g_closure_convert_funs[NumClosuresIDs];
 
-    void convert_closure_nop(
-        CompositeClosure&           composite_closure,
-        const Basis3f&              shading_basis,
-        const void*                 osl_params,
-        const Color3f&              weight,
-        Arena&                      arena)
-    {
-    }
-
     typedef int (*closure_get_modes)();
 
     closure_get_modes g_closure_get_modes_funs[NumClosuresIDs];
@@ -2173,6 +2164,9 @@ void CompositeSurfaceClosure::process_closure_tree(
 
             if (luminance(w) > 0.0f)
             {
+                if (!g_closure_convert_funs[c->id])
+                    return;
+
                 g_closure_convert_funs[c->id](*this, original_shading_basis, c->data(), w, arena);
                 copy_layer_ids(layer_stack);
 
@@ -2295,11 +2289,12 @@ void CompositeSubsurfaceClosure::process_closure_tree(
 //
 
 CompositeEmissionClosure::CompositeEmissionClosure(
+    const Basis3f&              original_shading_basis,
     const OSL::ClosureColor*    ci,
     Arena&                      arena)
 {
     SmallClosureLayerIDStack layer_stack;
-    process_closure_tree(ci, Color3f(1.0f), layer_stack, arena);
+    process_closure_tree(ci, original_shading_basis, Color3f(1.0f), layer_stack, arena);
     compute_pdfs(m_pdfs);
 }
 
@@ -2337,6 +2332,7 @@ InputValues* CompositeEmissionClosure::add_closure(
 
 void CompositeEmissionClosure::process_closure_tree(
     const OSL::ClosureColor*    closure,
+    const Basis3f&              original_shading_basis,
     const Color3f&              weight,
     SmallClosureLayerIDStack&   layer_stack,
     Arena&                      arena)
@@ -2349,15 +2345,15 @@ void CompositeEmissionClosure::process_closure_tree(
       case OSL::ClosureColor::MUL:
         {
             const OSL::ClosureMul* c = reinterpret_cast<const OSL::ClosureMul*>(closure);
-            process_closure_tree(c->closure, weight * Color3f(c->weight), layer_stack, arena);
+            process_closure_tree(c->closure, original_shading_basis, weight * Color3f(c->weight), layer_stack, arena);
         }
         break;
 
       case OSL::ClosureColor::ADD:
         {
             const OSL::ClosureAdd* c = reinterpret_cast<const OSL::ClosureAdd*>(closure);
-            process_closure_tree(c->closureA, weight, layer_stack, arena);
-            process_closure_tree(c->closureB, weight, layer_stack, arena);
+            process_closure_tree(c->closureA, original_shading_basis, weight, layer_stack, arena);
+            process_closure_tree(c->closureB, original_shading_basis, weight, layer_stack, arena);
         }
         break;
 
@@ -2382,11 +2378,17 @@ void CompositeEmissionClosure::process_closure_tree(
                 }
                 else if (c->id >= FirstLayeredClosure)
                 {
+                    g_closure_convert_funs[c->id](*this, original_shading_basis, c->data(), w, arena);
+                    copy_layer_ids(layer_stack);
+
+                    // Prevent this closure from being sampled.
+                    override_closure_scalar_weight(0.0f);
+
                     layer_stack.push(get_last_closure_index());
 
                     // Recurse into nested closures.
                     const OSL::ClosureColor* nested = get_nested_closure_color(c->id, c->data());
-                    process_closure_tree(nested, w, layer_stack, arena);
+                    process_closure_tree(nested, original_shading_basis, w, layer_stack, arena);
 
                     layer_stack.pop();
                 }
@@ -2627,7 +2629,7 @@ void register_closures(OSLShadingSystem& shading_system)
 {
     for (size_t i = 0; i < NumClosuresIDs; ++i)
     {
-        g_closure_convert_funs[i] = &convert_closure_nop;
+        g_closure_convert_funs[i] = nullptr;
         g_closure_get_modes_funs[i] = &closure_no_modes;
     }
 

@@ -331,6 +331,7 @@ class APPLESEED_ALIGN(16) CompositeEmissionClosure
 {
   public:
     CompositeEmissionClosure(
+        const foundation::Basis3f&  original_shading_basis,
         const OSL::ClosureColor*    ci,
         foundation::Arena&          arena);
 
@@ -350,6 +351,7 @@ class APPLESEED_ALIGN(16) CompositeEmissionClosure
 
     void process_closure_tree(
         const OSL::ClosureColor*    closure,
+        const foundation::Basis3f&  original_shading_basis,
         const foundation::Color3f&  weight,
         SmallClosureLayerIDStack&   layer_stack,
         foundation::Arena&          arena);

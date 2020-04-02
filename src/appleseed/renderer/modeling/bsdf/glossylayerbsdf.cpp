@@ -288,6 +288,32 @@ namespace
             do_attenuate_substrate(data, shading_basis, outgoing, incoming, value);
         }
 
+        void attenuate_emission(
+            const void*                 data,
+            const Basis3f&              shading_basis,
+            const Vector3f&             outgoing,
+            Spectrum&                   value) const override
+        {
+            const InputValues* values = static_cast<const InputValues*>(data);
+
+            const Vector3f& normal = shading_basis.get_normal();
+            const float cos_on = dot(normal, outgoing);
+
+            const float eta = 1.0f / values->m_ior;
+            const float Eo = get_dielectric_layer_directional_albedo(
+                eta,
+                values->m_roughness,
+                abs(cos_on));
+
+            value *= 1.0f - Eo;
+
+            if (values->m_thickness != 0.0f)
+            {
+                const float Lo = safe_rcp(abs(cos_on), 1e-6f);
+                value *= pow(values->m_transmittance, values->m_thickness * Lo);
+            }
+        }
+
       private:
         typedef GlossyLayerBSDFInputValues InputValues;
 

@@ -138,4 +138,13 @@ void BSDF::attenuate_substrate(
     assert(false);
 }
 
+void BSDF::attenuate_emission(
+    const void*                 data,
+    const Basis3f&              shading_basis,
+    const Vector3f&             outgoing,
+    Spectrum&                   value) const
+{
+    assert(false);
+}
+
 }   // namespace renderer
