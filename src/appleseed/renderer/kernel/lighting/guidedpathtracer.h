@@ -58,8 +58,8 @@
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/arena.h"
-#include "foundation/utility/string.h"
+#include "foundation/memory/arena.h"
+#include "foundation/string/string.h"
 
 // Standard headers.
 #include <algorithm>
@@ -524,13 +524,10 @@ size_t GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         if (vertex.m_scattering_modes == ScatteringMode::None)
             break;
 
-        BSDFSample bsdf_sample(
-            vertex.m_shading_point,
-            foundation::Dual3f(vertex.m_outgoing));
+        BSDFSample bsdf_sample;
 
         // Subsurface scattering.
         BSSRDFSample bssrdf_sample;
-        bssrdf_sample.m_modes = vertex.m_scattering_modes;
         if (vertex.m_bssrdf)
         {
             // Sample the BSSRDF and terminate the path if no incoming point is found.
@@ -540,6 +537,7 @@ size_t GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
                     vertex.m_bssrdf_data,
                     *vertex.m_shading_point,
                     foundation::Vector3f(vertex.m_outgoing.get_value()),
+                    vertex.m_scattering_modes,
                     bssrdf_sample,
                     bsdf_sample))
                 break;
@@ -750,9 +748,13 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     bool is_path_guided = sampler.sample(
         sampling_context,
         sample,
+        vertex.m_outgoing,
         wi_pdf,
-        d_tree_pdf
-    );
+        d_tree_pdf);
+
+    // Terminate the path if it gets absorbed.
+    if (sample.get_mode() == ScatteringMode::None)
+        return false;
 
     if (!is_path_guided)
     {
@@ -761,12 +763,8 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
         {
             next_ray.m_min_roughness = m_clamp_roughness ? sample.m_min_roughness : 0.0f;
 
-            if (sample.get_mode() == ScatteringMode::Diffuse && !vertex.m_albedo_saved)
-            {
-                vertex.m_albedo = sample.m_aov_components.m_albedo;
-                vertex.m_albedo_saved = true;
-                m_path_visitor.on_first_diffuse_bounce(vertex);
-            }
+            if (vertex.m_path_length == 1 && sample.get_mode() == ScatteringMode::Diffuse)
+                m_path_visitor.on_first_diffuse_bounce(vertex, sample.m_aov_components.m_albedo);
         }
         else
         {
@@ -780,10 +778,6 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
         if (!m_path_visitor.accept_scattering(vertex.m_prev_mode, sample.get_mode()))
             return false;
     }
-
-    // Terminate the path if it gets absorbed.
-    if (sample.get_mode() == ScatteringMode::None)
-        return false;
 
     // Save the scattering properties for MIS at light-emitting vertices.
     vertex.m_prev_mode = sample.get_mode();
@@ -830,9 +824,8 @@ bool GuidedPathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
 
     // Construct the scattered ray.
     const ShadingRay& ray = vertex.get_ray();
-    const foundation::Vector3d incoming(sample.m_incoming.get_value());
-    next_ray.m_org = vertex.m_shading_point->get_biased_point(incoming);
-    next_ray.m_dir = foundation::improve_normalization<2>(incoming);
+    next_ray.m_org = vertex.m_shading_point->get_point();
+    next_ray.m_dir = foundation::improve_normalization<2>(foundation::Vector3d(sample.m_incoming.get_value()));
     next_ray.m_time = ray.m_time;
     next_ray.m_flags = ScatteringMode::get_vis_flags(sample.get_mode()),
     next_ray.m_depth = ray.m_depth + 1;

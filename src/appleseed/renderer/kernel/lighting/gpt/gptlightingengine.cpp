@@ -53,13 +53,12 @@
 #include "renderer/utility/stochasticcast.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/math/mis.h"
 #include "foundation/math/population.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/types.h"
-#include "foundation/utility/containers/dictionary.h"
+#include "foundation/string/string.h"
 #include "foundation/utility/statistics.h"
-#include "foundation/utility/string.h"
 
 // Standard headers.
 #include <algorithm>
@@ -130,7 +129,7 @@ namespace
             {
                 m_light_path_stream->begin_path(
                     pixel_context,
-                    shading_point.get_scene().get_active_camera(),
+                    shading_point.get_scene().get_render_data().m_active_camera,
                     shading_point.get_ray().m_org);
             }
 
@@ -227,8 +226,8 @@ namespace
         const BackwardLightSampler&     m_light_sampler;
         LightPathStream*                m_light_path_stream;
 
-        uint64                          m_path_count;
-        Population<uint64>              m_path_length;
+        std::uint64_t                   m_path_count;
+        Population<std::uint64_t>       m_path_length;
 
         size_t                          m_inf_volume_ray_warnings;
         static const size_t             MaxInfVolumeRayWarnings = 5;
@@ -240,9 +239,11 @@ namespace
         class PathVisitorBase
         {
           public:
-            void on_first_diffuse_bounce(const PathVertex& vertex)
+            void on_first_diffuse_bounce(
+                const PathVertex&           vertex,
+                const Spectrum&             albedo)
             {
-                m_aov_components.m_albedo = vertex.m_albedo;
+                m_aov_components.m_albedo = albedo;
             }
 
             bool accept_scattering(

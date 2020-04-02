@@ -36,7 +36,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
 #include "foundation/math/sampling/mappings.h"
-#include "foundation/utility/string.h"
+#include "foundation/string/string.h"
 
 // Standard headers.
 #include <algorithm>
@@ -1321,7 +1321,7 @@ void STree::write_to_disk(
         return;
     }
 
-    const Camera* camera = m_scene.get_active_camera();
+    const Camera *camera = m_scene.get_render_data().m_active_camera;
 
     if (camera == nullptr)
     {

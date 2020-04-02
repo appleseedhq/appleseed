@@ -128,9 +128,6 @@ RendererComponents::RendererComponents(
 
 bool RendererComponents::create()
 {
-    if (!create_shading_result_framebuffer_factory())
-        return false;
-
     if (!create_lighting_engine_factory())
         return false;
 
@@ -143,10 +140,13 @@ bool RendererComponents::create()
     if (!create_pixel_renderer_factory())
         return false;
 
+    if (!create_shading_result_framebuffer_factory())
+        return false;
+
     if (!create_tile_renderer_factory())
         return false;
 
-    if (!create_frame_renderer())
+    if (!create_frame_renderer_factory())
         return false;
 
     return true;
@@ -277,7 +277,7 @@ bool RendererComponents::create_lighting_engine_factory()
         const SPPMParameters sppm_params(
             get_child_and_inherit_globals(m_params, "sppm"));
 
-        SPPMPassCallback* sppm_pass_callback =
+        SPPMPassCallback *sppm_pass_callback =
             new SPPMPassCallback(
                 m_scene,
                 *m_forward_light_sampler,
@@ -594,7 +594,7 @@ bool RendererComponents::create_tile_renderer_factory()
     }
 }
 
-bool RendererComponents::create_frame_renderer()
+bool RendererComponents::create_frame_renderer_factory()
 {
     const std::string name = m_params.get_required<std::string>("frame_renderer", "generic");
 

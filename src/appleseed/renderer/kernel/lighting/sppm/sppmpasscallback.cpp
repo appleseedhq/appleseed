@@ -169,7 +169,7 @@ void SPPMPassCallback::on_pass_begin(
     }
 }
 
-void SPPMPassCallback::on_pass_end(
+bool SPPMPassCallback::on_pass_end(
     const Frame&                        frame,
     JobQueue&                           job_queue,
     IAbortSwitch&                       abort_switch)
