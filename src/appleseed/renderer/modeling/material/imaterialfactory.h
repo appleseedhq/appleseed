@@ -72,6 +72,7 @@ class APPLESEED_DLLSYMBOL IMaterialFactory
     static void add_surface_shader_metadata(foundation::DictionaryArray& metadata);
     static void add_alpha_map_metadata(foundation::DictionaryArray& metadata);
     static void add_displacement_metadata(foundation::DictionaryArray& metadata);
+    static void add_default_tangent_mode_metadata(foundation::DictionaryArray& metadata);
 };
 
 }   // namespace renderer

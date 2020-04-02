@@ -797,20 +797,25 @@ void ShadingPoint::compute_shading_basis() const
     }
     else
     {
-        // X+/Y+/Z+ default tangent modes.
+        // UV/X+/Y+/Z+ default tangent modes.
         switch (material->get_render_data().m_default_tangent_mode)
         {
+          case Material::RenderData::DefaultTangentMode::UV:
+            tangent = normalize(get_dpdu(0));
+            break;
+
           case Material::RenderData::DefaultTangentMode::LocalX:
-            tangent = object_instance_transform.get_parent_x();
+            tangent = m_assembly_instance_transform.vector_to_parent(object_instance_transform.get_parent_x());
             break;
+
           case Material::RenderData::DefaultTangentMode::LocalY:
-            tangent = object_instance_transform.get_parent_y();
+            tangent = m_assembly_instance_transform.vector_to_parent(object_instance_transform.get_parent_y());
             break;
+
           case Material::RenderData::DefaultTangentMode::LocalZ:
-            tangent = object_instance_transform.get_parent_z();
+            tangent = m_assembly_instance_transform.vector_to_parent(object_instance_transform.get_parent_z());
             break;
         }
-        tangent = m_assembly_instance_transform.vector_to_parent(tangent);
     }
 
     if (m_primitive_type == PrimitiveCurve3)
@@ -841,6 +846,7 @@ void ShadingPoint::compute_shading_basis() const
             m_shading_basis.build(sn);
         }
     }
+
     // Apply the basis modifier if the material has one.
     if (material != nullptr)
     {

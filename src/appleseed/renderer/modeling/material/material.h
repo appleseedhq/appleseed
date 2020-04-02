@@ -135,6 +135,7 @@ class APPLESEED_DLLSYMBOL Material
     {
         enum class DefaultTangentMode
         {
+            UV,
             LocalX,
             LocalY,
             LocalZ,
