@@ -179,6 +179,7 @@ DictionaryArray GenericMaterialFactory::get_input_metadata() const
 
     add_alpha_map_metadata(metadata);
     add_displacement_metadata(metadata);
+    add_default_tangent_mode_metadata(metadata);
 
     return metadata;
 }

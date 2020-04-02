@@ -288,13 +288,14 @@ Material::RenderData::DefaultTangentMode Material::get_default_tangent_mode() co
     const std::string default_tangent_mode =
         m_params.get_optional<std::string>(
             "default_tangent_mode",
-            "radial",
-            make_vector("local_x", "local_y", "local_z", "radial"));
+            "uv",
+            make_vector("uv", "local_x", "local_y", "local_z", "radial"));
     return
         default_tangent_mode == "local_x" ? RenderData::DefaultTangentMode::LocalX :
         default_tangent_mode == "local_y" ? RenderData::DefaultTangentMode::LocalY :
         default_tangent_mode == "local_z" ? RenderData::DefaultTangentMode::LocalZ :
-                                            RenderData::DefaultTangentMode::Radial;
+        default_tangent_mode == "radial"  ? RenderData::DefaultTangentMode::Radial :
+                                            RenderData::DefaultTangentMode::UV;
 }
 
 }   // namespace renderer

@@ -200,6 +200,7 @@ DictionaryArray OSLMaterialFactory::get_input_metadata() const
             .insert("use", "optional"));
 
     add_alpha_map_metadata(metadata);
+    add_default_tangent_mode_metadata(metadata);
 
     return metadata;
 }
