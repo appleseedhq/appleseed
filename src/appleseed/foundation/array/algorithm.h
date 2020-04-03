@@ -33,6 +33,8 @@
 #include "foundation/array/array.h"
 #include "foundation/array/arrayref.h"
 #include "foundation/array/arrayview.h"
+#include "foundation/array/exception.h"
+#include "foundation/math/aabb.h"
 
 namespace foundation
 {
@@ -95,6 +97,7 @@ Array copy_indexed(
     return dst;
 }
 
+
 //
 // If the array contains integers, convert the array in place
 // to the smallest type that can represent the array elements,
@@ -102,5 +105,13 @@ Array copy_indexed(
 //
 
 void convert_to_smallest_type(Array& array);
+
+
+//
+// Compute the bounding box of an array of points.
+//
+
+AABB3f compute_bounding_box(const Array& vertices);
+AABB3f compute_bounding_box(const Array& vertices, const AABB3f& initial_bbox);
 
 }       // namespace foundation
