@@ -30,41 +30,62 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/mesh/imeshfilereader.h"
+#include "foundation/math/vector.h"
+#include "foundation/meshio/imeshfilewriter.h"
+#include "foundation/platform/compiler.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
+// Standard headers.
+#include <cstddef>
+#include <cstdio>
+#include <string>
 
 // Forward declarations.
-namespace foundation    { class IMeshBuilder; }
+namespace foundation    { class IMeshWalker; }
 
 namespace foundation
 {
 
 //
-// Read a mesh file using the right reader based on the extension of the mesh file name.
+// Wavefront OBJ mesh file writer.
+//
+// Reference:
+//
+//   http://people.scs.fsu.edu/~burkardt/txt/obj_format.txt
 //
 
-class APPLESEED_DLLSYMBOL GenericMeshFileReader
-  : public IMeshFileReader
+class OBJMeshFileWriter
+  : public IMeshFileWriter
 {
   public:
     // Constructor.
-    explicit GenericMeshFileReader(const char* filename);
+    explicit OBJMeshFileWriter(const std::string& filename);
 
-    // Destructor.
-    ~GenericMeshFileReader() override;
+    // Destructor, closes the file.
+    ~OBJMeshFileWriter() override;
 
-    // Get/set options for the Wavefront OBJ mesh file reader.
-    int get_obj_options() const;
-    void set_obj_options(const int obj_options);
+    // Write a mesh.
+    void write(const IMeshWalker& walker) override;
 
-    // Read a mesh.
-    void read(IMeshBuilder& builder) override;
+    // Close the file.
+    void close();
 
   private:
-    struct Impl;
-    Impl* impl;
+    const std::string   m_filename;
+    std::FILE*          m_file;
+    size_t              m_base_vertex_index;
+    size_t              m_base_vertex_normal_index;
+    size_t              m_base_tex_coords_index;
+
+    void write_vertices(const IMeshWalker& walker) const;
+    void write_vertex_normals(const IMeshWalker& walker) const;
+    void write_texture_coordinates(const IMeshWalker& walker) const;
+    void write_faces(const IMeshWalker& walker) const;
+    void write_faces_no_vn_no_vt(const IMeshWalker& walker) const;
+    void write_faces_vn_no_vt(const IMeshWalker& walker) const;
+    void write_faces_no_vn_vt(const IMeshWalker& walker) const;
+    void write_faces_vn_vt(const IMeshWalker& walker) const;
+    void write_vector(const char* prefix, const Vector2d& v) const;
+    void write_vector(const char* prefix, const Vector3d& v) const;
 };
 
 }   // namespace foundation

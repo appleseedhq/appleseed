@@ -30,74 +30,37 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exception.h"
-#include "foundation/mesh/imeshfilereader.h"
+#include "foundation/meshio/imeshfilewriter.h"
 #include "foundation/platform/compiler.h"
 
-// Standard headers.
-#include <cstddef>
-#include <string>
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace foundation    { class IMeshBuilder; }
+namespace foundation    { class IMeshWalker; }
 
 namespace foundation
 {
 
 //
-// Wavefront OBJ mesh file reader.
-//
-// Reference:
-//
-//   http://people.scs.fsu.edu/~burkardt/txt/obj_format.txt
+// Write a mesh file using the right writer based on the extension of the mesh file name.
 //
 
-class OBJMeshFileReader
-  : public IMeshFileReader
+class APPLESEED_DLLSYMBOL GenericMeshFileWriter
+  : public IMeshFileWriter
 {
   public:
-    // Parse error exception.
-    struct ExceptionParseError
-      : public Exception
-    {
-        const size_t m_line;                    // the line at which the parse error occurred
-
-        explicit ExceptionParseError(const size_t line)
-          : m_line(line)
-        {
-        }
-    };
-
-    // Exception thrown when an invalid face definition is encountered.
-    struct ExceptionInvalidFaceDef
-      : public ExceptionParseError
-    {
-        explicit ExceptionInvalidFaceDef(const size_t line)
-          : ExceptionParseError(line)
-        {
-        }
-    };
-
-    enum Options
-    {
-        Default                 = 0,            // none of the flags below
-        FavorSpeedOverPrecision = 1UL << 0,     // use approximate algorithm for parsing floating-point values
-        StopOnInvalidFaceDef    = 1UL << 1      // stop parsing on invalid face definitions
-    };
-
     // Constructor.
-    OBJMeshFileReader(
-        const std::string&  filename,
-        const int           options = Default);
+    explicit GenericMeshFileWriter(const char* filename);
 
-    // Read a mesh.
-    void read(IMeshBuilder& builder) override;
+    // Destructor.
+    ~GenericMeshFileWriter() override;
+
+    // Write a mesh.
+    void write(const IMeshWalker& walker) override;
 
   private:
-    struct Impl;
-
-    const std::string       m_filename;
-    const int               m_options;
+    IMeshFileWriter* m_writer;
 };
 
 }   // namespace foundation

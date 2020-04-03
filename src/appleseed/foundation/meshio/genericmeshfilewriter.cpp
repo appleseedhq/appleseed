@@ -27,40 +27,46 @@
 // THE SOFTWARE.
 //
 
-#pragma once
+// Interface header.
+#include "genericmeshfilewriter.h"
 
 // appleseed.foundation headers.
-#include "foundation/mesh/imeshfilewriter.h"
-#include "foundation/platform/compiler.h"
+#include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
+#include "foundation/meshio/binarymeshfilewriter.h"
+#include "foundation/meshio/objmeshfilewriter.h"
+#include "foundation/string/string.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
+// Boost headers.
+#include "boost/filesystem/path.hpp"
 
-// Forward declarations.
-namespace foundation    { class IMeshWalker; }
+// Standard headers.
+#include <string>
+
+namespace bf = boost::filesystem;
 
 namespace foundation
 {
 
-//
-// Write a mesh file using the right writer based on the extension of the mesh file name.
-//
-
-class APPLESEED_DLLSYMBOL GenericMeshFileWriter
-  : public IMeshFileWriter
+GenericMeshFileWriter::GenericMeshFileWriter(const char* filename)
 {
-  public:
-    // Constructor.
-    explicit GenericMeshFileWriter(const char* filename);
+    const bf::path filepath(filename);
+    const std::string extension = lower_case(filepath.extension().string());
 
-    // Destructor.
-    ~GenericMeshFileWriter() override;
+    if (extension == ".obj")
+        m_writer = new OBJMeshFileWriter(filename);
+    else if (extension == ".binarymesh")
+        m_writer = new BinaryMeshFileWriter(filename);
+    else throw ExceptionUnsupportedFileFormat(filename);
+}
 
-    // Write a mesh.
-    void write(const IMeshWalker& walker) override;
+GenericMeshFileWriter::~GenericMeshFileWriter()
+{
+    delete m_writer;
+}
 
-  private:
-    IMeshFileWriter* m_writer;
-};
+void GenericMeshFileWriter::write(const IMeshWalker& walker)
+{
+    m_writer->write(walker);
+}
 
 }   // namespace foundation
