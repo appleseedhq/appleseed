@@ -66,6 +66,8 @@ shader as_metal
     [[
         string as_maya_attribute_name = "edgeReflectanceWeight",
         string as_maya_attribute_short_name = "f90w",
+        float min = 0.0,
+        float max = 1.0,
         string label = "Edge Reflectance Weight",
         string page = "Fresnel",
         string help = "Edge reflectance weight.",
