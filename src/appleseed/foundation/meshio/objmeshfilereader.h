@@ -30,50 +30,74 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/mesh/imeshfilewriter.h"
+#include "foundation/core/exceptions/exception.h"
+#include "foundation/meshio/imeshfilereader.h"
 #include "foundation/platform/compiler.h"
-#include "foundation/utility/bufferedfile.h"
 
 // Standard headers.
 #include <cstddef>
 #include <string>
 
 // Forward declarations.
-namespace foundation    { class IMeshWalker; }
+namespace foundation    { class IMeshBuilder; }
 
 namespace foundation
 {
 
 //
-// Writer for a simple binary mesh file format.
+// Wavefront OBJ mesh file reader.
+//
+// Reference:
+//
+//   http://people.scs.fsu.edu/~burkardt/txt/obj_format.txt
 //
 
-class BinaryMeshFileWriter
-  : public IMeshFileWriter
+class OBJMeshFileReader
+  : public IMeshFileReader
 {
   public:
-    // Constructor.
-    explicit BinaryMeshFileWriter(const std::string& filename);
+    // Parse error exception.
+    struct ExceptionParseError
+      : public Exception
+    {
+        const size_t m_line;                    // the line at which the parse error occurred
 
-    // Write a mesh.
-    void write(const IMeshWalker& walker) override;
+        explicit ExceptionParseError(const size_t line)
+          : m_line(line)
+        {
+        }
+    };
+
+    // Exception thrown when an invalid face definition is encountered.
+    struct ExceptionInvalidFaceDef
+      : public ExceptionParseError
+    {
+        explicit ExceptionInvalidFaceDef(const size_t line)
+          : ExceptionParseError(line)
+        {
+        }
+    };
+
+    enum Options
+    {
+        Default                 = 0,            // none of the flags below
+        FavorSpeedOverPrecision = 1UL << 0,     // use approximate algorithm for parsing floating-point values
+        StopOnInvalidFaceDef    = 1UL << 1      // stop parsing on invalid face definitions
+    };
+
+    // Constructor.
+    OBJMeshFileReader(
+        const std::string&  filename,
+        const int           options = Default);
+
+    // Read a mesh.
+    void read(IMeshBuilder& builder) override;
 
   private:
-    const std::string           m_filename;
-    BufferedFile                m_file;
-    LZ4CompressedWriterAdapter  m_writer;
+    struct Impl;
 
-    void write_signature();
-    void write_version();
-
-    void write_string(const char* s);
-    void write_mesh(const IMeshWalker& walker);
-    void write_vertices(const IMeshWalker& walker);
-    void write_vertex_normals(const IMeshWalker& walker);
-    void write_texture_coordinates(const IMeshWalker& walker);
-    void write_material_slots(const IMeshWalker& walker);
-    void write_faces(const IMeshWalker& walker);
-    void write_face(const IMeshWalker& walker, const size_t face_index);
+    const std::string       m_filename;
+    const int               m_options;
 };
 
 }   // namespace foundation

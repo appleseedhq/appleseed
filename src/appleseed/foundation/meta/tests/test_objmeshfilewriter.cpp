@@ -29,10 +29,10 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
-#include "foundation/mesh/imeshwalker.h"
-#include "foundation/mesh/meshbuilderbase.h"
-#include "foundation/mesh/objmeshfilereader.h"
-#include "foundation/mesh/objmeshfilewriter.h"
+#include "foundation/meshio/imeshwalker.h"
+#include "foundation/meshio/meshbuilderbase.h"
+#include "foundation/meshio/objmeshfilereader.h"
+#include "foundation/meshio/objmeshfilewriter.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/utility/test.h"
 

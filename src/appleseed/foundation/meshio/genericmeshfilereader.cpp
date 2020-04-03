@@ -32,8 +32,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
-#include "foundation/mesh/binarymeshfilereader.h"
-#include "foundation/mesh/objmeshfilereader.h"
+#include "foundation/meshio/binarymeshfilereader.h"
+#include "foundation/meshio/objmeshfilereader.h"
 #include "foundation/string/string.h"
 
 // Boost headers.

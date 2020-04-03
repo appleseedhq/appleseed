@@ -27,46 +27,81 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "genericmeshfilewriter.h"
+#pragma once
 
 // appleseed.foundation headers.
-#include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
-#include "foundation/mesh/binarymeshfilewriter.h"
-#include "foundation/mesh/objmeshfilewriter.h"
-#include "foundation/string/string.h"
+#include "foundation/math/vector.h"
+#include "foundation/meshio/imeshbuilder.h"
+#include "foundation/platform/compiler.h"
 
-// Boost headers.
-#include "boost/filesystem/path.hpp"
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Standard headers.
-#include <string>
-
-namespace bf = boost::filesystem;
+#include <cstddef>
 
 namespace foundation
 {
 
-GenericMeshFileWriter::GenericMeshFileWriter(const char* filename)
-{
-    const bf::path filepath(filename);
-    const std::string extension = lower_case(filepath.extension().string());
+//
+// A mesh builder that does nothing, typically serves as a base class.
+//
 
-    if (extension == ".obj")
-        m_writer = new OBJMeshFileWriter(filename);
-    else if (extension == ".binarymesh")
-        m_writer = new BinaryMeshFileWriter(filename);
-    else throw ExceptionUnsupportedFileFormat(filename);
-}
-
-GenericMeshFileWriter::~GenericMeshFileWriter()
+class APPLESEED_DLLSYMBOL MeshBuilderBase
+  : public IMeshBuilder
 {
-    delete m_writer;
-}
+  public:
+    void begin_mesh(const char* name) override
+    {
+    }
 
-void GenericMeshFileWriter::write(const IMeshWalker& walker)
-{
-    m_writer->write(walker);
-}
+    size_t push_vertex(const Vector3d& v) override
+    {
+        return 0;
+    }
+
+    size_t push_vertex_normal(const Vector3d& v) override
+    {
+        return 0;
+    }
+
+    size_t push_tex_coords(const Vector2d& v) override
+    {
+        return 0;
+    }
+
+    size_t push_material_slot(const char* name) override
+    {
+        return 0;
+    }
+
+    void begin_face(const size_t vertex_count) override
+    {
+    }
+
+    void set_face_vertices(const size_t vertices[]) override
+    {
+    }
+
+    void set_face_vertex_normals(const size_t vertex_normals[]) override
+    {
+    }
+
+    void set_face_vertex_tex_coords(const size_t tex_coords[]) override
+    {
+    }
+
+    void set_face_material(const size_t material) override
+    {
+    }
+
+    void end_face() override
+    {
+    }
+
+    void end_mesh() override
+    {
+    }
+};
 
 }   // namespace foundation

@@ -33,7 +33,7 @@
 // appleseed.foundation headers.
 #include "foundation/core/appleseed.h"
 #include "foundation/core/exceptions/exceptionioerror.h"
-#include "foundation/mesh/imeshwalker.h"
+#include "foundation/meshio/imeshwalker.h"
 #include "foundation/platform/types.h"
 #include "foundation/string/string.h"
 #include "foundation/utility/otherwise.h"

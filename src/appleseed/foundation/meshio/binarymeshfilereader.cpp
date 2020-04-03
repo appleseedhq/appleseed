@@ -34,7 +34,7 @@
 #include "foundation/core/exceptions/exceptionioerror.h"
 #include "foundation/math/vector.h"
 #include "foundation/memory/memory.h"
-#include "foundation/mesh/imeshbuilder.h"
+#include "foundation/meshio/imeshbuilder.h"
 #include "foundation/utility/bufferedfile.h"
 
 // Standard headers.

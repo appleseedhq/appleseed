@@ -482,31 +482,31 @@ source_group ("foundation\\memory" FILES
     ${foundation_memory_sources}
 )
 
-set (foundation_mesh_sources
-    foundation/mesh/binarymeshfilereader.cpp
-    foundation/mesh/binarymeshfilereader.h
-    foundation/mesh/binarymeshfilewriter.cpp
-    foundation/mesh/binarymeshfilewriter.h
-    foundation/mesh/genericmeshfilereader.cpp
-    foundation/mesh/genericmeshfilereader.h
-    foundation/mesh/genericmeshfilewriter.cpp
-    foundation/mesh/genericmeshfilewriter.h
-    foundation/mesh/imeshbuilder.h
-    foundation/mesh/imeshfilereader.h
-    foundation/mesh/imeshfilewriter.h
-    foundation/mesh/imeshwalker.h
-    foundation/mesh/meshbuilderbase.h
-    foundation/mesh/objmeshfilelexer.h
-    foundation/mesh/objmeshfilereader.cpp
-    foundation/mesh/objmeshfilereader.h
-    foundation/mesh/objmeshfilewriter.cpp
-    foundation/mesh/objmeshfilewriter.h
+set (foundation_meshio_sources
+    foundation/meshio/binarymeshfilereader.cpp
+    foundation/meshio/binarymeshfilereader.h
+    foundation/meshio/binarymeshfilewriter.cpp
+    foundation/meshio/binarymeshfilewriter.h
+    foundation/meshio/genericmeshfilereader.cpp
+    foundation/meshio/genericmeshfilereader.h
+    foundation/meshio/genericmeshfilewriter.cpp
+    foundation/meshio/genericmeshfilewriter.h
+    foundation/meshio/imeshbuilder.h
+    foundation/meshio/imeshfilereader.h
+    foundation/meshio/imeshfilewriter.h
+    foundation/meshio/imeshwalker.h
+    foundation/meshio/meshbuilderbase.h
+    foundation/meshio/objmeshfilelexer.h
+    foundation/meshio/objmeshfilereader.cpp
+    foundation/meshio/objmeshfilereader.h
+    foundation/meshio/objmeshfilewriter.cpp
+    foundation/meshio/objmeshfilewriter.h
 )
 list (APPEND appleseed_sources
-    ${foundation_mesh_sources}
+    ${foundation_meshio_sources}
 )
-source_group ("foundation\\mesh" FILES
-    ${foundation_mesh_sources}
+source_group ("foundation\\meshio" FILES
+    ${foundation_meshio_sources}
 )
 
 set (foundation_meta_benchmarks_sources

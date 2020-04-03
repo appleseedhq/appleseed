@@ -30,7 +30,7 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/mesh/objmeshfilereader.h"
+#include "foundation/meshio/objmeshfilereader.h"
 #include "foundation/platform/compiler.h"
 #include "foundation/string/string.h"
 #include "foundation/utility/bufferedfile.h"

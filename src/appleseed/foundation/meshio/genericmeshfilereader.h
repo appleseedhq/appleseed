@@ -30,78 +30,41 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/math/vector.h"
-#include "foundation/mesh/imeshbuilder.h"
-#include "foundation/platform/compiler.h"
+#include "foundation/meshio/imeshfilereader.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// Standard headers.
-#include <cstddef>
+// Forward declarations.
+namespace foundation    { class IMeshBuilder; }
 
 namespace foundation
 {
 
 //
-// A mesh builder that does nothing, typically serves as a base class.
+// Read a mesh file using the right reader based on the extension of the mesh file name.
 //
 
-class APPLESEED_DLLSYMBOL MeshBuilderBase
-  : public IMeshBuilder
+class APPLESEED_DLLSYMBOL GenericMeshFileReader
+  : public IMeshFileReader
 {
   public:
-    void begin_mesh(const char* name) override
-    {
-    }
+    // Constructor.
+    explicit GenericMeshFileReader(const char* filename);
 
-    size_t push_vertex(const Vector3d& v) override
-    {
-        return 0;
-    }
+    // Destructor.
+    ~GenericMeshFileReader() override;
 
-    size_t push_vertex_normal(const Vector3d& v) override
-    {
-        return 0;
-    }
+    // Get/set options for the Wavefront OBJ mesh file reader.
+    int get_obj_options() const;
+    void set_obj_options(const int obj_options);
 
-    size_t push_tex_coords(const Vector2d& v) override
-    {
-        return 0;
-    }
+    // Read a mesh.
+    void read(IMeshBuilder& builder) override;
 
-    size_t push_material_slot(const char* name) override
-    {
-        return 0;
-    }
-
-    void begin_face(const size_t vertex_count) override
-    {
-    }
-
-    void set_face_vertices(const size_t vertices[]) override
-    {
-    }
-
-    void set_face_vertex_normals(const size_t vertex_normals[]) override
-    {
-    }
-
-    void set_face_vertex_tex_coords(const size_t tex_coords[]) override
-    {
-    }
-
-    void set_face_material(const size_t material) override
-    {
-    }
-
-    void end_face() override
-    {
-    }
-
-    void end_mesh() override
-    {
-    }
+  private:
+    struct Impl;
+    Impl* impl;
 };
 
 }   // namespace foundation
