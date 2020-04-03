@@ -59,8 +59,6 @@ set (foundation_array_sources
     foundation/array/exception.h
     foundation/array/keyframedarray.cpp
     foundation/array/keyframedarray.h
-    foundation/array/meshalgorithm.cpp
-    foundation/array/meshalgorithm.h
 )
 list (APPEND appleseed_sources
     ${foundation_array_sources}

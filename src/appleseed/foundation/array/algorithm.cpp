@@ -38,20 +38,49 @@ namespace foundation
 {
 namespace
 {
-    template <typename SrcType, typename DstType>
-    void convert_array(Array& array)
+
+template <typename SrcType, typename DstType>
+void convert_array(Array& array)
+{
+    Array tmp(ArrayTraits<DstType>::array_type());
+    tmp.reserve(array.size());
+
+    ArrayView<SrcType> src(array);
+    ArrayRef<DstType> dst(tmp);
+
+    for (const auto value : src)
+        dst.push_back(static_cast<DstType>(value));
+
+    array = std::move(tmp);
+}
+
+struct ComputeBBoxVisitor
+{
+    AABB3f m_bbox;
+
+    ComputeBBoxVisitor()
     {
-        Array tmp(ArrayTraits<DstType>::array_type());
-        tmp.reserve(array.size());
-
-        ArrayView<SrcType> src(array);
-        ArrayRef<DstType> dst(tmp);
-
-        for (const auto value : src)
-            dst.push_back(static_cast<DstType>(value));
-
-        array = std::move(tmp);
+        m_bbox.invalidate();
     }
+
+    explicit ComputeBBoxVisitor(const AABB3f& bbox)
+    : m_bbox(bbox)
+    {
+    }
+
+    void operator()(const ArrayView<Vector3f>& view)
+    {
+        for (const Vector3f& p : view)
+            m_bbox.insert(p);
+    }
+
+    template <typename T>
+    void operator()(const ArrayView<T>& view)
+    {
+        throw BadArrayTypeException();
+    }
+};
+
 }
 
 void convert_to_smallest_type(Array& array)
@@ -86,6 +115,20 @@ void convert_to_smallest_type(Array& array)
       default:
         break;
     }
+}
+
+AABB3f compute_bounding_box(const Array& vertices)
+{
+    ComputeBBoxVisitor v;
+    apply_visitor(vertices, v);
+    return v.m_bbox;
+}
+
+AABB3f compute_bounding_box(const Array& vertices, const AABB3f& initial_bbox)
+{
+    ComputeBBoxVisitor v(initial_bbox);
+    apply_visitor(vertices, v);
+    return v.m_bbox;
 }
 
 }       // namespace foundation
