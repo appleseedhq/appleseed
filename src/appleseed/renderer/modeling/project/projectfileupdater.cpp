@@ -2353,6 +2353,7 @@ namespace
             {
                 ParamArray& root = configuration.get_parameters();
                 move_if_exist(root, "sppm.initial_photon_lookup_radius", "sppm.initial_radius");
+                root.insert_path("sppm.enable_importons", false);
             }
         }
     };
