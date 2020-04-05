@@ -45,18 +45,30 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
-#include <map>
+#include <unordered_map>
 #include <vector>
 
 namespace foundation
 {
+
+//
+// References:
+//
+//   http://en.wikipedia.org/wiki/Regular_icosahedron#Cartesian_coordinates
+//
+//   Creating an icosphere mesh in code
+//   http://blog.andreaskahler.com/2009/06/creating-icosphere-mesh-in-code.html
+//
+//   Stratified Sampling of Spherical Triangles
+//   http://www.graphics.cornell.edu/pubs/1995/Arv95c.pdf
+//
 
 template <typename T>
 class SphericalImportanceSampler
   : public foundation::NonCopyable
 {
   public:
-    explicit SphericalImportanceSampler(const size_t subdivisions);
+    explicit SphericalImportanceSampler(const std::size_t subdivisions);
 
     Vector<T, 3> sample(const Vector<T, 3>& s) const;
 
@@ -66,11 +78,11 @@ class SphericalImportanceSampler
   private:
     struct Tri
     {
-        size_t m_v0, m_v1, m_v2;
+        std::size_t m_v0, m_v1, m_v2;
 
-        Tri() {}
+        Tri() = default;
 
-        Tri(const size_t v0, const size_t v1, const size_t v2)
+        Tri(const std::size_t v0, const std::size_t v1, const std::size_t v2)
           : m_v0(v0)
           , m_v1(v1)
           , m_v2(v2)
@@ -78,15 +90,15 @@ class SphericalImportanceSampler
         }
     };
 
-    typedef std::map<std::uint64_t, size_t> PointCache;
+    using PointCache = std::unordered_map<std::uint64_t, std::size_t>;
 
     std::vector<Vector<T, 3>>   m_verts;
     std::vector<Tri>            m_tris;
-    CDF<size_t, T>              m_cdf;
+    CDF<std::size_t, T>         m_cdf;
 
-    void create_regular_icosahedron();
-    void subdivide(const size_t subdivisions);
-    size_t get_or_create_middle_point(PointCache& point_cache, size_t v0, size_t v1);
+    void push_regular_icosahedron();
+    void subdivide(const std::size_t subdivisions);
+    std::size_t get_or_create_middle_point(PointCache& point_cache, std::size_t v0, std::size_t v1);
     void build_cdf();
 };
 
@@ -94,17 +106,15 @@ class SphericalImportanceSampler
 //
 // SphericalImportanceSampler class implementation.
 //
-// References:
-//
-//   http://en.wikipedia.org/wiki/Regular_icosahedron#Cartesian_coordinates
-//   http://blog.andreaskahler.com/2009/06/creating-icosphere-mesh-in-code.html
-//   http://www.graphics.cornell.edu/pubs/1995/Arv95c.pdf
-//
 
 template <typename T>
-SphericalImportanceSampler<T>::SphericalImportanceSampler(const size_t subdivisions)
+SphericalImportanceSampler<T>::SphericalImportanceSampler(const std::size_t subdivisions)
 {
-    create_regular_icosahedron();
+    const std::size_t four_power = pow_int<std::size_t>(4, subdivisions);
+    m_verts.reserve(10 * four_power + 2);  // see https://oeis.org/A122973
+    m_tris.reserve(20 * four_power);
+
+    push_regular_icosahedron();
     subdivide(subdivisions);
     build_cdf();
 }
@@ -112,7 +122,7 @@ SphericalImportanceSampler<T>::SphericalImportanceSampler(const size_t subdivisi
 template <typename T>
 Vector<T, 3> SphericalImportanceSampler<T>::sample(const Vector<T, 3>& s) const
 {
-    const size_t tri_index = m_cdf.sample(s[0]).first;
+    const std::size_t tri_index = m_cdf.sample(s[0]).first;
     const Tri& tri = m_tris[tri_index];
 
     return
@@ -131,15 +141,11 @@ bool SphericalImportanceSampler<T>::dump_as_obj(const char* filepath) const
     if (file == nullptr)
         return false;
 
-    for (size_t i = 0; i < m_verts.size(); ++i)
-    {
-        const Vector<T, 3>& vert = m_verts[i];
+    for (const Vector<T, 3>& vert : m_verts)
         std::fprintf(file, "v %.15f %.15f %.15f\n", vert.x, vert.y, vert.z);
-    }
 
-    for (size_t i = 0; i < m_tris.size(); ++i)
+    for (const Tri& tri : m_tris)
     {
-        const Tri& tri = m_tris[i];
         std::fprintf(
             file,
             "f " FMT_SIZE_T " " FMT_SIZE_T " " FMT_SIZE_T "\n",
@@ -154,9 +160,8 @@ bool SphericalImportanceSampler<T>::dump_as_obj(const char* filepath) const
 template <typename T>
 void SphericalImportanceSampler<T>::dump_to_vpython_file(VPythonFile& file) const
 {
-    for (size_t i = 0; i < m_tris.size(); ++i)
+    for (const Tri& tri : m_tris)
     {
-        const Tri& tri = m_tris[i];
         const Vector3d points[] =
         {
             Vector3d(m_verts[tri.m_v0]),
@@ -170,87 +175,79 @@ void SphericalImportanceSampler<T>::dump_to_vpython_file(VPythonFile& file) cons
 }
 
 template <typename T>
-void SphericalImportanceSampler<T>::create_regular_icosahedron()
+void SphericalImportanceSampler<T>::push_regular_icosahedron()
 {
-    m_verts.reserve(12);
-    m_tris.reserve(20);
+    const T phi = GoldenRatio<T>();
 
-    m_verts.push_back(normalize(Vector<T, 3>(T(-1.0),  GoldenRatio<T>(), T(0.0))));
-    m_verts.push_back(normalize(Vector<T, 3>(T( 1.0),  GoldenRatio<T>(), T(0.0))));
-    m_verts.push_back(normalize(Vector<T, 3>(T(-1.0), -GoldenRatio<T>(), T(0.0))));
-    m_verts.push_back(normalize(Vector<T, 3>(T( 1.0), -GoldenRatio<T>(), T(0.0))));
+    m_verts.emplace_back(normalize(Vector<T, 3>(T(-1.0),  phi, T(0.0))));
+    m_verts.emplace_back(normalize(Vector<T, 3>(T( 1.0),  phi, T(0.0))));
+    m_verts.emplace_back(normalize(Vector<T, 3>(T(-1.0), -phi, T(0.0))));
+    m_verts.emplace_back(normalize(Vector<T, 3>(T( 1.0), -phi, T(0.0))));
 
-    m_verts.push_back(normalize(Vector<T, 3>(T(0.0), T(-1.0),  GoldenRatio<T>())));
-    m_verts.push_back(normalize(Vector<T, 3>(T(0.0), T( 1.0),  GoldenRatio<T>())));
-    m_verts.push_back(normalize(Vector<T, 3>(T(0.0), T(-1.0), -GoldenRatio<T>())));
-    m_verts.push_back(normalize(Vector<T, 3>(T(0.0), T( 1.0), -GoldenRatio<T>())));
+    m_verts.emplace_back(normalize(Vector<T, 3>(T(0.0), T(-1.0),  phi)));
+    m_verts.emplace_back(normalize(Vector<T, 3>(T(0.0), T( 1.0),  phi)));
+    m_verts.emplace_back(normalize(Vector<T, 3>(T(0.0), T(-1.0), -phi)));
+    m_verts.emplace_back(normalize(Vector<T, 3>(T(0.0), T( 1.0), -phi)));
 
-    m_verts.push_back(normalize(Vector<T, 3>( GoldenRatio<T>(), T(0.0), T(-1.0))));
-    m_verts.push_back(normalize(Vector<T, 3>( GoldenRatio<T>(), T(0.0), T( 1.0))));
-    m_verts.push_back(normalize(Vector<T, 3>(-GoldenRatio<T>(), T(0.0), T(-1.0))));
-    m_verts.push_back(normalize(Vector<T, 3>(-GoldenRatio<T>(), T(0.0), T( 1.0))));
+    m_verts.emplace_back(normalize(Vector<T, 3>( phi, T(0.0), T(-1.0))));
+    m_verts.emplace_back(normalize(Vector<T, 3>( phi, T(0.0), T( 1.0))));
+    m_verts.emplace_back(normalize(Vector<T, 3>(-phi, T(0.0), T(-1.0))));
+    m_verts.emplace_back(normalize(Vector<T, 3>(-phi, T(0.0), T( 1.0))));
 
     // 5 faces around point 0.
-    m_tris.push_back(Tri(0, 11, 5));
-    m_tris.push_back(Tri(0, 5, 1));
-    m_tris.push_back(Tri(0, 1, 7));
-    m_tris.push_back(Tri(0, 7, 10));
-    m_tris.push_back(Tri(0, 10, 11));
+    m_tris.emplace_back(0, 11, 5);
+    m_tris.emplace_back(0, 5, 1);
+    m_tris.emplace_back(0, 1, 7);
+    m_tris.emplace_back(0, 7, 10);
+    m_tris.emplace_back(0, 10, 11);
 
     // 5 adjacent faces.
-    m_tris.push_back(Tri(1, 5, 9));
-    m_tris.push_back(Tri(5, 11, 4));
-    m_tris.push_back(Tri(11, 10, 2));
-    m_tris.push_back(Tri(10, 7, 6));
-    m_tris.push_back(Tri(7, 1, 8));
+    m_tris.emplace_back(1, 5, 9);
+    m_tris.emplace_back(5, 11, 4);
+    m_tris.emplace_back(11, 10, 2);
+    m_tris.emplace_back(10, 7, 6);
+    m_tris.emplace_back(7, 1, 8);
 
     // 5 faces around point 3.
-    m_tris.push_back(Tri(3, 9, 4));
-    m_tris.push_back(Tri(3, 4, 2));
-    m_tris.push_back(Tri(3, 2, 6));
-    m_tris.push_back(Tri(3, 6, 8));
-    m_tris.push_back(Tri(3, 8, 9));
+    m_tris.emplace_back(3, 9, 4);
+    m_tris.emplace_back(3, 4, 2);
+    m_tris.emplace_back(3, 2, 6);
+    m_tris.emplace_back(3, 6, 8);
+    m_tris.emplace_back(3, 8, 9);
 
     // 5 adjacent faces.
-    m_tris.push_back(Tri(4, 9, 5));
-    m_tris.push_back(Tri(2, 4, 11));
-    m_tris.push_back(Tri(6, 2, 10));
-    m_tris.push_back(Tri(8, 6, 7));
-    m_tris.push_back(Tri(9, 8, 1));
+    m_tris.emplace_back(4, 9, 5);
+    m_tris.emplace_back(2, 4, 11);
+    m_tris.emplace_back(6, 2, 10);
+    m_tris.emplace_back(8, 6, 7);
+    m_tris.emplace_back(9, 8, 1);
 }
 
 template <typename T>
-void SphericalImportanceSampler<T>::subdivide(const size_t subdivisions)
+void SphericalImportanceSampler<T>::subdivide(const std::size_t subdivisions)
 {
-    PointCache point_cache;
-
-    for (size_t s = 0; s < subdivisions; ++s)
+    for (std::size_t s = 0; s < subdivisions; ++s)
     {
-        const size_t tri_count = m_tris.size();
+        PointCache point_cache;
 
-        std::vector<Tri> new_tris;
-        new_tris.reserve(4 * tri_count);
-
-        for (size_t t = 0; t < tri_count; ++t)
+        for (std::size_t i = 0, e = m_tris.size(); i < e; ++i)
         {
-            const Tri& tri = m_tris[t];
+            const Tri input_tri = m_tris[i];
 
-            const size_t a = get_or_create_middle_point(point_cache, tri.m_v0, tri.m_v1);
-            const size_t b = get_or_create_middle_point(point_cache, tri.m_v1, tri.m_v2);
-            const size_t c = get_or_create_middle_point(point_cache, tri.m_v2, tri.m_v0);
+            const std::size_t a = get_or_create_middle_point(point_cache, input_tri.m_v0, input_tri.m_v1);
+            const std::size_t b = get_or_create_middle_point(point_cache, input_tri.m_v1, input_tri.m_v2);
+            const std::size_t c = get_or_create_middle_point(point_cache, input_tri.m_v2, input_tri.m_v0);
 
-            new_tris.push_back(Tri(tri.m_v0, a, c));
-            new_tris.push_back(Tri(tri.m_v1, b, a));
-            new_tris.push_back(Tri(tri.m_v2, c, b));
-            new_tris.push_back(Tri(a, b, c));
+            m_tris[i] = Tri(input_tri.m_v0, a, c);
+            m_tris.emplace_back(input_tri.m_v1, b, a);
+            m_tris.emplace_back(input_tri.m_v2, c, b);
+            m_tris.emplace_back(a, b, c);
         }
-
-        m_tris.swap(new_tris);
     }
 }
 
 template <typename T>
-size_t SphericalImportanceSampler<T>::get_or_create_middle_point(PointCache& point_cache, size_t v0, size_t v1)
+std::size_t SphericalImportanceSampler<T>::get_or_create_middle_point(PointCache& point_cache, std::size_t v0, std::size_t v1)
 {
     if (v0 > v1)
         std::swap(v0, v1);
@@ -266,7 +263,7 @@ size_t SphericalImportanceSampler<T>::get_or_create_middle_point(PointCache& poi
     const Vector<T, 3>& p1 = m_verts[v1];
     const Vector<T, 3> pm = normalize(p0 + p1);
 
-    const size_t vm = m_verts.size();
+    const std::size_t vm = m_verts.size();
     point_cache[key] = vm;
     m_verts.push_back(pm);
 
@@ -276,10 +273,10 @@ size_t SphericalImportanceSampler<T>::get_or_create_middle_point(PointCache& poi
 template <typename T>
 void SphericalImportanceSampler<T>::build_cdf()
 {
-    const size_t tri_count = m_tris.size();
+    const std::size_t tri_count = m_tris.size();
     m_cdf.reserve(tri_count);
 
-    for (size_t i = 0; i < tri_count; ++i)
+    for (std::size_t i = 0; i < tri_count; ++i)
     {
         const Tri& tri = m_tris[i];
 
