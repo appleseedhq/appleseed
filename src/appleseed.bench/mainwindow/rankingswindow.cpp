@@ -269,7 +269,10 @@ void RankingsWindow::slot_results_query_finished()
 
         try
         {
-            const QJsonDocument json_doc = QJsonDocument::fromJson(m_reply->readAll());
+            const QByteArray reply_bytes = m_reply->readAll();
+            // Keep the line below (commented), it's useful for debugging:
+            // const QString reply_string(reply_bytes);
+            const QJsonDocument json_doc = QJsonDocument::fromJson(reply_bytes);
 
             if (!json_doc.isArray())
                 throw ExceptionJsonValue();
