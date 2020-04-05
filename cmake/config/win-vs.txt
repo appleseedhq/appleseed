@@ -186,9 +186,9 @@ set (c_compiler_flags_profile
     /GL                                     # Enable link-time code generation
 )
 set (exe_linker_flags_profile
+    /DEBUG                                  # Generate Debug Info
     /LTCG                                   # Use Link Time Code Generation
     /INCREMENTAL:NO                         # Disable Incremental Linking
-    /DEBUG                                  # Generate Debug Info
 )
 set (shared_lib_linker_flags_profile
     ${exe_linker_flags_profile}
