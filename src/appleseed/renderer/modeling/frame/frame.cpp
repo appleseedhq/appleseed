@@ -1328,7 +1328,7 @@ void Frame::extract_parameters()
 
     // Retrieve tile size parameter.
     {
-        const Vector2i DefaultTileSize(64, 64);
+        const Vector2i DefaultTileSize(32, 32);
         Vector2i tile_size = m_params.get_optional<Vector2i>("tile_size", DefaultTileSize);
         if (tile_size[0] < 1 || tile_size[1] < 1)
         {
