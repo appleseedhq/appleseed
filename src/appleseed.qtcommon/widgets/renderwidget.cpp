@@ -42,6 +42,10 @@
 
 // Qt headers.
 #include <QColor>
+#include <QDragEnterEvent>
+#include <QDragMoveEvent>
+#include <QDropEvent>
+#include <QMimeData>
 #include <QMutexLocker>
 #include <Qt>
 
@@ -54,7 +58,7 @@ using namespace foundation;
 using namespace renderer;
 
 namespace appleseed {
-namespace bench {
+namespace qtcommon {
 
 //
 // RenderWidget class implementation.
@@ -73,22 +77,20 @@ RenderWidget::RenderWidget(
     setAutoFillBackground(false);
     setAttribute(Qt::WA_OpaquePaintEvent, true);
 
-    setFixedWidth(static_cast<int>(width));
-    setFixedHeight(static_cast<int>(height));
-
-    m_image =
-        QImage(
-            static_cast<int>(width),
-            static_cast<int>(height),
-            QImage::Format_RGB888);
-
-    m_image.fill(QColor(0, 0, 0));
+    resize(width, height);
 
     const char* display_name = m_ocio_config->getDefaultDisplay();
     const char* default_transform = m_ocio_config->getDefaultView(display_name);
     slot_display_transform_changed(default_transform);
 
     setAcceptDrops(true);
+}
+
+QImage RenderWidget::capture()
+{
+    QMutexLocker locker(&m_mutex);
+
+    return m_image.copy();
 }
 
 bool RenderWidget::load(const QString& filepath)
@@ -114,6 +116,32 @@ void RenderWidget::save(const QString& filepath)
     m_image.save(filepath);
 }
 
+void RenderWidget::resize(
+    const size_t    width,
+    const size_t    height)
+{
+    QMutexLocker locker(&m_mutex);
+
+    setFixedWidth(static_cast<int>(width));
+    setFixedHeight(static_cast<int>(height));
+
+    m_image =
+        QImage(
+            static_cast<int>(width),
+            static_cast<int>(height),
+            QImage::Format_RGB888);
+
+    clear();
+}
+
+void RenderWidget::clear()
+{
+    QMutexLocker locker(&m_mutex);
+
+    m_image.fill(QColor(0, 0, 0));
+    m_image_storage.reset();
+}
+
 namespace
 {
     inline std::uint8_t* get_image_pointer(QImage& image)
@@ -136,6 +164,27 @@ void RenderWidget::start_render()
     // Clear the image storage.
     if (m_image_storage)
         m_image_storage->clear(Color4f(0.0f));
+}
+
+void RenderWidget::multiply(const float multiplier)
+{
+    QMutexLocker locker(&m_mutex);
+
+    assert(multiplier >= 0.0f && multiplier <= 1.0f);
+
+    const size_t image_width = static_cast<size_t>(m_image.width());
+    const size_t image_height = static_cast<size_t>(m_image.height());
+    const size_t dest_stride = static_cast<size_t>(m_image.bytesPerLine());
+
+    std::uint8_t* dest = get_image_pointer(m_image);
+
+    for (size_t y = 0; y < image_height; ++y)
+    {
+        std::uint8_t* row = dest + y * dest_stride;
+
+        for (size_t x = 0; x < image_width * 3; ++x)
+            row[x] = truncate<std::uint8_t>(row[x] * multiplier);
+    }
 }
 
 namespace
@@ -411,5 +460,31 @@ void RenderWidget::paintEvent(QPaintEvent* event)
     m_painter.end();
 }
 
-}   // namespace bench
+void RenderWidget::dragEnterEvent(QDragEnterEvent* event)
+{
+    if (event->mimeData()->hasFormat("text/plain"))
+        event->acceptProposedAction();
+}
+
+void RenderWidget::dragMoveEvent(QDragMoveEvent* event)
+{
+    if (pos().x() <= event->pos().x() && pos().y() <= event->pos().y()
+        && event->pos().x() < pos().x() + width() && event->pos().y() < pos().y() + height())
+    {
+        event->accept();
+    }
+    else
+        event->ignore();
+}
+
+void RenderWidget::dropEvent(QDropEvent* event)
+{
+    emit signal_material_dropped(
+        Vector2d(
+            static_cast<double>(event->pos().x()) / width(),
+            static_cast<double>(event->pos().y()) / height()),
+        event->mimeData()->text());
+}
+
+}   // namespace qtcommon
 }   // namespace appleseed

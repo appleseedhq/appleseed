@@ -29,6 +29,9 @@
 
 #pragma once
 
+// appleseed.qtcommon headers.
+#include "widgets/icapturablewidget.h"
+
 // appleseed.foundation headers.
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
@@ -42,6 +45,7 @@ namespace OCIO = OCIO_NAMESPACE;
 #include <QImage>
 #include <QMutex>
 #include <QPainter>
+#include <QString>
 #include <QWidget>
 
 // Standard headers.
@@ -52,10 +56,13 @@ namespace OCIO = OCIO_NAMESPACE;
 // Forward declarations.
 namespace foundation    { class CanvasProperties; }
 namespace renderer      { class Frame; }
+class QDragEnterEvent;
+class QDragMoveEvent;
+class QDropEvent;
 class QPaintEvent;
 
 namespace appleseed {
-namespace bench {
+namespace qtcommon {
 
 //
 // A render widget based on QImage.
@@ -63,6 +70,7 @@ namespace bench {
 
 class RenderWidget
   : public QWidget
+  , public qtcommon::ICapturableWidget
 {
     Q_OBJECT
 
@@ -75,14 +83,28 @@ class RenderWidget
         QWidget*                    parent = nullptr);
 
     // Thread-safe.
+    QImage capture() override;
+
+    // Thread-safe.
     // Returns true on success, false otherwise.
     bool load(const QString& filepath);
 
     // Thread-safe.
     void save(const QString& filepath);
 
+    // Thread-safe.
+    void resize(
+        const size_t            width,
+        const size_t            height);
+
+    // Thread-safe.
+    void clear();
+
     // Called before rendering begins.
     void start_render();
+
+    // Thread-safe.
+    void multiply(const float multiplier);
 
     // Thread-safe.
     void highlight_tile(
@@ -100,6 +122,15 @@ class RenderWidget
 
     // Thread-safe.
     void blit_frame(const renderer::Frame& frame);
+
+    // Direct access to internals for high-performance drawing.
+    QMutex& mutex();
+    QImage& image();
+
+  signals:
+    void signal_material_dropped(
+        const foundation::Vector2d&     drop_pos,
+        const QString&                  material_name);
 
   public slots:
     void slot_display_transform_changed(const QString& transform);
@@ -127,7 +158,25 @@ class RenderWidget
         const size_t            tile_y);
 
     void paintEvent(QPaintEvent* event) override;
+    void dragEnterEvent(QDragEnterEvent* event) override;
+    void dragMoveEvent(QDragMoveEvent* event) override;
+    void dropEvent(QDropEvent* event) override;
 };
 
-}   // namespace bench
+
+//
+// RenderWidget class implementation.
+//
+
+inline QMutex& RenderWidget::mutex()
+{
+    return m_mutex;
+}
+
+inline QImage& RenderWidget::image()
+{
+    return m_image;
+}
+
+}   // namespace qtcommon
 }   // namespace appleseed

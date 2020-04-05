@@ -32,11 +32,8 @@
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-
 // Forward declarations.
-namespace appleseed { namespace studio { class RenderWidget; } }
+namespace appleseed { namespace qtcommon { class RenderWidget; } }
 
 namespace appleseed {
 namespace studio {
@@ -46,7 +43,7 @@ class QtTileCallbackFactory
 {
   public:
     // Constructor.
-    explicit QtTileCallbackFactory(RenderWidget* render_widget);
+    explicit QtTileCallbackFactory(qtcommon::RenderWidget* render_widget);
 
     // Delete this instance.
     void release() override;
@@ -55,7 +52,7 @@ class QtTileCallbackFactory
     renderer::ITileCallback* create() override;
 
   private:
-    RenderWidget* m_render_widget;
+    qtcommon::RenderWidget* m_render_widget;
 };
 
 }   // namespace studio

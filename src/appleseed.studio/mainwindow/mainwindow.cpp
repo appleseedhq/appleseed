@@ -40,13 +40,13 @@
 #include "mainwindow/project/projectexplorer.h"
 #include "mainwindow/pythonconsole/pythonconsolewidget.h"
 #include "mainwindow/rendering/lightpathstab.h"
-#include "mainwindow/rendering/renderwidget.h"
 #include "utility/settingskeys.h"
 
 // appleseed.qtcommon headers.
 #include "utility/interop.h"
 #include "utility/miscellaneous.h"
 #include "widgets/logwidget.h"
+#include "widgets/renderwidget.h"
 
 // appleseed.common headers.
 #include "application/application.h"

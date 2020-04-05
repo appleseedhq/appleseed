@@ -32,7 +32,6 @@
 #include "mainwindow/applicationsettingswindow.h"
 #include "mainwindow/rankingswindow.h"
 #include "mainwindow/rendering/renderingmanager.h"
-#include "mainwindow/rendering/renderwidget.h"
 #include "mainwindow/renderingtimedisplay.h"
 #include "mainwindow/scalingtestparams.h"
 #include "mainwindow/throttlingtestparams.h"
@@ -41,6 +40,7 @@
 // appleseed.qtcommon headers.
 #include "project/projectmanager.h"
 #include "widgets/qtlogtarget.h"
+#include "widgets/renderwidget.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/utility.h"
@@ -123,7 +123,7 @@ class MainWindow
     QShortcut*                                  m_start_throttling_test_shortcut;
 
     std::unique_ptr<qtcommon::QtLogTarget>      m_log_target;
-    std::unique_ptr<RenderWidget>               m_render_widget;
+    std::unique_ptr<qtcommon::RenderWidget>     m_render_widget;
     std::unique_ptr<qtcommon::ChartWidget>      m_chart_widget;
     qtcommon::ChartBase*                        m_chart = nullptr;
     QMutex                                      m_chart_mutex;

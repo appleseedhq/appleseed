@@ -41,6 +41,8 @@
 #include <Qt>
 #include <QWidget>
 
+using namespace appleseed::qtcommon;
+
 namespace appleseed {
 namespace studio {
 

@@ -32,10 +32,10 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/projectexplorer.h"
-#include "mainwindow/rendering/renderwidget.h"
 
 // appleseed.qtcommon headers.
 #include "utility/miscellaneous.h"
+#include "widgets/renderwidget.h"
 
 // appleseed.renderer headers.
 #include "renderer/api/frame.h"

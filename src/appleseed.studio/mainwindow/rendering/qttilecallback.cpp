@@ -30,8 +30,8 @@
 // Interface header.
 #include "qttilecallback.h"
 
-// appleseed.studio headers.
-#include "mainwindow/rendering/renderwidget.h"
+// appleseed.qtcommon headers.
+#include "widgets/renderwidget.h"
 
 // Qt headers.
 #include <QObject>
@@ -45,6 +45,7 @@
 // Forward declarations.
 namespace renderer  { class Frame; }
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 
