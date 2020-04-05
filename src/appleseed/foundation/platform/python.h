@@ -52,6 +52,8 @@
 namespace foundation
 {
 
+// This is needed for Boost.Python to consider foundation::auto_release_ptr<> as a smart pointer.
+// When defined, you can use foundation::auto_release_ptr<> as a holder in bpy::class<>.
 template <typename T>
 T* get_pointer(const auto_release_ptr<T>& p)
 {
