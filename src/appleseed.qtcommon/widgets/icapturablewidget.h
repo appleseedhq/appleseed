@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2020 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,35 +28,19 @@
 
 #pragma once
 
-// appleseed.qtcommon headers.
-#include "widgets/icapturablewidget.h"
-
-// Qt headers.
-#include <QObject>
-
 // Forward declarations.
-class QEvent;
-class QWidget;
+class QImage;
 
 namespace appleseed {
-namespace studio {
+namespace qtcommon {
 
-class RenderClipboardHandler
-  : public QObject
+class ICapturableWidget
 {
-    Q_OBJECT
-
   public:
-    RenderClipboardHandler(QWidget* widget, qtcommon::ICapturableWidget* capturable_widget);
+    virtual ~ICapturableWidget() = default;
 
-    ~RenderClipboardHandler() override;
-
-  private:
-    QWidget*                        m_widget;
-    qtcommon::ICapturableWidget*    m_capturable_widget;
-
-    bool eventFilter(QObject* object, QEvent* event) override;
+    virtual QImage capture() = 0;
 };
 
-}   // namespace studio
+}   // namespace qtcommon
 }   // namespace appleseed

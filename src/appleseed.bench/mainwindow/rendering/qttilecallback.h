@@ -32,9 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/api/rendering.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-
 // Qt headers.
 #include <QObject>
 #include <QtGlobal>
@@ -44,7 +41,7 @@
 #include <cstdint>
 
 // Forward declarations.
-namespace appleseed { namespace bench { class RenderWidget; } }
+namespace appleseed { namespace qtcommon { class RenderWidget; } }
 namespace renderer  { class Frame; }
 
 namespace appleseed {
@@ -57,7 +54,7 @@ class QtTileCallback
     Q_OBJECT
 
   public:
-    explicit QtTileCallback(RenderWidget* render_widget);
+    explicit QtTileCallback(qtcommon::RenderWidget* render_widget);
 
     void release() override;
 
@@ -89,7 +86,7 @@ class QtTileCallback
         const quint64           samples_per_second);
 
   private:
-    RenderWidget* m_render_widget;
+    qtcommon::RenderWidget* m_render_widget;
 };
 
 class QtTileCallbackFactory
@@ -100,7 +97,7 @@ class QtTileCallbackFactory
 
   public:
     // Constructor.
-    explicit QtTileCallbackFactory(RenderWidget* render_widget);
+    explicit QtTileCallbackFactory(qtcommon::RenderWidget* render_widget);
 
     // Delete this instance.
     void release() override;
@@ -116,7 +113,7 @@ class QtTileCallbackFactory
         const quint64           samples_per_second);
 
   private:
-    RenderWidget* m_render_widget;
+    qtcommon::RenderWidget* m_render_widget;
 };
 
 }   // namespace bench

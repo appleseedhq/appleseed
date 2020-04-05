@@ -35,7 +35,6 @@
 // appleseed.bench headers.
 #include "help/about/aboutwindow.h"
 #include "mainwindow/rankingswindow.h"
-#include "mainwindow/rendering/renderwidget.h"
 #include "utility/backendapi.h"
 #include "utility/formatrendertime.h"
 #include "utility/settingskeys.h"

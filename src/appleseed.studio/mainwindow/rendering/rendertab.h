@@ -55,9 +55,9 @@ namespace OCIO = OCIO_NAMESPACE;
 #include <memory>
 
 // Forward declarations.
+namespace appleseed { namespace qtcommon { class RenderWidget; } }
 namespace appleseed { namespace studio { class ProjectExplorer; } }
 namespace appleseed { namespace studio { class RenderingManager; } }
-namespace appleseed { namespace studio { class RenderWidget; } }
 namespace renderer  { class Project; }
 class QComboBox;
 class QLabel;
@@ -86,7 +86,7 @@ class RenderTab
         RenderingManager&       rendering_manager,
         OCIO::ConstConfigRcPtr  ocio_config);
 
-    RenderWidget* get_render_widget() const;
+    qtcommon::RenderWidget* get_render_widget() const;
     CameraController* get_camera_controller() const;
     ScenePickingHandler* get_scene_picking_handler() const;
 
@@ -132,7 +132,7 @@ class RenderTab
     void slot_toggle_pixel_inspector(const bool checked);
 
   private:
-    RenderWidget*                                       m_render_widget;
+    qtcommon::RenderWidget*                             m_render_widget;
     QScrollArea*                                        m_scroll_area;
     QToolBar*                                           m_toolbar;
     QToolButton*                                        m_set_render_region_button;

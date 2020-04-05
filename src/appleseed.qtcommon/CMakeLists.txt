@@ -86,6 +86,7 @@ set (widgets_sources
     widgets/doubleslider.h
     widgets/foldablepanelwidget.cpp
     widgets/foldablepanelwidget.h
+    widgets/icapturablewidget.h
     widgets/logwidget.cpp
     widgets/logwidget.h
     widgets/mousecoordinatestracker.cpp
@@ -94,6 +95,8 @@ set (widgets_sources
     widgets/mousewheelfocuseventfilter.h
     widgets/qtlogtarget.cpp
     widgets/qtlogtarget.h
+    widgets/renderwidget.cpp
+    widgets/renderwidget.h
     widgets/scrollareapanhandler.cpp
     widgets/scrollareapanhandler.h
     widgets/treewidget.cpp

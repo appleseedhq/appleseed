@@ -30,8 +30,8 @@
 // Interface header.
 #include "qttilecallback.h"
 
-// appleseed.bench headers.
-#include "mainwindow/rendering/renderwidget.h"
+// appleseed.qtcommon headers.
+#include "widgets/renderwidget.h"
 
 // Qt headers.
 #include <Qt>
@@ -39,6 +39,7 @@
 // Standard headers.
 #include <cassert>
 
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 

@@ -32,8 +32,10 @@
 
 // appleseed.bench headers.
 #include "mainwindow/rendering/qttilecallback.h"
-#include "mainwindow/rendering/renderwidget.h"
 #include "mainwindow/renderingtimedisplay.h"
+
+// appleseed.qtcommon headers.
+#include "widgets/renderwidget.h"
 
 // appleseed.common headers.
 #include "application/application.h"
@@ -65,6 +67,7 @@
 #include <cstddef>
 
 using namespace appleseed::common;
+using namespace appleseed::qtcommon;
 using namespace foundation;
 using namespace renderer;
 namespace bf = boost::filesystem;

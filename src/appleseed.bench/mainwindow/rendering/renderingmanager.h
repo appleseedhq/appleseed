@@ -54,8 +54,8 @@
 #include <memory>
 
 // Forward declarations.
-namespace appleseed     { namespace bench { class RenderWidget; } }
 namespace appleseed     { namespace bench { class RenderingTimeDisplay; } }
+namespace appleseed     { namespace qtcommon { class RenderWidget; } }
 namespace renderer      { class Project; }
 
 namespace appleseed {
@@ -81,7 +81,7 @@ class RenderingManager
         renderer::Project*              project,
         const renderer::ParamArray&     params,
         const RenderingMode             rendering_mode,
-        RenderWidget*                   render_widget);
+        qtcommon::RenderWidget*         render_widget);
 
     // Return true if currently rendering, false otherwise.
     bool is_rendering() const;
@@ -117,7 +117,7 @@ class RenderingManager
     renderer::ParamArray                        m_params;
     foundation::SearchPaths                     m_resource_search_paths;
     RenderingMode                               m_rendering_mode;
-    RenderWidget*                               m_render_widget;
+    qtcommon::RenderWidget*                     m_render_widget;
 
     std::unique_ptr<renderer::TileCallbackCollectionFactory>
                                                 m_tile_callback_factory;

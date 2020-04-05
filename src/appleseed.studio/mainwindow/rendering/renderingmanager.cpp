@@ -34,8 +34,10 @@
 #include "mainwindow/rendering/cameracontroller.h"
 #include "mainwindow/rendering/qttilecallback.h"
 #include "mainwindow/rendering/rendertab.h"
-#include "mainwindow/rendering/renderwidget.h"
 #include "mainwindow/statusbar.h"
+
+// appleseed.qtcommon headers.
+#include "widgets/renderwidget.h"
 
 // appleseed.common headers.
 #include "application/application.h"
