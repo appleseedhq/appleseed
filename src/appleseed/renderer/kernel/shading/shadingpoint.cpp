@@ -587,9 +587,7 @@ void ShadingPoint::compute_screen_space_partial_derivatives() const
     //   Physically Based Rendering, second edition, pp. 506-509
     //
 
-    const ShadingRay& ray = get_ray();
-
-    if (!ray.m_has_differentials)
+    if (!m_ray.m_has_differentials)
     {
         m_dpdx = Vector3d(0.0);
         m_dpdy = Vector3d(0.0);
@@ -602,8 +600,8 @@ void ShadingPoint::compute_screen_space_partial_derivatives() const
     const Vector3d& n = get_original_shading_normal();
 
     double tx, ty;
-    if (!intersect(ray.m_rx, p, n, tx) ||
-        !intersect(ray.m_ry, p, n, ty))
+    if (!intersect(m_ray.m_rx, p, n, tx) ||
+        !intersect(m_ray.m_ry, p, n, ty))
     {
         m_dpdx = Vector3d(0.0);
         m_dpdy = Vector3d(0.0);
@@ -612,8 +610,8 @@ void ShadingPoint::compute_screen_space_partial_derivatives() const
         return;
     }
 
-    m_dpdx = ray.m_rx.point_at(tx) - p;
-    m_dpdy = ray.m_ry.point_at(ty) - p;
+    m_dpdx = m_ray.m_rx.point_at(tx) - p;
+    m_dpdy = m_ray.m_ry.point_at(ty) - p;
 
     // Select the two axes along which the normal has the smallest components.
     static const size_t Axes[3][2] = { {1, 2}, {0, 2}, {0, 1} };
@@ -1041,25 +1039,24 @@ void ShadingPoint::initialize_osl_shader_globals(
 
     if (!(m_members & HasOSLShaderGlobals))
     {
-        const ShadingRay& ray = get_ray();
-        assert(is_normalized(ray.m_dir));
+        assert(is_normalized(m_ray.m_dir));
 
         // Surface position and incident ray direction.
         m_shader_globals.P = Vector3f(get_point());
-        m_shader_globals.I = Vector3f(ray.m_dir);
+        m_shader_globals.I = Vector3f(m_ray.m_dir);
 
         m_shader_globals.flipHandedness =
             m_assembly_instance_transform_seq->swaps_handedness(m_assembly_instance_transform) !=
             get_object_instance().get_render_data().m_transform_swaps_handedness ? 1 : 0;
 
         // Surface position and incident ray direction differentials.
-        if (ray.m_has_differentials)
+        if (m_ray.m_has_differentials)
         {
             m_shader_globals.dPdx = Vector3f(get_dpdx());
             m_shader_globals.dPdy = Vector3f(get_dpdy());
             m_shader_globals.dPdz = Vector3f(0.0);
-            m_shader_globals.dIdx = Vector3f(ray.m_rx.m_dir - ray.m_dir);
-            m_shader_globals.dIdy = Vector3f(ray.m_ry.m_dir - ray.m_dir);
+            m_shader_globals.dIdx = Vector3f(m_ray.m_rx.m_dir - m_ray.m_dir);
+            m_shader_globals.dIdy = Vector3f(m_ray.m_ry.m_dir - m_ray.m_dir);
         }
         else
         {
@@ -1079,7 +1076,7 @@ void ShadingPoint::initialize_osl_shader_globals(
         const Vector2f& uv = get_uv(0);
         m_shader_globals.u = uv[0];
         m_shader_globals.v = uv[1];
-        if (ray.m_has_differentials)
+        if (m_ray.m_has_differentials)
         {
             const Vector2f& duvdx = get_duvdx(0);
             const Vector2f& duvdy = get_duvdy(0);
@@ -1101,7 +1098,7 @@ void ShadingPoint::initialize_osl_shader_globals(
         m_shader_globals.dPdv = Vector3f(get_dpdv(0));
 
         // Time and its derivative.
-        m_shader_globals.time = ray.m_time.m_absolute;
+        m_shader_globals.time = m_ray.m_time.m_absolute;
         m_shader_globals.dtime = m_scene->get_render_data().m_active_camera->get_shutter_time_interval();
 
         // Velocity vector.
