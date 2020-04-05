@@ -68,7 +68,7 @@ CPURenderDevice::CPURenderDevice(
 
     RENDERER_LOG_DEBUG("creating oiio texture system...");
     m_texture_system = OIIOTextureSystemFactory::create(false);
-    m_texture_system->attribute("automip", 0);
+    m_texture_system->attribute("automip", 1);
     m_texture_system->attribute("accept_untiled", 1);
     m_texture_system->attribute("accept_unmipped", 1);
     m_texture_system->attribute("gray_to_rgb", 1);
