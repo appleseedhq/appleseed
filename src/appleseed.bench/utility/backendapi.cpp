@@ -62,7 +62,9 @@ namespace bench {
 //
 // Setup:
 //
-//   1. Retrieve the API key (in the form of a Base64 string) from the backend API's configuration page.
+//   1. Retrieve from the backend API's configuration page:
+//        - the API URL (append %1?apiKey=%2 to it)
+//        - the API key (in the form of a Base64 string)
 //
 //   2. Generate a new encryption key:
 //        a. Go to https://www.random.org/cgi-bin/randbyte?nbytes=16&format=h
@@ -86,11 +88,11 @@ namespace bench {
 //             const QString encrypted_api_url = get_encrypted_api_url();
 //             const QString encrypted_api_key = get_encrypted_api_key();
 //        b. Set a breakpoint on the next line
-//        c. Build appleseed.bench in Debug mode and run it
+//        c. Build appleseed.bench in Debug mode and run it (make sure you have Qt Visual Studio Tools installed)
 //        d. Capture and copy the values of the `encrypted_api_url` and `encrypted_api_key` variables
 //        e. Comment again the two lines uncommented on step a and remove the breakpoint
 //
-//   6. Run CMake a second time to replace the API URL and API key by their encrypted counterparts:
+//   6. Run CMake a second time to replace the API URL and API key by their encrypted versions:
 //        cmake
 //            -DAPPLESEED_BENCH_BACKEND_API_URL=<encrypted API URL in Base64>
 //            -DAPPLESEED_BENCH_BACKEND_API_KEY=<encrypted API key in Base64>
