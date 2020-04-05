@@ -1236,8 +1236,10 @@ shader as_triplanar
         out_color += blending[2] * in_z_axis_color;
         out_alpha += blending[2];
     }
+
     out_normal = normalize(out_normal);
 
-    if (dot(out_normal, N) < 0.0) out_normal *= normal(-1);
+    if (dot(out_normal, N) < 0.0)
+        out_normal *= normal(-1);
 }
 
