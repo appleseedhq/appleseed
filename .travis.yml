@@ -49,7 +49,7 @@ install:
   - if [ -n "$GCC_VERSION" ]; then export CC="${CC}-${GCC_VERSION}"; fi
   - if [ -n "$GCC_VERSION" ]; then export CXX="${CXX}-${GCC_VERSION}"; fi
   - if [ -n "$CLANG_VERSION" ]; then export CC="clang-${CLANG_VERSION}"; fi
-  - if [ -n "$CLANG_VERSION" ]; then export CXX="clang-${CLANG_VERSION}"; fi
+  - if [ -n "$CLANG_VERSION" ]; then export CXX="clang-cpp-${CLANG_VERSION}"; fi
 
 matrix:
   fast_finish: true
@@ -65,7 +65,7 @@ matrix:
     
     - os: linux
       compiler: clang
-      env: CLANG_VERSION=6
+      env: CLANG_VERSION=6.0
 
     - os: osx
       compiler: clang
