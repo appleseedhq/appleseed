@@ -78,23 +78,11 @@ echo "Building appleseed..."
 mkdir build
 pushd build
 
-VAR_C_COMPILER=gcc
-VAR_CXX_COMPILER=g++
-if [-n "$GCC_VERSION"]; then
-  VAR_C_COMPILER=gcc
-  VAR_CXX_COMPILER=g++
-elif [-n "$CLANG_VERSION"]; then
-  VAR_C_COMPILER=clang
-  VAR_CXX_COMPILER=clang++
-fi
-
 # Disney material support is not enabled because Travis/Linux (Xenial) has Qt 5.5.1
 # while libSeExprEditor.so from the linux-deps package was built against Qt 5.12.0.
 cmake \
     -Wno-dev \
     -DCMAKE_BUILD_TYPE=Debug \
-    -DCMAKE_C_COMPILER=$VAR_C_COMPILER \
-    -DCMAKE_CXX_COMPILER=$VAR_CXX_COMPILER \
     -DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" \
     -DWITH_EMBREE=ON \
     -DUSE_SSE42=ON \
