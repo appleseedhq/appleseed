@@ -40,6 +40,7 @@ addons:
       - g++-6
       - gcc-7
       - g++-7
+      - clang-6.0
       - python2.7-dev
       - qtbase5-dev
       - libqt5opengl5-dev
@@ -59,6 +60,10 @@ matrix:
     - os: linux
       compiler: gcc
       env: GCC_VERSION=7
+    
+    - os: linux
+      compiler: clang
+      env: CLANG_VERSION=6
 
     - os: osx
       compiler: clang
