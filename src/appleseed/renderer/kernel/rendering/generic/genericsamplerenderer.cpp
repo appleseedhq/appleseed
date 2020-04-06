@@ -133,8 +133,8 @@ namespace
         {
             // 1/4 of a pixel, like in RenderMan RIS.
             const CanvasProperties& c = frame.image().properties();
-            m_image_point_dx = Vector2d(1.0 / (4.0 * c.m_canvas_width), 0.0);
-            m_image_point_dy = Vector2d(0.0, -1.0 / (4.0 * c.m_canvas_height));
+            m_image_point_dx = Vector2d(1.0 / (2.0 * c.m_canvas_width), 0.0);
+            m_image_point_dy = Vector2d(0.0, -1.0 / (2.0 * c.m_canvas_height));
         }
 
         ~GenericSampleRenderer() override
