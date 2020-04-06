@@ -99,6 +99,7 @@ set (mainwindow_sources
     mainwindow/applicationsettingswindow.cpp
     mainwindow/applicationsettingswindow.h
     mainwindow/applicationsettingswindow.ui
+    mainwindow/constants.h
     mainwindow/mainwindow.cpp
     mainwindow/mainwindow.h
     mainwindow/mainwindow.ui

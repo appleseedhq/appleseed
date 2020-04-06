@@ -33,6 +33,7 @@
 #include "ui_rankingswindow.h"
 
 // appleseed.bench headers.
+#include "mainwindow/constants.h"
 #include "utility/backendapi.h"
 #include "utility/formatrendertime.h"
 #include "utility/systeminfo.h"
@@ -299,6 +300,16 @@ void RankingsWindow::slot_results_query_finished()
                     RENDERER_LOG_WARNING("skipping malformed benchmark result:\n%s", json.constData());
                     continue;
                 }
+
+                // Skip results for other versions of the core engine (anything that would impact performance).
+                if (result.m_benchmark_version != BenchmarkVersion)
+                    continue;
+
+#ifndef APPLESEED_DEBUG
+                // Skip results for other benchmark scenes (such as the Cornell Box used in debug builds).
+                if (result.m_benchmark_scene_id != BenchmarkSceneIdFetch1)
+                    continue;
+#endif
 
                 const QString cleaned_up_cpu_model = SystemInfo::cleanup_cpu_model_string(result.m_cpu_model);
                 const bool is_amd_cpu = cleaned_up_cpu_model.contains("amd", Qt::CaseInsensitive);

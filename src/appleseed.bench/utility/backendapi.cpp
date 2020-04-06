@@ -109,6 +109,7 @@ namespace bench {
 //
 
 #ifndef APPLESEED_SHIP
+#ifdef APPLESEED_BENCH_ENCRYPTION_KEY
 
 void generate_encryption_key_cpp_file()
 {
@@ -171,6 +172,7 @@ QString get_encrypted_api_key()
     return encrypt(api_key).toBase64();
 }
 
+#endif
 #endif
 
 QByteArray decrypt(const QByteArray& input)

@@ -34,6 +34,7 @@
 
 // appleseed.bench headers.
 #include "help/about/aboutwindow.h"
+#include "mainwindow/constants.h"
 #include "mainwindow/rankingswindow.h"
 #include "utility/backendapi.h"
 #include "utility/formatrendertime.h"
@@ -106,26 +107,24 @@ namespace bench {
 // MainWindow class implementation.
 //
 
-#ifndef NDEBUG
-#define FAST_DEBUG_MODE
+// Use a simpler scene and lower rendering quality in debug builds.
+#ifdef APPLESEED_DEBUG
+    #define FAST_DEBUG_MODE
 #endif
 
-#ifdef APPLESEED_SHIP
-#ifdef APPLESEED_WITH_SPECTRAL_SUPPORT
-#error appleseed.bench must be built without spectral support for maximum performance.
-#endif
+// Enable result submission only for properly-configured builds.
+#undef ENABLE_RESULT_SUBMISSION
+#if defined APPLESEED_DEBUG
+    // Enabling result submission in debug builds allows to debug the submission process.
+    #define ENABLE_RESULT_SUBMISSION
+#elif defined APPLESEED_SHIP
+    #ifndef APPLESEED_WITH_SPECTRAL_SUPPORT
+        #define ENABLE_RESULT_SUBMISSION
+    #endif
 #endif
 
 namespace
 {
-    const int BenchmarkVersion = 1;
-
-#ifdef FAST_DEBUG_MODE
-    const char* BenchmarkSceneId = "builtin:cornell_box";
-#else
-    const char* BenchmarkSceneId = "fetch1";
-#endif
-
     void show_init_error_and_terminate(QWidget* parent, const QString& text)
     {
         QMessageBox msgbox(parent);
@@ -183,6 +182,21 @@ MainWindow::MainWindow(QWidget* parent)
     m_is_genuine_project = project_file_hash == "r6hBin5zBvQ6O6nU8TfuEVyKJRs=";
     m_project_manager.load_project_async(project_filepath);
 #endif
+
+#ifdef ENABLE_RESULT_SUBMISSION
+    if (m_is_genuine_project)
+        m_ui->label_result_submission_warning->setVisible(false);
+    else
+    {
+        m_ui->label_result_submission_warning->setText("Benchmark scene has been altered. Result submission is disabled.");
+        m_ui->label_result_submission_warning->setVisible(true);
+    }
+#else
+    m_ui->label_result_submission_warning->setText("Result submission is disabled in this build.");
+    m_ui->label_result_submission_warning->setVisible(true);
+#endif
+
+    assert(!m_ui->pushbutton_results_submit->isEnabled());
 }
 
 MainWindow::~MainWindow()
@@ -204,7 +218,7 @@ void MainWindow::build_menus()
         connect(m_ui->action_file_exit, &QAction::triggered, this, &MainWindow::close);
     }
 
-#ifndef NDEBUG
+#ifdef APPLESEED_DEBUG
 
     {
         //
@@ -733,7 +747,11 @@ void MainWindow::submit_result()
     BenchmarkResult result;
     result.m_submission_datetime_utc = QDateTime::currentDateTimeUtc();
     result.m_benchmark_version = BenchmarkVersion;
-    result.m_benchmark_scene_id = BenchmarkSceneId;
+#ifdef FAST_DEBUG_MODE
+    result.m_benchmark_scene_id = BenchmarkSceneIdCornellBox;
+#else
+    result.m_benchmark_scene_id = BenchmarkSceneIdFetch1;
+#endif
     result.m_cpu_model = m_system_info.get_cpu_id();
     result.m_enabled_cpu_core_count = m_system_info.get_enabled_cpu_core_count();
     result.m_cpu_thread_count = m_system_info.get_cpu_thread_count();
@@ -990,7 +1008,10 @@ void MainWindow::slot_rendering_success()
         {
             m_benchmarking_mode = BenchmarkingMode::None;
 
-            m_ui->pushbutton_results_submit->setEnabled(true);
+#ifdef ENABLE_RESULT_SUBMISSION
+            m_ui->pushbutton_results_submit->setEnabled(m_is_genuine_project);
+#endif
+
             update_benchmark_controls();
         }
         break;
@@ -1121,9 +1142,9 @@ void MainWindow::slot_export_chart()
 
 void MainWindow::slot_submit_result()
 {
+#ifdef ENABLE_RESULT_SUBMISSION
     if (m_is_genuine_project)
     {
-#ifdef APPLESEED_SHIP
         QMessageBox msgbox(this);
         msgbox.setWindowTitle("Submit Result?");
         msgbox.setIcon(QMessageBox::Information);
@@ -1133,24 +1154,14 @@ void MainWindow::slot_submit_result()
         msgbox.setStandardButtons(QMessageBox::Ok | QMessageBox::Cancel);
         if (msgbox.exec() == QMessageBox::Ok)
             submit_result();
-#else
-        QMessageBox msgbox(this);
-        msgbox.setWindowTitle("Result Submission Disabled");
-        msgbox.setIcon(QMessageBox::Information);
-        msgbox.setText("Result submission is disabled by default in build configurations other than \"Ship\".");
-        msgbox.setStandardButtons(QMessageBox::Ok);
-        msgbox.exec();
-#endif
     }
     else
     {
-        QMessageBox msgbox(this);
-        msgbox.setWindowTitle("Benchmark Scene Altered");
-        msgbox.setIcon(QMessageBox::Warning);
-        msgbox.setText("The benchmark scene appears to have been altered. Result submission is not permitted.");
-        msgbox.setStandardButtons(QMessageBox::Ok);
-        msgbox.exec();
+        assert(!"This should never happen.");
     }
+#else
+    assert(!"This should never happen.");
+#endif
 }
 
 void MainWindow::slot_result_submit_query_finished()
