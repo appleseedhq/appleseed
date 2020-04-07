@@ -152,6 +152,8 @@ void SampleGeneratorJob::execute(const size_t thread_index)
         acquired_sample_count,
         abortable ? "" : " (non-abortable)",
         pretty_time(t2 - t1).c_str());
+#else
+    (void)(m_job_index);
 #endif
 
     // Reschedule this job.
