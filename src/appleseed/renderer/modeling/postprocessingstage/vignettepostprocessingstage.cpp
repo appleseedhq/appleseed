@@ -56,12 +56,8 @@ namespace
     const char* Model = "vignette_post_processing_stage";
 
     static constexpr float DefaultIntensity = 0.5f;
-    static constexpr float MinIntensity = 0.0f;
-    static constexpr float MaxIntensity = 1.0f;
 
     static constexpr float DefaultAnisotropy = 0.0f;
-    static constexpr float MinAnisotropy = 0.0f;
-    static constexpr float MaxAnisotropy = 1.0f;
 
     class VignettePostProcessingStage
       : public PostProcessingStage

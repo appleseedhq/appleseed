@@ -211,7 +211,14 @@ namespace
                 // Operators.
                 .def(bpy::self += bpy::self)
                 .def(bpy::self + bpy::self)
+#ifdef __clang__
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wself-assign-overloaded"
+#endif
                 .def(bpy::self -= bpy::self)
+#ifdef __clang__
+    #pragma clang diagnostic pop
+#endif
                 .def(bpy::self - bpy::self)
 
                 .def(bpy::self *= T())

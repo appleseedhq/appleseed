@@ -57,7 +57,7 @@ class CommandLineHandler
 
     // Constructor.
     CommandLineHandler();
-
+    using CommandLineHandlerBase::parse;
     // Parse the application's command line.
     void parse(
         const int               argc,
