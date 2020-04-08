@@ -114,7 +114,10 @@ LocalSampleAccumulationBuffer::~LocalSampleAccumulationBuffer()
     delete[] m_remaining_pixels;
 
     for (size_t i = 0, e = m_levels.size(); i < e; ++i)
+    {
         delete m_levels[i];
+        delete m_read_levels[i];
+    }
 }
 
 void LocalSampleAccumulationBuffer::clear()
@@ -252,6 +255,13 @@ void LocalSampleAccumulationBuffer::develop_to_frame(
     RENDERER_LOG_DEBUG("develop_to_frame: acquiring lock: %f", t1 * 1000.0);
 #endif
 
+    // Copy tile first so the critical section can end before doing the expensive develop_to_tile.
+    const AccumulatorTile& level = *m_levels[m_active_level];
+    AccumulatorTile& read_level = *m_read_levels[m_active_level];
+    read_level.copy_from(level);
+
+    m_lock.unlock_write();
+
     Image& color_image = frame.image();
 
     const CanvasProperties& frame_props = color_image.properties();
@@ -260,8 +270,6 @@ void LocalSampleAccumulationBuffer::develop_to_frame(
     assert(frame_props.m_channel_count == 4);
 
     const AABB2u& crop_window = frame.get_crop_window();
-
-    const AccumulatorTile& level = *m_levels[m_active_level];
 
     for (size_t ty = 0; ty < frame_props.m_tile_count_y; ++ty)
     {
@@ -287,14 +295,12 @@ void LocalSampleAccumulationBuffer::develop_to_frame(
                 color_tile,
                 frame_props.m_canvas_width,
                 frame_props.m_canvas_height,
-                level,
+                read_level,
                 origin_x,
                 origin_y,
                 rect);
         }
     }
-
-    m_lock.unlock_write();
 
 #ifdef PRINT_DETAILED_PERF_REPORTS
     sw.measure();
