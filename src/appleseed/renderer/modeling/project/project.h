@@ -49,7 +49,6 @@
 #include "renderer/modeling/surfaceshader/surfaceshadertraits.h"
 #include "renderer/modeling/texture/texturetraits.h"
 #include "renderer/modeling/volume/volumetraits.h"
-#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/memory/autoreleaseptr.h"
@@ -81,6 +80,7 @@ namespace renderer      { class LightPathRecorder; }
 namespace renderer      { class Material; }
 namespace renderer      { class Object; }
 namespace renderer      { class OnFrameBeginRecorder; }
+namespace renderer      { class ParamArray; }
 namespace renderer      { class PluginStore; }
 namespace renderer      { class PostProcessingStage; }
 namespace renderer      { class Scene; }
