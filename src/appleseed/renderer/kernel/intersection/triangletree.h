@@ -35,7 +35,6 @@
 #include "renderer/kernel/intersection/probevisitorbase.h"
 #include "renderer/kernel/intersection/trianglekey.h"
 #include "renderer/kernel/intersection/trianglevertexinfo.h"
-#include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/visibilityflags.h"
 
 // appleseed.foundation headers.
