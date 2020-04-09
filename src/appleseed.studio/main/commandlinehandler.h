@@ -58,6 +58,9 @@ class CommandLineHandler
     // Constructor.
     CommandLineHandler();
 
+    // Prevent hidden overload.
+    using CommandLineHandlerBase::parse;
+    
     // Parse the application's command line.
     void parse(
         const int               argc,

@@ -40,6 +40,7 @@ addons:
       - g++-6
       - gcc-7
       - g++-7
+      - clang-8
       - python2.7-dev
       - qtbase5-dev
       - libqt5opengl5-dev
@@ -47,6 +48,8 @@ addons:
 install:
   - if [ -n "$GCC_VERSION" ]; then export CC="${CC}-${GCC_VERSION}"; fi
   - if [ -n "$GCC_VERSION" ]; then export CXX="${CXX}-${GCC_VERSION}"; fi
+  - if [ -n "$CLANG_VERSION" ]; then export CC="clang-${CLANG_VERSION}"; fi
+  - if [ -n "$CLANG_VERSION" ]; then export CXX="clang++-${CLANG_VERSION}"; fi
 
 matrix:
   fast_finish: true
@@ -59,6 +62,10 @@ matrix:
     - os: linux
       compiler: gcc
       env: GCC_VERSION=7
+      
+    - os: linux
+      compiler: clang
+      env: CLANG_VERSION=8
 
     - os: osx
       compiler: clang

@@ -96,7 +96,6 @@ namespace
 //
 
 EntityBrowser<Project>::EntityBrowser(const Project& project)
-  : m_project(project)
 {
 }
 

@@ -125,7 +125,14 @@ namespace
             .def(T() * bpy::self)
             .def(bpy::self / T())
             .def(bpy::self += bpy::self)
+#if defined(__clang__) && !defined(__APPLE__)
+    #pragma clang diagnostic push
+    #pragma clang diagnostic ignored "-Wself-assign-overloaded"
+#endif
             .def(bpy::self -= bpy::self)
+#if defined(__clang__) && !defined(__APPLE__)
+    #pragma clang diagnostic pop
+#endif
             .def(bpy::self *= T())
             .def(bpy::self /= T())
             .def(bpy::self * bpy::self)

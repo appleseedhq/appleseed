@@ -67,7 +67,6 @@ class EntityBrowser<renderer::Project>
     foundation::StringDictionary get_entities(const std::string& type) const override;
 
   private:
-    const renderer::Project& m_project;
 };
 
 
