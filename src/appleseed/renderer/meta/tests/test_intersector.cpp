@@ -34,7 +34,6 @@
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/texturing/texturecache.h"
-#include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
@@ -52,6 +51,9 @@
 #include "foundation/math/vector.h"
 #include "foundation/memory/autoreleaseptr.h"
 #include "foundation/utility/test.h"
+
+// Forward declarations.
+namespace renderer  { class TextureStore; }
 
 using namespace foundation;
 using namespace renderer;
