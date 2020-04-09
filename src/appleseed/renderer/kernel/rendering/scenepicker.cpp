@@ -36,7 +36,6 @@
 #include "renderer/kernel/intersection/tracecontext.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/texturing/texturecache.h"
-#include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/bsdf/bsdftraits.h"
 #include "renderer/modeling/bssrdf/bssrdftraits.h"
 #include "renderer/modeling/camera/camera.h"
@@ -56,6 +55,9 @@
 // Standard headers.
 #include <cstddef>
 #include <limits>
+
+// Forward declarations.
+namespace renderer  { class TextureStore; }
 
 using namespace foundation;
 
