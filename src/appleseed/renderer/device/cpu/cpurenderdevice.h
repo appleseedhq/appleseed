@@ -31,7 +31,6 @@
 // appleseed.renderer headers.
 #include "renderer/device/cpu/cpurendercontext.h"
 #include "renderer/device/renderdevicebase.h"
-#include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/shadergroup/shadercompiler.h"
 
 // appleseed.foundation headers.
@@ -47,6 +46,7 @@ namespace renderer      { class OIIOTextureSystem; }
 namespace renderer      { class OSLShadingSystem; }
 namespace renderer      { class RendererComponents; }
 namespace renderer      { class RendererServices; }
+namespace renderer      { class TextureStore; }
 
 namespace renderer
 {
