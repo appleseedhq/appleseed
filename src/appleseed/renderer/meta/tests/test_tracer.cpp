@@ -40,7 +40,6 @@
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/texturing/oiiotexturesystem.h"
 #include "renderer/kernel/texturing/texturecache.h"
-#include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/camera/pinholecamera.h"
 #include "renderer/modeling/color/colorentity.h"
 #include "renderer/modeling/entity/onframebeginrecorder.h"
@@ -78,6 +77,9 @@
 
 // Standard headers.
 #include <memory>
+
+// Forward declarations.
+namespace renderer  { class TextureStore; }
 
 using namespace foundation;
 using namespace renderer;
