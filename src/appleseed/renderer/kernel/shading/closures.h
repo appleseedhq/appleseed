@@ -130,7 +130,7 @@ struct ExceptionOSLRuntimeError
 // Small closure layer ID stack.
 //
 
-template <size_t N>
+template <std::size_t N>
 class ClosureLayerIDStack
 {
   public:
@@ -139,7 +139,7 @@ class ClosureLayerIDStack
     {
     }
 
-    size_t size() const
+    std::size_t size() const
     {
         return m_size;
     }
@@ -149,7 +149,7 @@ class ClosureLayerIDStack
         return m_size == 0;
     }
 
-    std::int8_t operator[](const size_t i) const
+    std::int8_t operator[](const std::size_t i) const
     {
         assert(i < m_size);
         return m_ids[i];
@@ -157,7 +157,7 @@ class ClosureLayerIDStack
 
     void push(const std::int8_t id)
     {
-        assert(m_size < N - 1);
+        assert(m_size < N);
         m_ids[m_size++] = id;
     }
 
@@ -169,7 +169,7 @@ class ClosureLayerIDStack
 
   private:
     std::int8_t   m_ids[N];
-    size_t        m_size;
+    std::size_t   m_size;
 };
 
 
@@ -186,18 +186,18 @@ class APPLESEED_ALIGN(16) CompositeClosure
 
     using SmallClosureLayerIDStack = ClosureLayerIDStack<MaxClosureLayers>;
 
-    size_t get_closure_count() const;
+    std::size_t get_closure_count() const;
     std::int8_t get_last_closure_index() const;
 
-    ClosureID get_closure_type(const size_t index) const;
-    void* get_closure_input_values(const size_t index) const;
+    ClosureID get_closure_type(const std::size_t index) const;
+    void* get_closure_input_values(const std::size_t index) const;
 
-    const Spectrum& get_closure_weight(const size_t index) const;
-    float get_closure_scalar_weight(const size_t index) const;
+    const Spectrum& get_closure_weight(const std::size_t index) const;
+    float get_closure_scalar_weight(const std::size_t index) const;
 
-    const foundation::Basis3f& get_closure_shading_basis(const size_t index) const;
+    const foundation::Basis3f& get_closure_shading_basis(const std::size_t index) const;
 
-    const std::int8_t* get_closure_layers(const size_t index) const;
+    const std::int8_t* get_closure_layers(const std::size_t index) const;
 
     void override_closure_scalar_weight(const float weight);
 
@@ -236,13 +236,13 @@ class APPLESEED_ALIGN(16) CompositeClosure
     void copy_layer_ids(const SmallClosureLayerIDStack& layer_stack);
 
   protected:
-    size_t                          m_closure_count;
+    std::size_t                     m_closure_count;
     void*                           m_input_values[MaxClosureEntries];
     ClosureID                       m_closure_types[MaxClosureEntries];
     Spectrum                        m_weights[MaxClosureEntries];
     float                           m_scalar_weights[MaxClosureEntries];
     foundation::Basis3f             m_bases[MaxClosureEntries];
-    size_t                          m_ior_count;
+    std::size_t                     m_ior_count;
     float                           m_iors[MaxClosureEntries];
     float                           m_ior_cdf[MaxClosureEntries];
     std::int8_t                     m_layers[MaxClosureEntries * MaxClosureLayers];
@@ -279,9 +279,9 @@ class APPLESEED_ALIGN(16) CompositeSurfaceClosure
         const int                   modes,
         float                       pdf[MaxClosureEntries]) const;
 
-    size_t choose_closure(
+    std::size_t choose_closure(
         const float                 w,
-        const size_t                num_closures,
+        const std::size_t           num_closures,
         float                       pdfs[MaxClosureEntries]) const;
 
     void process_closure_tree(
@@ -306,9 +306,9 @@ class APPLESEED_ALIGN(16) CompositeSubsurfaceClosure
         const OSL::ClosureColor*    ci,
         foundation::Arena&          arena);
 
-    float get_closure_pdf(const size_t index) const;
+    float get_closure_pdf(const std::size_t index) const;
 
-    size_t choose_closure(const float w) const;
+    std::size_t choose_closure(const float w) const;
 
   private:
     float                           m_pdfs[MaxClosureEntries];
@@ -342,9 +342,9 @@ class APPLESEED_ALIGN(16) CompositeEmissionClosure
         const float                 max_weight_component,
         foundation::Arena&          arena);
 
-    float get_closure_pdf(const size_t index) const;
+    float get_closure_pdf(const std::size_t index) const;
 
-    size_t choose_closure(const float w) const;
+    std::size_t choose_closure(const float w) const;
 
   private:
     float                           m_pdfs[MaxClosureEntries];
@@ -376,7 +376,7 @@ class APPLESEED_ALIGN(16) CompositeNPRClosure
         const foundation::Color3f&  weight,
         foundation::Arena&          arena);
 
-    size_t get_nth_contour_closure_index(const size_t i) const;
+    std::size_t get_nth_contour_closure_index(const std::size_t i) const;
 
   private:
     void process_closure_tree(
@@ -406,7 +406,7 @@ void register_closures(OSLShadingSystem& shading_system);
 // CompositeClosure class implementation.
 //
 
-inline size_t CompositeClosure::get_closure_count() const
+inline std::size_t CompositeClosure::get_closure_count() const
 {
     return m_closure_count;
 }
@@ -418,37 +418,37 @@ inline std::int8_t CompositeClosure::get_last_closure_index() const
     return static_cast<std::int8_t>(m_closure_count - 1);
 }
 
-inline ClosureID CompositeClosure::get_closure_type(const size_t index) const
+inline ClosureID CompositeClosure::get_closure_type(const std::size_t index) const
 {
     assert(index < get_closure_count());
     return m_closure_types[index];
 }
 
-inline void* CompositeClosure::get_closure_input_values(const size_t index) const
+inline void* CompositeClosure::get_closure_input_values(const std::size_t index) const
 {
     assert(index < get_closure_count());
     return m_input_values[index];
 }
 
-inline const Spectrum& CompositeClosure::get_closure_weight(const size_t index) const
+inline const Spectrum& CompositeClosure::get_closure_weight(const std::size_t index) const
 {
     assert(index < get_closure_count());
     return m_weights[index];
 }
 
-inline float CompositeClosure::get_closure_scalar_weight(const size_t index) const
+inline float CompositeClosure::get_closure_scalar_weight(const std::size_t index) const
 {
     assert(index < get_closure_count());
     return m_scalar_weights[index];
 }
 
-inline const foundation::Basis3f& CompositeClosure::get_closure_shading_basis(const size_t index) const
+inline const foundation::Basis3f& CompositeClosure::get_closure_shading_basis(const std::size_t index) const
 {
     assert(index < get_closure_count());
     return m_bases[index];
 }
 
-inline const std::int8_t* CompositeClosure::get_closure_layers(const size_t index) const
+inline const std::int8_t* CompositeClosure::get_closure_layers(const std::size_t index) const
 {
     assert(index < get_closure_count());
     return m_layers + index * MaxClosureLayers;
@@ -465,7 +465,7 @@ inline void CompositeClosure::override_closure_scalar_weight(const float weight)
 // CompositeSubsurfaceClosure class implementation.
 //
 
-inline float CompositeSubsurfaceClosure::get_closure_pdf(const size_t index) const
+inline float CompositeSubsurfaceClosure::get_closure_pdf(const std::size_t index) const
 {
     assert(index < get_closure_count());
     return m_pdfs[index];
@@ -476,7 +476,7 @@ inline float CompositeSubsurfaceClosure::get_closure_pdf(const size_t index) con
 // CompositeEmissionClosure class implementation.
 //
 
-inline float CompositeEmissionClosure::get_closure_pdf(const size_t index) const
+inline float CompositeEmissionClosure::get_closure_pdf(const std::size_t index) const
 {
     assert(index < get_closure_count());
     return m_pdfs[index];

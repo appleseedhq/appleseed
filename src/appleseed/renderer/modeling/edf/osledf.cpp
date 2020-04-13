@@ -130,7 +130,7 @@ namespace
                 if (c->get_closure_type(i) >= FirstLayeredClosure)
                 {
                     bsdf_from_closure_id(c->get_closure_type(i))
-                        ->prepare_inputs(
+                        .prepare_inputs(
                             shading_context.get_arena(),
                             shading_point,
                             c->get_closure_input_values(i));
@@ -336,7 +336,7 @@ namespace
                     break;
 
                 const size_t layer = static_cast<size_t>(layers[i]);
-                bsdf_from_closure_id(c.get_closure_type(layer))->attenuate_emission(
+                bsdf_from_closure_id(c.get_closure_type(layer)).attenuate_emission(
                     c.get_closure_input_values(layer),
                     c.get_closure_shading_basis(layer),
                     outgoing,
@@ -344,10 +344,10 @@ namespace
             }
         }
 
-        const BSDF* bsdf_from_closure_id(const ClosureID cid) const
+        const BSDF& bsdf_from_closure_id(const ClosureID cid) const
         {
             assert(cid >= FirstLayeredClosure);
-            return m_glossy_layer_bsdf.get();
+            return *m_glossy_layer_bsdf;
         }
 
         const EDF& edf_from_closure_id(const ClosureID cid) const

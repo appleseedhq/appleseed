@@ -681,6 +681,8 @@ namespace
             const Params* p = static_cast<const Params*>(osl_params);
 
             const float roughness = saturate(p->roughness);
+            const float fresnel_weight = saturate(p->fresnel_weight);
+
             const float ior = std::max(p->ior, 0.001f);
 
             GlossyBRDFInputValues* values =
@@ -692,7 +694,6 @@ namespace
                     p->T,
                     arena);
 
-            const float fresnel_weight = saturate(p->fresnel_weight);
             composite_closure.override_closure_scalar_weight(
                 luminance(weight) * sample_weight(roughness, ior, fresnel_weight));
 
@@ -786,7 +787,7 @@ namespace
             values->m_reflectance.set(Color3f(p->reflectance), g_std_lighting_conditions, Spectrum::Reflectance);
             values->m_melanin = saturate(p->melanin);
             values->m_melanin_redness = saturate(p->melanin_redness);
-            values->m_eta = max(p->eta, 0.001f);
+            values->m_eta = std::max(p->eta, 0.001f);
             values->m_beta_M = p->beta_M;
             values->m_beta_N = p->beta_N;
             values->m_alpha = p->alpha;
@@ -1732,7 +1733,7 @@ namespace
             values->m_cos_crease_threshold = std::cos(deg_to_rad(p->creases_threshold));
 
             values->m_features = features;
-            values->m_quality = static_cast<size_t>(clamp(p->quality, 1, 4));
+            values->m_quality = static_cast<std::size_t>(clamp(p->quality, 1, 4));
         }
     };
 
@@ -1746,7 +1747,7 @@ namespace
         void* substrate;
     };
 
-    const OSL::ClosureColor* get_nested_closure_color(const size_t closure_id, const void* params)
+    const OSL::ClosureColor* get_nested_closure_color(const std::size_t closure_id, const void* params)
     {
         assert(closure_id >= FirstLayeredClosure);
 
@@ -2009,7 +2010,7 @@ float CompositeClosure::choose_ior(const float w) const
     if APPLESEED_LIKELY(m_ior_count == 1)
         return m_iors[0];
 
-    const size_t index = sample_cdf_linear_search(m_ior_cdf, w);
+    const std::size_t index = sample_cdf_linear_search(m_ior_cdf, w);
     return m_iors[index];
 }
 
@@ -2027,10 +2028,10 @@ void CompositeClosure::copy_layer_ids(const SmallClosureLayerIDStack& layer_stac
 
 void CompositeClosure::compute_pdfs(float pdfs[MaxClosureEntries])
 {
-    const size_t closure_count = get_closure_count();
+    const std::size_t closure_count = get_closure_count();
 
     float total_weight = 0.0f;
-    for (size_t i = 0; i < closure_count; ++i)
+    for (std::size_t i = 0; i < closure_count; ++i)
     {
         pdfs[i] = m_scalar_weights[i];
         total_weight += pdfs[i];
@@ -2040,7 +2041,7 @@ void CompositeClosure::compute_pdfs(float pdfs[MaxClosureEntries])
     {
         const float rcp_total_weight = 1.0f / total_weight;
 
-        for (size_t i = 0; i < closure_count; ++i)
+        for (std::size_t i = 0; i < closure_count; ++i)
             pdfs[i] *= rcp_total_weight;
     }
 }
@@ -2069,7 +2070,7 @@ CompositeSurfaceClosure::CompositeSurfaceClosure(
     if (m_ior_count > 1)
     {
         float total_weight = m_ior_cdf[0];
-        for (size_t i = 1; i < m_ior_count; ++i)
+        for (std::size_t i = 1; i < m_ior_count; ++i)
         {
             total_weight += m_ior_cdf[i];
             m_ior_cdf[i] = total_weight;
@@ -2077,7 +2078,7 @@ CompositeSurfaceClosure::CompositeSurfaceClosure(
 
         const float rcp_total_weight = 1.0f / total_weight;
 
-        for (size_t i = 0; i < m_ior_count - 1; ++i)
+        for (std::size_t i = 0; i < m_ior_count - 1; ++i)
             m_ior_cdf[i] *= rcp_total_weight;
 
         m_ior_cdf[m_ior_count - 1] = 1.0f;
@@ -2093,7 +2094,7 @@ int CompositeSurfaceClosure::compute_pdfs(
     int num_closures = 0;
     float sum_weights = 0.0f;
 
-    for (size_t i = 0, e = get_closure_count(); i < e; ++i)
+    for (std::size_t i = 0, e = get_closure_count(); i < e; ++i)
     {
         const ClosureID cid = m_closure_types[i];
         const int closure_modes = g_closure_get_modes_funs[cid]();
@@ -2111,16 +2112,16 @@ int CompositeSurfaceClosure::compute_pdfs(
     if (sum_weights != 0.0f)
     {
         const float rcp_sum_weights = 1.0f / sum_weights;
-        for (size_t i = 0, e = get_closure_count(); i < e; ++i)
+        for (std::size_t i = 0, e = get_closure_count(); i < e; ++i)
             pdfs[i] *= rcp_sum_weights;
     }
 
     return num_closures;
 }
 
-size_t CompositeSurfaceClosure::choose_closure(
+std::size_t CompositeSurfaceClosure::choose_closure(
     const float                 w,
-    const size_t                num_closures,
+    const std::size_t           num_closures,
     float                       pdfs[MaxClosureEntries]) const
 {
     assert(num_closures > 0);
@@ -2201,7 +2202,7 @@ CompositeSubsurfaceClosure::CompositeSubsurfaceClosure(
     compute_pdfs(m_pdfs);
 }
 
-size_t CompositeSubsurfaceClosure::choose_closure(const float w) const
+std::size_t CompositeSubsurfaceClosure::choose_closure(const float w) const
 {
     assert(get_closure_count() > 0);
     return sample_pdf_linear_search(m_pdfs, get_closure_count(), w);
@@ -2298,7 +2299,7 @@ CompositeEmissionClosure::CompositeEmissionClosure(
     compute_pdfs(m_pdfs);
 }
 
-size_t CompositeEmissionClosure::choose_closure(const float w) const
+std::size_t CompositeEmissionClosure::choose_closure(const float w) const
 {
     assert(get_closure_count() > 0);
     return sample_pdf_linear_search(m_pdfs, get_closure_count(), w);
@@ -2434,11 +2435,11 @@ InputValues* CompositeNPRClosure::add_closure(
     return values;
 }
 
-size_t CompositeNPRClosure::get_nth_contour_closure_index(const size_t i) const
+std::size_t CompositeNPRClosure::get_nth_contour_closure_index(const std::size_t i) const
 {
-    size_t n = 0;
+    std::size_t n = 0;
 
-    for (size_t j = 0 , e = get_closure_count(); j < e; ++j)
+    for (std::size_t j = 0 , e = get_closure_count(); j < e; ++j)
     {
         if (get_closure_type(j) == NPRContourID)
         {
@@ -2627,7 +2628,7 @@ namespace
 
 void register_closures(OSLShadingSystem& shading_system)
 {
-    for (size_t i = 0; i < NumClosuresIDs; ++i)
+    for (std::size_t i = 0; i < NumClosuresIDs; ++i)
     {
         g_closure_convert_funs[i] = nullptr;
         g_closure_get_modes_funs[i] = &closure_no_modes;

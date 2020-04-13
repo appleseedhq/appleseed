@@ -135,7 +135,7 @@ void BSDF::attenuate_substrate(
     const Vector3f&             incoming,
     DirectShadingComponents&    value) const
 {
-    assert(false);
+    assert(!"This BSDF does not support layering.");
 }
 
 void BSDF::attenuate_emission(
@@ -144,7 +144,7 @@ void BSDF::attenuate_emission(
     const Vector3f&             outgoing,
     Spectrum&                   value) const
 {
-    assert(false);
+    assert(!"This BSDF does not support layering.");
 }
 
 }   // namespace renderer

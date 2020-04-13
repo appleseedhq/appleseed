@@ -69,8 +69,6 @@ namespace renderer      { class Assembly; }
 namespace renderer      { class Project; }
 
 using namespace foundation;
-using namespace std;
-
 namespace bfs = boost::filesystem;
 
 namespace renderer
@@ -116,7 +114,7 @@ namespace
             return Model;
         }
 
-        size_t compute_input_data_size() const override
+        std::size_t compute_input_data_size() const override
         {
             return sizeof(InputValues);
         }
@@ -129,6 +127,7 @@ namespace
             InputValues* values = static_cast<InputValues*>(data);
             new (&values->m_precomputed) InputValues::Precomputed();
 
+            values->m_roughness = std::max(values->m_roughness, shading_point.get_ray().m_min_roughness);
             values->m_precomputed.m_outside_ior = shading_point.get_ray().get_current_ior();
             normal_reflectance_dielectric(
                 values->m_precomputed.m_F0,
@@ -163,7 +162,7 @@ namespace
                 values->m_precomputed.m_outside_ior / values->m_ior,
                 1.0f);
 
-            MicrofacetBRDFHelper<GGXMDF, true>::sample(
+            MicrofacetBRDFHelper<GGXMDF>::sample(
                 sampling_context,
                 alpha_x,
                 alpha_y,
@@ -215,7 +214,7 @@ namespace
                 1.0f);
 
             const float pdf =
-                MicrofacetBRDFHelper<GGXMDF, true>::evaluate(
+                MicrofacetBRDFHelper<GGXMDF>::evaluate(
                     alpha_x,
                     alpha_y,
                     f,
@@ -257,7 +256,7 @@ namespace
                 alpha_y);
 
             const float pdf =
-                MicrofacetBRDFHelper<GGXMDF, true>::pdf(
+                MicrofacetBRDFHelper<GGXMDF>::pdf(
                     alpha_x,
                     alpha_y,
                     local_geometry,
@@ -303,13 +302,13 @@ namespace
             const float Eo = get_dielectric_layer_directional_albedo(
                 eta,
                 values->m_roughness,
-                abs(cos_on));
+                std::abs(cos_on));
 
             value *= 1.0f - Eo;
 
             if (values->m_thickness != 0.0f)
             {
-                const float Lo = safe_rcp(abs(cos_on), 1e-6f);
+                const float Lo = safe_rcp(std::abs(cos_on), 1e-6f);
                 value *= pow(values->m_transmittance, values->m_thickness * Lo);
             }
         }
@@ -352,18 +351,18 @@ namespace
             const float Eo = get_dielectric_layer_directional_albedo(
                 eta,
                 values->m_roughness,
-                abs(cos_on));
+                std::abs(cos_on));
             const float Ei = get_dielectric_layer_directional_albedo(
                 eta,
                 values->m_roughness,
-                abs(cos_in));
+                std::abs(cos_in));
 
-            value *= min(1.0f - Ei, 1.0f - Eo);
+            value *= std::min(1.0f - Ei, 1.0f - Eo);
 
             if (values->m_thickness != 0.0f)
             {
-                const float Lo = safe_rcp(abs(cos_on), 1e-6f);
-                const float Li = safe_rcp(abs(cos_in), 1e-6f);
+                const float Lo = safe_rcp(std::abs(cos_on), 1e-6f);
+                const float Li = safe_rcp(std::abs(cos_in), 1e-6f);
                 float L = Li + Lo;
 
                 // For transmission, use the average length.
@@ -392,16 +391,16 @@ namespace
         GlossyLayerAlbedoTable(const float min_eta, const float max_eta)
           : AlbedoTable3D(min_eta, max_eta)
         {
-            for (size_t z = 0; z < TableSize; ++z)
+            for (std::size_t z = 0; z < TableSize; ++z)
             {
                 const float eta = lerp(m_min_eta, m_max_eta, static_cast<float>(z) / (TableSize - 1));
 
-                for (size_t y = 0; y < TableSize; ++y)
+                for (std::size_t y = 0; y < TableSize; ++y)
                 {
                     const float roughness = static_cast<float>(y) / (TableSize - 1);
                     const float alpha = max(square(roughness), 0.001f);
 
-                    for (size_t x = 0; x < TableSize; ++x)
+                    for (std::size_t x = 0; x < TableSize; ++x)
                     {
                         const float cos_theta = static_cast<float>(x) / (TableSize - 1);
                         dir_table(x, y, z) = compute_directional_albedo(eta, alpha, cos_theta);
@@ -420,7 +419,7 @@ namespace
             const float alpha,
             const float cos_theta) const
         {
-            const size_t SampleCount = 512;
+            const std::size_t SampleCount = 512;
 
             // Special cases.
             if (cos_theta == 0.0f || alpha == 0.0f)
@@ -432,15 +431,15 @@ namespace
 
             float R = 0.0f;
 
-            for (size_t i = 0; i < SampleCount; ++i)
+            for (std::size_t i = 0; i < SampleCount; ++i)
             {
                 // Generate a uniform sample in [0,1)^3.
-                const size_t Bases[] = { 2 };
+                const std::size_t Bases[] = { 2 };
                 const Vector2f s = hammersley_sequence<float, 2>(Bases, SampleCount, i);
                 R += sample(s, eta, alpha, wo);
             }
 
-            return min(R / static_cast<float>(SampleCount), 1.0f);
+            return std::min(R / static_cast<float>(SampleCount), 1.0f);
         }
 
         float sample(

@@ -181,7 +181,7 @@ namespace
                     alpha_x,
                     alpha_y);
 
-                MicrofacetBRDFHelper<GGXMDF, true>::sample(
+                MicrofacetBRDFHelper<GGXMDF>::sample(
                     sampling_context,
                     alpha_x,
                     alpha_y,
@@ -234,7 +234,7 @@ namespace
                 values->m_fresnel_weight);
 
             const float pdf =
-                MicrofacetBRDFHelper<GGXMDF, true>::evaluate(
+                MicrofacetBRDFHelper<GGXMDF>::evaluate(
                     alpha_x,
                     alpha_y,
                     f,
@@ -276,7 +276,7 @@ namespace
                 alpha_y);
 
             const float pdf =
-                MicrofacetBRDFHelper<GGXMDF, true>::pdf(
+                MicrofacetBRDFHelper<GGXMDF>::pdf(
                     alpha_x,
                     alpha_y,
                     local_geometry,
