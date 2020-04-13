@@ -87,12 +87,12 @@ void ShadingPoint::flip_side()
     const double t = 2.0 * m_ray.m_tmax;
 
     m_ray.m_org = m_ray.point_at(t);
-    m_ray.m_rx.m_org = m_ray.m_rx.point_at(t);
-    m_ray.m_ry.m_org = m_ray.m_ry.point_at(t);
+    m_ray.m_rx_org = m_ray.m_rx_org + t * m_ray.m_rx_dir;
+    m_ray.m_ry_org = m_ray.m_ry_org + t * m_ray.m_ry_dir;
 
     m_ray.m_dir = -m_ray.m_dir;
-    m_ray.m_rx.m_dir = -m_ray.m_rx.m_dir;
-    m_ray.m_ry.m_dir = -m_ray.m_ry.m_dir;
+    m_ray.m_rx_dir = -m_ray.m_rx_dir;
+    m_ray.m_ry_dir = -m_ray.m_ry_dir;
 
     m_members = 0;
 
@@ -600,8 +600,8 @@ void ShadingPoint::compute_screen_space_partial_derivatives() const
     const Vector3d& n = get_original_shading_normal();
 
     double tx, ty;
-    if (!intersect(m_ray.m_rx, p, n, tx) ||
-        !intersect(m_ray.m_ry, p, n, ty))
+    if (!intersect_ray_plane(m_ray.m_rx_org, m_ray.m_rx_dir, p, n, tx) ||
+        !intersect_ray_plane(m_ray.m_ry_org, m_ray.m_ry_dir, p, n, ty))
     {
         m_dpdx = Vector3d(0.0);
         m_dpdy = Vector3d(0.0);
@@ -610,8 +610,8 @@ void ShadingPoint::compute_screen_space_partial_derivatives() const
         return;
     }
 
-    m_dpdx = m_ray.m_rx.point_at(tx) - p;
-    m_dpdy = m_ray.m_ry.point_at(ty) - p;
+    m_dpdx = m_ray.m_rx_org + tx * m_ray.m_rx_dir - p;
+    m_dpdy = m_ray.m_ry_org + ty * m_ray.m_ry_dir - p;
 
     // Select the two axes along which the normal has the smallest components.
     static const size_t Axes[3][2] = { {1, 2}, {0, 2}, {0, 1} };
@@ -1055,8 +1055,8 @@ void ShadingPoint::initialize_osl_shader_globals(
             m_shader_globals.dPdx = Vector3f(get_dpdx());
             m_shader_globals.dPdy = Vector3f(get_dpdy());
             m_shader_globals.dPdz = Vector3f(0.0);
-            m_shader_globals.dIdx = Vector3f(m_ray.m_rx.m_dir - m_ray.m_dir);
-            m_shader_globals.dIdy = Vector3f(m_ray.m_ry.m_dir - m_ray.m_dir);
+            m_shader_globals.dIdx = Vector3f(m_ray.m_rx_dir - m_ray.m_dir);
+            m_shader_globals.dIdy = Vector3f(m_ray.m_ry_dir - m_ray.m_dir);
         }
         else
         {

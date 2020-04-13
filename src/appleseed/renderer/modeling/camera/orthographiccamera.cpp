@@ -168,12 +168,10 @@ namespace
                 const Vector2d px(ndc.get_value() + ndc.get_dx());
                 const Vector2d py(ndc.get_value() + ndc.get_dy());
 
-                ray.m_rx.m_org = transform.point_to_parent(ndc_to_camera(px));
-                ray.m_ry.m_org = transform.point_to_parent(ndc_to_camera(py));
-
-                ray.m_rx.m_dir = ray.m_dir;
-                ray.m_ry.m_dir = ray.m_dir;
-
+                ray.m_rx_org = transform.point_to_parent(ndc_to_camera(px));
+                ray.m_ry_org = transform.point_to_parent(ndc_to_camera(py));
+                ray.m_rx_dir = ray.m_dir;
+                ray.m_ry_dir = ray.m_dir;
                 ray.m_has_differentials = true;
             }
         }

@@ -126,7 +126,7 @@ namespace
             sample.m_value.m_glossy *= fh * values->m_reflectance_multiplier;
             sample.m_value.m_beauty = sample.m_value.m_glossy;
 
-            sample.compute_reflected_differentials(local_geometry, outgoing);
+            sample.compute_diffuse_differentials(outgoing);
         }
 
         float evaluate(

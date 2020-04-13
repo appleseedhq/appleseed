@@ -62,8 +62,6 @@ class ShadingRay
 {
   public:
     // Types.
-    typedef foundation::Vector3d    VectorType;
-    typedef foundation::Ray3d       RayType;
     typedef foundation::RayInfo3d   RayInfoType;
     typedef std::uint16_t           DepthType;
 
@@ -98,8 +96,10 @@ class ShadingRay
     };
 
     // Public members, in an order that optimizes packing.
-    RayType                         m_rx;
-    RayType                         m_ry;
+    VectorType                      m_rx_org;
+    VectorType                      m_rx_dir;
+    VectorType                      m_ry_org;
+    VectorType                      m_ry_dir;
     Time                            m_time;
     Medium                          m_media[MaxMediumCount];        // always sorted from highest to lowest priority
     VisibilityFlags::Type           m_flags;
@@ -124,6 +124,9 @@ class ShadingRay
         const Time&                 time,
         const VisibilityFlags::Type flags,
         const DepthType             depth);
+
+    // Scale ray differentials by a factor s.
+    void scale_differentials(const ValueType s);
 
     // Copy all media from the source ray.
     void copy_media_from(const ShadingRay& source);
@@ -259,8 +262,10 @@ namespace foundation
       public:
         static void do_poison(renderer::ShadingRay& ray)
         {
-            always_poison(ray.m_rx);
-            always_poison(ray.m_ry);
+            always_poison(ray.m_rx_org);
+            always_poison(ray.m_rx_dir);
+            always_poison(ray.m_ry_org);
+            always_poison(ray.m_ry_dir);
             always_poison(ray.m_time.m_absolute);
             always_poison(ray.m_time.m_normalized);
 

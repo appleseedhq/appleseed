@@ -204,8 +204,14 @@ namespace
 
             // Compute the ray differentials.
             if (refract_differentials)
-                sample.compute_transmitted_differentials(local_geometry, values->m_precomputed.m_eta, outgoing);
-            else sample.compute_reflected_differentials(local_geometry, outgoing);
+            {
+                sample.compute_specular_transmitted_differentials(
+                    local_geometry,
+                    values->m_precomputed.m_eta,
+                    local_geometry.m_shading_point->is_entering(),
+                    outgoing);
+            }
+            else sample.compute_specular_reflected_differentials(local_geometry, outgoing);
         }
 
         float evaluate(

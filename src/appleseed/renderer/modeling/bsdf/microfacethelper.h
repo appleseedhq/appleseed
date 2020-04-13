@@ -94,6 +94,7 @@ class MicrofacetBRDFHelper
     template <typename FresnelFun>
     static void sample(
         SamplingContext&                sampling_context,
+        const float                     roughness,
         const float                     alpha_x,
         const float                     alpha_y,
         FresnelFun                      f,
@@ -167,7 +168,7 @@ class MicrofacetBRDFHelper
                 local_geometry.m_shading_basis.transform_to_parent(wi);
             sample.m_incoming = foundation::Dual<foundation::Vector3f>(incoming);
 
-            sample.compute_reflected_differentials(local_geometry, outgoing);
+            sample.compute_glossy_reflected_differentials(local_geometry, roughness, outgoing);
         }
     }
 

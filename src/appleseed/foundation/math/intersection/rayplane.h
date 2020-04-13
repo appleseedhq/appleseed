@@ -41,6 +41,14 @@ namespace foundation
 //
 
 template <typename T>
+bool intersect_ray_plane(
+    const Vector<T, 3>&     origin,
+    const Vector<T, 3>&     dir,
+    const Vector<T, 3>&     point,
+    const Vector<T, 3>&     normal,
+    T&                      t);
+
+template <typename T>
 T intersect(
     const Ray<T, 3>&        ray,
     const Vector<T, 3>&     point,
@@ -59,6 +67,24 @@ bool intersect(
 //
 
 template <typename T>
+inline bool intersect_ray_plane(
+    const Vector<T, 3>&     origin,
+    const Vector<T, 3>&     dir,
+    const Vector<T, 3>&     point,
+    const Vector<T, 3>&     normal,
+    T&                      t)
+{
+    const Vector<T, 3> u = point - origin;
+    const T denom = dot(dir, normal);
+
+    if (denom == T(0.0))
+        return false;
+
+    t = dot(u, normal) / denom;
+    return true;
+}
+
+template <typename T>
 inline T intersect(
     const Ray<T, 3>&        ray,
     const Vector<T, 3>&     point,
@@ -75,14 +101,7 @@ inline bool intersect(
     const Vector<T, 3>&     normal,
     T&                      t)
 {
-    const Vector<T, 3> u = point - ray.m_org;
-    const T denom = dot(ray.m_dir, normal);
-
-    if (denom == T(0.0))
-        return false;
-
-    t = dot(u, normal) / denom;
-    return true;
+    return intersect_ray_plane(ray.m_org, ray.m_dir, point, normal, t);
 }
 
 }   // namespace foundation

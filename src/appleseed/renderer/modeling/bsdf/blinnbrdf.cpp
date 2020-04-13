@@ -159,6 +159,7 @@ namespace
             const FresnelFun f(values->m_precomputed.m_outside_ior / values->m_ior);
             MicrofacetBRDFHelper<BlinnMDF>::sample(
                 sampling_context,
+                1.0f,
                 values->m_exponent,
                 values->m_exponent,
                 f,
@@ -166,8 +167,8 @@ namespace
                 outgoing,
                 sample);
             sample.m_value.m_beauty = sample.m_value.m_glossy;
-
             sample.m_min_roughness = 1.0f;
+            sample.compute_glossy_reflected_differentials(local_geometry, 1.0f, outgoing);
         }
 
         float evaluate(

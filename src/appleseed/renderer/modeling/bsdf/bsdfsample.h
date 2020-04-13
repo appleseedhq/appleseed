@@ -68,28 +68,34 @@ class BSDFSample
         const ScatteringMode::Mode  mode,
         const float                 probability);
 
-    void compute_reflected_differentials(
+    void compute_specular_reflected_differentials(
         const BSDF::LocalGeometry&  local_geometry,
         const foundation::Dual3f&   outgoing);
 
-    void compute_transmitted_differentials(
+    void compute_specular_transmitted_differentials(
         const BSDF::LocalGeometry&  local_geometry,
         const float                 eta,
+        const bool                  is_entering,
+        const foundation::Dual3f&   outgoing);
+
+    void compute_glossy_reflected_differentials(
+        const BSDF::LocalGeometry&  local_geometry,
+        const float                 roughness,
+        const foundation::Dual3f&   outgoing);
+
+    void compute_glossy_transmitted_differentials(
+        const BSDF::LocalGeometry&  local_geometry,
+        const float                 eta,
+        const float                 roughness,
+        const bool                  is_entering,
+        const foundation::Dual3f&   outgoing);
+
+    void compute_diffuse_differentials(
         const foundation::Dual3f&   outgoing);
 
   private:
     ScatteringMode::Mode            m_mode;                 // scattering mode
     float                           m_probability;          // PDF value
-
-    static void compute_normal_derivatives(
-        const BSDF::LocalGeometry&  local_geometry,
-        const foundation::Dual3f&   outgoing,
-        foundation::Vector3f&       dndx,
-        foundation::Vector3f&       dndy,
-        float&                      ddndx,
-        float&                      ddndy);
-
-    void apply_pdf_differentials_heuristic();
 };
 
 
