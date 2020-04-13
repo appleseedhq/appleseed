@@ -58,18 +58,22 @@ jobs:
   include:
     - os: linux
       compiler: gcc
-      env: GCC_VERSION=6 RUN_TEST_SCENES=true
+      env: GCC_VERSION=6 BUILD_TYPE=Debug
 
     - os: linux
       compiler: gcc
-      env: GCC_VERSION=7
+      env: GCC_VERSION=6 BUILD_TYPE=Ship RUN_TEST_SCENES=true
+
+    - os: linux
+      compiler: gcc
+      env: GCC_VERSION=7 BUILD_TYPE=Debug
       
     - os: linux
       compiler: clang
-      env: CLANG_VERSION=8
+      env: CLANG_VERSION=8 BUILD_TYPE=Debug
 
     - os: osx
-      compiler: clang
+      compiler: clang BUILD_TYPE=Debug
 
 script:
   - if [ $TRAVIS_OS_NAME == linux ]; then chmod +x ./scripts/travis/build-linux.sh ; ./scripts/travis/build-linux.sh ; fi
