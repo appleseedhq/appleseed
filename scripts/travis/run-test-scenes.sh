@@ -67,9 +67,9 @@ export SSHPASS=$DEPLOY_PASSWORD
 sshpass -e rsync \
     -razv --stats --progress \
     --delete \
-    --exclude=src \
-    --exclude=docs \
-    --exclude=cmake \
+    --exclude 'src' \
+    --exclude 'docs' \
+    --exclude 'cmake' \
     ./* \
     $DEPLOY_USER@$DEPLOY_URL:$DEPLOY_FOLDER
 
