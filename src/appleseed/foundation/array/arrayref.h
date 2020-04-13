@@ -81,6 +81,12 @@ class ArrayRef
         return m_array.size();
     }
 
+    // Return the size in bytes of an item in the array.
+    size_t item_size() const
+    {
+        return sizeof(T);
+    }
+
     // Return a pointer to the beginning of the array.
     const T* begin() const
     {
