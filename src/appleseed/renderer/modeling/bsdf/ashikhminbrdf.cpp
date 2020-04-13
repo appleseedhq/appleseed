@@ -253,7 +253,7 @@ namespace
                 sample.m_value.m_beauty = sample.m_value.m_diffuse;
                 sample.m_value.m_beauty += sample.m_value.m_glossy;
                 sample.m_min_roughness = 1.0f;
-                sample.compute_reflected_differentials(local_geometry, outgoing);
+                sample.compute_glossy_reflected_differentials(local_geometry, 1.0f, outgoing);
             }
         }
 

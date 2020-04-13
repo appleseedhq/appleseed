@@ -324,8 +324,8 @@ void DiagnosticSurfaceShader::evaluate(
                     const ShadingRay& ray = shading_point.get_ray();
                     const Dual3d outgoing(
                         -ray.m_dir,
-                        ray.m_dir - ray.m_rx.m_dir,
-                        ray.m_dir - ray.m_ry.m_dir);
+                        -ray.m_rx_dir,
+                        -ray.m_ry_dir);
 
                     BSDF::LocalGeometry local_geometry;
                     local_geometry.m_shading_point = &shading_point;
@@ -652,8 +652,8 @@ void DiagnosticSurfaceShader::evaluate(
                 {
                     const Dual3d outgoing(
                         -ray.m_dir,
-                        ray.m_dir - ray.m_rx.m_dir,
-                        ray.m_dir - ray.m_ry.m_dir);
+                        -ray.m_rx_dir,
+                        -ray.m_ry_dir);
 
                     BSDF::LocalGeometry local_geometry;
                     local_geometry.m_shading_point = &shading_point;
@@ -677,8 +677,8 @@ void DiagnosticSurfaceShader::evaluate(
                     // The 3.0 factor is chosen so that ray spread from Lambertian BRDFs is approximately 1.
                     const double spread =
                         std::max(
-                            norm(sample.m_incoming.get_dx()),
-                            norm(sample.m_incoming.get_dy())) * 3.0;
+                            norm(sample.m_incoming.get_dx() - sample.m_incoming.get_value()),
+                            norm(sample.m_incoming.get_dy() - sample.m_incoming.get_value())) * 3.0;
                     set_shading_result(
                         shading_result,
                         Color3f(static_cast<float>(spread)));

@@ -125,10 +125,9 @@ namespace
                 sample.m_aov_components.m_albedo = sample.m_value.m_diffuse;
                 sample.m_value.m_diffuse *= RcpPi<float>();
                 sample.m_value.m_beauty = sample.m_value.m_diffuse;
-
                 sample.m_min_roughness = 1.0f;
 
-                sample.compute_reflected_differentials(local_geometry, outgoing);
+                sample.compute_diffuse_differentials(outgoing);
             }
         }
 

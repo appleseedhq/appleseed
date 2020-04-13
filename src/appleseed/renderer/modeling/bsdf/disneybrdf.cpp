@@ -195,7 +195,7 @@ namespace
             {
                 sample.set_to_scattering(ScatteringMode::Diffuse, probability);
                 sample.m_aov_components.m_albedo = values->m_base_color;
-                sample.compute_reflected_differentials(local_geometry, outgoing);
+                sample.compute_diffuse_differentials(outgoing);
             }
         }
 
@@ -290,7 +290,7 @@ namespace
             if (probability > 1.0e-6f)
             {
                 sample.set_to_scattering(ScatteringMode::Glossy, probability);
-                sample.compute_reflected_differentials(local_geometry, outgoing);
+                sample.compute_diffuse_differentials(outgoing);
             }
         }
 
@@ -474,6 +474,7 @@ namespace
                     alpha_y);
                 MicrofacetBRDFHelper<GGXMDF, false>::sample(
                     sampling_context,
+                    values->m_roughness,
                     alpha_x,
                     alpha_y,
                     DisneySpecularFresnelFun(*values),
@@ -488,6 +489,7 @@ namespace
                 const float alpha = clearcoat_roughness(values);
                 MicrofacetBRDFHelper<GTR1MDF, false>::sample(
                     sampling_context,
+                    alpha,
                     alpha,
                     alpha,
                     DisneyClearcoatFresnelFun(*values),
@@ -578,9 +580,7 @@ namespace
                 sample.m_min_roughness = values->m_roughness;
             }
             else
-            {
                 sample.set_to_absorption();
-            }
         }
 
         float evaluate(

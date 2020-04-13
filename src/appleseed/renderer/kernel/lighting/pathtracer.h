@@ -296,16 +296,12 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
         assert(foundation::is_normalized(ray.m_dir));
 
         // Compute the outgoing direction at this vertex.
-        // Derivation:
-        //   ray.dir + d(ray.dir)/dx = ray.dx.dir
-        //   outgoing = -ray.dir
-        //   d(outgoing)/dx = d(-ray.dir)/dx = ray.dir - ray.dx.dir
         vertex.m_outgoing =
             ray.m_has_differentials
                 ? foundation::Dual3d(
                     -ray.m_dir,
-                    ray.m_dir - ray.m_rx.m_dir,
-                    ray.m_dir - ray.m_ry.m_dir)
+                    -ray.m_rx_dir,
+                    -ray.m_ry_dir)
                 : foundation::Dual3d(-ray.m_dir);
 
         // Terminate the path if the ray didn't hit anything.
@@ -347,10 +343,10 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
             // Advance the differentials if the ray has them.
             if (ray.m_has_differentials)
             {
-                next_ray.m_rx = ray.m_rx;
-                next_ray.m_ry = ray.m_ry;
-                next_ray.m_rx.m_org = ray.m_rx.point_at(ray.m_tmax);
-                next_ray.m_ry.m_org = ray.m_ry.point_at(ray.m_tmax);
+                next_ray.m_rx_org = ray.m_rx_org + ray.m_tmax * ray.m_rx_dir;
+                next_ray.m_ry_org = ray.m_ry_org + ray.m_tmax * ray.m_ry_dir;
+                next_ray.m_rx_dir = ray.m_rx_dir;
+                next_ray.m_ry_dir = ray.m_ry_dir;
                 next_ray.m_has_differentials = true;
             }
 
@@ -412,10 +408,10 @@ size_t PathTracer<PathVisitor, VolumeVisitor, Adjoint>::trace(
                 // Advance the differentials if the ray has them.
                 if (ray.m_has_differentials)
                 {
-                    next_ray.m_rx = ray.m_rx;
-                    next_ray.m_ry = ray.m_ry;
-                    next_ray.m_rx.m_org = ray.m_rx.point_at(ray.m_tmax);
-                    next_ray.m_ry.m_org = ray.m_ry.point_at(ray.m_tmax);
+                    next_ray.m_rx_org = ray.m_rx_org + ray.m_tmax * ray.m_rx_dir;
+                    next_ray.m_ry_org = ray.m_ry_org + ray.m_tmax * ray.m_ry_dir;
+                    next_ray.m_rx_dir = ray.m_rx_dir;
+                    next_ray.m_ry_dir = ray.m_ry_dir;
                     next_ray.m_has_differentials = true;
                 }
 
@@ -772,10 +768,10 @@ bool PathTracer<PathVisitor, VolumeVisitor, Adjoint>::process_bounce(
     // Compute scattered ray differentials.
     if (sample.m_incoming.has_derivatives())
     {
-        next_ray.m_rx.m_org = next_ray.m_org + vertex.m_shading_point->get_dpdx();
-        next_ray.m_ry.m_org = next_ray.m_org + vertex.m_shading_point->get_dpdy();
-        next_ray.m_rx.m_dir = next_ray.m_dir + foundation::Vector3d(sample.m_incoming.get_dx());
-        next_ray.m_ry.m_dir = next_ray.m_dir + foundation::Vector3d(sample.m_incoming.get_dy());
+        next_ray.m_rx_org = next_ray.m_org + vertex.m_shading_point->get_dpdx();
+        next_ray.m_ry_org = next_ray.m_org + vertex.m_shading_point->get_dpdy();
+        next_ray.m_rx_dir = foundation::Vector3d(sample.m_incoming.get_dx());
+        next_ray.m_ry_dir = foundation::Vector3d(sample.m_incoming.get_dy());
         next_ray.m_has_differentials = true;
     }
 

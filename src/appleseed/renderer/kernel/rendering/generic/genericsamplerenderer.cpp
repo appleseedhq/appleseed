@@ -262,8 +262,8 @@ namespace
                 if (primary_ray.m_has_differentials)
                 {
                     const double t = shading_point_ptr->get_distance();
-                    primary_ray.m_rx.m_org = primary_ray.m_rx.point_at(t);
-                    primary_ray.m_ry.m_org = primary_ray.m_ry.point_at(t);
+                    primary_ray.m_rx_org = primary_ray.m_rx_org + t * primary_ray.m_rx_dir;
+                    primary_ray.m_ry_org = primary_ray.m_ry_org + t * primary_ray.m_ry_dir;
                 }
             }
 

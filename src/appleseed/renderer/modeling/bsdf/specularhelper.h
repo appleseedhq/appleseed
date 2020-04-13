@@ -68,7 +68,7 @@ class SpecularBRDFHelper
         sample.m_value.m_glossy /= cos_in;
 
         sample.m_incoming = foundation::Dual3f(incoming);
-        sample.compute_reflected_differentials(local_geometry, outgoing);
+        sample.compute_specular_reflected_differentials(local_geometry, outgoing);
     }
 };
 

@@ -40,6 +40,14 @@ using namespace foundation;
 namespace renderer
 {
 
+void ShadingRay::scale_differentials(const ValueType s)
+{
+    m_rx_org = m_org + (m_rx_org - m_org) * s;
+    m_ry_org = m_org + (m_ry_org - m_org) * s;
+    m_rx_dir = m_dir + (m_rx_dir - m_dir) * s;
+    m_ry_dir = m_dir + (m_ry_dir - m_dir) * s;
+}
+
 void ShadingRay::copy_media_from(const ShadingRay& source)
 {
     assert(m_medium_count == 0);
