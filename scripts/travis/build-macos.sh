@@ -148,7 +148,7 @@ echo "travis_fold:end:seexpr"
 #--------------------------------------------------------------------------------------------------
 
 export DYLD_LIBRARY_PATH=$THISDIR/lib:$DYLD_LIBRARY_PATH
-export PYTHONPATH=$PYTHONPATH:sandbox/lib/Debug/python
+export PYTHONPATH=$PYTHONPATH:sandbox/lib/$BUILD_TYPE/python
 
 
 #--------------------------------------------------------------------------------------------------
@@ -163,7 +163,7 @@ pushd build
 
 cmake \
     -Wno-dev \
-    -DCMAKE_BUILD_TYPE=Debug \
+    -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
     -DCMAKE_PREFIX_PATH=/usr/local/opt/qt \
     -DWITH_DISNEY_MATERIAL=ON \
     -DWITH_EMBREE=ON \
@@ -192,7 +192,7 @@ make -j 2
 popd
 
 install_name_tool -change libSeExpr.dylib $THISDIR/lib/libSeExpr.dylib build/src/appleseed/libappleseed.dylib
-install_name_tool -change libSeExpr.dylib $THISDIR/lib/libSeExpr.dylib sandbox/lib/Debug/python/appleseed/_appleseedpython.so
+install_name_tool -change libSeExpr.dylib $THISDIR/lib/libSeExpr.dylib sandbox/lib/$BUILD_TYPE/python/appleseed/_appleseedpython.so
 
 echo "travis_fold:end:build"
 
@@ -204,7 +204,7 @@ echo "travis_fold:end:build"
 echo "travis_fold:start:unit-tests"
 echo "Running appleseed unit tests..."
 
-sandbox/bin/Debug/appleseed.cli --run-unit-tests --verbose-unit-tests
+sandbox/bin/$BUILD_TYPE/appleseed.cli --run-unit-tests --verbose-unit-tests
 
 echo "travis_fold:end:unit-tests"
 
