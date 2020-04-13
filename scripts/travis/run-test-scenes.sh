@@ -52,6 +52,7 @@ echo "job number=$TRAVIS_JOB_NUMBER" >> report.txt
 
 echo "travis_fold:end:report"
 
+
 #--------------------------------------------------------------------------------------------------
 # Deploy build.
 #--------------------------------------------------------------------------------------------------
@@ -74,5 +75,18 @@ sshpass -e rsync \
     $DEPLOY_USER@$DEPLOY_URL:$DEPLOY_FOLDER
 
 echo "travis_fold:end:deploy"
+
+
+#--------------------------------------------------------------------------------------------------
+# Run test scenes.
+#--------------------------------------------------------------------------------------------------
+
+echo "travis_fold:start:run_test_scenes"
+echo "Running test scenes..."
+
+sshpass -e ssh $DEPLOY_USER@$DEPLOY_URL 'bash run_tests.sh' &
+
+echo "travis_fold:end:run_test_scenes"
+
 
 set +e
