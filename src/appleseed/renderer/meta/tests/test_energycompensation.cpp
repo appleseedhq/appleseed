@@ -28,6 +28,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/bsdf/glassbsdf.h"
+#include "renderer/modeling/bsdf/glossylayerbsdf.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
 
 // appleseed.foundation headers.
@@ -45,5 +46,10 @@ TEST_SUITE(Renderer_Modeling_BSDF_EnergyCompensation)
     TEST_CASE(WriteGlassDirAlbedoTables)
     {
         write_glass_directional_albedo_tables("unit tests/outputs");
+    }
+
+    TEST_CASE(WriteDielectricLayerDirAlbedoTables)
+    {
+        write_dielectric_layer_directional_albedo_tables("unit tests/outputs");
     }
 }

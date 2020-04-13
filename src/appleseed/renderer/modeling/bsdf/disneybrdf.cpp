@@ -472,7 +472,7 @@ namespace
                     values->m_anisotropic,
                     alpha_x,
                     alpha_y);
-                MicrofacetBRDFHelper<GGXMDF, false>::sample(
+                MicrofacetBRDFHelper<GGXMDF>::sample(
                     sampling_context,
                     alpha_x,
                     alpha_y,
@@ -486,7 +486,7 @@ namespace
             else
             {
                 const float alpha = clearcoat_roughness(values);
-                MicrofacetBRDFHelper<GTR1MDF, false>::sample(
+                MicrofacetBRDFHelper<GTR1MDF>::sample(
                     sampling_context,
                     alpha,
                     alpha,
@@ -542,7 +542,7 @@ namespace
                 Spectrum spec;
                 probability +=
                     weights[SpecularComponent] *
-                    MicrofacetBRDFHelper<GGXMDF, false>::evaluate(
+                    MicrofacetBRDFHelper<GGXMDF>::evaluate(
                         alpha_x,
                         alpha_y,
                         DisneySpecularFresnelFun(*values),
@@ -559,7 +559,7 @@ namespace
                 Spectrum clear;
                 probability +=
                     weights[ClearcoatComponent] *
-                    MicrofacetBRDFHelper<GTR1MDF, false>::evaluate(
+                    MicrofacetBRDFHelper<GTR1MDF>::evaluate(
                         alpha,
                         alpha,
                         DisneyClearcoatFresnelFun(*values),
@@ -636,7 +636,7 @@ namespace
 
                 Spectrum spec;
                 const float spec_pdf =
-                    MicrofacetBRDFHelper<GGXMDF, false>::evaluate(
+                    MicrofacetBRDFHelper<GGXMDF>::evaluate(
                         alpha_x,
                         alpha_y,
                         DisneySpecularFresnelFun(*values),
@@ -657,7 +657,7 @@ namespace
                 const float alpha = clearcoat_roughness(values);
                 Spectrum clearcoat;
                 const float clearcoat_pdf =
-                    MicrofacetBRDFHelper<GTR1MDF, false>::evaluate(
+                    MicrofacetBRDFHelper<GTR1MDF>::evaluate(
                         alpha,
                         alpha,
                         DisneyClearcoatFresnelFun(*values),
@@ -720,7 +720,7 @@ namespace
                     alpha_y);
                 pdf +=
                     weights[SpecularComponent] *
-                    MicrofacetBRDFHelper<GGXMDF, false>::pdf(
+                    MicrofacetBRDFHelper<GGXMDF>::pdf(
                         alpha_x,
                         alpha_y,
                         local_geometry,
@@ -733,7 +733,7 @@ namespace
                 const float alpha = clearcoat_roughness(values);
                 pdf +=
                     weights[ClearcoatComponent] *
-                    MicrofacetBRDFHelper<GTR1MDF, false>::pdf(
+                    MicrofacetBRDFHelper<GTR1MDF>::pdf(
                         alpha,
                         alpha,
                         local_geometry,

@@ -61,10 +61,10 @@ UniqueID BSDF::get_class_uid()
 const float BSDF::DiracDelta = -1.0f;
 
 BSDF::BSDF(
-    const char*             name,
-    const Type              type,
-    const int               modes,
-    const ParamArray&       params)
+    const char*                 name,
+    const Type                  type,
+    const int                   modes,
+    const ParamArray&           params)
   : ConnectableEntity(g_class_uid, params)
   , m_type(type)
   , m_modes(modes)
@@ -78,8 +78,8 @@ size_t BSDF::compute_input_data_size() const
 }
 
 void* BSDF::evaluate_inputs(
-    const ShadingContext&   shading_context,
-    const ShadingPoint&     shading_point) const
+    const ShadingContext&       shading_context,
+    const ShadingPoint&         shading_point) const
 {
     void* data = shading_context.get_arena().allocate(compute_input_data_size());
 
@@ -97,25 +97,54 @@ void* BSDF::evaluate_inputs(
 }
 
 void BSDF::prepare_inputs(
-    Arena&                  arena,
-    const ShadingPoint&     shading_point,
-    void*                   data) const
+    Arena&                      arena,
+    const ShadingPoint&         shading_point,
+    void*                       data) const
 {
 }
 
 float BSDF::sample_ior(
-    SamplingContext&        sampling_context,
-    const void*             data) const
+    SamplingContext&            sampling_context,
+    const void*                 data) const
 {
     return 1.0f;
 }
 
 void BSDF::compute_absorption(
-    const void*             data,
-    const float             distance,
-    Spectrum&               absorption) const
+    const void*                 data,
+    const float                 distance,
+    Spectrum&                   absorption) const
 {
     absorption.set(1.0f);
+}
+
+void BSDF::attenuate_substrate(
+    const void*                 data,
+    const Basis3f&              shading_basis,
+    const Vector3f&             outgoing,
+    const Vector3f&             incoming,
+    Spectrum&                   value) const
+{
+    assert(false);
+}
+
+void BSDF::attenuate_substrate(
+    const void*                 data,
+    const Basis3f&              shading_basis,
+    const Vector3f&             outgoing,
+    const Vector3f&             incoming,
+    DirectShadingComponents&    value) const
+{
+    assert(!"This BSDF does not support layering.");
+}
+
+void BSDF::attenuate_emission(
+    const void*                 data,
+    const Basis3f&              shading_basis,
+    const Vector3f&             outgoing,
+    Spectrum&                   value) const
+{
+    assert(!"This BSDF does not support layering.");
 }
 
 }   // namespace renderer

@@ -87,7 +87,7 @@ inline void microfacet_alpha_from_roughness(
 // Helper class to sample and evaluate microfacet BRDFs.
 //
 
-template <typename MDF, bool Flip>
+template <typename MDF>
 class MicrofacetBRDFHelper
 {
   public:
@@ -105,10 +105,6 @@ class MicrofacetBRDFHelper
 
         if (wo.y == 0.0f)
             return;
-
-        // Flip the outgoing vector to be in the same hemisphere as the shading normal if needed.
-        if (Flip)
-            wo.y = std::abs(wo.y);
 
         // Compute the incoming direction by sampling the MDF.
         sampling_context.split_in_place(2, 1);
@@ -191,14 +187,6 @@ class MicrofacetBRDFHelper
         if (wo.y == 0.0f || wi.y == 0.0f)
             return 0.0f;
 
-        // Flip the incoming and outgoing vectors to be in the same
-        // hemisphere as the shading normal if needed.
-        if (Flip)
-        {
-            wo.y = std::abs(wo.y);
-            wi.y = std::abs(wi.y);
-        }
-
         const foundation::Vector3f m = foundation::normalize(wi + wo);
 
         const float cos_oh = foundation::dot(wo, m);
@@ -235,14 +223,6 @@ class MicrofacetBRDFHelper
     {
         foundation::Vector3f wo = local_geometry.m_shading_basis.transform_to_local(outgoing);
         foundation::Vector3f wi = local_geometry.m_shading_basis.transform_to_local(incoming);
-
-        // Flip the incoming and outgoing vectors to be in the same
-        // hemisphere as the shading normal if needed.
-        if (Flip)
-        {
-            wo.y = std::abs(wo.y);
-            wi.y = std::abs(wi.y);
-        }
 
         const foundation::Vector3f m = foundation::normalize(wi + wo);
         const float cos_oh = foundation::dot(wo, m);

@@ -33,6 +33,9 @@
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/bsdf/bsdfsample.h"
+#include "renderer/modeling/bsdf/glossylayerbsdf.h"
 #include "renderer/modeling/bssrdf/betterdipolebssrdf.h"
 #include "renderer/modeling/bssrdf/bssrdf.h"
 #include "renderer/modeling/bssrdf/bssrdfsample.h"
@@ -109,6 +112,8 @@ namespace
                     RandomwalkGlassID,
                     "randomwalk_glass",
                     "glass");
+
+           m_glossy_layer_bsdf = GlossyLayerBSDFFactory::create("glossy_layer_bsdf", ParamArray());
         }
 
         void release() override
@@ -139,6 +144,9 @@ namespace
                 }
             }
 
+            if (!m_glossy_layer_bsdf->on_frame_begin(project, parent, recorder, abort_switch))
+                return false;
+
             return true;
         }
 
@@ -156,11 +164,22 @@ namespace
 
             for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
-                bssrdf_from_closure_id(c->get_closure_type(i))
-                    .prepare_inputs(
-                        shading_context.get_arena(),
-                        shading_point,
-                        c->get_closure_input_values(i));
+                if (c->get_closure_type(i) >= FirstLayeredClosure)
+                {
+                    bsdf_from_closure_id(c->get_closure_type(i))
+                        .prepare_inputs(
+                            shading_context.get_arena(),
+                            shading_point,
+                            c->get_closure_input_values(i));
+                }
+                else
+                {
+                    bssrdf_from_closure_id(c->get_closure_type(i))
+                        .prepare_inputs(
+                            shading_context.get_arena(),
+                            shading_point,
+                            c->get_closure_input_values(i));
+                }
             }
 
             return c;
@@ -203,6 +222,13 @@ namespace
 
                 if (result)
                 {
+                    apply_layers_attenuation(
+                        *c,
+                        closure_index,
+                        outgoing_dir,
+                        bsdf_sample.m_incoming.get_value(),
+                        bssrdf_sample.m_value);
+
                     bssrdf_sample.m_value *= c->get_closure_weight(closure_index);
                     bssrdf_sample.m_probability *= c->get_closure_pdf(closure_index);
                 }
@@ -229,6 +255,10 @@ namespace
 
             for (size_t i = 0, e = c->get_closure_count(); i < e; ++i)
             {
+                // Skip closure layers.
+                if (c->get_closure_type(i) >= FirstLayeredClosure)
+                    continue;
+
                 Spectrum s;
                 bssrdf_from_closure_id(c->get_closure_type(i))
                     .evaluate(
@@ -240,11 +270,42 @@ namespace
                         modes,
                         s);
 
+                apply_layers_attenuation(*c, i, outgoing_dir, incoming_dir, s);
                 madd(value, s, c->get_closure_weight(i));
             }
         }
 
       private:
+        void apply_layers_attenuation(
+            const CompositeClosure& c,
+            const size_t            closure_index,
+            const Vector3f&         outgoing,
+            const Vector3f&         incoming,
+            Spectrum&               value) const
+        {
+            const std::int8_t* layers = c.get_closure_layers(closure_index);
+
+            for (size_t i = 0; i < CompositeClosure::MaxClosureLayers; ++i)
+            {
+                if (layers[i] < 0)
+                    break;
+
+                const size_t layer = static_cast<size_t>(layers[i]);
+                bsdf_from_closure_id(c.get_closure_type(layer)).attenuate_substrate(
+                    c.get_closure_input_values(layer),
+                    c.get_closure_shading_basis(layer),
+                    outgoing,
+                    incoming,
+                    value);
+            }
+        }
+
+        const BSDF& bsdf_from_closure_id(const ClosureID cid) const
+        {
+            assert(cid >= FirstLayeredClosure);
+            return *m_glossy_layer_bsdf;
+        }
+
         template <typename BSSRDFFactory>
         auto_release_ptr<BSSRDF> create_and_register_bssrdf(
             const ClosureID         cid,
@@ -275,6 +336,7 @@ namespace
             return *bssrdf;
         }
 
+        BSSRDF*                     m_all_bssrdfs[NumClosuresIDs];
         auto_release_ptr<BSSRDF>    m_better_dipole;
         auto_release_ptr<BSSRDF>    m_dir_dipole;
         auto_release_ptr<BSSRDF>    m_gaussian;
@@ -283,7 +345,7 @@ namespace
         auto_release_ptr<BSSRDF>    m_randomwalk;
         auto_release_ptr<BSSRDF>    m_randomwalk_glass;
 
-        BSSRDF*                     m_all_bssrdfs[NumClosuresIDs];
+        auto_release_ptr<BSDF>      m_glossy_layer_bsdf;
     };
 }
 

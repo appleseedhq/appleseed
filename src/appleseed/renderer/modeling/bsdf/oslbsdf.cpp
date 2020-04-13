@@ -44,6 +44,7 @@
 #include "renderer/modeling/bsdf/diffusebtdf.h"
 #include "renderer/modeling/bsdf/glassbsdf.h"
 #include "renderer/modeling/bsdf/glossybrdf.h"
+#include "renderer/modeling/bsdf/glossylayerbsdf.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
 #include "renderer/modeling/bsdf/metalbrdf.h"
 #include "renderer/modeling/bsdf/plasticbrdf.h"
@@ -88,6 +89,7 @@ namespace
         {
             memset(m_all_bsdfs, 0, sizeof(BSDF*) * NumClosuresIDs);
 
+            // Register Common BSDFs.
             m_ashikhmin_shirley_brdf = create_and_register_bsdf(AshikhminShirleyID, "ashikhmin_brdf");
             m_blinn_brdf = create_and_register_bsdf(BlinnID, "blinn_brdf");
             m_diffuse_btdf = create_and_register_bsdf(TranslucentID, "diffuse_btdf");
@@ -103,6 +105,10 @@ namespace
             m_orennayar_brdf = create_and_register_bsdf(OrenNayarID, "orennayar_brdf");
             m_plastic_brdf = create_and_register_bsdf(PlasticID, "plastic_brdf");
             m_sheen_brdf = create_and_register_bsdf(SheenID, "sheen_brdf");
+
+            // Register OSL exclusive BSDFs.
+            m_glossy_layer_bsdf = GlossyLayerBSDFFactory::create("glossy_layer_bsdf", ParamArray());
+            m_all_bsdfs[GlossyLayerID] = m_glossy_layer_bsdf.get();
         }
 
         void release() override
@@ -223,6 +229,14 @@ namespace
                     outgoing,
                     modes,
                     sample);
+
+            apply_layers_attenuation(
+                *c,
+                closure_index,
+                outgoing.get_value(),
+                sample.m_incoming.get_value(),
+                sample.m_value);
+
             sample.m_value *= c->get_closure_weight(closure_index);
             sample.m_aov_components.m_albedo *= c->get_closure_weight(closure_index);
 
@@ -255,6 +269,7 @@ namespace
 
                     if (pdf > 0.0f)
                     {
+                        apply_layers_attenuation(*c, i, outgoing.get_value(), sample.m_incoming.get_value(), s);
                         madd(sample.m_value, s, c->get_closure_weight(i));
                         probability += pdf;
                     }
@@ -307,6 +322,7 @@ namespace
 
                     if (closure_pdf > 0.0f)
                     {
+                        apply_layers_attenuation(*c, i, outgoing, incoming, s);
                         madd(value, s, c->get_closure_weight(i));
                         pdf += closure_pdf;
                     }
@@ -402,11 +418,37 @@ namespace
         auto_release_ptr<BSDF>      m_disney_brdf;
         auto_release_ptr<BSDF>      m_glass_bsdf;
         auto_release_ptr<BSDF>      m_glossy_brdf;
+        auto_release_ptr<BSDF>      m_glossy_layer_bsdf;
         auto_release_ptr<BSDF>      m_hair_bsdf;
         auto_release_ptr<BSDF>      m_metal_brdf;
         auto_release_ptr<BSDF>      m_orennayar_brdf;
         auto_release_ptr<BSDF>      m_plastic_brdf;
         auto_release_ptr<BSDF>      m_sheen_brdf;
+
+        void apply_layers_attenuation(
+            const CompositeClosure&     c,
+            const size_t                closure_index,
+            const Vector3f&             outgoing,
+            const Vector3f&             incoming,
+            DirectShadingComponents&    value) const
+        {
+            const std::int8_t* layers = c.get_closure_layers(closure_index);
+            for (size_t i = 0; i < CompositeClosure::MaxClosureLayers; ++i)
+            {
+                if (layers[i] < 0)
+                    break;
+
+                const size_t layer = static_cast<size_t>(layers[i]);
+                assert(c.get_closure_type(layer) >= FirstLayeredClosure);
+
+                bsdf_from_closure_id(c.get_closure_type(layer)).attenuate_substrate(
+                    c.get_closure_input_values(layer),
+                    c.get_closure_shading_basis(layer),
+                    outgoing,
+                    incoming,
+                    value);
+            }
+        }
 
         auto_release_ptr<BSDF> create_and_register_bsdf(
             const ClosureID         cid,

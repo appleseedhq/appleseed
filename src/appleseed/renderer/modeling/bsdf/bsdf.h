@@ -198,6 +198,27 @@ class APPLESEED_DLLSYMBOL BSDF
         const float                 distance,
         Spectrum&                   absorption) const;
 
+    // For layered BSDFs, compure the attenuation of substrate layers.
+    virtual void attenuate_substrate(
+        const void*                 data,                       // input values
+        const foundation::Basis3f&  shading_basis,              // world space orthonormal basis around shading normal
+        const foundation::Vector3f& outgoing,                   // world space outgoing direction, unit-length
+        const foundation::Vector3f& incoming,                   // world space incoming direction, unit-length
+        Spectrum&                   value) const;               // attenuated value
+
+    virtual void attenuate_substrate(
+        const void*                 data,                       // input values
+        const foundation::Basis3f&  shading_basis,              // world space orthonormal basis around shading normal
+        const foundation::Vector3f& outgoing,                   // world space outgoing direction, unit-length
+        const foundation::Vector3f& incoming,                   // world space incoming direction, unit-length
+        DirectShadingComponents&    value) const;               // attenuated value
+
+    virtual void attenuate_emission(
+        const void*                 data,                       // input values
+        const foundation::Basis3f&  shading_basis,              // world space orthonormal basis around shading normal
+        const foundation::Vector3f& outgoing,                   // world space outgoing direction, unit-length
+        Spectrum&                   value) const;               // attenuated value
+
     // Force a given direction to lie above a surface described by its normal vector.
     // Return true if the input direction was modified, false otherwise.
     static bool force_above_surface(
