@@ -29,8 +29,6 @@
 
 
 set -e
-set -x # remove this
-set -v # remove this
 
 THISDIR=`pwd`
 
@@ -67,7 +65,7 @@ echo $DEPLOY_SSH_KEY >> $HOME/.ssh/known_hosts
 # Send build to server.
 export SSHPASS=$DEPLOY_PASSWORD
 sshpass -e rsync \
-    -raz \
+    -razv --stats --progress \
     --delete \
     --exclude=src \
     --exclude=docs \
@@ -77,6 +75,4 @@ sshpass -e rsync \
 
 echo "travis_fold:end:deploy"
 
-set +x # remove this
-set +v # remove this
 set +e
