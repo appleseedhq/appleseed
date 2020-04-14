@@ -33,7 +33,6 @@
 #include "foundation/math/basis.h"
 
 // Standard headers.
-#include <algorithm>
 #include <cmath>
 
 using namespace foundation;

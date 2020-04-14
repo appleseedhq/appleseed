@@ -48,7 +48,6 @@
 #include "foundation/utility/api/specializedapiarrays.h"
 
 // Standard headers.
-#include <algorithm>
 #include <cmath>
 #include <cstddef>
 

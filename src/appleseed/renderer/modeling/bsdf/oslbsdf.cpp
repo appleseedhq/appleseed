@@ -30,7 +30,6 @@
 #include "oslbsdf.h"
 
 // appleseed.renderer headers.
-#include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/closures.h"
 #include "renderer/kernel/shading/directshadingcomponents.h"
@@ -41,28 +40,20 @@
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
-#include "renderer/modeling/bsdf/diffusebtdf.h"
-#include "renderer/modeling/bsdf/glassbsdf.h"
-#include "renderer/modeling/bsdf/glossybrdf.h"
 #include "renderer/modeling/bsdf/glossylayerbsdf.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
-#include "renderer/modeling/bsdf/metalbrdf.h"
-#include "renderer/modeling/bsdf/plasticbrdf.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/containers/dictionary.h"
 #include "foundation/math/dual.h"
 #include "foundation/math/vector.h"
 #include "foundation/memory/arena.h"
-#include "foundation/utility/api/specializedapiarrays.h"
 
 // Standard headers.
 #include <cassert>
 #include <cstddef>
 #include <cstring>
-#include <string>
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }

@@ -36,14 +36,12 @@
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
 #include "renderer/modeling/color/colorspace.h"
-#include "renderer/modeling/color/wavelengths.h"
 
 // appleseed.foundation headers.
 #include "foundation/containers/dictionary.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/dual.h"
-#include "foundation/math/fresnel.h"
 #include "foundation/math/microfacet.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"

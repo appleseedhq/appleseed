@@ -37,23 +37,16 @@
 #include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/fresnel.h"
-#include "renderer/modeling/bsdf/microfacethelper.h"
-#include "renderer/modeling/bsdf/specularhelper.h"
 #include "renderer/modeling/color/colorspace.h"
-#include "renderer/utility/dynamicspectrum.h"
-#include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
 #include "foundation/containers/dictionary.h"
 #include "foundation/math/basis.h"
-#include "foundation/math/minmax.h"
-#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/specialfunctions.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/makevector.h"
-#include "foundation/utility/otherwise.h"
 
 // Standard headers.
 #include <algorithm>
@@ -61,7 +54,6 @@
 #include <cmath>
 #include <cstddef>
 #include <numeric>
-#include <string>
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }

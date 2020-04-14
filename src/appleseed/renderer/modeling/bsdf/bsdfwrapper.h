@@ -32,7 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
 #include "renderer/kernel/shading/directshadingcomponents.h"
-#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/utility/shadowterminator.h"
