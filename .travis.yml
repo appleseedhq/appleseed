@@ -44,6 +44,7 @@ addons:
       - python2.7-dev
       - qtbase5-dev
       - libqt5opengl5-dev
+      - sshpass
 
 install:
   - if [ -n "$GCC_VERSION" ]; then export CC="${CC}-${GCC_VERSION}"; fi
@@ -51,25 +52,38 @@ install:
   - if [ -n "$CLANG_VERSION" ]; then export CC="clang-${CLANG_VERSION}"; fi
   - if [ -n "$CLANG_VERSION" ]; then export CXX="clang++-${CLANG_VERSION}"; fi
 
-matrix:
+jobs:
   fast_finish: true
 
   include:
     - os: linux
       compiler: gcc
-      env: GCC_VERSION=6
+      env: GCC_VERSION=6 BUILD_TYPE=Debug
 
     - os: linux
       compiler: gcc
-      env: GCC_VERSION=7
+      env: GCC_VERSION=6 BUILD_TYPE=Ship DEPLOY_ON_SERVER=true
+
+    - os: linux
+      compiler: gcc
+      env: GCC_VERSION=7 BUILD_TYPE=Debug
       
     - os: linux
       compiler: clang
-      env: CLANG_VERSION=8
+      env: CLANG_VERSION=8 BUILD_TYPE=Debug
 
     - os: osx
-      compiler: clang
+      compiler: clang 
+      env: BUILD_TYPE=Debug
 
 script:
   - if [ $TRAVIS_OS_NAME == linux ]; then chmod +x ./scripts/travis/build-linux.sh ; ./scripts/travis/build-linux.sh ; fi
   - if [ $TRAVIS_OS_NAME == osx ]; then chmod +x ./scripts/travis/build-macos.sh ; ./scripts/travis/build-macos.sh ; fi
+
+deploy:
+  provider: script
+  skip_cleanup: true  # if false, build files are deleted before deploy
+  script: bash ./scripts/travis/deploy-linux-build.sh
+  on:
+    branch: master
+    condition: $DEPLOY_ON_SERVER == true
