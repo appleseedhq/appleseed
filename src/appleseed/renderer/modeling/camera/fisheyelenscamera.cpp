@@ -37,7 +37,6 @@
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
-#include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/math/dual.h"
 #include "foundation/math/matrix.h"
