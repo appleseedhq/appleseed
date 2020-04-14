@@ -343,6 +343,13 @@ struct MasterRenderer::Impl
         // Construct an abort switch that will allow to abort initialization or rendering.
         RendererControllerAbortSwitch abort_switch(renderer_controller);
 
+        // Initialize the render device. Here is OSL shader compilation performed.
+        const bool success =
+            m_render_device->initialize(
+                m_resource_search_paths,
+                m_tile_callback_factory,
+                abort_switch);
+
         // Let scene entities perform their pre-render actions. Don't proceed if that failed.
         // This is done before creating renderer components because renderer components need
         // to access the scene's render data such as the scene's bounding box.
@@ -354,12 +361,6 @@ struct MasterRenderer::Impl
             return renderer_controller.get_status();
         }
 
-        // Initialize the render device.
-        const bool success =
-            m_render_device->initialize(
-                m_resource_search_paths,
-                m_tile_callback_factory,
-                abort_switch);
         if (!success || abort_switch.is_aborted())
         {
             recorder.on_render_end(m_project);
