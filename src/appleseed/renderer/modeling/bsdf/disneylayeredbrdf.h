@@ -33,11 +33,9 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/basis.h"
 #include "foundation/math/dual.h"
 #include "foundation/math/vector.h"
 #include "foundation/memory/autoreleaseptr.h"
-#include "foundation/platform/compiler.h"
 
 // Standard headers.
 #include <cstddef>

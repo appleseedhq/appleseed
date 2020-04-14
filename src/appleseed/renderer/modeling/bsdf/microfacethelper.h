@@ -40,7 +40,6 @@
 // appleseed.foundation headers.
 #include "foundation/math/basis.h"
 #include "foundation/math/dual.h"
-#include "foundation/math/microfacet.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 

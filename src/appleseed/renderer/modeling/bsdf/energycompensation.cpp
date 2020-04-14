@@ -30,13 +30,11 @@
 #include "energycompensation.h"
 
 // appleseed.foundation headers.
-#include "foundation/core/concepts/noncopyable.h"
 #include "foundation/image/color.h"
 #include "foundation/image/genericimagefilewriter.h"
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
 #include "foundation/math/scalar.h"
-#include "foundation/math/vector.h"
 
 // Boost headers.
 #include "boost/filesystem/fstream.hpp"

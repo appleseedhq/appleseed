@@ -37,7 +37,6 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/dual.h"
-#include "foundation/math/vector.h"
 
 // Standard headers.
 #include <cassert>

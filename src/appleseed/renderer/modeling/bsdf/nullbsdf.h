@@ -36,10 +36,8 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/basis.h"
 #include "foundation/math/dual.h"
 #include "foundation/math/vector.h"
-#include "foundation/platform/compiler.h"
 
 // Forward declarations.
 namespace renderer  { class BSDFSample; }
