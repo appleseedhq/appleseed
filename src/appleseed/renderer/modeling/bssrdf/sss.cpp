@@ -32,7 +32,6 @@
 // appleseed.foundation headers.
 #include "foundation/math/cdf.h"
 #include "foundation/math/fresnel.h"
-#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 
 // Standard headers.
