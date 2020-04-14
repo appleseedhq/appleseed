@@ -77,11 +77,11 @@ echo "travis_fold:end:deploy"
 
 
 #--------------------------------------------------------------------------------------------------
-# Run test scenes.
+# Launch the test scenes job.
 #--------------------------------------------------------------------------------------------------
 
 echo "travis_fold:start:run_test_scenes"
-echo "Running test scenes..."
+echo "Starting test scenes job..."
 
 sshpass -e ssh $DEPLOY_USER@$DEPLOY_URL 'bash run_tests.sh' &
 

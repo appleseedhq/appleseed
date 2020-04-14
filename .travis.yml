@@ -83,7 +83,7 @@ script:
 deploy:
   provider: script
   skip_cleanup: true  # if false, build files are deleted before deploy
-  script: bash ./scripts/travis/run-test-scenes.sh
+  script: bash ./scripts/travis/launch-test-scenes-job.sh
   on:
     branch: master
     condition: $RUN_TEST_SCENES == true
