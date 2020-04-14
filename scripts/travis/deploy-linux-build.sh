@@ -40,15 +40,15 @@ THISDIR=`pwd`
 echo "travis_fold:start:report"
 echo "Creating a report..."
 
-touch report.txt
+touch build_report.txt
 
-echo "web url=$TRAVIS_BUILD_WEB_URL" >> report.txt
-echo "job url=$TRAVIS_JOB_WEB_URL" >> report.txt
-echo "commit=$TRAVIS_COMMIT" >> report.txt
-echo "commit message=$TRAVIS_COMMIT_MESSAGE" >> report.txt
-echo "job id=$TRAVIS_JOB_ID" >> report.txt
-echo "job name=$TRAVIS_JOB_NAME" >> report.txt
-echo "job number=$TRAVIS_JOB_NUMBER" >> report.txt
+echo "web url=$TRAVIS_BUILD_WEB_URL" >> build_report.txt
+echo "job url=$TRAVIS_JOB_WEB_URL" >> build_report.txt
+echo "commit=$TRAVIS_COMMIT" >> build_report.txt
+echo "commit message=$TRAVIS_COMMIT_MESSAGE" >> build_report.txt
+echo "job id=$TRAVIS_JOB_ID" >> build_report.txt
+echo "job name=$TRAVIS_JOB_NAME" >> build_report.txt
+echo "job number=$TRAVIS_JOB_NUMBER" >> build_report.txt
 
 echo "travis_fold:end:report"
 
@@ -58,7 +58,7 @@ echo "travis_fold:end:report"
 #--------------------------------------------------------------------------------------------------
 
 echo "travis_fold:start:deploy"
-echo "Deploy travis build on our server..."
+echo "Deploy travis build on the server..."
 
 # Add server public key to known hosts.
 echo $DEPLOY_SSH_KEY >> $HOME/.ssh/known_hosts
@@ -74,18 +74,6 @@ sshpass -e rsync \
     $DEPLOY_USER@$DEPLOY_URL:$DEPLOY_FOLDER
 
 echo "travis_fold:end:deploy"
-
-
-#--------------------------------------------------------------------------------------------------
-# Launch the test scenes job.
-#--------------------------------------------------------------------------------------------------
-
-echo "travis_fold:start:run_test_scenes"
-echo "Starting test scenes job..."
-
-sshpass -e ssh $DEPLOY_USER@$DEPLOY_URL 'bash run_tests.sh' &
-
-echo "travis_fold:end:run_test_scenes"
 
 
 set +e
