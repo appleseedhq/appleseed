@@ -62,7 +62,7 @@ jobs:
 
     - os: linux
       compiler: gcc
-      env: GCC_VERSION=6 BUILD_TYPE=Ship RUN_TEST_SCENES=true
+      env: GCC_VERSION=6 BUILD_TYPE=Ship DEPLOY_ON_SERVER=true
 
     - os: linux
       compiler: gcc
@@ -86,4 +86,4 @@ deploy:
   script: bash ./scripts/travis/deploy-linux-build.sh
   on:
     branch: master
-    condition: $RUN_TEST_SCENES == true
+    condition: $DEPLOY_ON_SERVER == true
