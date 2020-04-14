@@ -40,19 +40,12 @@
 #include "renderer/modeling/bsdf/energycompensationtables.h"
 #include "renderer/modeling/bsdf/fresnel.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
-#include "renderer/utility/messagecontext.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/containers/dictionary.h"
 #include "foundation/math/basis.h"
 #include "foundation/math/microfacet.h"
-#include "foundation/math/minmax.h"
-#include "foundation/math/sampling/mappings.h"
 #include "foundation/math/vector.h"
-#include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/makevector.h"
-#include "foundation/utility/otherwise.h"
 
 // Boost headers.
 #include "boost/filesystem/path.hpp"
