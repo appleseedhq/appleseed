@@ -164,6 +164,7 @@ namespace
 
             MicrofacetBRDFHelper<GGXMDF>::sample(
                 sampling_context,
+                values->m_roughness,
                 alpha_x,
                 alpha_y,
                 f,
