@@ -186,6 +186,15 @@ namespace
             m_shader_group =
                 static_cast<ShaderGroup*>(m_inputs.get_entity("osl_background"));
 
+            if (!m_importance_sampler || m_shader_group->get_version_id() != m_shader_group_version_id)
+            {
+                m_shader_group_version_id = m_shader_group->get_version_id();
+
+                // Build importance map only if this environment EDF is the active one.
+                if (project.get_scene()->get_environment()->get_uncached_environment_edf() == this)
+                    build_importance_map(project, abort_switch);
+            }
+
             return true;
         }
 
@@ -200,15 +209,6 @@ namespace
 
             m_shader_group =
                 static_cast<ShaderGroup*>(m_inputs.get_entity("osl_background"));
-
-            if (!m_importance_sampler || m_shader_group->get_version_id() != m_shader_group_version_id)
-            {
-                m_shader_group_version_id = m_shader_group->get_version_id();
-
-                // Build importance map only if this environment EDF is the active one.
-                if (project.get_scene()->get_environment()->get_uncached_environment_edf() == this)
-                    build_importance_map(project, abort_switch);
-            }
 
             return true;
         }
