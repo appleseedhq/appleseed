@@ -32,9 +32,6 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/bssrdf/ibssrdffactory.h"
 
-// appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
-
 // Forward declarations.
 namespace foundation    { class DictionaryArray; }
 
