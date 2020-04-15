@@ -94,7 +94,6 @@ LibraryVersionArray ThirdParties::get_versions()
     static const char* BCDVersion = "v1.1";
     static const char* LibJpegTurboVersion = "1.3.1";
     static const char* LibTIFFVersion = "4.0.3";
-    static const char* SeExprVersion = "appleseedhq/SeExpr, qt5-appleseed branch, commit 8a3d1cd";
 
     LibraryVersionArray versions;
 
@@ -129,7 +128,6 @@ LibraryVersionArray ThirdParties::get_versions()
     versions.push_back(APIStringPair("OpenEXR", OPENEXR_VERSION_STRING));
     versions.push_back(APIStringPair("OpenImageIO", OIIO_VERSION_STRING));
     versions.push_back(APIStringPair("OpenShadingLanguage", OSL_LIBRARY_VERSION_STRING));
-    versions.push_back(APIStringPair("SeExpr", SeExprVersion));
     versions.push_back(APIStringPair("Xerces-C++", XERCES_FULLVERSIONDOT));
     versions.push_back(APIStringPair("zlib", ZLIB_VERSION));
 

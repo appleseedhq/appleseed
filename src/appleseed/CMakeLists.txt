@@ -657,11 +657,6 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_z85.cpp
     foundation/meta/tests/test_zip.cpp
 )
-if (WITH_DISNEY_MATERIAL)
-    list (APPEND foundation_meta_tests_sources
-        foundation/meta/tests/test_seexpr.cpp
-    )
-endif ()
 list (APPEND appleseed_sources
     ${foundation_meta_tests_sources}
 )
@@ -996,12 +991,6 @@ set (foundation_utility_sources
     foundation/utility/zip.cpp
     foundation/utility/zip.h
 )
-if (WITH_DISNEY_MATERIAL)
-    list (APPEND foundation_utility_sources
-        foundation/utility/seexpr.cpp
-        foundation/utility/seexpr.h
-    )
-endif ()
 list (APPEND appleseed_sources
     ${foundation_utility_sources}
 )
@@ -1660,12 +1649,6 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/specularbtdf.h
     renderer/modeling/bsdf/specularhelper.h
 )
-if (WITH_DISNEY_MATERIAL)
-    list (APPEND renderer_modeling_bsdf_sources
-        renderer/modeling/bsdf/disneylayeredbrdf.cpp
-        renderer/modeling/bsdf/disneylayeredbrdf.h
-    )
-endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_bsdf_sources}
 )
@@ -1954,12 +1937,6 @@ set (renderer_modeling_material_sources
     renderer/modeling/material/oslmaterial.cpp
     renderer/modeling/material/oslmaterial.h
 )
-if (WITH_DISNEY_MATERIAL)
-    list (APPEND renderer_modeling_material_sources
-        renderer/modeling/material/disneymaterial.cpp
-        renderer/modeling/material/disneymaterial.h
-    )
-endif ()
 list (APPEND appleseed_sources
     ${renderer_modeling_material_sources}
 )
@@ -2197,7 +2174,6 @@ set (renderer_utility_sources
     renderer/utility/projectpoints.cpp
     renderer/utility/projectpoints.h
     renderer/utility/rgbspectrum.h
-    renderer/utility/seexpr.h
     renderer/utility/settingsparsing.cpp
     renderer/utility/settingsparsing.h
     renderer/utility/shadowterminator.h
@@ -2359,10 +2335,6 @@ link_against_osl (appleseed)
 
 if (WITH_EMBREE)
     link_against_embree (appleseed)
-endif ()
-
-if (WITH_DISNEY_MATERIAL)
-    link_against_seexpr (appleseed)
 endif ()
 
 if (WITH_GPU)

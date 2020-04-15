@@ -1,8 +1,0 @@
-$freq = 10; # 0.010, 100.000
-$slice = 0.5; # 0.000, 1.000
-$octaves = 6; # 1 8
-$lacunarity = 2; # 1.0 4.0
-$gain = 0.5; # 0.0 1.0
-$contrast = 0.5; # 0.000, 1.000
-
-contrast(turbulence([$freq * $u, $freq * $v, $slice], $octaves, $lacunarity, $gain), $contrast)

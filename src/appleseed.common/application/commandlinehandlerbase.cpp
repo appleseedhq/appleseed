@@ -109,13 +109,6 @@ struct CommandLineHandlerBase::Impl
             Compiler::get_compiler_name(),
             Compiler::get_compiler_version());
 
-        const bool WithDisneyMaterial =
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-            true;
-#else
-            false;
-#endif
-
         const bool WithEmbree =
 #ifdef APPLESEED_WITH_EMBREE
             true;
@@ -141,12 +134,10 @@ struct CommandLineHandlerBase::Impl
             logger,
             "library features:\n"
             "  Instruction sets              %s\n"
-            "  Disney material with SeExpr   %s\n"
             "  Embree                        %s\n"
             "  Spectral support              %s\n"
             "  GPU support                   %s",
             Appleseed::get_lib_cpu_features(),
-            to_enabled_disabled(WithDisneyMaterial),
             to_enabled_disabled(WithEmbree),
             to_enabled_disabled(WithSpectralSupport),
             to_enabled_disabled(WithGPUSupport));

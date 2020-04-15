@@ -54,8 +54,6 @@ class MaterialCollectionItem
         renderer::Assembly&             parent,
         AssemblyItem*                   parent_item);
 
-    const renderer::Material& create_default_disney_material(const std::string& material_name);
-
   protected:
     typedef CollectionItem<renderer::Material, renderer::Assembly, AssemblyItem> Base;
 
@@ -63,8 +61,6 @@ class MaterialCollectionItem
 
   private slots:
     void slot_create_generic();
-    void slot_create_disney();
-    void slot_import_disney();
     void slot_create_osl();
 
   private:
