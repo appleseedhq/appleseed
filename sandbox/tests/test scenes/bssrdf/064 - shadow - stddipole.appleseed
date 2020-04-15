@@ -35,6 +35,10 @@
                     1.000000000
                 </alpha>
             </color>
+            <bsdf name="bsdf1" model="lambertian_brdf">
+                <parameter name="reflectance" value="0.954687" />
+                <parameter name="reflectance_multiplier" value="1.0" />
+            </bsdf>
             <bssrdf name="02 - Default_mat_bssrdf" model="standard_dipole_bssrdf">
                 <parameter name="fresnel_weight" value="0" />
                 <parameter name="ior" value="1" />
@@ -51,24 +55,8 @@
                 <parameter name="displacement_method" value="bump" />
                 <parameter name="normal_map_up" value="z" />
             </material>
-            <material name="03 - Default_mat" model="disney_material">
-                <parameter name="alpha_map" value="1" />
-                <parameters name="layer1">
-                    <parameter name="anisotropic" value="0" />
-                    <parameter name="base_color" value="[0.954687, 0.954687, 0.954687]" />
-                    <parameter name="clearcoat" value="0" />
-                    <parameter name="clearcoat_gloss" value="0" />
-                    <parameter name="layer_name" value="layer1" />
-                    <parameter name="layer_number" value="0" />
-                    <parameter name="mask" value="1.0" />
-                    <parameter name="metallic" value="0" />
-                    <parameter name="roughness" value="0" />
-                    <parameter name="sheen" value="0.0" />
-                    <parameter name="sheen_tint" value="0.0" />
-                    <parameter name="specular" value="0" />
-                    <parameter name="specular_tint" value="0" />
-                    <parameter name="subsurface" value="0.0" />
-                </parameters>
+            <material name="03 - Default_mat" model="generic_material">
+                <parameter name="bsdf" value="bsdf1" />
             </material>
             <light name="light1" model="directional_light">
                 <parameter name="cast_indirect_light" value="true" />
