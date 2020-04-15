@@ -208,17 +208,6 @@ set (mainwindow_project_sources
     mainwindow/project/tools.cpp
     mainwindow/project/tools.h
 )
-if (WITH_DISNEY_MATERIAL)
-    list (APPEND mainwindow_project_sources
-        mainwindow/project/expressioneditorwindow.cpp
-        mainwindow/project/expressioneditorwindow.h
-        mainwindow/project/expressioneditorwindow.ui
-        mainwindow/project/disneymaterialcustomui.cpp
-        mainwindow/project/disneymaterialcustomui.h
-        mainwindow/project/disneymateriallayerui.cpp
-        mainwindow/project/disneymateriallayerui.h
-    )
-endif ()
 list (APPEND appleseed.studio_sources
     ${mainwindow_project_sources}
 )
@@ -506,10 +495,6 @@ target_link_libraries (appleseed.studio
     ${PYTHON_LIBRARIES}
 )
 
-if (WITH_DISNEY_MATERIAL)
-    link_against_seexpreditor (appleseed.studio)
-endif ()
-
 
 #--------------------------------------------------------------------------------------------------
 # Post-build commands.
@@ -547,10 +532,6 @@ install (FILES ../../sandbox/settings/appleseed.studio.xml
 )
 
 install (DIRECTORY ../../sandbox/ocio
-    DESTINATION .
-)
-
-install (DIRECTORY ../../sandbox/seexpr
     DESTINATION .
 )
 

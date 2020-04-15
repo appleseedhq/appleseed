@@ -1,5 +1,0 @@
-$freq = 5; # 0.010, 100.000
-$slice = 0.5; # 0.000, 1.000
-$contrast = 0.5; # 0.000, 1.000
-
-contrast(noise([$freq * $u, $freq * $v, $slice]), $contrast)

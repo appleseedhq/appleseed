@@ -123,10 +123,6 @@ QMenu* ObjectInstanceItem::get_single_item_context_menu() const
 
     menu->addSeparator();
 
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-    menu->addAction("Assign New Disney Material", this, SLOT(slot_assign_new_disney_material()));
-#endif
-
     menu->addAction("Assign Materials...", this, SLOT(slot_open_material_assignment_editor()));
 
     add_material_assignment_menu_actions(menu);
@@ -161,105 +157,9 @@ QMenu* ObjectInstanceItem::get_multiple_items_context_menu(const QList<ItemBase*
 
     menu->addSeparator();
 
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-    menu->addAction("Assign New Disney Material", this, SLOT(slot_assign_new_disney_material()))
-        ->setData(QVariant::fromValue(items));
-#endif
-
     add_material_assignment_menu_actions(menu, items);
 
     return menu;
-}
-
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-
-// Friend of ObjectInstanceItem class, thus cannot be placed in anonymous namespace.
-class AssignNewDisneyMaterialAction
-  : public RenderingManager::IScheduledAction
-{
-  public:
-    AssignNewDisneyMaterialAction(
-        EntityEditorContext&                editor_context,
-        const QList<ObjectInstanceItem*>&   items)
-      : m_editor_context(editor_context)
-      , m_items(items)
-    {
-    }
-
-    void operator()(Project& project) override
-    {
-        for (int i = 0; i < m_items.size(); ++i)
-        {
-            // Create a new Disney material and assign it to the object instance.
-            const Material& material = create_and_assign_new_material(m_items[i]);
-
-            // Select the last added material.
-            if (i == m_items.size() - 1)
-                m_editor_context.m_project_explorer.select_entity(material.get_uid());
-        }
-    }
-
-    const Material& create_and_assign_new_material(ObjectInstanceItem* object_instance_item)
-    {
-        const ObjectInstance& object_instance = *object_instance_item->m_entity;
-        const Assembly& assembly = object_instance_item->m_parent;
-
-        // Name the material after the name of the object instance.
-        const std::string material_name =
-            make_unique_name(
-                std::string(object_instance.get_name()) + "_material",
-                assembly.materials());
-
-        // Create the material and insert it into the assembly.
-        const AssemblyItem* assembly_item = m_editor_context.m_item_registry.get_item<AssemblyItem>(assembly);
-        const Material& material =
-            assembly_item->get_material_collection_item().create_default_disney_material(material_name);
-
-        // Assign the material to the object instance.
-        // We need the object bound to the instance in order to retrieve the material slots.
-        const Object* object = object_instance.find_object();
-        if (object)
-        {
-            const size_t slot_count = object->get_material_slot_count();
-
-            if (slot_count > 0)
-            {
-                for (size_t i = 0; i < slot_count; ++i)
-                {
-                    object_instance_item->do_assign_material(
-                        object->get_material_slot(i),
-                        ObjectInstance::BothSides,
-                        material_name.c_str());
-                }
-            }
-            else
-            {
-                object_instance_item->do_assign_material(
-                    ObjectInstanceItem::DefaultSlotName,
-                    ObjectInstance::BothSides,
-                    material_name.c_str());
-            }
-        }
-
-        return material;
-    }
-
-  private:
-    EntityEditorContext&                m_editor_context;
-    const QList<ObjectInstanceItem*>    m_items;
-};
-
-#endif // APPLESEED_WITH_DISNEY_MATERIAL
-
-void ObjectInstanceItem::slot_assign_new_disney_material()
-{
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-    m_editor_context.m_rendering_manager.schedule_or_execute(
-        std::unique_ptr<RenderingManager::IScheduledAction>(
-            new AssignNewDisneyMaterialAction(
-                m_editor_context,
-                get_action_items<ObjectInstanceItem>())));
-#endif
 }
 
 void ObjectInstanceItem::slot_open_material_assignment_editor()

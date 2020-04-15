@@ -148,14 +148,6 @@ macro (link_against_osl target)
     target_link_libraries (${target} ${OSL_EXEC_LIBRARY} ${OSL_COMP_LIBRARY} ${OSL_QUERY_LIBRARY})
 endmacro ()
 
-macro (link_against_seexpr target)
-    target_link_libraries (${target} ${SEEXPR_LIBRARIES})
-endmacro ()
-
-macro (link_against_seexpreditor target)
-    target_link_libraries (${target} ${SEEXPREDITOR_LIBRARIES})
-endmacro ()
-
 macro (link_against_xercesc target)
     target_link_libraries (${target} ${XERCES_LIBRARIES})
 endmacro ()

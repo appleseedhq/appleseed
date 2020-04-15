@@ -30,9 +30,6 @@
 #pragma once
 
 // API headers.
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-#include "renderer/modeling/material/disneymaterial.h"
-#endif
 #include "renderer/modeling/material/genericmaterial.h"
 #include "renderer/modeling/material/imaterialfactory.h"
 #include "renderer/modeling/material/material.h"

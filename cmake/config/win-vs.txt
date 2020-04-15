@@ -351,28 +351,6 @@ macro (link_against_osl target)
     endif ()
 endmacro ()
 
-macro (link_against_seexpr target)
-    if (USE_FIND_PACKAGE_FOR_SEEXPR)
-        target_link_libraries (${target} ${SEEXPR_LIBRARIES})
-    else ()
-        target_link_libraries (${target}
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/seexpr-debug/lib/SeExpr.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/seexpr-release/lib/SeExpr.lib
-        )
-    endif ()
-endmacro ()
-
-macro (link_against_seexpreditor target)
-    if (USE_FIND_PACKAGE_FOR_SEEXPR)
-        target_link_libraries (${target} ${SEEXPREDITOR_LIBRARIES})
-    else ()
-        target_link_libraries (${target}
-            debug       ${APPLESEED_DEPS_STAGE_DIR}/seexpr-debug/lib/SeExprEditor.lib
-            optimized   ${APPLESEED_DEPS_STAGE_DIR}/seexpr-release/lib/SeExprEditor.lib
-        )
-    endif ()
-endmacro ()
-
 macro (link_against_xercesc target)
     if (USE_FIND_PACKAGE_FOR_XERCES)
         target_link_libraries (${target} ${XERCES_LIBRARIES})

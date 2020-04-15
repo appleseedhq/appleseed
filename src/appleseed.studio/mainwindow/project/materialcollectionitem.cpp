@@ -31,9 +31,6 @@
 
 // appleseed.studio headers.
 #include "mainwindow/project/assemblyitem.h"
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-#include "mainwindow/project/disneymaterialcustomui.h"
-#endif
 #include "mainwindow/project/entityeditor.h"
 #include "mainwindow/project/entityeditorcontext.h"
 #include "mainwindow/project/entityeditorwindow.h"
@@ -96,41 +93,13 @@ MaterialCollectionItem::MaterialCollectionItem(
     add_items(materials);
 }
 
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-
-const Material& MaterialCollectionItem::create_default_disney_material(const std::string& material_name)
-{
-    auto_release_ptr<Material> material =
-        DisneyMaterialFactory().create(material_name.c_str(), ParamArray());
-
-    static_cast<DisneyMaterial*>(material.get())->add_new_default_layer();
-
-    Material* material_ptr = material.get();
-    add_item(material_ptr);
-
-    EntityTraits<Material>::insert_entity(material, m_parent);
-    m_editor_context.m_project_builder.slot_notify_project_modification();
-
-    return *material_ptr;
-}
-
-#endif // APPLESEED_WITH_DISNEY_MATERIAL
-
 QMenu* MaterialCollectionItem::get_single_item_context_menu() const
 {
     QMenu* menu = ItemBase::get_single_item_context_menu();
     menu->clear();
-
     menu->addSeparator();
     menu->addAction("Create Generic Material...", this, SLOT(slot_create_generic()));
     menu->addAction("Create OSL Material...", this, SLOT(slot_create_osl()));
-
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-    menu->addSeparator();
-    menu->addAction("Create Disney Material...", this, SLOT(slot_create_disney()));
-    menu->addAction("Import Disney Material...", this, SLOT(slot_import_disney()));
-#endif
-
     return menu;
 }
 
@@ -149,82 +118,6 @@ ItemBase* MaterialCollectionItem::create_item(Material* material)
 void MaterialCollectionItem::slot_create_generic()
 {
     do_create_material("generic_material");
-}
-
-void MaterialCollectionItem::slot_create_disney()
-{
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-    do_create_material("disney_material");
-#endif
-}
-
-void MaterialCollectionItem::slot_import_disney()
-{
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-    QString filepath =
-        get_open_filename(
-            nullptr,
-            "Import...",
-            "Disney Material (*.dmt);;All Files (*.*)",
-            m_editor_context.m_settings,
-            SETTINGS_FILE_DIALOG_PROJECTS);
-
-    if (!filepath.isEmpty())
-    {
-        const bf::path root_path(Application::get_root_path());
-        const bf::path schema_file_path = root_path / "schemas" / "settings.xsd";
-
-        SettingsFileReader reader(global_logger());
-        ParamArray parameters;
-        const bool success =
-            reader.read(
-                filepath.toStdString().c_str(),
-                schema_file_path.string().c_str(),
-                parameters);
-
-        if (!success)
-        {
-            show_error_message_box(
-                "Importing Error",
-                "Failed to import the Disney Material file " + filepath.toStdString());
-            return;
-        }
-
-        std::string name = parameters.get("__name");
-        const std::string model = parameters.get("__model");
-        parameters.strings().remove("__name");
-        parameters.strings().remove("__model");
-
-        if (model != "disney_material")
-        {
-            show_error_message_box(
-                "Importing Error",
-                "Material model " + model + " is not supported.");
-            return;
-        }
-
-        // If there is already a material with the same name, rename the imported material.
-        for (const_each<MaterialContainer> i = m_parent.materials(); i; ++i)
-        {
-            if (strcmp(i->get_name(), name.c_str()) == 0)
-            {
-                name = make_unique_name(name, m_parent.materials());
-                break;
-            }
-        }
-
-        auto_release_ptr<Material> material =
-            DisneyMaterialFactory().create(name.c_str(), parameters);
-        Material* material_ptr = material.get();
-
-        add_item(material_ptr);
-
-        EntityTraits<Material>::insert_entity(material, m_parent);
-        m_editor_context.m_project_builder.slot_notify_project_modification();
-
-        m_editor_context.m_project_explorer.select_entity(material_ptr->get_uid());
-    }
-#endif
 }
 
 void MaterialCollectionItem::slot_create_osl()
@@ -256,18 +149,6 @@ void MaterialCollectionItem::do_create_material(const char* model)
     std::unique_ptr<EntityEditor::IEntityBrowser> entity_browser(
         new EntityBrowser<Assembly>(Base::m_parent));
 
-    std::unique_ptr<CustomEntityUI> custom_entity_ui;
-
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-    if (strcmp(model, "disney_material") == 0)
-    {
-        custom_entity_ui.reset(
-            new DisneyMaterialCustomUI(
-                m_editor_context.m_project,
-                m_editor_context.m_settings));
-    }
-#endif
-
     open_entity_editor(
         QTreeWidgetItem::treeWidget(),
         window_title,
@@ -275,7 +156,7 @@ void MaterialCollectionItem::do_create_material(const char* model)
         m_editor_context.m_settings,
         std::move(form_factory),
         std::move(entity_browser),
-        std::move(custom_entity_ui),
+        std::unique_ptr<CustomEntityUI>(),
         Dictionary(),
         this,
         SLOT(slot_create_applied(foundation::Dictionary)),

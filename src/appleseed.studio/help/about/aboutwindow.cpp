@@ -112,13 +112,6 @@ namespace
 
 void AboutWindow::set_library_features()
 {
-    const bool WithDisneyMaterial =
-#ifdef APPLESEED_WITH_DISNEY_MATERIAL
-        true;
-#else
-        false;
-#endif
-
     const bool WithEmbree =
 #ifdef APPLESEED_WITH_EMBREE
         true;
@@ -143,7 +136,6 @@ void AboutWindow::set_library_features()
     QString details;
     details += "This build of appleseed has the following features:\n\n";
     details += QString("  Instruction sets: %1\n").arg(Appleseed::get_lib_cpu_features());
-    details += QString("  Disney material with SeExpr support: %1\n").arg(to_enabled_disabled(WithDisneyMaterial));
     details += QString("  Embree: %1\n").arg(to_enabled_disabled(WithEmbree));
     details += QString("  Spectral support: %1\n").arg(to_enabled_disabled(WithSpectralSupport));
     details += QString("  GPU support: %1\n").arg(to_enabled_disabled(WithGPUSupport));

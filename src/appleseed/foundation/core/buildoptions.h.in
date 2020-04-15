@@ -42,6 +42,5 @@
 
 // Optional components.
 
-#cmakedefine APPLESEED_WITH_DISNEY_MATERIAL
 #cmakedefine APPLESEED_WITH_EMBREE
 #cmakedefine APPLESEED_WITH_GPU
