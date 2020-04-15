@@ -67,24 +67,12 @@
                     1.000000000
                 </alpha>
             </color>
-            <material name="01 - Default_mat" model="disney_material">
-                <parameter name="alpha_map" value="1" />
-                <parameters name="layer1">
-                    <parameter name="anisotropic" value="0" />
-                    <parameter name="base_color" value="[1, 1, 1]" />
-                    <parameter name="clearcoat" value="0" />
-                    <parameter name="clearcoat_gloss" value="0" />
-                    <parameter name="layer_name" value="layer1" />
-                    <parameter name="layer_number" value="0" />
-                    <parameter name="mask" value="1.0" />
-                    <parameter name="metallic" value="0" />
-                    <parameter name="roughness" value="1" />
-                    <parameter name="sheen" value="0" />
-                    <parameter name="sheen_tint" value="0" />
-                    <parameter name="specular" value="0" />
-                    <parameter name="specular_tint" value="0" />
-                    <parameter name="subsurface" value="0.0" />
-                </parameters>
+            <bsdf name="bsdf1" model="lambertian_brdf">
+                <parameter name="reflectance" value="1" />
+                <parameter name="reflectance_multiplier" value="1.0" />
+            </bsdf>
+            <material name="01 - Default_mat" model="generic_material">
+                <parameter name="bsdf" value="bsdf1" />
             </material>
             <light name="light_blue" model="max_omni_light">
                 <parameter name="decay_exponent" value="0" />

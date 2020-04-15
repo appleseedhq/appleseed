@@ -57,6 +57,10 @@
                     1.000000000
                 </alpha>
             </color>
+            <bsdf name="bsdf1" model="lambertian_brdf">
+                <parameter name="reflectance" value="0.954687" />
+                <parameter name="reflectance_multiplier" value="1.0" />
+            </bsdf>
             <shader_group name="Material #29_mat_shader_group">
                 <shader type="shader" name="diffuse_vertex_colors" layer="Material #29_mat">
                 </shader>
@@ -64,24 +68,8 @@
                 </shader>
                 <connect_shaders src_layer="Material #29_mat" src_param="out_outColor" dst_layer="Material #29_mat_closure_2_surface_name" dst_param="in_input" />
             </shader_group>
-            <material name="01 - Default_mat" model="disney_material">
-                <parameter name="alpha_map" value="1" />
-                <parameters name="layer1">
-                    <parameter name="anisotropic" value="0" />
-                    <parameter name="base_color" value="[0.954687, 0.954687, 0.954687]" />
-                    <parameter name="clearcoat" value="0" />
-                    <parameter name="clearcoat_gloss" value="0" />
-                    <parameter name="layer_name" value="layer1" />
-                    <parameter name="layer_number" value="0" />
-                    <parameter name="mask" value="1.0" />
-                    <parameter name="metallic" value="0" />
-                    <parameter name="roughness" value="0" />
-                    <parameter name="sheen" value="0.0" />
-                    <parameter name="sheen_tint" value="0.5" />
-                    <parameter name="specular" value="0" />
-                    <parameter name="specular_tint" value="0" />
-                    <parameter name="subsurface" value="0.0" />
-                </parameters>
+            <material name="01 - Default_mat" model="generic_material">
+                <parameter name="bsdf" value="bsdf1" />
             </material>
             <material name="Material #29_mat" model="osl_material">
                 <parameter name="alpha_map" value="1" />
