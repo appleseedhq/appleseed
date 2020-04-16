@@ -1817,7 +1817,10 @@ namespace
             const XMLCh* const  chars,
             const XMLSize_t     length) override
         {
-            m_code = trim_both(transcode(chars));
+            if(!m_code.empty()){
+              m_code += " ";
+            }
+            m_code += trim_both(transcode(chars));
         }
 
         const std::string& get_code() const
