@@ -156,14 +156,13 @@ inline void XMLElement::write(const ContentType content_type)
     assert(!m_is_open);
 
     // Open the tag.
-    std::fprintf(m_file, "%s<%s", m_indenter.c_str(), replace_special_xml_characters(m_name).c_str());
+    std::fprintf(m_file, "%s<%s", m_indenter.c_str(), m_name.c_str());
 
     // Emit the attributes.
     for (const_each<AttributeVector> i = m_attributes; i; ++i)
     {
-        const std::string attribute_key = replace_special_xml_characters(i->first);
         const std::string attribute_value = replace_special_xml_characters(i->second);
-        std::fprintf(m_file, " %s=\"%s\"", attribute_key.c_str(), attribute_value.c_str());
+        std::fprintf(m_file, " %s=\"%s\"", i->first.c_str(), attribute_value.c_str());
     }
 
     // Close the tag or the whole element.

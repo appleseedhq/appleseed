@@ -863,9 +863,7 @@ namespace
             write_collection(shader.shader_params());
 
             if (shader.get_source_code())
-            {
                 write_osl_code(shader.get_source_code());
-            }
         }
 
         // Write a <connect_shaders> element.

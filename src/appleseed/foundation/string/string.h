@@ -896,11 +896,6 @@ inline std::string replace_special_xml_characters(const std::string& s)
     return result;
 }
 
-inline std::string replace_special_xml_characters(const char* s){
-    std::string result = std::string(s);
-    return replace_special_xml_characters(result);
-}
-
 
 //
 // Fast string-to-number functions implementation.
