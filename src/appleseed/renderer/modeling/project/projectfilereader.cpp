@@ -1830,7 +1830,7 @@ namespace
 
       private:
         std::string  m_code;
-        std::string trimmed = "";
+        std::string trimmed;
     };
 
 
