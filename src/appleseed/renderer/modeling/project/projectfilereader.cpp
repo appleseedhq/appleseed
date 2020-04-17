@@ -1817,7 +1817,10 @@ namespace
             const XMLCh* const  chars,
             const XMLSize_t     length) override
         {
-            m_code = trim_both(transcode(chars));
+            m_code += trimmed;
+            m_code += trim_left(transcode(chars));
+            trimmed = m_code.substr(m_code.find_last_not_of(Blanks) + 1, m_code.size());
+            m_code = trim_right(m_code);
         }
 
         const std::string& get_code() const
@@ -1827,6 +1830,7 @@ namespace
 
       private:
         std::string  m_code;
+        std::string trimmed = "";
     };
 
 
