@@ -1817,20 +1817,16 @@ namespace
             const XMLCh* const  chars,
             const XMLSize_t     length) override
         {
-            m_code += trimmed;
-            m_code += trim_left(transcode(chars));
-            trimmed = m_code.substr(m_code.find_last_not_of(Blanks) + 1, m_code.size());
-            m_code = trim_right(m_code);
+            m_code += transcode(chars);
         }
 
-        const std::string& get_code() const
+        std::string get_code() const
         {
-            return m_code;
+            return trim_both(m_code);
         }
 
       private:
-        std::string  m_code;
-        std::string trimmed;
+        std::string m_code;
     };
 
 
@@ -2862,16 +2858,16 @@ namespace
             const XMLCh* const  chars,
             const XMLSize_t     length) override
         {
-            m_path = trim_both(transcode(chars));
+            m_path += transcode(chars);
         }
 
-        const std::string& get_path() const
+        std::string get_path() const
         {
-            return m_path;
+            return trim_both(m_path);
         }
 
       private:
-        std::string          m_path;
+        std::string m_path;
     };
 
 
