@@ -848,7 +848,7 @@ namespace
             XMLElement element("osl_code", m_file, m_indenter);
             element.write(XMLElement::HasChildElements);
 
-            fprintf(m_file, "%s\n", code);
+            fprintf(m_file, "%s\n", replace_special_xml_characters(code).c_str());
         }
 
         // Write a <shader> element.
