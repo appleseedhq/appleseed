@@ -2028,6 +2028,10 @@ set (renderer_modeling_project_sources
     renderer/modeling/project/projecttracker.cpp
     renderer/modeling/project/projecttracker.h
     renderer/modeling/project/renderingtimer.h
+    renderer/modeling/project/xmlprojectfilereader.cpp
+    renderer/modeling/project/xmlprojectfilereader.h
+    renderer/modeling/project/xmlprojectfilewriter.cpp
+    renderer/modeling/project/xmlprojectfilewriter.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_project_sources}

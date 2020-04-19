@@ -27,48 +27,50 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "projectfilewriter.h"
-
-// appleseed.renderer headers.
-#include "renderer/modeling/project/xmlprojectfilewriter.h"
+#pragma once
 
 // appleseed.foundation headers.
-#include "foundation/string/string.h"
+#include "foundation/memory/autoreleaseptr.h"
 
-// Boost headers.
-#include "boost/filesystem.hpp"
-
-using namespace foundation;
-namespace bf = boost::filesystem;
+// Forward declarations.
+namespace foundation { class SearchPaths; }
+namespace renderer   { class EventCounters; }
+namespace renderer   { class Project; }
 
 namespace renderer
 {
 
 //
-// ProjectFileWriter class implementation.
+// XML Project file reader.
 //
 
-bool ProjectFileWriter::write(
-    Project&        project,
-    const char*     filepath,
-    const int       options,
-    const char*     extra_comments)
+class XMLProjectFileReader
 {
-    const auto ext = lower_case(bf::path(filepath).extension().string());
+  public:
+    // Read a project from disk (or load a built-in project).
+    // Return 0 if reading or parsing the file failed.
+    static foundation::auto_release_ptr<Project> read(
+        const char*                     project_filepath,
+        const char*                     schema_filepath,
+        const int                       options,
+        EventCounters&                  event_counters);
 
-    if (ext == ".appleseedz")
-        return XMLProjectFileWriter::write_packed_project_file(
-            project,
-            filepath,
-            options,
-            extra_comments);
+    // Read an archive from disk.
+    // Return 0 if reading or parsing the file failed.
+    static foundation::auto_release_ptr<Project> read_archive(
+        const char*                     archive_filepath,
+        const char*                     schema_filepath,
+        const foundation::SearchPaths&  search_paths,
+        const int                       options,
+        EventCounters&                  event_counters);
 
-    return XMLProjectFileWriter::write_plain_project_file(
-        project,
-        filepath,
-        options,
-        extra_comments);
-}
+  private:
+    static foundation::auto_release_ptr<Project> load_project_file(
+        const char*                     project_filepath,
+        const char*                     schema_filepath,
+        const int                       options,
+        EventCounters&                  event_counters,
+        const foundation::SearchPaths*  search_paths = nullptr);
+};
 
 }   // namespace renderer

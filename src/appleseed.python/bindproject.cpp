@@ -248,27 +248,28 @@ namespace
     }
 
     bpy::object project_file_reader_read_default_opts(
-        ProjectFileReader*                  reader,
         const char*                         project_filename,
         const char*                         schema_filename)
     {
-        auto_release_ptr<Project> project(reader->read(project_filename, schema_filename));
+        auto_release_ptr<Project> project(
+            ProjectFileReader::read(project_filename, schema_filename));
         return bpy::object(project);
     }
 
     bpy::object project_file_reader_read_with_opts(
-        ProjectFileReader*                  reader,
         const char*                         project_filename,
         const char*                         schema_filename,
         const ProjectFileReader::Options    opts)
     {
-        auto_release_ptr<Project> project(reader->read(project_filename, schema_filename, opts));
+        auto_release_ptr<Project> project(
+            ProjectFileReader::read(project_filename, schema_filename, opts));
         return bpy::object(project);
     }
 
-    bpy::object project_file_reader_load_builtin(ProjectFileReader* reader, const char* project_name)
+    bpy::object project_file_reader_load_builtin(const char* project_name)
     {
-        auto_release_ptr<Project> project(reader->load_builtin(project_name));
+        auto_release_ptr<Project> project(
+            ProjectFileReader::load_builtin(project_name));
         return bpy::object(project);
     }
 
@@ -353,9 +354,9 @@ void bind_project()
         .value("OmitProjectSchemaValidation", ProjectFileReader::OmitProjectSchemaValidation);
 
     bpy::class_<ProjectFileReader>("ProjectFileReader")
-        .def("read", &project_file_reader_read_default_opts)
-        .def("read", &project_file_reader_read_with_opts)
-        .def("load_builtin", &project_file_reader_load_builtin);
+        .def("read", &project_file_reader_read_default_opts).staticmethod("read")
+        .def("read", &project_file_reader_read_with_opts).staticmethod("read")
+        .def("load_builtin", &project_file_reader_load_builtin).staticmethod("load_builtin");
 
     bpy::enum_<ProjectFileWriter::Options>("ProjectFileWriterOptions")
         .value("Defaults", ProjectFileWriter::Defaults)
@@ -365,8 +366,7 @@ void bind_project()
         .value("CopyAllAssets", ProjectFileWriter::CopyAllAssets);
 
     bpy::class_<ProjectFileWriter>("ProjectFileWriter")
-        // These methods are static but for symmetry with ProjectFileReader we're exposing them as non-static.
-        .def("write", write_project_default_opts)
-        .def("write", write_project_with_opts)
-        .def("write", write_project_with_opts_and_comments);
+        .def("write", write_project_default_opts).staticmethod("write")
+        .def("write", write_project_with_opts).staticmethod("write")
+        .def("write", write_project_with_opts_and_comments).staticmethod("write");
 }
