@@ -34,10 +34,10 @@
 namespace foundation
 {
 
-size_t z85_encoded_size(const size_t size);
-size_t z85_decoded_size(const size_t size);
+size_t z85_encoded_size(const std::size_t size);
+size_t z85_decoded_size(const std::size_t size);
 
-void z85_encode(const unsigned char* src, const size_t size, char* dst);
-void z85_decode(const char* src, const size_t size, unsigned char* dst);
+void z85_encode(const unsigned char* src, const std::size_t size, char* dst);
+void z85_decode(const char* src, const std::size_t size, unsigned char* dst);
 
 }   // namespace foundation
