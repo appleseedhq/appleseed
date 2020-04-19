@@ -75,19 +75,19 @@ unsigned char decoder [96] =
 
 }
 
-size_t z85_encoded_size(const size_t size)
+std::size_t z85_encoded_size(const std::size_t size)
 {
     assert(size % 4 == 0);
     return size * 5 / 4;
 }
 
-size_t z85_decoded_size(const size_t size)
+std::size_t z85_decoded_size(const std::size_t size)
 {
     assert(size % 5 == 0);
     return size * 4 / 5;
 }
 
-void z85_encode(const unsigned char* src, const size_t size, char* dst)
+void z85_encode(const unsigned char* src, const std::size_t size, char* dst)
 {
     assert(size % 4 == 0);
 
@@ -115,7 +115,7 @@ void z85_encode(const unsigned char* src, const size_t size, char* dst)
     assert(char_nbr == z85_encoded_size(size));
 }
 
-void z85_decode(const char* src, const size_t size, unsigned char* dst)
+void z85_decode(const char* src, const std::size_t size, unsigned char* dst)
 {
     assert(size % 5 == 0);
 
