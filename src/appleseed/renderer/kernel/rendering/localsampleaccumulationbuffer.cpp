@@ -92,6 +92,7 @@ LocalSampleAccumulationBuffer::LocalSampleAccumulationBuffer(
     while (true)
     {
         m_levels.push_back(new AccumulatorTile(level_width, level_height, 4));
+        m_read_levels.push_back(new AccumulatorTile(level_width, level_height, 4));
         m_level_scales.push_back(
             Vector2f(
                 static_cast<float>(level_width) / width,
@@ -276,10 +277,7 @@ void LocalSampleAccumulationBuffer::develop_to_frame(
         for (size_t tx = 0; tx < frame_props.m_tile_count_x; ++tx)
         {
             if (abort_switch.is_aborted())
-            {
-                m_lock.unlock_write();
                 return;
-            }
 
             const size_t origin_x = tx * frame_props.m_tile_width;
             const size_t origin_y = ty * frame_props.m_tile_height;
