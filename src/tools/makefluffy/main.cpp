@@ -357,9 +357,8 @@ int main(int argc, char* argv[])
         / "project.xsd";
 
     // Read the input project from disk.
-    ProjectFileReader reader;
     auto_release_ptr<Project> project(
-        reader.read(
+        ProjectFileReader::read(
             input_filepath.c_str(),
             schema_filepath.string().c_str()));
 
