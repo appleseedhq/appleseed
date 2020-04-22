@@ -51,7 +51,8 @@ class APPLESEED_DLLSYMBOL ProjectFileWriter
         OmitHeaderComment           = 1UL << 0,     // do not write the header comment
         OmitWritingGeometryFiles    = 1UL << 1,     // do not write geometry files to disk
         OmitHandlingAssetFiles      = 1UL << 2,     // do not change paths to asset files (such as texture files)
-        CopyAllAssets               = 1UL << 3      // copy all asset files (by default copy asset files with relative paths only)
+        CopyAllAssets               = 1UL << 3,     // copy all asset files (by default copy asset files with relative paths only)
+        AsciiArrays                 = 1UL << 4      // use ascii encoding for arrays
     };
 
     // Write a project to disk.

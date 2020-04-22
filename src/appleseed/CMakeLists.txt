@@ -2009,6 +2009,10 @@ source_group ("renderer\\modeling\\postprocessingstage" FILES
 )
 
 set (renderer_modeling_project_sources
+    renderer/modeling/project/appleseedprojectfilereader.cpp
+    renderer/modeling/project/appleseedprojectfilereader.h
+    renderer/modeling/project/appleseedprojectfilewriter.cpp
+    renderer/modeling/project/appleseedprojectfilewriter.h
     renderer/modeling/project/assethandler.cpp
     renderer/modeling/project/assethandler.h
     renderer/modeling/project/configuration.cpp

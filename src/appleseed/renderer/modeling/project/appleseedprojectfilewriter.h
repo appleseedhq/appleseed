@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2020 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -27,55 +26,25 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "projectfilewriter.h"
+#pragma once
 
-// appleseed.renderer headers.
-#include "renderer/modeling/project/appleseedprojectfilewriter.h"
-#include "renderer/modeling/project/xmlprojectfilewriter.h"
-
-// appleseed.foundation headers.
-#include "foundation/string/string.h"
-
-// Boost headers.
-#include "boost/filesystem.hpp"
-
-using namespace foundation;
-namespace bf = boost::filesystem;
+// Forward declarations.
+namespace renderer  { class Project; }
 
 namespace renderer
 {
 
 //
-// ProjectFileWriter class implementation.
+// Appleseed project file writer.
 //
 
-bool ProjectFileWriter::write(
-    Project&        project,
-    const char*     filepath,
-    const int       options,
-    const char*     extra_comments)
+class AppleseedProjectFileWriter
 {
-    const auto ext = lower_case(bf::path(filepath).extension().string());
-
-    if (ext == ".aseed")
-        return AppleseedProjectFileWriter::write_project_file(
-            project,
-            filepath,
-            options);
-
-    if (ext == ".appleseedz")
-        return XMLProjectFileWriter::write_packed_project_file(
-            project,
-            filepath,
-            options,
-            extra_comments);
-
-    return XMLProjectFileWriter::write_plain_project_file(
-        project,
-        filepath,
-        options,
-        extra_comments);
-}
+  public:
+    static bool write_project_file(
+        Project&        project,
+        const char*     filepath,
+        const int       options);
+};
 
 }   // namespace renderer

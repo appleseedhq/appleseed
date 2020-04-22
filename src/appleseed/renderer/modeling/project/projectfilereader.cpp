@@ -33,6 +33,7 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/project-builtin/cornellboxproject.h"
 #include "renderer/modeling/project-builtin/defaultproject.h"
+#include "renderer/modeling/project/appleseedprojectfilereader.h"
 #include "renderer/modeling/project/configuration.h"
 #include "renderer/modeling/project/eventcounters.h"
 #include "renderer/modeling/project/project.h"
@@ -46,10 +47,15 @@
 #include "foundation/string/string.h"
 #include "foundation/utility/stopwatch.h"
 
+// Boost headers.
+#include "boost/filesystem/path.hpp"
+#include "boost/filesystem/operations.hpp"
+
 // Standard headers.
 #include <string>
 
 using namespace foundation;
+namespace bf = boost::filesystem;
 
 namespace renderer
 {
@@ -91,12 +97,25 @@ auto_release_ptr<Project> ProjectFileReader::read(
 
     EventCounters event_counters;
 
-    auto_release_ptr<Project> project =
-        XMLProjectFileReader::read(
-                project_filepath,
-                schema_filepath,
-                options,
-                event_counters);
+    const auto ext = lower_case(bf::path(project_filepath).extension().string());
+
+    auto_release_ptr<Project> project;
+
+    if (ext == ".seed")
+    {
+        project = AppleseedProjectFileReader::read(
+            project_filepath,
+            options,
+            event_counters);
+    }
+    else
+    {
+        project = XMLProjectFileReader::read(
+            project_filepath,
+            schema_filepath,
+            options,
+            event_counters);
+    }
 
     if (project.get())
         postprocess_project(project.ref(), event_counters, options);
