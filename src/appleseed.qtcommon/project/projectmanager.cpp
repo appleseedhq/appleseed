@@ -38,6 +38,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/compiler.h"
+#include "foundation/utility/searchpaths.h"
 
 // Qt headers.
 #include <QFutureWatcher>

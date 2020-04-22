@@ -32,12 +32,8 @@
 // appleseed.foundation headers.
 #include "foundation/memory/autoreleaseptr.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // Forward declarations.
 namespace foundation { class SearchPaths; }
-namespace renderer   { class Assembly; }
 namespace renderer   { class EventCounters; }
 namespace renderer   { class Project; }
 
@@ -45,40 +41,28 @@ namespace renderer
 {
 
 //
-// Project file reader.
+// XML Project file reader.
 //
 
-class APPLESEED_DLLSYMBOL ProjectFileReader
+class XMLProjectFileReader
 {
   public:
-    enum Options
-    {
-        Defaults                    = 0,            // none of the flags below
-        OmitReadingMeshFiles        = 1UL << 0,     // do not read mesh files from disk
-        OmitProjectFileUpdate       = 1UL << 1,     // do not update the project file format to the latest revision
-        OmitSearchPaths             = 1UL << 2,     // do not read search paths from the project
-        OmitProjectSchemaValidation = 1UL << 3      // do not validate project against schema
-    };
-
     // Read a project from disk (or load a built-in project).
     // Return 0 if reading or parsing the file failed.
     static foundation::auto_release_ptr<Project> read(
         const char*                     project_filepath,
         const char*                     schema_filepath,
-        const int                       options = Defaults);
-
-    // Load a built-in project.
-    // Return 0 if the requested built-in project does not exist.
-    static foundation::auto_release_ptr<Project> load_builtin(
-        const char*                     project_name);
+        const int                       options,
+        EventCounters&                  event_counters);
 
     // Read an archive from disk.
     // Return 0 if reading or parsing the file failed.
-    static foundation::auto_release_ptr<Assembly> read_archive(
+    static foundation::auto_release_ptr<Project> read_archive(
         const char*                     archive_filepath,
         const char*                     schema_filepath,
         const foundation::SearchPaths&  search_paths,
-        const int                       options = Defaults);
+        const int                       options,
+        EventCounters&                  event_counters);
 
   private:
     static foundation::auto_release_ptr<Project> load_project_file(
@@ -87,37 +71,6 @@ class APPLESEED_DLLSYMBOL ProjectFileReader
         const int                       options,
         EventCounters&                  event_counters,
         const foundation::SearchPaths*  search_paths = nullptr);
-
-    static foundation::auto_release_ptr<Project> construct_builtin_project(
-        const char*                     project_name,
-        EventCounters&                  event_counters);
-
-    // Finish loading a project.
-    static void postprocess_project(
-        Project&                        project,
-        EventCounters&                  event_counters,
-        const int                       options = Defaults);
-
-    // Check the validity of a project.
-    static void validate_project(
-        const Project&                  project,
-        EventCounters&                  event_counters);
-
-    // Add missing entities to a valid project.
-    static void complete_project(
-        Project&                        project,
-        EventCounters&                  event_counters);
-
-    // Update a project to the latest project format revision.
-    static void upgrade_project(
-        Project&                        project,
-        EventCounters&                  event_counters);
-
-    static void print_loading_results(
-        const char*                     project_name,
-        const bool                      builtin_project,
-        const EventCounters&            event_counters,
-        const double                    loading_time);
 };
 
 }   // namespace renderer

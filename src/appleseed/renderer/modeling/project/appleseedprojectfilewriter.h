@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2019 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2020 Esteban Tovagliari, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,16 +28,23 @@
 
 #pragma once
 
-// Standard headers.
-#include <cstddef>
+// Forward declarations.
+namespace renderer  { class Project; }
 
-namespace foundation
+namespace renderer
 {
 
-size_t z85_encoded_size(const std::size_t size);
-size_t z85_decoded_size(const std::size_t size);
+//
+// Appleseed project file writer.
+//
 
-void z85_encode(const unsigned char* src, const std::size_t size, char* dst);
-void z85_decode(const char* src, const std::size_t size, unsigned char* dst);
+class AppleseedProjectFileWriter
+{
+  public:
+    static bool write_project_file(
+        Project&        project,
+        const char*     filepath,
+        const int       options);
+};
 
-}   // namespace foundation
+}   // namespace renderer

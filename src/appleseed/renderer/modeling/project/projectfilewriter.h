@@ -51,7 +51,8 @@ class APPLESEED_DLLSYMBOL ProjectFileWriter
         OmitHeaderComment           = 1UL << 0,     // do not write the header comment
         OmitWritingGeometryFiles    = 1UL << 1,     // do not write geometry files to disk
         OmitHandlingAssetFiles      = 1UL << 2,     // do not change paths to asset files (such as texture files)
-        CopyAllAssets               = 1UL << 3      // copy all asset files (by default copy asset files with relative paths only)
+        CopyAllAssets               = 1UL << 3,     // copy all asset files (by default copy asset files with relative paths only)
+        AsciiArrays                 = 1UL << 4      // use ascii encoding for arrays
     };
 
     // Write a project to disk.
@@ -61,23 +62,6 @@ class APPLESEED_DLLSYMBOL ProjectFileWriter
         const char*     filepath,
         const int       options = Defaults,
         const char*     extra_comments = nullptr);
-
-  private:
-    // Write a project to disk as a plain project file.
-    // Returns true on success, false otherwise.
-    static bool write_plain_project_file(
-        Project&        project,
-        const char*     filepath,
-        const int       options,
-        const char*     comments);
-
-    // Write a project file to disk as a packed project file.
-    // Returns true on success, false otherwise.
-    static bool write_packed_project_file(
-        Project&        project,
-        const char*     filepath,
-        const int       options,
-        const char*     extra_comments);
 };
 
 }   // namespace renderer

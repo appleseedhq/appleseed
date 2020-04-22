@@ -5,7 +5,8 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2019 Esteban Tovagliari, The appleseedhq Organization
+// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
+// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,16 +29,34 @@
 
 #pragma once
 
-// Standard headers.
-#include <cstddef>
+// Forward declarations.
+namespace renderer  { class Project; }
 
-namespace foundation
+namespace renderer
 {
 
-size_t z85_encoded_size(const std::size_t size);
-size_t z85_decoded_size(const std::size_t size);
+//
+// XML Project file writer.
+//
 
-void z85_encode(const unsigned char* src, const std::size_t size, char* dst);
-void z85_decode(const char* src, const std::size_t size, unsigned char* dst);
+class  XMLProjectFileWriter
+{
+  public:
+    // Write a project to disk as a plain project file.
+    // Returns true on success, false otherwise.
+    static bool write_plain_project_file(
+        Project&        project,
+        const char*     filepath,
+        const int       options,
+        const char*     comments);
 
-}   // namespace foundation
+    // Write a project file to disk as a packed project file.
+    // Returns true on success, false otherwise.
+    static bool write_packed_project_file(
+        Project&        project,
+        const char*     filepath,
+        const int       options,
+        const char*     extra_comments);
+};
+
+}   // namespace renderer

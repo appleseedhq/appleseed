@@ -265,10 +265,8 @@ bool MainWindow::save_project(QString filepath)
     if (!m_project_manager.is_project_open())
         return false;
 
-    const QString Extension = "appleseed";
-
-    if (QFileInfo(filepath).suffix() != Extension)
-        filepath += "." + Extension;
+    if (QFileInfo(filepath).suffix().isEmpty())
+        filepath += ".appleseed";
 
     if (m_project_file_watcher)
         stop_monitoring_project_file();
