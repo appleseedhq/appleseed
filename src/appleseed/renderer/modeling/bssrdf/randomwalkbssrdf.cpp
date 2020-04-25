@@ -114,7 +114,7 @@ namespace
             m_lambertian_brdf_data.m_reflectance.set(1.0f);
             m_lambertian_brdf_data.m_reflectance_multiplier = 1.0f;
 
-            m_glass_bsdf = create_glass_bsdf(name, "ggx");
+            m_glass_bsdf = create_glass_bsdf(name);
         }
 
         void release() override
@@ -452,17 +452,14 @@ namespace
         bool                        m_use_glass_bsdf;
         auto_release_ptr<BSDF>      m_glass_bsdf;
 
-        static auto_release_ptr<BSDF> create_glass_bsdf(
-            const char*             bssrdf_name,
-            const char*             mdf_name)
+        static auto_release_ptr<BSDF> create_glass_bsdf(const char* bssrdf_name)
         {
-            const std::string glass_bsdf_name = std::string(bssrdf_name) + "_glass_bsdf_" + mdf_name;
+            const std::string glass_bsdf_name = std::string(bssrdf_name) + "_glass_bsdf";
 
             auto_release_ptr<BSDF> bsdf =
                 GlassBSDFFactory().create(
                     glass_bsdf_name.c_str(),
                     ParamArray()
-                        .insert("mdf", mdf_name)
                         .insert("volume_parameterization", "transmittance"));
 
             return bsdf;
