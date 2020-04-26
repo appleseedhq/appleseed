@@ -27,48 +27,36 @@
 // THE SOFTWARE.
 //
 
-// Interface header.
-#include "projectfilewriter.h"
+#pragma once
 
-// appleseed.renderer headers.
-#include "renderer/modeling/project/xmlprojectfilewriter.h"
-
-// appleseed.foundation headers.
-#include "foundation/string/string.h"
-
-// Boost headers.
-#include "boost/filesystem.hpp"
-
-using namespace foundation;
-namespace bf = boost::filesystem;
+// Forward declarations.
+namespace renderer  { class Project; }
 
 namespace renderer
 {
 
 //
-// ProjectFileWriter class implementation.
+// XML Project file writer.
 //
 
-bool ProjectFileWriter::write(
-    Project&        project,
-    const char*     filepath,
-    const int       options,
-    const char*     extra_comments)
+class  XMLProjectFileWriter
 {
-    const auto ext = lower_case(bf::path(filepath).extension().string());
+  public:
+    // Write a project to disk as a plain project file.
+    // Returns true on success, false otherwise.
+    static bool write_plain_project_file(
+        Project&        project,
+        const char*     filepath,
+        const int       options,
+        const char*     comments);
 
-    if (ext == ".appleseedz")
-        return XMLProjectFileWriter::write_packed_project_file(
-            project,
-            filepath,
-            options,
-            extra_comments);
-
-    return XMLProjectFileWriter::write_plain_project_file(
-        project,
-        filepath,
-        options,
-        extra_comments);
-}
+    // Write a project file to disk as a packed project file.
+    // Returns true on success, false otherwise.
+    static bool write_packed_project_file(
+        Project&        project,
+        const char*     filepath,
+        const int       options,
+        const char*     extra_comments);
+};
 
 }   // namespace renderer

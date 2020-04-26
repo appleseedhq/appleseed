@@ -105,9 +105,8 @@ bool ArchiveAssembly::do_expand_contents(
         const std::string filepath =
             to_string(search_paths.qualify(m_params.get_required<std::string>("filename", "")));
 
-        ProjectFileReader reader;
         auto_release_ptr<Assembly> assembly =
-            reader.read_archive(
+            ProjectFileReader::read_archive(
                 filepath.c_str(),
                 nullptr,  // for now, we don't validate archives
                 search_paths,
