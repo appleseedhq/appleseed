@@ -52,10 +52,15 @@ using namespace foundation;
 
 TEST_SUITE(StlAllocatorTestbed)
 {
-    #pragma warning( push )
-    #pragma warning( disable: 4127 ) // ignore conditional expression constant
-    #pragma warning( disable: 4702 ) // ignore unreachable code
-    #pragma warning( disable: 4800 ) // allow forcing int to bool
+    #pragma warning (push)
+    #pragma warning (disable: 4127)     // ignore conditional expression constant
+    #pragma warning (disable: 4702)     // ignore unreachable code
+    #pragma warning (disable: 4800)     // allow forcing int to bool
+
+#if defined __GNUC__ && __GNUC__ >= 8
+    #pragma GCC diagnostic push
+    #pragma GCC diagnostic ignored "-Wclass-memaccess"
+#endif
 
     ///////////////////////////////////////////////////////////////////////////////
     //
@@ -1375,7 +1380,11 @@ TEST_SUITE(StlAllocatorTestbed)
     #undef VERIFY
     #undef USED
 
-    #pragma warning( pop )
+#if defined(__GNUC__) && (__GNUC__ * 100 + __GNUC_MINOR__ >= 800)
+    #pragma GCC diagnostic pop
+#endif
+
+    #pragma warning (pop)
 
     TEST_CASE(PoolAllocator)
     {
