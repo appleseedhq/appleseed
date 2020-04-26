@@ -59,7 +59,7 @@ namespace
             {
                 get_override("on_rendering_begin")();
             }
-            catch (bpy::error_already_set)
+            catch (const bpy::error_already_set&)
             {
                 PyErr_Print();
             }
@@ -75,7 +75,7 @@ namespace
             {
                 get_override("on_rendering_success")();
             }
-            catch (bpy::error_already_set)
+            catch (const bpy::error_already_set&)
             {
                 PyErr_Print();
             }
@@ -91,7 +91,7 @@ namespace
             {
                 get_override("on_rendering_abort")();
             }
-            catch (bpy::error_already_set)
+            catch (const bpy::error_already_set&)
             {
                 PyErr_Print();
             }
@@ -107,7 +107,7 @@ namespace
             {
                 get_override("on_rendering_pause")();
             }
-            catch (bpy::error_already_set)
+            catch (const bpy::error_already_set&)
             {
                 PyErr_Print();
             }
@@ -123,7 +123,7 @@ namespace
             {
                 get_override("on_rendering_resume")();
             }
-            catch (bpy::error_already_set)
+            catch (const bpy::error_already_set&)
             {
                 PyErr_Print();
             }
@@ -139,7 +139,7 @@ namespace
             {
                 get_override("on_frame_begin")();
             }
-            catch (bpy::error_already_set)
+            catch (const bpy::error_already_set&)
             {
                 PyErr_Print();
             }
@@ -155,7 +155,7 @@ namespace
             {
                 get_override("on_frame_end")();
             }
-            catch (bpy::error_already_set)
+            catch (const bpy::error_already_set&)
             {
                 PyErr_Print();
             }
@@ -171,7 +171,7 @@ namespace
             {
                 get_override("on_progress")();
             }
-            catch (bpy::error_already_set)
+            catch (const bpy::error_already_set&)
             {
                 PyErr_Print();
             }
@@ -187,7 +187,7 @@ namespace
             {
                 return get_override("get_status")();
             }
-            catch (bpy::error_already_set)
+            catch (const bpy::error_already_set&)
             {
                 PyErr_Print();
                 return AbortRendering;

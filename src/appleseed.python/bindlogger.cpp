@@ -76,7 +76,7 @@ namespace
             {
                 this->get_override("write")(category, file, line, header, message);
             }
-            catch (bpy::error_already_set)
+            catch (const bpy::error_already_set&)
             {
                 PyErr_Print();
             }
