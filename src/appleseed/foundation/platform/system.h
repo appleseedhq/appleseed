@@ -68,29 +68,38 @@ class APPLESEED_DLLSYMBOL System
     //
 
     // Return the number of logical CPU cores available in the system.
-    static size_t get_logical_cpu_core_count();
+    static std::size_t get_logical_cpu_core_count();
 
     //
     // CPU caches.
     //
 
-    // Return the size in bytes of the L1 data cache.
-    static size_t get_l1_data_cache_size();
+    // Return the number of L1 data caches on this CPU.
+    static std::size_t get_l1_data_cache_count();
+
+    // Return the size in bytes of a L1 data cache.
+    static std::size_t get_l1_data_cache_size();
 
     // Return the size in bytes of a L1 data cache line.
-    static size_t get_l1_data_cache_line_size();
+    static std::size_t get_l1_data_cache_line_size();
 
-    // Return the size in bytes of the L2 cache.
-    static size_t get_l2_cache_size();
+    // Return the number of L2 data caches on this CPU.
+    static std::size_t get_l2_cache_count();
+
+    // Return the size in bytes of a L2 cache.
+    static std::size_t get_l2_cache_size();
 
     // Return the size in bytes of a L2 cache line.
-    static size_t get_l2_cache_line_size();
+    static std::size_t get_l2_cache_line_size();
 
-    // Return the size in bytes of the L3 cache, or 0 if there's no L3 cache.
-    static size_t get_l3_cache_size();
+    // Return the number of L3 data caches on this CPU.
+    static std::size_t get_l3_cache_count();
+
+    // Return the size in bytes of a L3 cache, or 0 if there's no L3 cache.
+    static std::size_t get_l3_cache_size();
 
     // Return the size in bytes of a L3 cache line, or 0 if there's no L3 cache.
-    static size_t get_l3_cache_line_size();
+    static std::size_t get_l3_cache_line_size();
 
     //
     // CPU features.
@@ -155,7 +164,7 @@ class APPLESEED_DLLSYMBOL System
 
 #endif
 
-    // Return a string with the principal instruction sets available on the CPU.
+    // Return a string with the principal instruction sets available on this CPU.
     static APIString get_cpu_features_string();
 
     //

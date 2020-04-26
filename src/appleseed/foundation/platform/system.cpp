@@ -134,31 +134,25 @@ namespace
         return _xgetbv(index);
     }
 
-    // This code is based on a code snippet by Nick Strupat (http://stackoverflow.com/a/4049562).
-    bool get_cache_descriptor(const size_t level, CACHE_DESCRIPTOR& result)
+    // This code is loosely based on a code snippet by Nick Strupat (http://stackoverflow.com/a/4049562).
+    std::size_t get_cache_descriptor(const std::size_t level, CACHE_DESCRIPTOR& result)
     {
         assert(level >= 1 && level <= 3);
 
         DWORD buffer_size = 0;
-        BOOL success = GetLogicalProcessorInformation(0, &buffer_size);
-        if (success == TRUE || GetLastError() != ERROR_INSUFFICIENT_BUFFER)
+        const BOOL success = GetLogicalProcessorInformation(nullptr, &buffer_size);
+        if (success == TRUE || GetLastError() != ERROR_INSUFFICIENT_BUFFER)  // todo: success == TRUE?
             return false;
 
-        SYSTEM_LOGICAL_PROCESSOR_INFORMATION* buffer =
-            (SYSTEM_LOGICAL_PROCESSOR_INFORMATION*)malloc(buffer_size);
-        if (buffer == 0)
+        std::vector<std::uint8_t> buffer_vec(buffer_size);
+        auto buffer = reinterpret_cast<SYSTEM_LOGICAL_PROCESSOR_INFORMATION*>(buffer_vec.data());
+
+        if (GetLogicalProcessorInformation(buffer, &buffer_size) == FALSE)
             return false;
 
-        success = GetLogicalProcessorInformation(buffer, &buffer_size);
-        if (success == FALSE)
-        {
-            free(buffer);
-            return false;
-        }
+        std::size_t cache_count = 0;
 
-        bool found = false;
-
-        for (size_t i = 0; i < buffer_size / sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION); ++i)
+        for (std::size_t i = 0; i < buffer_size / sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION); ++i)
         {
             if (buffer[i].Relationship == RelationCache)
             {
@@ -166,53 +160,75 @@ namespace
 
                 if (cache.Level == level && (cache.Type == CacheData || cache.Type == CacheUnified))
                 {
-                    found = true;
-                    result = cache;
-                    break;
+                    if (cache_count == 0)
+                        result = cache;
+                    ++cache_count;
                 }
             }
         }
 
-        free(buffer);
-
-        return found;
+        return cache_count;
     }
 }
 
-size_t System::get_l1_data_cache_size()
+std::size_t System::get_l1_data_cache_count()
 {
     CACHE_DESCRIPTOR cache;
-    return get_cache_descriptor(1, cache) ? cache.Size : 0;
+    return get_cache_descriptor(1, cache);
 }
 
-size_t System::get_l1_data_cache_line_size()
+std::size_t System::get_l1_data_cache_size()
 {
     CACHE_DESCRIPTOR cache;
-    return get_cache_descriptor(1, cache) ? cache.LineSize : 0;
+    const std::size_t cache_count = get_cache_descriptor(1, cache);
+    return cache_count > 0 ? cache.Size : 0;
 }
 
-size_t System::get_l2_cache_size()
+std::size_t System::get_l1_data_cache_line_size()
 {
     CACHE_DESCRIPTOR cache;
-    return get_cache_descriptor(2, cache) ? cache.Size : 0;
+    const std::size_t cache_count = get_cache_descriptor(1, cache);
+    return cache_count > 0 ? cache.LineSize : 0;
 }
 
-size_t System::get_l2_cache_line_size()
+std::size_t System::get_l2_cache_count()
 {
     CACHE_DESCRIPTOR cache;
-    return get_cache_descriptor(2, cache) ? cache.LineSize : 0;
+    return get_cache_descriptor(2, cache);
 }
 
-size_t System::get_l3_cache_size()
+std::size_t System::get_l2_cache_size()
 {
     CACHE_DESCRIPTOR cache;
-    return get_cache_descriptor(3, cache) ? cache.Size : 0;
+    const std::size_t cache_count = get_cache_descriptor(2, cache);
+    return cache_count > 0 ? cache.Size : 0;
 }
 
-size_t System::get_l3_cache_line_size()
+std::size_t System::get_l2_cache_line_size()
 {
     CACHE_DESCRIPTOR cache;
-    return get_cache_descriptor(3, cache) ? cache.LineSize : 0;
+    const std::size_t cache_count = get_cache_descriptor(2, cache);
+    return cache_count > 0 ? cache.LineSize : 0;
+}
+
+std::size_t System::get_l3_cache_count()
+{
+    CACHE_DESCRIPTOR cache;
+    return get_cache_descriptor(3, cache);
+}
+
+std::size_t System::get_l3_cache_size()
+{
+    CACHE_DESCRIPTOR cache;
+    const std::size_t cache_count = get_cache_descriptor(3, cache);
+    return cache_count > 0 ? cache.Size : 0;
+}
+
+std::size_t System::get_l3_cache_line_size()
+{
+    CACHE_DESCRIPTOR cache;
+    const std::size_t cache_count = get_cache_descriptor(3, cache);
+    return cache_count > 0 ? cache.LineSize : 0;
 }
 
 std::uint64_t System::get_total_physical_memory_size()
@@ -292,40 +308,58 @@ namespace
         return (static_cast<std::uint64_t>(edx) << 32) | eax;
     }
 
-    size_t get_system_value(const char* name)
+    std::size_t get_system_value(const char* name)
     {
-        size_t value = 0;
-        size_t value_size = sizeof(value);
+        std::size_t value = 0;
+        std::size_t value_size = sizeof(value);
         return sysctlbyname(name, &value, &value_size, 0, 0) == 0 ? value : 0;
     }
 }
 
-size_t System::get_l1_data_cache_size()
+std::size_t System::get_l1_data_cache_count()
+{
+    // todo
+    return 0;
+}
+
+std::size_t System::get_l1_data_cache_size()
 {
     return get_system_value("hw.l1dcachesize");
 }
 
-size_t System::get_l1_data_cache_line_size()
+std::size_t System::get_l1_data_cache_line_size()
 {
     return get_l1_data_cache_size() > 0 ? get_system_value("hw.cachelinesize") : 0;
 }
 
-size_t System::get_l2_cache_size()
+std::size_t System::get_l2_cache_count()
+{
+    // todo
+    return 0;
+}
+
+std::size_t System::get_l2_cache_size()
 {
     return get_system_value("hw.l2cachesize");
 }
 
-size_t System::get_l2_cache_line_size()
+std::size_t System::get_l2_cache_line_size()
 {
     return get_l2_cache_size() > 0 ? get_system_value("hw.cachelinesize") : 0;
 }
 
-size_t System::get_l3_cache_size()
+std::size_t System::get_l3_cache_count()
+{
+    // todo
+    return 0;
+}
+
+std::size_t System::get_l3_cache_size()
 {
     return get_system_value("hw.l3cachesize");
 }
 
-size_t System::get_l3_cache_line_size()
+std::size_t System::get_l3_cache_line_size()
 {
     return get_l3_cache_size() > 0 ? get_system_value("hw.cachelinesize") : 0;
 }
@@ -336,7 +370,7 @@ std::uint64_t System::get_total_physical_memory_size()
 
     int name[2] = { CTL_HW, HW_MEMSIZE };
     std::uint64_t result;
-    size_t result_length = sizeof(std::uint64_t);
+    std::size_t result_length = sizeof(std::uint64_t);
     sysctl(name, 2, &result, &result_length, 0, 0);
 
     return static_cast<std::uint64_t>(result);
@@ -419,32 +453,47 @@ namespace
     }
 }
 
-size_t System::get_l1_data_cache_size()
+std::size_t System::get_l1_data_cache_count()
+{
+    return sysconf(_SC_LEVEL1_DCACHE_ASSOC);
+}
+
+std::size_t System::get_l1_data_cache_size()
 {
     return sysconf(_SC_LEVEL1_DCACHE_SIZE);
 }
 
-size_t System::get_l1_data_cache_line_size()
+std::size_t System::get_l1_data_cache_line_size()
 {
     return sysconf(_SC_LEVEL1_DCACHE_LINESIZE);
 }
 
-size_t System::get_l2_cache_size()
+std::size_t System::get_l2_cache_count()
+{
+    return sysconf(_SC_LEVEL2_CACHE_ASSOC);
+}
+
+std::size_t System::get_l2_cache_size()
 {
     return sysconf(_SC_LEVEL2_CACHE_SIZE);
 }
 
-size_t System::get_l2_cache_line_size()
+std::size_t System::get_l2_cache_line_size()
 {
     return sysconf(_SC_LEVEL2_CACHE_LINESIZE);
 }
 
-size_t System::get_l3_cache_size()
+std::size_t System::get_l3_cache_count()
+{
+    return sysconf(_SC_LEVEL3_CACHE_ASSOC);
+}
+
+std::size_t System::get_l3_cache_size()
 {
     return sysconf(_SC_LEVEL3_CACHE_SIZE);
 }
 
-size_t System::get_l3_cache_line_size()
+std::size_t System::get_l3_cache_line_size()
 {
     return sysconf(_SC_LEVEL3_CACHE_LINESIZE);
 }
@@ -516,9 +565,10 @@ namespace
     // is very simplistic; initially all caches have zero size (i.e. absent).
     struct TrivialX86Cache
     {
-        size_t size;
-        size_t linesize;
-    } x86_caches[3];
+        std::size_t m_associativity;
+        std::size_t m_size;
+        std::size_t m_line_size;
+    } g_x86_caches[3];
 
     enum { L1D, L2, L3 };
     enum { eax, ebx, ecx, edx };
@@ -559,30 +609,32 @@ namespace
         uint32_t regs[4];
 
         // Cycle up to ten possible caches to be extra sure.
-        for (size_t i = 0; i < 10; i++)
+        for (std::size_t i = 0; i < 10; i++)
         {
             regs[eax] = 4;
             regs[ecx] = i;
             cpuid(regs);
 
-            const unsigned type = BITFIELD(regs[eax], 4, 0);
-            if (type == 0) break;    // no more caches, we're done.
-            if (type == 2) continue; // ignore instruction caches.
+            const unsigned int type = BITFIELD(regs[eax], 4, 0);
+            if (type == 0) break;       // no more caches, we're done
+            if (type == 2) continue;    // ignore instruction caches
 
-            const unsigned level = BITFIELD(regs[eax], 7, 5);
-            const unsigned linesize = BITFIELD(regs[ebx], 11, 0) + 1;
-            const unsigned sets = BITFIELD(regs[ecx], 31, 0) + 1;
-            const unsigned associativity = BITFIELD(regs[ebx], 31, 22) + 1;
+            const unsigned int level = BITFIELD(regs[eax], 7, 5);
+            const unsigned int line_size = BITFIELD(regs[ebx], 11, 0) + 1;
+            const unsigned int sets = BITFIELD(regs[ecx], 31, 0) + 1;
+            const unsigned int associativity = BITFIELD(regs[ebx], 31, 22) + 1;
 
             assert(level > 0);
 
-            caches[level - 1].size = linesize * sets * associativity;
-            caches[level - 1].linesize = linesize;
+            caches[level - 1].m_associativity = associativity;
+            caches[level - 1].m_size = line_size * sets;
+            caches[level - 1].m_line_size = line_size;
         }
     }
 
     // On older CPUs we might have to rely on Cache Descriptors (Function 02h)
     // and Intel documentation (table of the known values).
+    // todo: fill m_associativity field.
     void get_cache_info_from_table(TrivialX86Cache* caches)
     {
         uint32_t regs[4];
@@ -597,7 +649,7 @@ namespace
         // safe, but let's add an assert() on the lower 8 bits just in case.
         assert((regs[eax] & 0xFF) == 1);
 
-        for (size_t i = 1; i < 4 * 4; i++)
+        for (std::size_t i = 1; i < 4 * 4; i++)
         {
             // Check descriptor validity for every octet: if bit 31 is set,
             // skip to the next one.
@@ -611,187 +663,187 @@ namespace
             switch ((regs[i / 4] >> (i % 4) * 8) & 0xFF)
             {
               case 0x0A:
-                caches[L1D].size = 8;
-                caches[L1D].linesize = 32;
+                caches[L1D].m_size = 8;
+                caches[L1D].m_line_size = 32;
                 break;
               case 0x0C:
-                caches[L1D].size = 16;
-                caches[L1D].linesize = 32;
+                caches[L1D].m_size = 16;
+                caches[L1D].m_line_size = 32;
                 break;
               case 0x0D:
               case 0x60:
               case 0x67:
-                caches[L1D].size = 16;
-                caches[L1D].linesize = 64;
+                caches[L1D].m_size = 16;
+                caches[L1D].m_line_size = 64;
                 break;
               case 0x21:
               case 0x3C:
               case 0x7A:
-                caches[L2].size = 256;
-                caches[L2].linesize = 64;
+                caches[L2].m_size = 256;
+                caches[L2].m_line_size = 64;
                 break;
               case 0x22:
               case 0xD0:
-                caches[L3].size = 512;
-                caches[L3].linesize = 64;
+                caches[L3].m_size = 512;
+                caches[L3].m_line_size = 64;
                 break;
               case 0x23:
               case 0xD1:
               case 0xD6:
-                caches[L3].size = 1024;
-                caches[L3].linesize = 64;
+                caches[L3].m_size = 1024;
+                caches[L3].m_line_size = 64;
                 break;
               case 0x25:
               case 0xD2:
               case 0xD7:
               case 0xE2:
-                caches[L3].size = 2048;
-                caches[L3].linesize = 64;
+                caches[L3].m_size = 2048;
+                caches[L3].m_line_size = 64;
                 break;
               case 0x29:
               case 0x46:
               case 0xD8:
               case 0xE3:
-                caches[L3].size = 4096;
-                caches[L3].linesize = 64;
+                caches[L3].m_size = 4096;
+                caches[L3].m_line_size = 64;
                 break;
               case 0x2C:
-                caches[L1D].size = 32;
-                caches[L1D].linesize = 64;
+                caches[L1D].m_size = 32;
+                caches[L1D].m_line_size = 64;
                 break;
               case 0x39:
               case 0x3B:
               case 0x79:
-                caches[L2].size = 128;
-                caches[L2].linesize = 64;
+                caches[L2].m_size = 128;
+                caches[L2].m_line_size = 64;
                 break;
               case 0x3A:
-                caches[L2].size = 192;
-                caches[L2].linesize = 64;
+                caches[L2].m_size = 192;
+                caches[L2].m_line_size = 64;
                 break;
               case 0x3D:
-                caches[L2].size = 384;
-                caches[L2].linesize = 64;
+                caches[L2].m_size = 384;
+                caches[L2].m_line_size = 64;
                 break;
               case 0x3E:
               case 0x7B:
               case 0x7F:
               case 0x86:
-                caches[L2].size = 512;
-                caches[L2].linesize = 64;
+                caches[L2].m_size = 512;
+                caches[L2].m_line_size = 64;
                 break;
               case 0x40:
                 no_higher_level_cache = 1;
                 break;
               case 0x41:
-                caches[L2].size = 128;
-                caches[L2].linesize = 32;
+                caches[L2].m_size = 128;
+                caches[L2].m_line_size = 32;
                 break;
               case 0x42:
               case 0x82:
-                caches[L2].size = 256;
-                caches[L2].linesize = 32;
+                caches[L2].m_size = 256;
+                caches[L2].m_line_size = 32;
                 break;
               case 0x43:
               case 0x83:
-                caches[L2].size = 512;
-                caches[L2].linesize = 32;
+                caches[L2].m_size = 512;
+                caches[L2].m_line_size = 32;
                 break;
               case 0x44:
-                caches[L2].size = 1024;
-                caches[L2].linesize = 32;
+                caches[L2].m_size = 1024;
+                caches[L2].m_line_size = 32;
                 break;
               case 0x45:
-                caches[L2].size = 2048;
-                caches[L2].linesize = 32;
+                caches[L2].m_size = 2048;
+                caches[L2].m_line_size = 32;
                 break;
               case 0x47:
               case 0x4B:
               case 0xE4:
-                caches[L3].size = 8192;
-                caches[L3].linesize = 64;
+                caches[L3].m_size = 8192;
+                caches[L3].m_line_size = 64;
                 break;
               case 0x48:
-                caches[L2].size = 3072;
-                caches[L2].linesize = 64;
+                caches[L2].m_size = 3072;
+                caches[L2].m_line_size = 64;
                 break;
               case 0x49:
                 // todo: check for Intel Xeon processor MP, Family 0Fh,
                 // Model 06h, because 0x49 means L3 cache (4MB, 16-way,
                 // 64-byte linesize) for this CPU.
-                caches[L2].size = 4096;
-                caches[L2].linesize = 64;
+                caches[L2].m_size = 4096;
+                caches[L2].m_line_size = 64;
                 break;
               case 0x4A:
               case 0xDE:
-                caches[L3].size = 6 * 1024;
-                caches[L3].linesize = 64;
+                caches[L3].m_size = 6 * 1024;
+                caches[L3].m_line_size = 64;
                 break;
               case 0x4C:
               case 0xEA:
-                caches[L3].size = 12 * 1024;
-                caches[L3].linesize = 64;
+                caches[L3].m_size = 12 * 1024;
+                caches[L3].m_line_size = 64;
                 break;
               case 0x4D:
-                caches[L3].size = 16 * 1024;
-                caches[L3].linesize = 64;
+                caches[L3].m_size = 16 * 1024;
+                caches[L3].m_line_size = 64;
                 break;
               case 0x4E:
-                caches[L2].size = 6 * 1024;
-                caches[L2].linesize = 64;
+                caches[L2].m_size = 6 * 1024;
+                caches[L2].m_line_size = 64;
                 break;
               case 0x66:
-                caches[L1D].size = 8;
-                caches[L1D].linesize = 64;
+                caches[L1D].m_size = 8;
+                caches[L1D].m_line_size = 64;
                 break;
               case 0x68:
-                caches[L1D].size = 32;
-                caches[L1D].linesize = 64;
+                caches[L1D].m_size = 32;
+                caches[L1D].m_line_size = 64;
                 break;
               case 0x78:
               case 0x7C:
-                caches[L2].size = 1024;
-                caches[L2].linesize = 64;
+                caches[L2].m_size = 1024;
+                caches[L2].m_line_size = 64;
                 break;
               case 0x7D:
-                caches[L2].size = 2048;
-                caches[L2].linesize = 64;
+                caches[L2].m_size = 2048;
+                caches[L2].m_line_size = 64;
                 break;
               case 0x84:
-                caches[L2].size = 1024;
-                caches[L2].linesize = 32;
+                caches[L2].m_size = 1024;
+                caches[L2].m_line_size = 32;
                 break;
               case 0x85:
-                caches[L2].size = 2048;
-                caches[L2].linesize = 32;
+                caches[L2].m_size = 2048;
+                caches[L2].m_line_size = 32;
                 break;
               case 0x87:
-                caches[L2].size = 1024;
-                caches[L2].linesize = 64;
+                caches[L2].m_size = 1024;
+                caches[L2].m_line_size = 64;
                 break;
               case 0xDC:
-                caches[L3].size = 1536;
-                caches[L3].linesize = 64;
+                caches[L3].m_size = 1536;
+                caches[L3].m_line_size = 64;
                 break;
               case 0xDD:
-                caches[L3].size = 3 * 1024;
-                caches[L3].linesize = 64;
+                caches[L3].m_size = 3 * 1024;
+                caches[L3].m_line_size = 64;
                 break;
               case 0xEB:
-                caches[L3].size = 18 * 1024;
-                caches[L3].linesize = 64;
+                caches[L3].m_size = 18 * 1024;
+                caches[L3].m_line_size = 64;
                 break;
               case 0xEC:
-                caches[L3].size = 24 * 1024;
-                caches[L3].linesize = 64;
+                caches[L3].m_size = 24 * 1024;
+                caches[L3].m_line_size = 64;
                 break;
             }
         }
 
         // Convert Kbytes to bytes.
-        caches[L1D].size *= 1024;
-        caches[L2].size *= 1024;
-        caches[L3].size *= 1024;
+        caches[L1D].m_size *= 1024;
+        caches[L2].m_size *= 1024;
+        caches[L3].m_size *= 1024;
     }
 
     void x86_get_cache_basic_info(TrivialX86Cache* caches)
@@ -808,49 +860,49 @@ namespace
     }
 }
 
-size_t System::get_l1_data_cache_size()
+std::size_t System::get_l1_data_cache_size()
 {
     // Here and below we'd check for L1D cache size: if it's initialized,
     // it means that x86_get_cache_basic_info() was already called and we
     // don't have to do it again.
-    if (!x86_caches[L1D].size)
-        x86_get_cache_basic_info(x86_caches);
-    return x86_caches[L1D].size;
+    if (!g_x86_caches[L1D].m_size)
+        x86_get_cache_basic_info(g_x86_caches);
+    return g_x86_caches[L1D].m_size;
 }
 
-size_t System::get_l1_data_cache_line_size()
+std::size_t System::get_l1_data_cache_line_size()
 {
-    if (!x86_caches[L1D].size)
-        x86_get_cache_basic_info(x86_caches);
-    return x86_caches[L1D].linesize;
+    if (!g_x86_caches[L1D].m_size)
+        x86_get_cache_basic_info(g_x86_caches);
+    return g_x86_caches[L1D].m_line_size;
 }
 
-size_t System::get_l2_cache_size()
+std::size_t System::get_l2_cache_size()
 {
-    if (!x86_caches[L1D].size)
-        x86_get_cache_basic_info(x86_caches);
-    return x86_caches[L2].size;
+    if (!g_x86_caches[L1D].m_size)
+        x86_get_cache_basic_info(g_x86_caches);
+    return g_x86_caches[L2].m_size;
 }
 
-size_t System::get_l2_cache_line_size()
+std::size_t System::get_l2_cache_line_size()
 {
-    if (!x86_caches[L1D].size)
-        x86_get_cache_basic_info(x86_caches);
-    return x86_caches[L2].linesize;
+    if (!g_x86_caches[L1D].m_size)
+        x86_get_cache_basic_info(g_x86_caches);
+    return g_x86_caches[L2].m_line_size;
 }
 
-size_t System::get_l3_cache_size()
+std::size_t System::get_l3_cache_size()
 {
-    if (!x86_caches[L1D].size)
-        x86_get_cache_basic_info(x86_caches);
-    return x86_caches[L3].size;
+    if (!g_x86_caches[L1D].m_size)
+        x86_get_cache_basic_info(g_x86_caches);
+    return g_x86_caches[L3].m_size;
 }
 
-size_t System::get_l3_cache_line_size()
+std::size_t System::get_l3_cache_line_size()
 {
-    if (!x86_caches[L1D].size)
-        x86_get_cache_basic_info(x86_caches);
-    return x86_caches[L3].linesize;
+    if (!g_x86_caches[L1D].m_size)
+        x86_get_cache_basic_info(g_x86_caches);
+    return g_x86_caches[L3].m_line_size;
 }
 
 std::uint64_t System::get_total_physical_memory_size()
@@ -864,7 +916,7 @@ std::uint64_t System::get_total_physical_memory_size()
 std::uint64_t System::get_total_virtual_memory_size()
 {
     quad_t swap;
-    size_t len = sizeof(swap);
+    std::size_t len = sizeof(swap);
 
     const int result = sysctlbyname("vm.swap_total", &swap, &len, 0x0, 0);
     assert(result == 0);
@@ -919,7 +971,7 @@ namespace
 
             // Devices.
             LOG_INFO(logger, "  device count                  " FMT_SIZE_T, dev_list.size());
-            for (size_t i = 0, e = dev_list.size(); i < e; ++i)
+            for (std::size_t i = 0, e = dev_list.size(); i < e; ++i)
             {
                 const CUDADevice& dev = dev_list.get_device(i);
 
@@ -986,12 +1038,12 @@ void System::print_information(Logger& logger)
         "  vendor                        %s\n"
 #endif
         "  logical cores                 %s\n"
-        "  L1 data cache                 size %s, line size %s\n"
-        "  L2 cache                      size %s, line size %s\n"
-        "  L3 cache                      size %s, line size %s\n"
+        "  L1 data cache                 " FMT_SIZE_T " x %s, line size %s\n"
+        "  L2 cache                      " FMT_SIZE_T " x %s, line size %s\n"
+        "  L3 cache                      " FMT_SIZE_T " x %s, line size %s\n"
         "  instruction sets              %s\n"
-        "  physical memory               size %s\n"
-        "  virtual memory                size %s\n"
+        "  physical memory               %s\n"
+        "  virtual memory                %s\n"
         "  default wallclock timer       %s Hz\n"
         "  default processor timer       %s Hz",
         get_cpu_architecture(),
@@ -1001,10 +1053,13 @@ void System::print_information(Logger& logger)
         "unknown",
 #endif
         pretty_uint(get_logical_cpu_core_count()).c_str(),
+        get_l1_data_cache_count(),
         pretty_size(get_l1_data_cache_size()).c_str(),
         pretty_size(get_l1_data_cache_line_size()).c_str(),
+        get_l2_cache_count(),
         pretty_size(get_l2_cache_size()).c_str(),
         pretty_size(get_l2_cache_line_size()).c_str(),
+        get_l3_cache_count(),
         pretty_size(get_l3_cache_size()).c_str(),
         pretty_size(get_l3_cache_line_size()).c_str(),
         get_cpu_features_string().c_str(),
@@ -1035,10 +1090,10 @@ const char* System::get_cpu_architecture()
 #endif
 }
 
-size_t System::get_logical_cpu_core_count()
+std::size_t System::get_logical_cpu_core_count()
 {
-    const size_t concurrency =
-        static_cast<size_t>(boost::thread::hardware_concurrency());
+    const std::size_t concurrency =
+        static_cast<std::size_t>(boost::thread::hardware_concurrency());
 
     return concurrency > 1 ? concurrency : 1;
 }
