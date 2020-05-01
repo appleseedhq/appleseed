@@ -66,7 +66,7 @@ echo $DEPLOY_SSH_KEY >> $HOME/.ssh/known_hosts
 # Send build to server.
 export SSHPASS=$DEPLOY_PASSWORD
 sshpass -e rsync \
-    -raz --stats --no-perms --no-owner --no-group \
+    -raz --stats --no-perms --no-owner --no-group --delete \
     --exclude 'src' \
     --exclude 'docs' \
     --exclude 'cmake' \
