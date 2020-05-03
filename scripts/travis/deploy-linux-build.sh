@@ -45,6 +45,7 @@ touch build_report.txt
 echo "web url=$TRAVIS_BUILD_WEB_URL" >> build_report.txt
 echo "job url=$TRAVIS_JOB_WEB_URL" >> build_report.txt
 echo "commit=$TRAVIS_COMMIT" >> build_report.txt
+echo "commit url=https://github.com/appleseedhq/appleseed/commit/$TRAVIS_COMMIT" >> build_report.txt
 echo "commit message=$TRAVIS_COMMIT_MESSAGE" >> build_report.txt
 echo "job id=$TRAVIS_JOB_ID" >> build_report.txt
 echo "job name=$TRAVIS_JOB_NAME" >> build_report.txt
@@ -67,9 +68,10 @@ echo $DEPLOY_SSH_KEY >> $HOME/.ssh/known_hosts
 export SSHPASS=$DEPLOY_PASSWORD
 sshpass -e rsync \
     -raz --stats --no-perms --no-owner --no-group --delete \
-    --exclude 'src' \
-    --exclude 'docs' \
-    --exclude 'cmake' \
+    --include="build_report.txt" \
+    --include="sanbox/" \
+    --include="scripts/" \
+    --include="prebuilt-linux-deps/" \
     ./* \
     $DEPLOY_USER@$DEPLOY_URL:$DEPLOY_FOLDER
 
