@@ -67,11 +67,16 @@ echo $DEPLOY_SSH_KEY >> $HOME/.ssh/known_hosts
 # Send build to server.
 export SSHPASS=$DEPLOY_PASSWORD
 sshpass -e rsync \
-    -raz --stats --no-perms --no-owner --no-group --delete \
+    --recursive \
+    --archive \
+    --compress \
+    --stats \
+    --no-perms --no-owner --no-group \
     --include="build_report.txt" \
     --include="sanbox/" \
     --include="scripts/" \
     --include="prebuilt-linux-deps/" \
+    --delete-after \
     ./* \
     $DEPLOY_USER@$DEPLOY_URL:$DEPLOY_FOLDER
 
