@@ -77,7 +77,7 @@ sshpass -e rsync \
     --include="scripts/" \
     --include="prebuilt-linux-deps/" \
     --delete-after \
-    ./* \
+    ./ \
     $DEPLOY_USER@$DEPLOY_URL:$DEPLOY_FOLDER
 
 echo "travis_fold:end:deploy"
