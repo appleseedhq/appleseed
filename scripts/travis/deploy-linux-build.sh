@@ -73,10 +73,11 @@ sshpass -e rsync \
     --stats \
     --no-perms --no-owner --no-group \
     --include="build_report.txt" \
-    --include="sanbox/" \
-    --include="scripts/" \
-    --include="prebuilt-linux-deps/" \
-    --delete-after \
+    --include="prebuilt-linux-deps/***" \
+    --include="sanbox/***" \
+    --include="scripts/***" \
+    --exclude="*" \
+    --delete-after --delete-excluded \
     ./ \
     $DEPLOY_USER@$DEPLOY_URL:$DEPLOY_FOLDER
 
