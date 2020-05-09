@@ -64,8 +64,11 @@ echo "Deploy travis build on the server..."
 # Add server public key to known hosts.
 echo $DEPLOY_SSH_KEY >> $HOME/.ssh/known_hosts
 
-# Send build to server.
+# Remove previous build from server.
 export SSHPASS=$DEPLOY_PASSWORD
+sshpass -e ssh $DEPLOY_USER@$DEPLOY_URL rm -rf $DEPLOY_FOLDER
+
+# Send new build to the server.
 sshpass -e rsync \
     --recursive \
     --archive \
@@ -73,11 +76,9 @@ sshpass -e rsync \
     --stats \
     --no-perms --no-owner --no-group \
     --include="build_report.txt" \
-    --include="prebuilt-linux-deps/***" \
-    --include="sandbox/***" \
-    --include="scripts/***" \
-    --exclude="*" \
-    --delete-after --delete-excluded \
+    --include="prebuilt-linux-deps" \
+    --include="sandbox" \
+    --include="scripts" \ 
     ./ \
     $DEPLOY_USER@$DEPLOY_URL:$DEPLOY_FOLDER
 
