@@ -74,7 +74,7 @@ sshpass -e rsync \
     --no-perms --no-owner --no-group \
     --include="build_report.txt" \
     --include="prebuilt-linux-deps/***" \
-    --include="sanbox/***" \
+    --include="sandbox/***" \
     --include="scripts/***" \
     --exclude="*" \
     --delete-after --delete-excluded \
