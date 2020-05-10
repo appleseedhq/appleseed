@@ -79,7 +79,6 @@ sshpass -e rsync \
     prebuilt-linux-deps \
     sandbox \
     scripts \
-    ./ \
     $DEPLOY_USER@$DEPLOY_URL:$DEPLOY_FOLDER
 
 echo "travis_fold:end:deploy"
