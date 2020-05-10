@@ -40,7 +40,7 @@ THISDIR=`pwd`
 echo "travis_fold:start:deps"
 echo "Downloading and unpacking dependencies..."
 
-curl -L "https://github.com/appleseedhq/linux-deps/releases/download/v2.1/appleseed-deps-shared-2.1.tgz" > deps.tgz
+curl -L "https://github.com/appleseedhq/linux-deps/releases/download/v2.1.1/appleseed-deps-shared-2.1.1.tgz" > deps.tgz
 tar xfz deps.tgz
 rm deps.tgz
 
@@ -78,8 +78,6 @@ echo "Building appleseed..."
 mkdir build
 pushd build
 
-# Disney material support is not enabled because Travis/Linux (Xenial) has Qt 5.5.1
-# while libSeExprEditor.so from the linux-deps package was built against Qt 5.12.0.
 cmake \
     -Wno-dev \
     -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
