@@ -34,10 +34,14 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// appleseed.foundation headers.
+#include "foundation/utility/job.h"
+
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class ParamArray; }
+namespace renderer      { class Frame; } // FIXME
 
 namespace renderer
 {
@@ -66,6 +70,66 @@ class APPLESEED_DLLSYMBOL VignettePostProcessingStageFactory
     foundation::auto_release_ptr<PostProcessingStage> create(
         const char*         name,
         const ParamArray&   params) const override;
+};
+
+// TODO move what's below to a different file
+
+//
+// Vignette effect algorithm.
+//
+
+// TODO abstract this into an interface (e.g. IPostProcessingEffect)
+class VignetteEffect
+  : public foundation::IUnknown
+{
+  public:
+    // Apply this post-processing effect on a given tile.
+    void apply(
+        const Frame&                frame,
+        const size_t                tile_x,
+        const size_t                tile_y,
+        // TODO check if pass_hash is needed
+        foundation::IAbortSwitch&   abort_switch);
+
+  private:
+    // TODO check if using Vector2f& is worth it
+    const float m_intensity;
+    const float m_anisotropy;
+    const Vector2f m_resolution;
+    const Vector2f m_normalization_factor;
+};
+
+//
+// Vignette effect applier job.
+//
+
+class VignetteJob
+  : public foundation::IJob
+{
+  public:
+    typedef std::vector<VignetteEffect*> EffectApplierVector;
+
+    // Constructor.
+    VignetteJob(
+        const EffectApplierVector&  effect_appliers,
+        const Frame&                frame,
+        const size_t                tile_x,
+        const size_t                tile_y,
+        const size_t                thread_count,
+        // TODO check if pass_hash is needed
+        // TODO add a ParamArray for effect-specific context
+        foundation::IAbortSwitch&   abort_switch);
+
+    // Execute the job.
+    void execute(const size_t thread_index) override;
+
+  private:
+    const EffectApplierVector&      m_effect_appliers;
+    const Frame&                    m_frame;
+    const size_t                    m_tile_x;
+    const size_t                    m_tile_y;
+    const size_t                    m_thread_count;
+    foundation::IAbortSwitch&       m_abort_switch;
 };
 
 }   // namespace renderer

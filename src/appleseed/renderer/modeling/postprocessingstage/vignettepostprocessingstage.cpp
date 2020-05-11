@@ -41,6 +41,11 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
+// #include "foundation/utility/job/abortswitch.h"
+#include "foundation/utility/job/ijob.h"
+// #include "foundation/utility/job/jobmanager.h"
+// #include "foundation/utility/job/jobqueue.h"
+// #include "foundation/utility/job/workerthread.h"
 
 using namespace foundation;
 
@@ -102,6 +107,9 @@ namespace
 
             Image& image = frame.image();
 
+            // TODO schedule VignetteJob's and start a WorkerThread with them
+            // NOTE pass effect settings/context to the job, e.g. intensity/resolution
+
             for (std::size_t y = 0; y < props.m_canvas_height; ++y)
             {
                 for (std::size_t x = 0; x < props.m_canvas_width; ++x)
@@ -141,6 +149,90 @@ namespace
     };
 }
 
+//
+// VignetteEffect class implementation.
+//
+
+void VignetteEffect::apply(
+    const Frame&                frame,
+    const size_t                tile_x,
+    const size_t                tile_y,
+    foundation::IAbortSwitch&   abort_switch)
+{
+    Image& image = frame.image();
+
+    assert(tile_x < image.properties().m_tile_count_x);
+    assert(tile_y < image.properties().m_tile_count_y);
+
+    Tile& tile = image.tile(tile_x, tile_y);
+    const size_t tile_width = tile.get_width();
+    const size_t tile_height = tile.get_height();
+
+    for (size_t y = 0; y < tile_height; ++y)
+    {
+        for (size_t x = 0; x < tile_width; ++x)
+        {
+            const size_t tile_offset_x = tile_x * image.properties().m_tile_width;
+            const size_t tile_offset_y = tile_y * image.properties().m_tile_height;
+            const Vector2f pixel_coord = Vector2f(static_cast<float>(tile_offset_x + x), static_cast<float>(tile_offset_y + y));
+
+            // Pixel coordinate normalized to be in the [-1, 1] range vertically.
+            const Vector2f coord = (2.0f * pixel_coord - m_resolution) / m_normalization_factor;
+
+            //
+            // Port of Keijiro Takahashi's natural vignetting effect for Unity.
+            // Recreates natural illumination falloff, which is approximated by the "cosine fourth" law of illumination falloff.
+            //
+            // References:
+            //
+            //   https://github.com/keijiro/KinoVignette
+            //   https://en.wikipedia.org/wiki/Vignetting#Natural_vignetting
+            //
+
+            const float linear_radial_falloff = norm(coord) * m_intensity;
+            const float quadratic_radial_falloff = linear_radial_falloff * linear_radial_falloff + 1.0f;
+
+            // Inversely proportional to the fourth power of the distance from the pixel to the image center.
+            const float inverse_biquadratic_radial_falloff = 1.0f / (quadratic_radial_falloff * quadratic_radial_falloff);
+
+            Color4f pixel;
+            tile.get_pixel(x, y, pixel);
+            pixel.rgb() *= inverse_biquadratic_radial_falloff;
+            tile.set_pixel(x, y, pixel);
+        }
+    }
+}
+
+//
+// VignetteJob class implementation.
+//
+
+VignetteJob::VignetteJob(
+    const EffectApplierVector&  effect_appliers,
+    const Frame&                frame,
+    const size_t                tile_x,
+    const size_t                tile_y,
+    const size_t                thread_count,
+    foundation::IAbortSwitch&   abort_switch)
+  : m_effect_appliers(effect_appliers)
+  , m_frame(frame)
+  , m_tile_x(tile_x)
+  , m_tile_y(tile_y)
+  , m_thread_count(thread_count)
+  , m_abort_switch(abort_switch)
+{
+}
+
+void VignetteJob::execute(const size_t thread_index)
+{
+    // Apply the Vignette post-processing effect to the tile.
+    assert(thread_index < m_effect_appliers.size());
+    m_effect_appliers[thread_index]->apply(
+        m_frame,
+        m_tile_x,
+        m_tile_y,
+        m_abort_switch);
+}
 
 //
 // VignettePostProcessingStageFactory class implementation.

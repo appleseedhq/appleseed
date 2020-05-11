@@ -329,7 +329,7 @@ TEST_SUITE(Foundation_Utility_Job_JobManager)
         }
 
       private:
-        JobQueue&           m_job_queue;
+        JobQueue&                  m_job_queue;
         volatile std::uint32_t*    m_execution_count;
     };
 
