@@ -40,6 +40,7 @@
 #include "foundation/image/image.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/math/ordering.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 // #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/job/ijob.h"
@@ -102,27 +103,48 @@ namespace
         void execute(Frame& frame) const override
         {
             const CanvasProperties& props = frame.image().properties();
-            const Vector2f resolution(static_cast<float>(props.m_canvas_width), static_cast<float>(props.m_canvas_height));
+            const Vector2f resolution(static_cast<float>(props.m_canvas_width), static_cast<float>(props.m_canvas_height)); // NOTE this could be a Vector2u
             const Vector2f normalization_factor(lerp(resolution.y, resolution.x, m_anisotropy), resolution.y);
 
             Image& image = frame.image();
 
-            // FIXME get the value of thread_count
-
-            // TODO schedule on VignetteJob per tile and start a WorkerThread with them
-            Logger l;
             JobQueue job_queue;
-            JobManager job_manager(l, job_queue, 1);
-            AbortSwitch s;
-            job_queue.schedule(
-                new VignetteJob(
-                    frame, 0, 0, 1, s,
-                    // effect settings/context
-                    m_intensity,
-                    m_anisotropy,
-                    resolution,
-                    normalization_factor));
+            AbortSwitch abort_switch; // FIXME
+
+            // TODO move this to a TileJobFactory-like class:
+
+            // Generate tiles in linear order.
+            std::vector<size_t> tiles;
+            linear_ordering(tiles, props.m_tile_count);
+
+            // Make sure the right number of tiles was created.
+            assert(tiles.size() == props.m_tile_count);
+
+            // Create and schedule one post-processing effect job per tile.
+            for (size_t i = 0; i < props.m_tile_count; ++i)
+            {
+                // Compute coordinates of the tile in the frame.
+                const size_t tile_index = tiles[i];
+                const size_t tile_x = tile_index % props.m_tile_count_x;
+                const size_t tile_y = tile_index / props.m_tile_count_x;
+                assert(tile_x < props.m_tile_count_x);
+                assert(tile_y < props.m_tile_count_y);
+
+                // Create the tile job.
+                job_queue.schedule(
+                    new VignetteJob(
+                        // FIXME get the value of thread_count:
+                        frame, tile_x, tile_y, 1,  abort_switch,
+                        // TODO encapsulate effect settings/context:
+                        m_intensity, m_anisotropy,
+                        resolution, normalization_factor),
+                    /*transfer_ownership*/true);
+            }
+
+            Logger l; // TODO use globallogger() (?)
+            JobManager job_manager(l, job_queue, /*thread_count*/1);
             job_manager.start();
+
             job_queue.wait_until_completion();
         }
 
@@ -163,17 +185,17 @@ void VignetteEffect::apply(
     Tile& tile = image.tile(tile_x, tile_y);
     const size_t tile_width = tile.get_width();
     const size_t tile_height = tile.get_height();
+    const size_t tile_offset_x = tile_x * tile_width;
+    const size_t tile_offset_y = tile_y * tile_height;
 
     for (size_t y = 0; y < tile_height; ++y)
     {
         for (size_t x = 0; x < tile_width; ++x)
         {
-            const size_t tile_offset_x = tile_x * image.properties().m_tile_width;
-            const size_t tile_offset_y = tile_y * image.properties().m_tile_height;
-            const Vector2f pixel_coord = Vector2f(static_cast<float>(tile_offset_x + x), static_cast<float>(tile_offset_y + y));
+            const Vector2u pixel_coord = Vector2u(x + tile_offset_x, y + tile_offset_y);
 
             // Pixel coordinate normalized to be in the [-1, 1] range vertically.
-            const Vector2f coord = (2.0f * pixel_coord - m_resolution) / m_normalization_factor;
+            const Vector2f coord = (2.0f * static_cast<Vector2f>(pixel_coord) - m_resolution) / m_normalization_factor;
 
             //
             // Port of Keijiro Takahashi's natural vignetting effect for Unity.
@@ -194,7 +216,7 @@ void VignetteEffect::apply(
             Color4f pixel;
             tile.get_pixel(x, y, pixel);
             pixel.rgb() *= inverse_biquadratic_radial_falloff;
-            tile.set_pixel(x, y, Color4f(1.0f, 0.0f, 1.0f, 1.0f));//pixel);
+            tile.set_pixel(x, y, pixel);
         }
     }
 }
@@ -223,6 +245,7 @@ VignetteJob::VignetteJob(
   , m_thread_count(thread_count)
   , m_abort_switch(abort_switch)
 {
+    // FIXME receive reference to a list of "appliers", and access it with thread_index on execute
     m_effect_applier = new VignetteEffect(intensity, anisotropy, resolution, normalization_factor);
 }
 
