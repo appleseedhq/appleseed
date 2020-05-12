@@ -315,7 +315,7 @@ TEST_SUITE(Foundation_Utility_Job_JobManager)
     {
       public:
         JobCreatingAnotherJob(
-            JobQueue&           job_queue,
+            JobQueue&                  job_queue,
             volatile std::uint32_t*    execution_count)
           : m_job_queue(job_queue)
           , m_execution_count(execution_count)

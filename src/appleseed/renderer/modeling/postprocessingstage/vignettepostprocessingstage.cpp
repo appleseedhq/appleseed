@@ -44,7 +44,7 @@
 // #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/job/ijob.h"
 // #include "foundation/utility/job/jobmanager.h"
-// #include "foundation/utility/job/jobqueue.h"
+#include "foundation/utility/job/jobqueue.h"
 // #include "foundation/utility/job/workerthread.h"
 
 using namespace foundation;
@@ -107,40 +107,23 @@ namespace
 
             Image& image = frame.image();
 
-            // TODO schedule VignetteJob's and start a WorkerThread with them
-            // NOTE pass effect settings/context to the job, e.g. intensity/resolution
+            // FIXME get the value of thread_count
 
-            for (std::size_t y = 0; y < props.m_canvas_height; ++y)
-            {
-                for (std::size_t x = 0; x < props.m_canvas_width; ++x)
-                {
-                    // Pixel coordinate normalized to be in the [-1, 1] range vertically.
-                    const Vector2f coord = (2.0f * Vector2f(static_cast<float>(x), static_cast<float>(y)) - resolution) / normalization_factor;
-
-                    //
-                    // Port of Keijiro Takahashi's natural vignetting effect for Unity.
-                    // Recreates natural illumination falloff, which is approximated by the "cosine fourth" law of illumination falloff.
-                    //
-                    // References:
-                    //
-                    //   https://github.com/keijiro/KinoVignette
-                    //   https://en.wikipedia.org/wiki/Vignetting#Natural_vignetting
-                    //
-
-                    const float linear_radial_falloff = norm(coord) * m_intensity;
-                    const float quadratic_radial_falloff = linear_radial_falloff * linear_radial_falloff + 1.0f;
-
-                    // Inversely proportional to the fourth power of the distance from the pixel to the image center.
-                    const float inverse_biquadratic_radial_falloff = 1.0f / (quadratic_radial_falloff * quadratic_radial_falloff);
-
-                    Color4f pixel;
-                    image.get_pixel(x, y, pixel);
-
-                    pixel.rgb() *= inverse_biquadratic_radial_falloff;
-
-                    image.set_pixel(x, y, pixel);
-                }
-            }
+            // TODO schedule on VignetteJob per tile and start a WorkerThread with them
+            Logger l;
+            JobQueue job_queue;
+            JobManager job_manager(l, job_queue, 1);
+            AbortSwitch s;
+            job_queue.schedule(
+                new VignetteJob(
+                    frame, 0, 0, 1, s,
+                    // effect settings/context
+                    m_intensity,
+                    m_anisotropy,
+                    resolution,
+                    normalization_factor));
+            job_manager.start();
+            job_queue.wait_until_completion();
         }
 
       private:
@@ -153,11 +136,24 @@ namespace
 // VignetteEffect class implementation.
 //
 
+
+VignetteEffect::VignetteEffect(
+    const float                     intensity,
+    const float                     anisotropy,
+    const foundation::Vector2f&     resolution,
+    const foundation::Vector2f&     normalization_factor)
+  : m_intensity(intensity)
+  , m_anisotropy(anisotropy)
+  , m_resolution(resolution)
+  , m_normalization_factor(normalization_factor)
+{
+}
+
 void VignetteEffect::apply(
     const Frame&                frame,
     const size_t                tile_x,
     const size_t                tile_y,
-    foundation::IAbortSwitch&   abort_switch)
+    foundation::IAbortSwitch&   abort_switch) const
 {
     Image& image = frame.image();
 
@@ -198,9 +194,13 @@ void VignetteEffect::apply(
             Color4f pixel;
             tile.get_pixel(x, y, pixel);
             pixel.rgb() *= inverse_biquadratic_radial_falloff;
-            tile.set_pixel(x, y, pixel);
+            tile.set_pixel(x, y, Color4f(1.0f, 0.0f, 1.0f, 1.0f));//pixel);
         }
     }
+}
+
+void VignetteEffect::release()
+{
 }
 
 //
@@ -208,26 +208,30 @@ void VignetteEffect::apply(
 //
 
 VignetteJob::VignetteJob(
-    const EffectApplierVector&  effect_appliers,
     const Frame&                frame,
     const size_t                tile_x,
     const size_t                tile_y,
     const size_t                thread_count,
-    foundation::IAbortSwitch&   abort_switch)
-  : m_effect_appliers(effect_appliers)
-  , m_frame(frame)
+    foundation::IAbortSwitch&   abort_switch,
+    const float                 intensity,
+    const float                 anisotropy,
+    const foundation::Vector2f& resolution,
+    const foundation::Vector2f& normalization_factor)
+  : m_frame(frame)
   , m_tile_x(tile_x)
   , m_tile_y(tile_y)
   , m_thread_count(thread_count)
   , m_abort_switch(abort_switch)
 {
+    m_effect_applier = new VignetteEffect(intensity, anisotropy, resolution, normalization_factor);
 }
 
 void VignetteJob::execute(const size_t thread_index)
 {
     // Apply the Vignette post-processing effect to the tile.
-    assert(thread_index < m_effect_appliers.size());
-    m_effect_appliers[thread_index]->apply(
+    //assert(thread_index < m_effect_appliers.size());
+    //m_effect_appliers[thread_index]
+    m_effect_applier->apply(
         m_frame,
         m_tile_x,
         m_tile_y,
