@@ -111,6 +111,7 @@ namespace
             JobQueue job_queue;
             AbortSwitch abort_switch; // FIXME
 
+            size_t thread_count = 1; // FIXME
             // TODO move this to a TileJobFactory-like class:
 
             // Generate tiles in linear order.
@@ -133,8 +134,8 @@ namespace
                 // Create the tile job.
                 job_queue.schedule(
                     new VignetteJob(
-                        // FIXME get the value of thread_count:
-                        frame, tile_x, tile_y, 1,  abort_switch,
+                        frame, tile_x, tile_y,
+                        thread_count, abort_switch,
                         // TODO encapsulate effect settings/context:
                         m_intensity, m_anisotropy,
                         resolution, normalization_factor),
@@ -142,7 +143,7 @@ namespace
             }
 
             Logger l; // TODO use globallogger() (?)
-            JobManager job_manager(l, job_queue, /*thread_count*/1);
+            JobManager job_manager(l, job_queue, thread_count);
             job_manager.start();
 
             job_queue.wait_until_completion();
@@ -216,6 +217,7 @@ void VignetteEffect::apply(
             Color4f pixel;
             tile.get_pixel(x, y, pixel);
             pixel.rgb() *= inverse_biquadratic_radial_falloff;
+
             tile.set_pixel(x, y, pixel);
         }
     }
