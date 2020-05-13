@@ -42,6 +42,10 @@
 #include "foundation/math/vector.h"
 #include "foundation/math/ordering.h"
 #include "foundation/utility/api/specializedapiarrays.h"
+
+// FIXME
+#include "../postprocessingeffect/postprocessingeffectjob.h"
+#include "../postprocessingeffect/vignettepostprocessingeffect.h"
 // #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/job/ijob.h"
 // #include "foundation/utility/job/jobmanager.h"
@@ -103,16 +107,59 @@ namespace
         void execute(Frame& frame) const override
         {
             const CanvasProperties& props = frame.image().properties();
-            const Vector2f resolution(static_cast<float>(props.m_canvas_width), static_cast<float>(props.m_canvas_height)); // NOTE this could be a Vector2u
+            const Vector2f resolution(static_cast<float>(props.m_canvas_width), static_cast<float>(props.m_canvas_height));
             const Vector2f normalization_factor(lerp(resolution.y, resolution.x, m_anisotropy), resolution.y);
 
             Image& image = frame.image();
 
+            // FIXME
+            size_t thread_count = 1;
             JobQueue job_queue;
-            AbortSwitch abort_switch; // FIXME
+            AbortSwitch abort_switch;
+            Logger l; // TODO use globallogger() (?)
+            JobManager job_manager(l, job_queue, thread_count);
 
-            size_t thread_count = 1; // FIXME
-            // TODO move this to a TileJobFactory-like class:
+            // Initialize shared effect-specifc settings and context.
+            ParamArray effect_params = ParamArray()
+                                        .insert<float>("intensity", m_intensity)
+                                        .insert<float>("anisotropy", m_anisotropy)
+                                        // .insert<Vector2u>("resolution", static_cast<Vector2u>(resolution))
+                                        // .insert<Vector2f>("normalization_factor", normalization_factor)
+                                        .insert<size_t>("resolution_x", props.m_canvas_width)
+                                        .insert<size_t>("resolution_y", props.m_canvas_height)
+                                        .insert<float>("normalization_factor_x", normalization_factor.x)
+                                        .insert<float>("normalization_factor_y", normalization_factor.y)
+                                        ;
+
+            // Instantiate effect appliers, one per rendering thread.
+            EffectJob::EffectApplierVector effect_appliers;
+            effect_appliers.reserve(thread_count);
+
+            VignetteEffectFactory effect_applier_factory;
+            for (size_t i = 0; i < thread_count; ++i)
+                effect_appliers.push_back(effect_applier_factory.create(effect_params, i));
+
+            // Create effect jobs.
+            EffectJobFactory::EffectJobVector effect_jobs;
+
+            EffectJobFactory effect_job_factory;
+            effect_job_factory.create(
+                frame,
+                effect_appliers,
+                effect_params, // NOTE I think this is only needed in the effect (applier) factory
+                thread_count,
+                effect_jobs,
+                abort_switch);
+
+            // Schedule effect jobs.
+            for (const_each<EffectJobFactory::EffectJobVector> i = effect_jobs; i; ++i)
+                job_queue.schedule(*i);
+
+            // Wait until tile jobs have effectively stopped.
+            job_manager.start();
+            job_queue.wait_until_completion();
+
+            /*
 
             // Generate tiles in linear order.
             std::vector<size_t> tiles;
@@ -139,7 +186,7 @@ namespace
                         // TODO encapsulate effect settings/context:
                         m_intensity, m_anisotropy,
                         resolution, normalization_factor),
-                    /*transfer_ownership*/true);
+                        true);
             }
 
             Logger l; // TODO use globallogger() (?)
@@ -147,6 +194,7 @@ namespace
             job_manager.start();
 
             job_queue.wait_until_completion();
+            */
         }
 
       private:
@@ -154,7 +202,7 @@ namespace
         float m_anisotropy;
     };
 }
-
+/*
 //
 // VignetteEffect class implementation.
 //
@@ -262,7 +310,7 @@ void VignetteJob::execute(const size_t thread_index)
         m_tile_y,
         m_abort_switch);
 }
-
+*/
 //
 // VignettePostProcessingStageFactory class implementation.
 //

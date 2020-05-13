@@ -90,6 +90,9 @@ class VignetteEffectFactory
   : public IEffectFactory
 {
   public:
+    // Delete this instance.
+    void release() override;
+
     // Return a new effect applier instance.
     virtual VignetteEffect* create(
         const ParamArray&   effect_params,

@@ -74,7 +74,7 @@ class APPLESEED_DLLSYMBOL VignettePostProcessingStageFactory
 };
 
 // TODO move what's below to a different file
-
+/*
 //
 // Vignette effect algorithm.
 //
@@ -143,5 +143,5 @@ class VignetteJob
     const size_t                    m_thread_count;
     foundation::IAbortSwitch&       m_abort_switch;
 };
-
+*/
 }   // namespace renderer

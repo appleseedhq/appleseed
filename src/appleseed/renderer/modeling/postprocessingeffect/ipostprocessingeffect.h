@@ -28,6 +28,9 @@
 
 #pragma once
 
+// appleseed.foundation headers.
+#include "foundation/core/concepts/iunknown.h"
+
 // appleseed.renderer headers.
 #include "renderer/utility/paramarray.h"
 
@@ -37,7 +40,8 @@
 #include <vector>
 
 // Forward declarations.
-namespace renderer  { class Frame; }
+namespace foundation    { class IAbortSwitch; }
+namespace renderer      { class Frame; }
 
 namespace renderer
 {
