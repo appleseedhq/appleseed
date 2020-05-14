@@ -58,8 +58,9 @@ namespace
         VignetteEffect(const VignetteParams& params)
           : m_intensity(params.intensity)
           , m_anisotropy(params.anisotropy)
-          , m_resolution(params.resolution)
-          , m_normalization_factor(params.normalization_factor)
+          // FIXME improve this:
+          , m_resolution(Vector2f(static_cast<float>(params.frame_width), static_cast<float>(params.frame_height)))
+          , m_normalization_factor(Vector2f(params.distorted_frame_width, static_cast<float>(params.frame_height)))
         {
         }
 
@@ -92,7 +93,7 @@ namespace
                     const Vector2u pixel_coord = Vector2u(x + tile_offset_x, y + tile_offset_y);
 
                     // Pixel coordinate normalized to be in the [-1, 1] range vertically.
-                    const Vector2f coord = (2.0f * static_cast<Vector2f>(pixel_coord - m_resolution)) / m_normalization_factor;
+                    const Vector2f coord = (2.0f * static_cast<Vector2f>(pixel_coord) - m_resolution) / m_normalization_factor;
 
                     //
                     // Port of Keijiro Takahashi's natural vignetting effect for Unity.
@@ -114,6 +115,7 @@ namespace
                     tile.get_pixel(x, y, pixel);
                     pixel.rgb() *= inverse_biquadratic_radial_falloff;
 
+                    //tile.set_pixel(x, y, Color4f(0.0f, 1.0f, 0.0f, 1.0f));
                     tile.set_pixel(x, y, pixel);
                 }
             }
@@ -126,8 +128,8 @@ namespace
         const float                     m_anisotropy;
 
         // Context.
-        const foundation::Vector2u&     m_resolution;
-        const foundation::Vector2f&     m_normalization_factor;
+        const foundation::Vector2f      m_resolution;
+        const foundation::Vector2f      m_normalization_factor;
     };
 }
 

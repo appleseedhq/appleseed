@@ -40,7 +40,6 @@
 #include "foundation/image/image.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
-#include "foundation/math/ordering.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 
 // FIXME
@@ -107,10 +106,6 @@ namespace
         void execute(Frame& frame) const override
         {
             const CanvasProperties& props = frame.image().properties();
-            const Vector2f resolution(static_cast<float>(props.m_canvas_width), static_cast<float>(props.m_canvas_height));
-            const Vector2f normalization_factor(lerp(resolution.y, resolution.x, m_anisotropy), resolution.y);
-
-            Image& image = frame.image();
 
             // FIXME
             size_t thread_count = 1;
@@ -119,12 +114,16 @@ namespace
             Logger l; // use globallogger() (?)
             JobManager job_manager(l, job_queue, thread_count);
 
-            // Initialize shared effect-specifc settings and context.
-            VignetteParams effect_params = {
+            // Initialize effect-specifc settings and context.
+            VignetteParams effect_params {
                 m_intensity,
                 m_anisotropy,
-                static_cast<Vector2u>(resolution),
-                normalization_factor
+                props.m_canvas_width,
+                props.m_canvas_height,
+                lerp(
+                    static_cast<float>(props.m_canvas_width),
+                    static_cast<float>(props.m_canvas_height),
+                    m_anisotropy)
             };
 
             // Instantiate effect appliers, one per rendering thread.

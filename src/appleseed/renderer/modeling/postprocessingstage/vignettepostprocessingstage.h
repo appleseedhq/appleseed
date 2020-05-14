@@ -34,10 +34,6 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// appleseed.foundation headers.
-#include "foundation/math/vector.h"
-#include "foundation/utility/job.h"
-
 // Forward declarations.
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }

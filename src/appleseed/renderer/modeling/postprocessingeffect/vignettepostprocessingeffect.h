@@ -51,12 +51,13 @@ namespace renderer
 
 struct VignetteParams {
     // Settings.
-    const float intensity;
-    const float anisotropy;
+    float     intensity;
+    float     anisotropy;
 
     // Context.
-    const foundation::Vector2u resolution;
-    const foundation::Vector2f normalization_factor;
+    size_t    frame_width;
+    size_t    frame_height;
+    float     distorted_frame_width;
 };
 
 
