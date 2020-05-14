@@ -29,7 +29,6 @@
 #pragma once
 
 // appleseed.renderer headers.
-#include "renderer/utility/paramarray.h"
 #include "./ipostprocessingeffect.h" // FIXME
 
 // appleseed.foundation headers.
@@ -47,56 +46,42 @@ namespace renderer
 {
 
 //
-// Vignette effect applier.
+// Vignette-specific settings and context.
 //
 
-class VignetteEffect
-  : public IEffect
-{
-  public:
-    // Constructor.
-    VignetteEffect(
-        const float                     intensity,
-        const float                     anisotropy,
-        const foundation::Vector2u&     resolution,
-        const foundation::Vector2f&     normalization_factor);
-
-    // Delete this instance.
-    void release() override;
-
-    // Apply the effect to a given tile.
-    void apply(
-        const Frame&                frame,
-        const size_t                tile_x,
-        const size_t                tile_y,
-        foundation::IAbortSwitch&   abort_switch) const override;
-
-  private:
+struct VignetteParams {
     // Settings.
-    const float                     m_intensity;
-    const float                     m_anisotropy;
+    const float intensity;
+    const float anisotropy;
 
     // Context.
-    const foundation::Vector2u&     m_resolution;
-    const foundation::Vector2f&     m_normalization_factor;
+    const foundation::Vector2u resolution;
+    const foundation::Vector2f normalization_factor;
 };
 
 
 //
-// Vignette effect applier factory.
+// Vignette post-processing effect applier factory.
 //
 
-class VignetteEffectFactory
-  : public IEffectFactory
+class VignetteEffectApplierFactory
+  : public IEffectApplierFactory
 {
   public:
+    // Constructor.
+    VignetteEffectApplierFactory(const VignetteParams& params);
+
     // Delete this instance.
     void release() override;
 
     // Return a new effect applier instance.
-    virtual VignetteEffect* create(
-        const ParamArray&   effect_params,
-        const size_t        thread_index) override;
+    IEffectApplier* create() override;
+
+    // Return a new effect applier instance.
+    static IEffectApplier* create(const VignetteParams& params);
+
+  private:
+    const VignetteParams m_params;
 };
 
 }   // namespace renderer

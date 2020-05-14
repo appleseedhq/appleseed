@@ -31,9 +31,6 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/iunknown.h"
 
-// appleseed.renderer headers.
-#include "renderer/utility/paramarray.h"
-
 // Standard headers.
 #include <cstddef>
 #include <cstdint>
@@ -47,14 +44,14 @@ namespace renderer
 {
 
 //
-// Post-processing effect algorithm applier interface.
+// Interface of a post-processing effect algorithm applier.
 //
 
-class IEffect
+class IEffectApplier
   : public foundation::IUnknown
 {
   public:
-    // Apply the effect to a given tile.
+    // Apply the post-processing effect to a given tile.
     virtual void apply(
         const Frame&                frame,
         const size_t                tile_x,
@@ -64,17 +61,15 @@ class IEffect
 
 
 //
-// Interface of an IEffect factory.
+// Interface of an IEffectApplier factory.
 //
 
-class IEffectFactory
+class IEffectApplierFactory
   : public foundation::IUnknown
 {
   public:
     // Return a new post-processing effect applier instance.
-    virtual IEffect* create(
-        const ParamArray&   effect_params,  // effect-specific context and settings
-        const size_t        thread_index) = 0;
+    virtual IEffectApplier* create() = 0;
 };
 
 }   // namespace renderer

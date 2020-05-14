@@ -116,46 +116,41 @@ namespace
             size_t thread_count = 1;
             JobQueue job_queue;
             AbortSwitch abort_switch;
-            Logger l; // TODO use globallogger() (?)
+            Logger l; // use globallogger() (?)
             JobManager job_manager(l, job_queue, thread_count);
 
             // Initialize shared effect-specifc settings and context.
-            ParamArray effect_params = ParamArray()
-                                        .insert<float>("intensity", m_intensity)
-                                        .insert<float>("anisotropy", m_anisotropy)
-                                        // .insert<Vector2u>("resolution", static_cast<Vector2u>(resolution))
-                                        // .insert<Vector2f>("normalization_factor", normalization_factor)
-                                        .insert<size_t>("resolution_x", props.m_canvas_width)
-                                        .insert<size_t>("resolution_y", props.m_canvas_height)
-                                        .insert<float>("normalization_factor_x", normalization_factor.x)
-                                        .insert<float>("normalization_factor_y", normalization_factor.y)
-                                        ;
+            VignetteParams effect_params = {
+                m_intensity,
+                m_anisotropy,
+                static_cast<Vector2u>(resolution),
+                normalization_factor
+            };
 
             // Instantiate effect appliers, one per rendering thread.
             EffectJob::EffectApplierVector effect_appliers;
             effect_appliers.reserve(thread_count);
 
-            VignetteEffectFactory effect_applier_factory;
+            VignetteEffectApplierFactory effect_applier_factory(effect_params);
             for (size_t i = 0; i < thread_count; ++i)
-                effect_appliers.push_back(effect_applier_factory.create(effect_params, i));
+                effect_appliers.push_back(effect_applier_factory.create());
 
-            // Create effect jobs.
+            // Create effect applier jobs.
             EffectJobFactory::EffectJobVector effect_jobs;
 
             EffectJobFactory effect_job_factory;
             effect_job_factory.create(
                 frame,
                 effect_appliers,
-                effect_params, // NOTE I think this is only needed in the effect (applier) factory
                 thread_count,
                 effect_jobs,
                 abort_switch);
 
-            // Schedule effect jobs.
+            // Schedule effect applier jobs.
             for (const_each<EffectJobFactory::EffectJobVector> i = effect_jobs; i; ++i)
                 job_queue.schedule(*i);
 
-            // Wait until tile jobs have effectively stopped.
+            // Wait until jobs have effectively stopped.
             job_manager.start();
             job_queue.wait_until_completion();
 

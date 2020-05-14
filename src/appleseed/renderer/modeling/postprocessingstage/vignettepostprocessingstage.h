@@ -42,7 +42,6 @@
 namespace foundation    { class Dictionary; }
 namespace foundation    { class DictionaryArray; }
 namespace renderer      { class ParamArray; }
-namespace renderer      { class Frame; } // TODO remove after moving to new file
 
 namespace renderer
 {
@@ -73,75 +72,4 @@ class APPLESEED_DLLSYMBOL VignettePostProcessingStageFactory
         const ParamArray&   params) const override;
 };
 
-// TODO move what's below to a different file
-/*
-//
-// Vignette effect algorithm.
-//
-
-// TODO abstract this into an interface (e.g. IPostProcessingEffect)
-class VignetteEffect
-  : public foundation::IUnknown
-{
-  public:
-    // Constructor.
-    VignetteEffect(
-        const float                     intensity,
-        const float                     anisotropy,
-        const foundation::Vector2f&     resolution,
-        const foundation::Vector2f&     normalization_factor
-    );
-
-    void release() override;
-
-    // Apply the Vignette post-processing effect to a given tile.
-    void apply(
-        const Frame&                frame,
-        const size_t                tile_x,
-        const size_t                tile_y,
-        foundation::IAbortSwitch&   abort_switch) const;
-
-  private:
-    const float                     m_intensity;
-    const float                     m_anisotropy;
-    const foundation::Vector2f&     m_resolution;
-    const foundation::Vector2f&     m_normalization_factor;
-};
-
-//
-// Vignette effect algorithm applier job.
-//
-
-// TODO abstract this into an interface (e.g. IPostProcessingEffectJob)
-class VignetteJob
-  : public foundation::IJob
-{
-  public:
-    typedef std::vector<VignetteEffect*> EffectApplierVector;
-
-    // Constructor.
-    VignetteJob(
-        const Frame&                    frame,
-        const size_t                    tile_x,
-        const size_t                    tile_y,
-        const size_t                    thread_count,
-        foundation::IAbortSwitch&       abort_switch,
-        // TODO refactor this to use a ParamArray for effect-specific context and settings
-        const float                     intensity,
-        const float                     anisotropy,
-        const foundation::Vector2f&     resolution,
-        const foundation::Vector2f&     normalization_factor);
-
-    // Execute the job.
-    void execute(const size_t thread_index) override;
-
-  private:
-    const VignetteEffect*           m_effect_applier;
-    const Frame&                    m_frame;
-    const size_t                    m_tile_x;
-    const size_t                    m_tile_y;
-    const size_t                    m_thread_count;
-    foundation::IAbortSwitch&       m_abort_switch;
-};
-*/
 }   // namespace renderer

@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/frame/frame.h"
-#include "./ipostprocessingeffect.h" // FIXME
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -54,14 +53,12 @@ namespace renderer
 
 EffectJob::EffectJob(
     const EffectApplierVector&  effect_appliers,
-    const ParamArray&           effect_params,
     const Frame&                frame,
     const size_t                tile_x,
     const size_t                tile_y,
     const size_t                thread_count,
     IAbortSwitch&               abort_switch)
   : m_effect_appliers(effect_appliers)
-  , m_effect_params(effect_params)
   , m_frame(frame)
   , m_tile_x(tile_x)
   , m_tile_y(tile_y)
@@ -90,7 +87,6 @@ void EffectJob::execute(const size_t thread_index)
 void EffectJobFactory::create(
     const Frame&                            frame,
     const EffectJob::EffectApplierVector&   effect_appliers,
-    const ParamArray&                       effect_params,
     const size_t                            thread_count,
     EffectJobVector&                        effect_jobs,
     IAbortSwitch&                           abort_switch)
@@ -119,7 +115,6 @@ void EffectJobFactory::create(
         effect_jobs.push_back(
             new EffectJob(
                 effect_appliers,
-                effect_params,
                 frame,
                 tile_x,
                 tile_y,

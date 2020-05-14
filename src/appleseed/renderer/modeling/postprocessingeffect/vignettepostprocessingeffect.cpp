@@ -33,7 +33,6 @@
 #include "renderer/modeling/frame/frame.h"
 
 // appleseed.foundation headers.
-#include "foundation/containers/dictionary.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
@@ -45,107 +44,118 @@ using namespace foundation;
 namespace renderer
 {
 
-// FIXME move into a anonymous namespace and only expose the factory (?)
-
-//
-// VignetteEffect class implementation.
-//
-
-VignetteEffect::VignetteEffect(
-    const float         intensity,
-    const float         anisotropy,
-    const Vector2u&     resolution,
-    const Vector2f&     normalization_factor)
-  : m_intensity(intensity)
-  , m_anisotropy(anisotropy)
-  , m_resolution(resolution)
-  , m_normalization_factor(normalization_factor)
+namespace
 {
-}
 
-void VignetteEffect::release()
-{
-    delete this;
-}
+    //
+    // Vignette effect applier.
+    //
 
-void VignetteEffect::apply(
-    const Frame&    frame,
-    const size_t    tile_x,
-    const size_t    tile_y,
-    IAbortSwitch&   abort_switch) const
-{
-    Image& image = frame.image();
-
-    assert(tile_x < image.properties().m_tile_count_x);
-    assert(tile_y < image.properties().m_tile_count_y);
-
-    Tile& tile = image.tile(tile_x, tile_y);
-    const size_t tile_width = tile.get_width();
-    const size_t tile_height = tile.get_height();
-    const size_t tile_offset_x = tile_x * tile_width;
-    const size_t tile_offset_y = tile_y * tile_height;
-
-    for (size_t y = 0; y < tile_height; ++y)
+    class VignetteEffect
+    : public IEffectApplier
     {
-        for (size_t x = 0; x < tile_width; ++x)
+      public:
+        VignetteEffect(const VignetteParams& params)
+          : m_intensity(params.intensity)
+          , m_anisotropy(params.anisotropy)
+          , m_resolution(params.resolution)
+          , m_normalization_factor(params.normalization_factor)
         {
-            const Vector2u pixel_coord = Vector2u(x + tile_offset_x, y + tile_offset_y);
-
-            // Pixel coordinate normalized to be in the [-1, 1] range vertically.
-            const Vector2f coord = (2.0f * static_cast<Vector2f>(pixel_coord - m_resolution)) / m_normalization_factor;
-
-            //
-            // Port of Keijiro Takahashi's natural vignetting effect for Unity.
-            // Recreates natural illumination falloff, which is approximated by the "cosine fourth" law of illumination falloff.
-            //
-            // References:
-            //
-            //   https://github.com/keijiro/KinoVignette
-            //   https://en.wikipedia.org/wiki/Vignetting#Natural_vignetting
-            //
-
-            const float linear_radial_falloff = norm(coord) * m_intensity;
-            const float quadratic_radial_falloff = linear_radial_falloff * linear_radial_falloff + 1.0f;
-
-            // Inversely proportional to the fourth power of the distance from the pixel to the image center.
-            const float inverse_biquadratic_radial_falloff = 1.0f / (quadratic_radial_falloff * quadratic_radial_falloff);
-
-            Color4f pixel;
-            tile.get_pixel(x, y, pixel);
-            pixel.rgb() *= inverse_biquadratic_radial_falloff;
-
-            tile.set_pixel(x, y, pixel);
         }
-    }
 
+        void release() override
+        {
+            delete this;
+        }
+
+        void apply(
+            const Frame&                frame,
+            const size_t                tile_x,
+            const size_t                tile_y,
+            foundation::IAbortSwitch&   abort_switch) const override
+        {
+            Image& image = frame.image();
+
+            assert(tile_x < image.properties().m_tile_count_x);
+            assert(tile_y < image.properties().m_tile_count_y);
+
+            Tile& tile = image.tile(tile_x, tile_y);
+            const size_t tile_width = tile.get_width();
+            const size_t tile_height = tile.get_height();
+            const size_t tile_offset_x = tile_x * tile_width;
+            const size_t tile_offset_y = tile_y * tile_height;
+
+            for (size_t y = 0; y < tile_height; ++y)
+            {
+                for (size_t x = 0; x < tile_width; ++x)
+                {
+                    const Vector2u pixel_coord = Vector2u(x + tile_offset_x, y + tile_offset_y);
+
+                    // Pixel coordinate normalized to be in the [-1, 1] range vertically.
+                    const Vector2f coord = (2.0f * static_cast<Vector2f>(pixel_coord - m_resolution)) / m_normalization_factor;
+
+                    //
+                    // Port of Keijiro Takahashi's natural vignetting effect for Unity.
+                    // Recreates natural illumination falloff, which is approximated by the "cosine fourth" law of illumination falloff.
+                    //
+                    // References:
+                    //
+                    //   https://github.com/keijiro/KinoVignette
+                    //   https://en.wikipedia.org/wiki/Vignetting#Natural_vignetting
+                    //
+
+                    const float linear_radial_falloff = norm(coord) * m_intensity;
+                    const float quadratic_radial_falloff = linear_radial_falloff * linear_radial_falloff + 1.0f;
+
+                    // Inversely proportional to the fourth power of the distance from the pixel to the image center.
+                    const float inverse_biquadratic_radial_falloff = 1.0f / (quadratic_radial_falloff * quadratic_radial_falloff);
+
+                    Color4f pixel;
+                    tile.get_pixel(x, y, pixel);
+                    pixel.rgb() *= inverse_biquadratic_radial_falloff;
+
+                    tile.set_pixel(x, y, pixel);
+                }
+            }
+
+        }
+
+      private:
+        // Settings.
+        const float                     m_intensity;
+        const float                     m_anisotropy;
+
+        // Context.
+        const foundation::Vector2u&     m_resolution;
+        const foundation::Vector2f&     m_normalization_factor;
+    };
 }
 
 
 //
-// VignetteEffectFactory class implementation.
+// VignetteEffectApplierFactory class implementation.
 //
 
-void VignetteEffectFactory::release()
+VignetteEffectApplierFactory::VignetteEffectApplierFactory(
+    const VignetteParams& params)
+  : m_params(params)
+{
+}
+
+void VignetteEffectApplierFactory::release()
 {
     delete this;
 }
 
-VignetteEffect* VignetteEffectFactory::create(
-    const ParamArray&   effect_params,
-    const size_t        thread_index)
+IEffectApplier* VignetteEffectApplierFactory::create()
 {
-    const Vector2u resolution(
-        effect_params.get_required<size_t>("resolution_x"),
-        effect_params.get_required<size_t>("resolution_y"));
-    const Vector2f normalization_factor(
-        effect_params.get_required<float>("normalization_factor_x"),
-        effect_params.get_required<float>("normalization_factor_y"));
-    return new VignetteEffect(
-        effect_params.get_required<float>("intensity"),
-        effect_params.get_required<float>("anisotropy"),
-        // effect_params.get_required<Vector2u>("resolution"),
-        // effect_params.get_required<Vector2f>("normalization_factor")
-        resolution, normalization_factor); // FIXME
+    return new VignetteEffect(m_params);
+}
+
+IEffectApplier* VignetteEffectApplierFactory::create(
+    const VignetteParams& params)
+{
+    return new VignetteEffect(params);
 }
 
 }   // namespace renderer

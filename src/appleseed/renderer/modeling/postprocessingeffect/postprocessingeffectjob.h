@@ -29,7 +29,6 @@
 #pragma once
 
 // appleseed.renderer headers.
-#include "renderer/utility/paramarray.h"
 #include "./ipostprocessingeffect.h" // FIXME
 
 // appleseed.foundation headers.
@@ -55,12 +54,11 @@ class EffectJob
   : public foundation::IJob
 {
   public:
-    typedef std::vector<IEffect*> EffectApplierVector;
+    typedef std::vector<IEffectApplier*> EffectApplierVector;
 
     // Constructor.
     EffectJob(
         const EffectApplierVector&  effect_appliers,
-        const ParamArray&           effect_params,     // effect-specific context and settings
         const Frame&                frame,
         const size_t                tile_x,
         const size_t                tile_y,
@@ -72,7 +70,6 @@ class EffectJob
 
   private:
     const EffectApplierVector&      m_effect_appliers;
-    const ParamArray&               m_effect_params;
     const Frame&                    m_frame;
     const size_t                    m_tile_x;
     const size_t                    m_tile_y;
@@ -93,7 +90,6 @@ class EffectJobFactory
     void create(
         const Frame&                            frame,
         const EffectJob::EffectApplierVector&   effect_appliers,
-        const ParamArray&                       effect_params, // FIXME rethink how/where this is passed
         const size_t                            thread_count,
         EffectJobVector&                        effect_jobs,
         foundation::IAbortSwitch&               abort_switch);
