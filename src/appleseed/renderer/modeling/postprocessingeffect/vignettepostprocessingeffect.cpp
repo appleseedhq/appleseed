@@ -48,7 +48,7 @@ namespace
 {
 
     //
-    // Vignette effect applier.
+    // Vignette post-processing effect applier.
     //
 
     class VignetteApplier

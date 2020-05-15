@@ -64,7 +64,8 @@ class APPLESEED_DLLSYMBOL PostProcessingStage
 
     // Execute this post-processing stage on a given frame.
     virtual void execute(
-        Frame&                  frame) const = 0;
+        Frame&                  frame,
+        const size_t            thread_count = 1) const = 0;
 
   private:
     int m_order;

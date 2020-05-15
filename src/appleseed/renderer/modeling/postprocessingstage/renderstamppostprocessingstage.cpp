@@ -113,7 +113,7 @@ namespace
             return true;
         }
 
-        void execute(Frame& frame) const override
+        void execute(Frame& frame, const size_t thread_count) const override
         {
             // Render stamp settings.
             const auto Font = TextRenderer::Font::UbuntuL;

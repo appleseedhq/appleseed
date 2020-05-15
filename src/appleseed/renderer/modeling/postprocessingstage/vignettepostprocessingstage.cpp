@@ -100,11 +100,9 @@ namespace
             return true;
         }
 
-        void execute(Frame& frame) const override
+        void execute(Frame& frame, const size_t thread_count) const override
         {
             const CanvasProperties& props = frame.image().properties();
-
-            size_t thread_count = 1; // FIXME
 
             // Initialize effect-specific settings and context.
             VignetteParams effect_params {
