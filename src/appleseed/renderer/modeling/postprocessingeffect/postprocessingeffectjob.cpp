@@ -55,14 +55,12 @@ EffectJob::EffectJob(
     const Frame&                frame,
     const size_t                tile_x,
     const size_t                tile_y,
-    const size_t                thread_count,
-    IAbortSwitch&               abort_switch)
+    const size_t                thread_count)
   : m_effect_appliers(effect_appliers)
   , m_frame(frame)
   , m_tile_x(tile_x)
   , m_tile_y(tile_y)
   , m_thread_count(thread_count)
-  , m_abort_switch(abort_switch)
 {
 }
 
@@ -74,8 +72,7 @@ void EffectJob::execute(const size_t thread_index)
     m_effect_appliers[thread_index]->apply(
         m_frame,
         m_tile_x,
-        m_tile_y,
-        m_abort_switch);
+        m_tile_y);
 }
 
 
@@ -87,8 +84,7 @@ void EffectJobFactory::create(
     const Frame&                            frame,
     const EffectJob::EffectApplierVector&   effect_appliers,
     const size_t                            thread_count,
-    EffectJobVector&                        effect_jobs,
-    IAbortSwitch&                           abort_switch)
+    EffectJobVector&                        effect_jobs)
 {
     // Retrieve frame properties.
     const CanvasProperties& props = frame.image().properties();
@@ -117,8 +113,7 @@ void EffectJobFactory::create(
                 frame,
                 tile_x,
                 tile_y,
-                thread_count,
-                abort_switch));
+                thread_count));
     }
 }
 

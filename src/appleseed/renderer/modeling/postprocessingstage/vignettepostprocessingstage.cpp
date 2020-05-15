@@ -102,6 +102,10 @@ namespace
 
         void execute(Frame& frame, const size_t thread_count) const override
         {
+            // Skip vignetting if the intensity is zero.
+            if (m_intensity == 0)
+                return;
+
             const CanvasProperties& props = frame.image().properties();
 
             // Initialize effect-specific settings and context.
@@ -124,7 +128,6 @@ namespace
                 effect_appliers.push_back(VignetteApplierFactory::create(effect_params));
 
             // Create effect applier jobs.
-            AbortSwitch abort_switch; // FIXME
             EffectJobFactory effect_job_factory;
             EffectJobFactory::EffectJobVector effect_jobs;
 
@@ -132,8 +135,7 @@ namespace
                 frame,
                 effect_appliers,
                 thread_count,
-                effect_jobs,
-                abort_switch);
+                effect_jobs);
 
             // Schedule effect applier jobs.
             JobQueue job_queue;
@@ -141,7 +143,10 @@ namespace
                 job_queue.schedule(*i);
 
             // Create a job manager to wait until jobs have effectively stopped.
-            JobManager job_manager(global_logger(), job_queue, thread_count);
+            JobManager job_manager(
+                global_logger(),
+                job_queue,
+                thread_count);
 
             job_manager.start();
             job_queue.wait_until_completion();

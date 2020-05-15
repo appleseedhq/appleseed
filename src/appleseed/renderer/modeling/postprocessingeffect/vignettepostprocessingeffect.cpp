@@ -69,10 +69,9 @@ namespace
         }
 
         void apply(
-            const Frame&                frame,
-            const size_t                tile_x,
-            const size_t                tile_y,
-            foundation::IAbortSwitch&   abort_switch) const override
+            const Frame&    frame,
+            const size_t    tile_x,
+            const size_t    tile_y) const override
         {
             Image& image = frame.image();
 

@@ -60,19 +60,17 @@ class EffectJob
         const Frame&                frame,
         const size_t                tile_x,
         const size_t                tile_y,
-        const size_t                thread_count,
-        foundation::IAbortSwitch&   abort_switch);
+        const size_t                thread_count);
 
     // Execute the job.
     void execute(const size_t thread_index);
 
   private:
-    const EffectApplierVector&      m_effect_appliers;
-    const Frame&                    m_frame;
-    const size_t                    m_tile_x;
-    const size_t                    m_tile_y;
-    const size_t                    m_thread_count;
-    foundation::IAbortSwitch&       m_abort_switch;
+    const EffectApplierVector&  m_effect_appliers;
+    const Frame&                m_frame;
+    const size_t                m_tile_x;
+    const size_t                m_tile_y;
+    const size_t                m_thread_count;
 };
 
 //
@@ -89,8 +87,7 @@ class EffectJobFactory
         const Frame&                            frame,
         const EffectJob::EffectApplierVector&   effect_appliers,
         const size_t                            thread_count,
-        EffectJobVector&                        effect_jobs,
-        foundation::IAbortSwitch&               abort_switch);
+        EffectJobVector&                        effect_jobs);
 };
 
 }   // namespace renderer

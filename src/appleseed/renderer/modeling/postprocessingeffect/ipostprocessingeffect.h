@@ -35,7 +35,6 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Frame; }
 
 namespace renderer
@@ -51,10 +50,9 @@ class IEffectApplier
   public:
     // Apply the post-processing effect to a given tile.
     virtual void apply(
-        const Frame&                frame,
-        const size_t                tile_x,
-        const size_t                tile_y,
-        foundation::IAbortSwitch&   abort_switch) const = 0;
+        const Frame&    frame,
+        const size_t    tile_x,
+        const size_t    tile_y) const = 0;
 };
 
 
