@@ -73,6 +73,7 @@ class EffectJob
     const size_t                m_thread_count;
 };
 
+
 //
 // Creates jobs to apply a post-processing effect to a complete frame.
 //

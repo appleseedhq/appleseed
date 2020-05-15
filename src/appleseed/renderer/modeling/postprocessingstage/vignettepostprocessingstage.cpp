@@ -103,7 +103,7 @@ namespace
         void execute(Frame& frame, const size_t thread_count) const override
         {
             // Skip vignetting if the intensity is zero.
-            if (m_intensity == 0)
+            if (feq(m_intensity, 0.0f))
                 return;
 
             const CanvasProperties& props = frame.image().properties();
@@ -139,8 +139,8 @@ namespace
 
             // Schedule effect applier jobs.
             JobQueue job_queue;
-            for (const_each<EffectJobFactory::EffectJobVector> i = effect_jobs; i; ++i)
-                job_queue.schedule(*i);
+            for (const auto effect_job : effect_jobs)
+                job_queue.schedule(effect_job);
 
             // Create a job manager to wait until jobs have effectively stopped.
             JobManager job_manager(
