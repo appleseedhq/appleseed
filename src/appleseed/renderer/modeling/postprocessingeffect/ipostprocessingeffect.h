@@ -33,8 +33,6 @@
 
 // Standard headers.
 #include <cstddef>
-#include <cstdint>
-#include <vector>
 
 // Forward declarations.
 namespace foundation    { class IAbortSwitch; }

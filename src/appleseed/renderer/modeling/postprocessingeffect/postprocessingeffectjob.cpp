@@ -40,7 +40,6 @@
 
 // Standard headers.
 #include <cassert>
-#include <exception>
 
 using namespace foundation;
 

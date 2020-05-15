@@ -51,15 +51,14 @@ namespace
     // Vignette effect applier.
     //
 
-    class VignetteEffect
+    class VignetteApplier
     : public IEffectApplier
     {
       public:
-        VignetteEffect(const VignetteParams& params)
+        VignetteApplier(const VignetteParams& params)
           : m_intensity(params.intensity)
           , m_anisotropy(params.anisotropy)
-          // FIXME improve this:
-          , m_resolution(Vector2f(static_cast<float>(params.frame_width), static_cast<float>(params.frame_height)))
+          , m_resolution(static_cast<Vector2f>(Vector2u(params.frame_width, params.frame_height)))
           , m_normalization_factor(Vector2f(params.distorted_frame_width, static_cast<float>(params.frame_height)))
         {
         }
@@ -90,10 +89,10 @@ namespace
             {
                 for (size_t x = 0; x < tile_width; ++x)
                 {
-                    const Vector2u pixel_coord = Vector2u(x + tile_offset_x, y + tile_offset_y);
+                    const Vector2f pixel_coord = static_cast<Vector2f>(Vector2u(x + tile_offset_x, y + tile_offset_y));
 
                     // Pixel coordinate normalized to be in the [-1, 1] range vertically.
-                    const Vector2f coord = (2.0f * static_cast<Vector2f>(pixel_coord) - m_resolution) / m_normalization_factor;
+                    const Vector2f coord = (2.0f * pixel_coord - m_resolution) / m_normalization_factor;
 
                     //
                     // Port of Keijiro Takahashi's natural vignetting effect for Unity.
@@ -113,9 +112,8 @@ namespace
 
                     Color4f pixel;
                     tile.get_pixel(x, y, pixel);
-                    pixel.rgb() *= inverse_biquadratic_radial_falloff;
 
-                    //tile.set_pixel(x, y, Color4f(0.0f, 1.0f, 0.0f, 1.0f));
+                    pixel.rgb() *= inverse_biquadratic_radial_falloff;
                     tile.set_pixel(x, y, pixel);
                 }
             }
@@ -135,29 +133,29 @@ namespace
 
 
 //
-// VignetteEffectApplierFactory class implementation.
+// VignetteApplierFactory class implementation.
 //
 
-VignetteEffectApplierFactory::VignetteEffectApplierFactory(
+VignetteApplierFactory::VignetteApplierFactory(
     const VignetteParams& params)
   : m_params(params)
 {
 }
 
-void VignetteEffectApplierFactory::release()
+void VignetteApplierFactory::release()
 {
     delete this;
 }
 
-IEffectApplier* VignetteEffectApplierFactory::create()
+IEffectApplier* VignetteApplierFactory::create()
 {
-    return new VignetteEffect(m_params);
+    return new VignetteApplier(m_params);
 }
 
-IEffectApplier* VignetteEffectApplierFactory::create(
+IEffectApplier* VignetteApplierFactory::create(
     const VignetteParams& params)
 {
-    return new VignetteEffect(params);
+    return new VignetteApplier(params);
 }
 
 }   // namespace renderer

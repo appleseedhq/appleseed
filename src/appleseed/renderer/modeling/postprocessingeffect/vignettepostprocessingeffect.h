@@ -29,15 +29,13 @@
 #pragma once
 
 // appleseed.renderer headers.
-#include "./ipostprocessingeffect.h" // FIXME
+#include "renderer/modeling/postprocessingeffect/ipostprocessingeffect.h"
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
 
 // Standard headers.
 #include <cstddef>
-#include <cstdint>
-#include <vector>
 
 // Forward declarations.
 namespace renderer  { class Frame; }
@@ -46,7 +44,7 @@ namespace renderer
 {
 
 //
-// Vignette-specific settings and context.
+// Vignette-specific parameters.
 //
 
 struct VignetteParams {
@@ -57,7 +55,7 @@ struct VignetteParams {
     // Context.
     size_t    frame_width;
     size_t    frame_height;
-    float     distorted_frame_width;
+    float     distorted_frame_width; // lerp(frame_width, frame_height, anisotropy)
 };
 
 
@@ -65,12 +63,12 @@ struct VignetteParams {
 // Vignette post-processing effect applier factory.
 //
 
-class VignetteEffectApplierFactory
+class VignetteApplierFactory
   : public IEffectApplierFactory
 {
   public:
     // Constructor.
-    VignetteEffectApplierFactory(const VignetteParams& params);
+    VignetteApplierFactory(const VignetteParams& params);
 
     // Delete this instance.
     void release() override;

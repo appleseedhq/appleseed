@@ -29,15 +29,13 @@
 #pragma once
 
 // appleseed.renderer headers.
-#include "./ipostprocessingeffect.h" // FIXME
+#include "renderer/modeling/postprocessingeffect/ipostprocessingeffect.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/job.h"
-#include "foundation/math/vector.h"
 
 // Standard headers.
 #include <cstddef>
-#include <cstdint>
 #include <vector>
 
 // Forward declarations.

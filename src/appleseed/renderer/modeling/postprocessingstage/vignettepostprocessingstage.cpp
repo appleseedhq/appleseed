@@ -30,8 +30,11 @@
 #include "vignettepostprocessingstage.h"
 
 // appleseed.renderer headers.
+#include "renderer/global/globallogger.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
+#include "renderer/modeling/postprocessingeffect/postprocessingeffectjob.h"
+#include "renderer/modeling/postprocessingeffect/vignettepostprocessingeffect.h"
 
 // appleseed.foundation headers.
 #include "foundation/containers/dictionary.h"
@@ -41,15 +44,9 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-
-// FIXME
-#include "../postprocessingeffect/postprocessingeffectjob.h"
-#include "../postprocessingeffect/vignettepostprocessingeffect.h"
-// #include "foundation/utility/job/abortswitch.h"
 #include "foundation/utility/job/ijob.h"
-// #include "foundation/utility/job/jobmanager.h"
+#include "foundation/utility/job/jobmanager.h"
 #include "foundation/utility/job/jobqueue.h"
-// #include "foundation/utility/job/workerthread.h"
 
 using namespace foundation;
 
@@ -107,14 +104,9 @@ namespace
         {
             const CanvasProperties& props = frame.image().properties();
 
-            // FIXME
-            size_t thread_count = 1;
-            JobQueue job_queue;
-            AbortSwitch abort_switch;
-            Logger l; // use globallogger() (?)
-            JobManager job_manager(l, job_queue, thread_count);
+            size_t thread_count = 1; // FIXME
 
-            // Initialize effect-specifc settings and context.
+            // Initialize effect-specific settings and context.
             VignetteParams effect_params {
                 m_intensity,
                 m_anisotropy,
@@ -128,16 +120,16 @@ namespace
 
             // Instantiate effect appliers, one per rendering thread.
             EffectJob::EffectApplierVector effect_appliers;
-            effect_appliers.reserve(thread_count);
 
-            VignetteEffectApplierFactory effect_applier_factory(effect_params);
+            effect_appliers.reserve(thread_count);
             for (size_t i = 0; i < thread_count; ++i)
-                effect_appliers.push_back(effect_applier_factory.create());
+                effect_appliers.push_back(VignetteApplierFactory::create(effect_params));
 
             // Create effect applier jobs.
+            AbortSwitch abort_switch; // FIXME
+            EffectJobFactory effect_job_factory;
             EffectJobFactory::EffectJobVector effect_jobs;
 
-            EffectJobFactory effect_job_factory;
             effect_job_factory.create(
                 frame,
                 effect_appliers,
@@ -146,10 +138,13 @@ namespace
                 abort_switch);
 
             // Schedule effect applier jobs.
+            JobQueue job_queue;
             for (const_each<EffectJobFactory::EffectJobVector> i = effect_jobs; i; ++i)
                 job_queue.schedule(*i);
 
-            // Wait until jobs have effectively stopped.
+            // Create a job manager to wait until jobs have effectively stopped.
+            JobManager job_manager(global_logger(), job_queue, thread_count);
+
             job_manager.start();
             job_queue.wait_until_completion();
         }
