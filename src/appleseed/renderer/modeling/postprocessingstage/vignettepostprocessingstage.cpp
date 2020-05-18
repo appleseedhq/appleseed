@@ -115,8 +115,8 @@ namespace
                 props.m_canvas_width,
                 props.m_canvas_height,
                 lerp(
-                    static_cast<float>(props.m_canvas_width),
                     static_cast<float>(props.m_canvas_height),
+                    static_cast<float>(props.m_canvas_width),
                     m_anisotropy)
             };
 

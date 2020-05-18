@@ -50,12 +50,13 @@ namespace renderer
 struct VignetteParams {
     // Settings.
     float     intensity;
-    float     anisotropy;
+    float     anisotropy; // 0 = no anisotropy (i.e. perfectly rounded)
+                          // 1 = full anisotropy (i.e. the aspect ratio of the frame is respected)
 
     // Context.
     size_t    frame_width;
     size_t    frame_height;
-    float     distorted_frame_width; // lerp(frame_width, frame_height, anisotropy)
+    float     distorted_frame_width; // lerp(frame_height, frame_width, anisotropy)
 };
 
 

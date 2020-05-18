@@ -39,6 +39,8 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 
+#include <iostream>
+
 using namespace foundation;
 
 namespace renderer
@@ -81,14 +83,15 @@ namespace
             Tile& tile = image.tile(tile_x, tile_y);
             const size_t tile_width = tile.get_width();
             const size_t tile_height = tile.get_height();
-            const size_t tile_offset_x = tile_x * tile_width;
-            const size_t tile_offset_y = tile_y * tile_height;
+            const Vector2u tile_offset(
+                tile_x * image.properties().m_tile_width,
+                tile_y * image.properties().m_tile_height);
 
             for (size_t y = 0; y < tile_height; ++y)
             {
                 for (size_t x = 0; x < tile_width; ++x)
                 {
-                    const Vector2f pixel_coord = static_cast<Vector2f>(Vector2u(x + tile_offset_x, y + tile_offset_y));
+                    const Vector2f pixel_coord = static_cast<Vector2f>(Vector2u(x, y) + tile_offset);
 
                     // Pixel coordinate normalized to be in the [-1, 1] range vertically.
                     const Vector2f coord = (2.0f * pixel_coord - m_resolution) / m_normalization_factor;
