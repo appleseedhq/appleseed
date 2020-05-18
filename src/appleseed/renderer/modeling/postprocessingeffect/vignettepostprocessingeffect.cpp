@@ -60,8 +60,8 @@ namespace
         VignetteApplier(const VignetteParams& params)
           : m_intensity(params.intensity)
           , m_anisotropy(params.anisotropy)
-          , m_resolution(static_cast<Vector2f>(Vector2u(params.frame_width, params.frame_height)))
-          , m_normalization_factor(Vector2f(params.distorted_frame_width, static_cast<float>(params.frame_height)))
+          , m_resolution(Vector2f(params.frame_width, params.frame_height))
+          , m_normalization_factor(Vector2f(params.distorted_frame_width, params.frame_height))
         {
         }
 

@@ -112,8 +112,8 @@ namespace
             VignetteParams effect_params {
                 m_intensity,
                 m_anisotropy,
-                props.m_canvas_width,
-                props.m_canvas_height,
+                static_cast<float>(props.m_canvas_width),
+                static_cast<float>(props.m_canvas_height),
                 lerp(
                     static_cast<float>(props.m_canvas_height),
                     static_cast<float>(props.m_canvas_width),
