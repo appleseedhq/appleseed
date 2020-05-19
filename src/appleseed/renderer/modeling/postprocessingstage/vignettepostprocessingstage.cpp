@@ -33,8 +33,8 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
-#include "renderer/modeling/postprocessingeffect/postprocessingeffectjob.h"
-#include "renderer/modeling/postprocessingeffect/vignettepostprocessingeffect.h"
+#include "renderer/modeling/postprocessingstage/effect/postprocessingeffectjob.h"
+#include "renderer/modeling/postprocessingstage/effect/vignettepostprocessingeffect.h"
 
 // appleseed.foundation headers.
 #include "foundation/containers/dictionary.h"

@@ -1985,20 +1985,6 @@ source_group ("renderer\\modeling\\object" FILES
     ${renderer_modeling_object_sources}
 )
 
-set (renderer_modeling_postprocessingeffect_sources
-    renderer/modeling/postprocessingeffect/ipostprocessingeffect.h
-    renderer/modeling/postprocessingeffect/postprocessingeffectjob.cpp
-    renderer/modeling/postprocessingeffect/postprocessingeffectjob.h
-    renderer/modeling/postprocessingeffect/vignettepostprocessingeffect.cpp
-    renderer/modeling/postprocessingeffect/vignettepostprocessingeffect.h
-)
-list (APPEND appleseed_sources
-    ${renderer_modeling_postprocessingeffect_sources}
-)
-source_group ("renderer\\modeling\\postprocessingeffect" FILES
-    ${renderer_modeling_postprocessingeffect_sources}
-)
-
 set (renderer_modeling_postprocessingstage_sources
     renderer/modeling/postprocessingstage/colormappostprocessingstage.cpp
     renderer/modeling/postprocessingstage/colormappostprocessingstage.h
@@ -2014,6 +2000,11 @@ set (renderer_modeling_postprocessingstage_sources
     renderer/modeling/postprocessingstage/renderstamppostprocessingstage.h
     renderer/modeling/postprocessingstage/vignettepostprocessingstage.cpp
     renderer/modeling/postprocessingstage/vignettepostprocessingstage.h
+    renderer/modeling/postprocessingstage/effect/ipostprocessingeffect.h
+    renderer/modeling/postprocessingstage/effect/postprocessingeffectjob.cpp
+    renderer/modeling/postprocessingstage/effect/postprocessingeffectjob.h
+    renderer/modeling/postprocessingstage/effect/vignettepostprocessingeffect.cpp
+    renderer/modeling/postprocessingstage/effect/vignettepostprocessingeffect.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_postprocessingstage_sources}

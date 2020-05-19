@@ -29,7 +29,7 @@
 #pragma once
 
 // appleseed.renderer headers.
-#include "renderer/modeling/postprocessingeffect/ipostprocessingeffect.h"
+#include "renderer/modeling/postprocessingstage/effect/ipostprocessingeffect.h"
 
 // appleseed.foundation headers.
 #include "foundation/utility/job.h"
