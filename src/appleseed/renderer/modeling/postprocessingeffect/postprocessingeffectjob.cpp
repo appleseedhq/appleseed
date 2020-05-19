@@ -54,13 +54,11 @@ EffectJob::EffectJob(
     const EffectApplierVector&  effect_appliers,
     const Frame&                frame,
     const std::size_t           tile_x,
-    const std::size_t           tile_y,
-    const std::size_t           thread_count)
+    const std::size_t           tile_y)
   : m_effect_appliers(effect_appliers)
   , m_frame(frame)
   , m_tile_x(tile_x)
   , m_tile_y(tile_y)
-  , m_thread_count(thread_count)
 {
 }
 
@@ -83,7 +81,6 @@ void EffectJob::execute(const std::size_t thread_index)
 void EffectJobFactory::create(
     const Frame&                            frame,
     const EffectJob::EffectApplierVector&   effect_appliers,
-    const std::size_t                       thread_count,
     EffectJobVector&                        effect_jobs)
 {
     // Retrieve frame properties.
@@ -112,8 +109,7 @@ void EffectJobFactory::create(
                 effect_appliers,
                 frame,
                 tile_x,
-                tile_y,
-                thread_count));
+                tile_y));
     }
 }
 

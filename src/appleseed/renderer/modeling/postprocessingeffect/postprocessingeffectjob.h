@@ -59,8 +59,7 @@ class EffectJob
         const EffectApplierVector&  effect_appliers,
         const Frame&                frame,
         const std::size_t           tile_x,
-        const std::size_t           tile_y,
-        const std::size_t           thread_count);
+        const std::size_t           tile_y);
 
     // Execute the job.
     void execute(const std::size_t thread_index);
@@ -70,7 +69,6 @@ class EffectJob
     const Frame&                m_frame;
     const std::size_t           m_tile_x;
     const std::size_t           m_tile_y;
-    const std::size_t           m_thread_count;
 };
 
 
@@ -87,7 +85,6 @@ class EffectJobFactory
     void create(
         const Frame&                            frame,
         const EffectJob::EffectApplierVector&   effect_appliers,
-        const std::size_t                       thread_count,
         EffectJobVector&                        effect_jobs);
 };
 

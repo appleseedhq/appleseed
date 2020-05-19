@@ -113,11 +113,7 @@ namespace
                 m_intensity,
                 m_anisotropy,
                 static_cast<float>(props.m_canvas_width),
-                static_cast<float>(props.m_canvas_height),
-                lerp(
-                    static_cast<float>(props.m_canvas_height),
-                    static_cast<float>(props.m_canvas_width),
-                    m_anisotropy)
+                static_cast<float>(props.m_canvas_height)
             };
 
             // Instantiate effect appliers, one per rendering thread.
@@ -134,7 +130,6 @@ namespace
             effect_job_factory.create(
                 frame,
                 effect_appliers,
-                thread_count,
                 effect_jobs);
 
             // Schedule effect applier jobs.

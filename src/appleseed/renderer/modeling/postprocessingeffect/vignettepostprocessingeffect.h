@@ -51,12 +51,11 @@ struct VignetteParams {
     // Settings.
     float       intensity;
     float       anisotropy; // 0 = no anisotropy (i.e. perfectly rounded)
-                            // 1 = full anisotropy (i.e. the aspect ratio of the frame is respected)
+                            // 1 = full anisotropy (i.e. respects the frame's aspect ratio)
 
     // Context.
     float       frame_width;
     float       frame_height;
-    float       distorted_frame_width; // lerp(frame_height, frame_width, anisotropy)
 };
 
 
@@ -81,7 +80,9 @@ class VignetteApplierFactory
     static IEffectApplier* create(const VignetteParams& params);
 
   private:
-    const VignetteParams m_params;
+    const float                     m_intensity;
+    const foundation::Vector2f      m_resolution;
+    const foundation::Vector2f      m_vignette_resolution;
 };
 
 }   // namespace renderer

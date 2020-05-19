@@ -39,8 +39,6 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 
-#include <iostream>
-
 using namespace foundation;
 
 namespace renderer
@@ -57,11 +55,13 @@ namespace
     : public IEffectApplier
     {
       public:
-        VignetteApplier(const VignetteParams& params)
-          : m_intensity(params.intensity)
-          , m_anisotropy(params.anisotropy)
-          , m_resolution(Vector2f(params.frame_width, params.frame_height))
-          , m_normalization_factor(Vector2f(params.distorted_frame_width, params.frame_height))
+        VignetteApplier(
+            const float intensity,
+            const Vector2f& resolution,
+            const Vector2f& normalization_factor)
+          : m_intensity(intensity)
+          , m_resolution(resolution)
+          , m_vignette_resolution(normalization_factor)
         {
         }
 
@@ -94,7 +94,7 @@ namespace
                     const Vector2f pixel_coord = static_cast<Vector2f>(Vector2u(x, y) + tile_offset);
 
                     // Pixel coordinate normalized to be in the [-1, 1] range vertically.
-                    const Vector2f coord = (2.0f * pixel_coord - m_resolution) / m_normalization_factor;
+                    const Vector2f coord = (2.0f * pixel_coord - m_resolution) / m_vignette_resolution;
 
                     //
                     // Port of Keijiro Takahashi's natural vignetting effect for Unity.
@@ -119,17 +119,12 @@ namespace
                     tile.set_pixel(x, y, pixel);
                 }
             }
-
         }
 
       private:
-        // Settings.
         const float                     m_intensity;
-        const float                     m_anisotropy;
-
-        // Context.
         const foundation::Vector2f      m_resolution;
-        const foundation::Vector2f      m_normalization_factor;
+        const foundation::Vector2f      m_vignette_resolution;
     };
 }
 
@@ -140,7 +135,11 @@ namespace
 
 VignetteApplierFactory::VignetteApplierFactory(
     const VignetteParams& params)
-  : m_params(params)
+  : m_intensity(params.intensity)
+  , m_resolution(Vector2f(params.frame_width, params.frame_height))
+  , m_vignette_resolution(Vector2f(
+      lerp(params.frame_height, params.frame_width, params.anisotropy),
+      params.frame_height))
 {
 }
 
@@ -151,13 +150,22 @@ void VignetteApplierFactory::release()
 
 IEffectApplier* VignetteApplierFactory::create()
 {
-    return new VignetteApplier(m_params);
+    return new VignetteApplier(m_intensity, m_resolution, m_vignette_resolution);
 }
 
-IEffectApplier* VignetteApplierFactory::create(
-    const VignetteParams& params)
+IEffectApplier* VignetteApplierFactory::create(const VignetteParams& params)
 {
-    return new VignetteApplier(params);
+    // We normalize pixel coordinates when applying the effect to range from -1 to 1 vertically.
+    // Horizontally, we divide frame_width by frame_height for a perfectly rounded vignette (i.e.
+    // no anisotropy), and by frame_width to respect the frame's aspect ratio (i.e. full anisotropy).
+    // See https://shadertoyunofficial.wordpress.com/2019/01/02/programming-tricks-in-shadertoy-glsl/
+
+    const float vignette_width = lerp(params.frame_height, params.frame_width, params.anisotropy);
+
+    return new VignetteApplier(
+        params.intensity,
+        Vector2f(params.frame_width, params.frame_height),
+        Vector2f(vignette_width, params.frame_height));
 }
 
 }   // namespace renderer
