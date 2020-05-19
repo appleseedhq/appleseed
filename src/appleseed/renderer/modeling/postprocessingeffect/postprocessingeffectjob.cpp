@@ -53,9 +53,9 @@ namespace renderer
 EffectJob::EffectJob(
     const EffectApplierVector&  effect_appliers,
     const Frame&                frame,
-    const size_t                tile_x,
-    const size_t                tile_y,
-    const size_t                thread_count)
+    const std::size_t           tile_x,
+    const std::size_t           tile_y,
+    const std::size_t           thread_count)
   : m_effect_appliers(effect_appliers)
   , m_frame(frame)
   , m_tile_x(tile_x)
@@ -64,7 +64,7 @@ EffectJob::EffectJob(
 {
 }
 
-void EffectJob::execute(const size_t thread_index)
+void EffectJob::execute(const std::size_t thread_index)
 {
     assert(thread_index < m_effect_appliers.size());
 
@@ -83,26 +83,26 @@ void EffectJob::execute(const size_t thread_index)
 void EffectJobFactory::create(
     const Frame&                            frame,
     const EffectJob::EffectApplierVector&   effect_appliers,
-    const size_t                            thread_count,
+    const std::size_t                       thread_count,
     EffectJobVector&                        effect_jobs)
 {
     // Retrieve frame properties.
     const CanvasProperties& props = frame.image().properties();
 
     // Generate tiles in linear order.
-    std::vector<size_t> tiles;
+    std::vector<std::size_t> tiles;
     linear_ordering(tiles, props.m_tile_count);
 
     // Make sure the right number of tiles was created.
     assert(tiles.size() == props.m_tile_count);
 
     // Create effect jobs, one per tile.
-    for (size_t i = 0; i < props.m_tile_count; ++i)
+    for (std::size_t i = 0; i < props.m_tile_count; ++i)
     {
         // Compute coordinates of the tile in the frame.
-        const size_t tile_index = tiles[i];
-        const size_t tile_x = tile_index % props.m_tile_count_x;
-        const size_t tile_y = tile_index / props.m_tile_count_x;
+        const std::size_t tile_index = tiles[i];
+        const std::size_t tile_x = tile_index % props.m_tile_count_x;
+        const std::size_t tile_y = tile_index / props.m_tile_count_x;
         assert(tile_x < props.m_tile_count_x);
         assert(tile_y < props.m_tile_count_y);
 

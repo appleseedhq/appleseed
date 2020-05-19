@@ -100,7 +100,7 @@ namespace
             return true;
         }
 
-        void execute(Frame& frame, const size_t thread_count) const override
+        void execute(Frame& frame, const std::size_t thread_count) const override
         {
             // Skip vignetting if the intensity is zero.
             if (feq(m_intensity, 0.0f))
@@ -124,7 +124,7 @@ namespace
             EffectJob::EffectApplierVector effect_appliers;
 
             effect_appliers.reserve(thread_count);
-            for (size_t i = 0; i < thread_count; ++i)
+            for (std::size_t i = 0; i < thread_count; ++i)
                 effect_appliers.push_back(VignetteApplierFactory::create(effect_params));
 
             // Create effect applier jobs.

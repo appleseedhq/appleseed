@@ -71,9 +71,9 @@ namespace
         }
 
         void apply(
-            const Frame&    frame,
-            const size_t    tile_x,
-            const size_t    tile_y) const override
+            const Frame&        frame,
+            const std::size_t   tile_x,
+            const std::size_t   tile_y) const override
         {
             Image& image = frame.image();
 
@@ -81,15 +81,15 @@ namespace
             assert(tile_y < image.properties().m_tile_count_y);
 
             Tile& tile = image.tile(tile_x, tile_y);
-            const size_t tile_width = tile.get_width();
-            const size_t tile_height = tile.get_height();
+            const std::size_t tile_width = tile.get_width();
+            const std::size_t tile_height = tile.get_height();
             const Vector2u tile_offset(
                 tile_x * image.properties().m_tile_width,
                 tile_y * image.properties().m_tile_height);
 
-            for (size_t y = 0; y < tile_height; ++y)
+            for (std::size_t y = 0; y < tile_height; ++y)
             {
-                for (size_t x = 0; x < tile_width; ++x)
+                for (std::size_t x = 0; x < tile_width; ++x)
                 {
                     const Vector2f pixel_coord = static_cast<Vector2f>(Vector2u(x, y) + tile_offset);
 

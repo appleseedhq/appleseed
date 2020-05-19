@@ -50,9 +50,9 @@ class IEffectApplier
   public:
     // Apply the post-processing effect to a given tile.
     virtual void apply(
-        const Frame&    frame,
-        const size_t    tile_x,
-        const size_t    tile_y) const = 0;
+        const Frame&        frame,
+        const std::size_t   tile_x,
+        const std::size_t   tile_y) const = 0;
 };
 
 
