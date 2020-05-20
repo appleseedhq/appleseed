@@ -47,14 +47,14 @@ namespace renderer
 {
 
 //
-// EffectJob class implementation.
+// ImageEffectJob class implementation.
 //
 
-EffectJob::EffectJob(
-    const EffectApplierVector&  effect_appliers,
-    const Frame&                frame,
-    const std::size_t           tile_x,
-    const std::size_t           tile_y)
+ImageEffectJob::ImageEffectJob(
+    const EffectApplierVector&      effect_appliers,
+    const Frame&                    frame,
+    const std::size_t               tile_x,
+    const std::size_t               tile_y)
   : m_effect_appliers(effect_appliers)
   , m_frame(frame)
   , m_tile_x(tile_x)
@@ -62,7 +62,7 @@ EffectJob::EffectJob(
 {
 }
 
-void EffectJob::execute(const std::size_t thread_index)
+void ImageEffectJob::execute(const std::size_t thread_index)
 {
     assert(thread_index < m_effect_appliers.size());
 
@@ -75,12 +75,12 @@ void EffectJob::execute(const std::size_t thread_index)
 
 
 //
-// EffectJobFactory class implementation.
+// ImageEffectJobFactory class implementation.
 //
 
-EffectJobFactory::EffectJobVector EffectJobFactory::create(
-    const Frame&                            frame,
-    const EffectJob::EffectApplierVector&   effect_appliers)
+ImageEffectJobFactory::EffectJobVector ImageEffectJobFactory::create(
+    const Frame&                                frame,
+    const ImageEffectJob::EffectApplierVector&  effect_appliers)
 {
     // Retrieve frame properties.
     const CanvasProperties& props = frame.image().properties();
@@ -106,7 +106,7 @@ EffectJobFactory::EffectJobVector EffectJobFactory::create(
 
         // Create the tile job.
         effect_jobs.push_back(
-            new EffectJob(
+            new ImageEffectJob(
                 effect_appliers,
                 frame,
                 tile_x,

@@ -44,7 +44,7 @@ namespace renderer
 // Interface of a post-processing effect algorithm applier.
 //
 
-class IEffectApplier
+class IImageEffectApplier
   : public foundation::IUnknown
 {
   public:
@@ -57,15 +57,15 @@ class IEffectApplier
 
 
 //
-// Interface of an IEffectApplier factory.
+// Interface of an IImageEffectApplier factory.
 //
 
-class IEffectApplierFactory
+class IImageEffectApplierFactory
   : public foundation::IUnknown
 {
   public:
     // Return a new post-processing effect applier instance.
-    virtual IEffectApplier* create() = 0;
+    virtual IImageEffectApplier* create() = 0;
 };
 
 }   // namespace renderer

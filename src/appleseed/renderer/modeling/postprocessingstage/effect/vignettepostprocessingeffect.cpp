@@ -52,7 +52,7 @@ namespace
     //
 
     class VignetteApplier
-    : public IEffectApplier
+    : public IImageEffectApplier
     {
       public:
         VignetteApplier(
@@ -157,7 +157,7 @@ void VignetteApplierFactory::release()
     delete this;
 }
 
-IEffectApplier* VignetteApplierFactory::create()
+IImageEffectApplier* VignetteApplierFactory::create()
 {
     return new VignetteApplier(m_intensity, m_resolution, m_vignette_resolution);
 }

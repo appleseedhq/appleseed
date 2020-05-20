@@ -48,14 +48,14 @@ namespace renderer
 // Post-processing effect applier job.
 //
 
-class EffectJob
+class ImageEffectJob
   : public foundation::IJob
 {
   public:
-    typedef std::vector<IEffectApplier*> EffectApplierVector;
+    typedef std::vector<IImageEffectApplier*> EffectApplierVector;
 
     // Constructor.
-    EffectJob(
+    ImageEffectJob(
         const EffectApplierVector&  effect_appliers,
         const Frame&                frame,
         const std::size_t           tile_x,
@@ -76,15 +76,15 @@ class EffectJob
 // Creates jobs to apply a post-processing effect to a complete frame.
 //
 
-class EffectJobFactory
+class ImageEffectJobFactory
 {
   public:
-    typedef std::vector<EffectJob*> EffectJobVector;
+    typedef std::vector<ImageEffectJob*> EffectJobVector;
 
     // Create effect jobs for a given frame.
     EffectJobVector create(
-        const Frame&                            frame,
-        const EffectJob::EffectApplierVector&   effect_appliers);
+        const Frame&                                frame,
+        const ImageEffectJob::EffectApplierVector&  effect_appliers);
 };
 
 }   // namespace renderer

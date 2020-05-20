@@ -64,7 +64,7 @@ struct VignetteParams {
 //
 
 class VignetteApplierFactory
-  : public IEffectApplierFactory
+  : public IImageEffectApplierFactory
 {
   public:
     // Constructor.
@@ -74,7 +74,7 @@ class VignetteApplierFactory
     void release() override;
 
     // Return a new effect applier instance.
-    IEffectApplier* create() override;
+    IImageEffectApplier* create() override;
 
   private:
     const float                     m_intensity;

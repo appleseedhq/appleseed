@@ -118,17 +118,17 @@ namespace
 
             // Instantiate effect appliers, one per rendering thread.
             VignetteApplierFactory effect_applier_factory(effect_params);
-            EffectJob::EffectApplierVector effect_appliers;
+            ImageEffectJob::EffectApplierVector effect_appliers;
 
             effect_appliers.reserve(thread_count);
             for (std::size_t i = 0; i < thread_count; ++i)
                 effect_appliers.push_back(effect_applier_factory.create());
 
             // Create effect applier jobs.
-            EffectJobFactory effect_job_factory;
-            EffectJobFactory::EffectJobVector effect_jobs = effect_job_factory.create(
-                                                                frame,
-                                                                effect_appliers);
+            ImageEffectJobFactory effect_job_factory;
+            ImageEffectJobFactory::EffectJobVector effect_jobs = effect_job_factory.create(
+                                                                    frame,
+                                                                    effect_appliers);
 
             // Schedule effect applier jobs.
             JobQueue job_queue;
