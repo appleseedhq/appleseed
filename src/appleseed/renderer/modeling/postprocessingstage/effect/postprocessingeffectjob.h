@@ -82,10 +82,9 @@ class EffectJobFactory
     typedef std::vector<EffectJob*> EffectJobVector;
 
     // Create effect jobs for a given frame.
-    void create(
+    EffectJobVector create(
         const Frame&                            frame,
-        const EffectJob::EffectApplierVector&   effect_appliers,
-        EffectJobVector&                        effect_jobs);
+        const EffectJob::EffectApplierVector&   effect_appliers);
 };
 
 }   // namespace renderer

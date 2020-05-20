@@ -78,10 +78,9 @@ void EffectJob::execute(const std::size_t thread_index)
 // EffectJobFactory class implementation.
 //
 
-void EffectJobFactory::create(
+EffectJobFactory::EffectJobVector EffectJobFactory::create(
     const Frame&                            frame,
-    const EffectJob::EffectApplierVector&   effect_appliers,
-    EffectJobVector&                        effect_jobs)
+    const EffectJob::EffectApplierVector&   effect_appliers)
 {
     // Retrieve frame properties.
     const CanvasProperties& props = frame.image().properties();
@@ -94,6 +93,8 @@ void EffectJobFactory::create(
     assert(tiles.size() == props.m_tile_count);
 
     // Create effect jobs, one per tile.
+    EffectJobVector effect_jobs;
+    effect_jobs.reserve(props.m_tile_count);
     for (std::size_t i = 0; i < props.m_tile_count; ++i)
     {
         // Compute coordinates of the tile in the frame.
@@ -111,6 +112,7 @@ void EffectJobFactory::create(
                 tile_x,
                 tile_y));
     }
+    return effect_jobs;
 }
 
 }   // namespace renderer

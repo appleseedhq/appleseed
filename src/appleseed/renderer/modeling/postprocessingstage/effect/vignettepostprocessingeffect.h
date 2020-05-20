@@ -51,7 +51,7 @@ struct VignetteParams {
     // Settings.
     float       intensity;
     float       anisotropy; // 0 = no anisotropy (i.e. perfectly rounded)
-                            // 1 = full anisotropy (i.e. respects the frame's aspect ratio)
+                            // 1 = full anisotropy (i.e. respect the frame's aspect ratio)
 
     // Context.
     float       frame_width;
@@ -75,9 +75,6 @@ class VignetteApplierFactory
 
     // Return a new effect applier instance.
     IEffectApplier* create() override;
-
-    // Return a new effect applier instance.
-    static IEffectApplier* create(const VignetteParams& params);
 
   private:
     const float                     m_intensity;

@@ -137,10 +137,19 @@ VignetteApplierFactory::VignetteApplierFactory(
     const VignetteParams& params)
   : m_intensity(params.intensity)
   , m_resolution(Vector2f(params.frame_width, params.frame_height))
-  , m_vignette_resolution(Vector2f(
-      lerp(params.frame_height, params.frame_width, params.anisotropy),
-      params.frame_height))
+  , m_vignette_resolution(
+        Vector2f(
+            lerp(params.frame_height, params.frame_width, params.anisotropy),   // vignette_width
+            params.frame_height))                                               // vignette_height
 {
+    //
+    // We normalize pixel coordinates when applying the effect so that they range from -1 to 1 vertically.
+    //
+    // Horizontally, we divide frame_width by the frame_height for a perfectly rounded vignette (i.e. no anisotropy), and by
+    // the frame_width to respect the frame's aspect ratio (i.e. full anisotropy), hence the lerp in m_vignette_resolution.x.
+    //
+    // See "Normalizing coordinates" in https://shadertoyunofficial.wordpress.com/2019/01/02/programming-tricks-in-shadertoy-glsl/
+    //
 }
 
 void VignetteApplierFactory::release()
@@ -151,21 +160,6 @@ void VignetteApplierFactory::release()
 IEffectApplier* VignetteApplierFactory::create()
 {
     return new VignetteApplier(m_intensity, m_resolution, m_vignette_resolution);
-}
-
-IEffectApplier* VignetteApplierFactory::create(const VignetteParams& params)
-{
-    // We normalize pixel coordinates when applying the effect to range from -1 to 1 vertically.
-    // Horizontally, we divide frame_width by frame_height for a perfectly rounded vignette (i.e.
-    // no anisotropy), and by frame_width to respect the frame's aspect ratio (i.e. full anisotropy).
-    // See https://shadertoyunofficial.wordpress.com/2019/01/02/programming-tricks-in-shadertoy-glsl/
-
-    const float vignette_width = lerp(params.frame_height, params.frame_width, params.anisotropy);
-
-    return new VignetteApplier(
-        params.intensity,
-        Vector2f(params.frame_width, params.frame_height),
-        Vector2f(vignette_width, params.frame_height));
 }
 
 }   // namespace renderer
