@@ -126,13 +126,14 @@ namespace
 
             // Create effect applier jobs.
             ImageEffectJobFactory effect_job_factory;
-            ImageEffectJobFactory::EffectJobVector effect_jobs = effect_job_factory.create(
-                                                                    frame,
-                                                                    effect_appliers);
+            ImageEffectJobFactory::EffectJobVector effect_jobs =
+                effect_job_factory.create(
+                    frame,
+                    effect_appliers);
 
             // Schedule effect applier jobs.
             JobQueue job_queue;
-            for (const auto effect_job : effect_jobs)
+            for (ImageEffectJob* const effect_job : effect_jobs)
                 job_queue.schedule(effect_job);
 
             // Create a job manager to wait until jobs have effectively stopped.

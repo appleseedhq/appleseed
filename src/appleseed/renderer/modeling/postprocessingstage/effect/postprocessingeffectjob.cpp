@@ -112,6 +112,7 @@ ImageEffectJobFactory::EffectJobVector ImageEffectJobFactory::create(
                 tile_x,
                 tile_y));
     }
+
     return effect_jobs;
 }
 

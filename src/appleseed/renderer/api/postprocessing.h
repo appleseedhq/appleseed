@@ -37,6 +37,3 @@
 #include "renderer/modeling/postprocessingstage/postprocessingstagetraits.h"
 #include "renderer/modeling/postprocessingstage/renderstamppostprocessingstage.h"
 #include "renderer/modeling/postprocessingstage/vignettepostprocessingstage.h"
-#include "renderer/modeling/postprocessingstage/effect/ipostprocessingeffect.h"
-#include "renderer/modeling/postprocessingstage/effect/postprocessingeffectjob.h"
-#include "renderer/modeling/postprocessingstage/effect/vignettepostprocessingeffect.h"
