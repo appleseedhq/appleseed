@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2020 Tiago Chaves, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,13 +28,44 @@
 
 #pragma once
 
-// API headers.
-#include "renderer/modeling/postprocessingstage/bloompostprocessingstage.h"
-#include "renderer/modeling/postprocessingstage/colormappostprocessingstage.h"
+// appleseed.renderer headers.
 #include "renderer/modeling/postprocessingstage/ipostprocessingstagefactory.h"
-#include "renderer/modeling/postprocessingstage/postprocessingstage.h"
-#include "renderer/modeling/postprocessingstage/postprocessingstagecontainer.h"
-#include "renderer/modeling/postprocessingstage/postprocessingstagefactoryregistrar.h"
-#include "renderer/modeling/postprocessingstage/postprocessingstagetraits.h"
-#include "renderer/modeling/postprocessingstage/renderstamppostprocessingstage.h"
-#include "renderer/modeling/postprocessingstage/vignettepostprocessingstage.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Forward declarations.
+namespace foundation    { class Dictionary; }
+namespace foundation    { class DictionaryArray; }
+namespace renderer      { class ParamArray; }
+
+namespace renderer
+{
+
+//
+// A post-processing stage that adds bloom to the frame.
+//
+
+class APPLESEED_DLLSYMBOL BloomPostProcessingStageFactory
+  : public IPostProcessingStageFactory
+{
+  public:
+    // Delete this instance.
+    void release() override;
+
+    // Return a string identifying this stage model.
+    const char* get_model() const override;
+
+    // Return metadata for this stage model.
+    foundation::Dictionary get_model_metadata() const override;
+
+    // Return metadata for the inputs of this stage model.
+    foundation::DictionaryArray get_input_metadata() const override;
+
+    // Create a new stage instance.
+    foundation::auto_release_ptr<PostProcessingStage> create(
+        const char*         name,
+        const ParamArray&   params) const override;
+};
+
+}   // namespace renderer
