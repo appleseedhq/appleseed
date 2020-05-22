@@ -43,6 +43,9 @@
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 
+// Standard headers.
+#include <cstddef>
+
 using namespace foundation;
 
 namespace renderer
@@ -56,7 +59,10 @@ namespace
 
     const char* Model = "bloom_post_processing_stage";
 
+    // TODO add default settings
     static constexpr float DefaultIntensity = 0.5f;
+    static constexpr std::size_t DefaultIterations = 4;
+    static constexpr std::size_t DefaultThreshold = 1;
 
     class BloomPostProcessingStage
       : public PostProcessingStage
@@ -87,18 +93,49 @@ namespace
         {
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
+            // TODO add default settings
             m_intensity = m_params.get_optional("intensity", DefaultIntensity, context);
+            m_iterations = m_params.get_optional("iterations", DefaultIterations, context);
+            m_threshold = m_params.get_optional("threshold", DefaultThreshold, context);
 
             return true;
         }
 
+        static void blur_x(Image& image)
+        {
+            const CanvasProperties& props = image.properties();
+
+            for (std::size_t y = 0; y < props.m_canvas_height; ++y)
+            {
+                for (std::size_t x = 0; x < props.m_canvas_width; ++x)
+                {
+                    Color4f pixel;
+                    image.get_pixel(x, y, pixel);
+
+                    pixel.r *= 10.0f;
+
+                    image.set_pixel(x, y, pixel);
+                }
+            }
+        }
+
         void execute(Frame& frame, const std::size_t thread_count) const override
         {
-            // TODO
+            // TODO bloom :)
+            // - start with progressive downsampling and rendering to a temporary "texture"
+            Image tmp(frame.image());
+
+            blur_x(tmp);
+            // blur_y(tmp);
+
+            frame.image().copy_from(tmp);
         }
 
       private:
+        // TODO add default settings
         float m_intensity;
+        std::size_t m_iterations;
+        std::size_t m_threshold;
     };
 }
 
@@ -131,6 +168,8 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
 
     add_common_input_metadata(metadata);
 
+    // TODO add default settings
+
     metadata.push_back(
         Dictionary()
             .insert("name", "intensity")
@@ -146,6 +185,40 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
                         .insert("type", "hard"))
             .insert("use", "optional")
             .insert("default", "0.5"));
+
+    // TODO fix min/max values and enforce uint type
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "iterations")
+            .insert("label", "Iterations")
+            .insert("type", "numeric")
+            .insert("min",
+                    Dictionary()
+                        .insert("value", "1")
+                        .insert("type", "hard"))
+            .insert("max",
+                    Dictionary()
+                        .insert("value", "16")
+                        .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "4"));
+
+    // TODO fix min/max values and enforce uint type
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "threshold")
+            .insert("label", "Threshold")
+            .insert("type", "numeric")
+            .insert("min",
+                    Dictionary()
+                        .insert("value", "0")
+                        .insert("type", "hard"))
+            .insert("max",
+                    Dictionary()
+                        .insert("value", "10")
+                        .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "1"));
 
     return metadata;
 }
