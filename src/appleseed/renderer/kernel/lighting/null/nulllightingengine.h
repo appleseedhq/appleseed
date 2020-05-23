@@ -72,7 +72,8 @@ class NullLightingEngine
         const ShadingContext&   shading_context,
         const ShadingPoint&     shading_point,
         ShadingComponents&      radiance,
-        AOVComponents&          aov_components) override
+        AOVComponents&          aov_components,
+        ShadowCatcher&          shadow_catcher) override
     {
     }
 };

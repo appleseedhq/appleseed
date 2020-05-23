@@ -159,7 +159,8 @@ namespace
             const ShadingContext&           shading_context,
             const ShadingPoint&             shading_point,
             ShadingComponents&              radiance,                       // output radiance, in W.sr^-1.m^-2
-            AOVComponents&                  aov_components) override
+            AOVComponents&                  aov_components,
+            ShadowCatcher&                  shadow_catcher) override
         {
             if (m_params.m_view_photons)
             {
@@ -411,6 +412,8 @@ namespace
                 DirectShadingComponents&        vertex_radiance)
             {
                 DirectShadingComponents dl_radiance;
+                Spectrum unshaded_radiance(Spectrum::Illuminance);
+                Spectrum shaded_radiance(Spectrum::Illuminance);
 
                 const std::size_t light_sample_count =
                     stochastic_cast<std::size_t>(
@@ -446,6 +449,8 @@ namespace
                     vertex.m_sampling_context,
                     vertex.m_outgoing,
                     dl_radiance,
+                    unshaded_radiance,
+                    shaded_radiance,
                     nullptr);
 
                 // Divide by the sample count when this number is less than 1.
