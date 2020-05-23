@@ -45,7 +45,9 @@
 #include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
+#include "renderer/kernel/shading/shadowcatcher.h"
 #include "renderer/modeling/bsdf/bsdf.h"
+#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/edf/edf.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
@@ -161,7 +163,8 @@ namespace
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             ShadingComponents&      radiance,               // output radiance, in W.sr^-1.m^-2
-            AOVComponents&          aov_components) override
+            AOVComponents&          aov_components,
+            ShadowCatcher&          shadow_catcher) override
         {
             if (m_light_path_stream)
             {
@@ -178,7 +181,8 @@ namespace
                     shading_context,
                     shading_point,
                     radiance,
-                    aov_components);
+                    aov_components,
+                    shadow_catcher);
             }
             else
             {
@@ -187,7 +191,8 @@ namespace
                     shading_context,
                     shading_point,
                     radiance,
-                    aov_components);
+                    aov_components,
+                    shadow_catcher);
             }
 
             if (m_light_path_stream)
@@ -200,7 +205,8 @@ namespace
             const ShadingContext&   shading_context,
             const ShadingPoint&     shading_point,
             ShadingComponents&      radiance,               // output radiance, in W.sr^-1.m^-2
-            AOVComponents&          aov_components)
+            AOVComponents&          aov_components,
+            ShadowCatcher&          shadow_catcher)
         {
             PathVisitor path_visitor(
                 m_params,
@@ -210,7 +216,8 @@ namespace
                 shading_point.get_scene(),
                 radiance,
                 aov_components,
-                m_light_path_stream);
+                m_light_path_stream,
+                shadow_catcher);
 
             VolumeVisitor volume_visitor(
                 m_params,
@@ -385,6 +392,7 @@ namespace
             ShadingComponents&                  m_path_radiance;
             AOVComponents&                      m_aov_components;
             LightPathStream*                    m_light_path_stream;
+            ShadowCatcher&                      m_shadow_catcher;
             bool                                m_omit_emitted_light;
 
             PathVisitorBase(
@@ -395,7 +403,8 @@ namespace
                 const Scene&                    scene,
                 ShadingComponents&              path_radiance,
                 AOVComponents&                  aov_components,
-                LightPathStream*                light_path_stream)
+                LightPathStream*                light_path_stream,
+                ShadowCatcher&                  shadow_catcher)
               : m_params(params)
               , m_light_sampler(light_sampler)
               , m_sampling_context(sampling_context)
@@ -404,6 +413,7 @@ namespace
               , m_path_radiance(path_radiance)
               , m_aov_components(aov_components)
               , m_light_path_stream(light_path_stream)
+              , m_shadow_catcher(shadow_catcher)
               , m_omit_emitted_light(false)
             {
             }
@@ -425,7 +435,8 @@ namespace
                 const Scene&                    scene,
                 ShadingComponents&              path_radiance,
                 AOVComponents&                  aov_components,
-                LightPathStream*                light_path_stream)
+                LightPathStream*                light_path_stream,
+                ShadowCatcher&                  shadow_catcher)
               : PathVisitorBase(
                     params,
                     light_sampler,
@@ -434,7 +445,8 @@ namespace
                     scene,
                     path_radiance,
                     aov_components,
-                    light_path_stream)
+                    light_path_stream,
+                    shadow_catcher)
             {
             }
 
@@ -530,7 +542,8 @@ namespace
                 const Scene&                    scene,
                 ShadingComponents&              path_radiance,
                 AOVComponents&                  aov_components,
-                LightPathStream*                light_path_stream)
+                LightPathStream*                light_path_stream,
+                ShadowCatcher&                  shadow_catcher)
               : PathVisitorBase(
                     params,
                     light_sampler,
@@ -539,7 +552,8 @@ namespace
                     scene,
                     path_radiance,
                     aov_components,
-                    light_path_stream)
+                    light_path_stream,
+                    shadow_catcher)
               , m_is_indirect_lighting(false)
             {
             }
@@ -547,6 +561,16 @@ namespace
             void on_miss(const PathVertex& vertex)
             {
                 assert(vertex.m_prev_mode != ScatteringMode::None);
+
+                // Update path radiance with "unshadowed" IBL value * shadow_ratio previously computed in on_scatter() function
+                if (strcmp(vertex.m_parent_shading_point->get_object_instance().get_name(), "Box001_sc_inst") == 0)
+                {
+                    m_path_radiance.add_emission(
+                        vertex.m_path_length,
+                        vertex.m_aov_mode,
+                        vertex.m_shadow_catcher->m_direct_unshaded_radiance * vertex.m_shadow_catcher->m_shadow_ratio);
+                    return;
+                }
 
                 // Can't look up the environment if there's no environment EDF.
                 if (m_env_edf == nullptr)
@@ -628,7 +652,6 @@ namespace
                 }
                 else
                 {
-                    // Record light path event.
                     if (m_light_path_stream)
                         m_light_path_stream->hit_reflector(vertex);
                 }
@@ -676,6 +699,12 @@ namespace
                     }
                 }
 
+                // Direct light values for shadow catcher
+                Spectrum shaded_dl_radiance(Spectrum::Illuminance);
+                Spectrum unshaded_dl_radiance(Spectrum::Illuminance);
+                unshaded_dl_radiance.set(0.0f);
+                shaded_dl_radiance.set(0.0f);
+
                 // Direct lighting contribution.
                 if (m_params.m_enable_dl || vertex.m_path_length > 1)
                 {
@@ -688,9 +717,17 @@ namespace
                             vertex.m_bsdf_data,
                             vertex.m_scattering_modes,
                             vertex_radiance,
+                            unshaded_dl_radiance,
+                            shaded_dl_radiance,
                             m_light_path_stream);
                     }
                 }
+
+                // Image-based light values for shadow catcher
+                Spectrum shaded_ibl_radiance(Spectrum::Illuminance);
+                Spectrum unshaded_ibl_radiance(Spectrum::Illuminance);
+                unshaded_ibl_radiance.set(0.0f);
+                shaded_ibl_radiance.set(0.0f);
 
                 // Image-based lighting contribution.
                 if (m_params.m_enable_ibl && m_env_edf)
@@ -704,12 +741,70 @@ namespace
                             vertex.m_bsdf_data,
                             vertex.m_scattering_modes,
                             vertex_radiance,
+                            unshaded_ibl_radiance,
+                            shaded_ibl_radiance,
+                            m_light_path_stream);
+                    }
+                }
+                else if (strcmp(vertex.m_shading_point->get_object_instance().get_name(), "Box001_sc_inst") == 0)
+                {
+                    // unshaded_ibl_radiance value is required for shadow catcher to apply later in on_miss function
+                    DirectShadingComponents temp_vertex_radiance;
+                    if (vertex.m_bsdf)
+                    {
+                        add_image_based_lighting_contribution_bsdf(
+                            *vertex.m_shading_point,
+                            vertex.m_outgoing,
+                            *vertex.m_bsdf,
+                            vertex.m_bsdf_data,
+                            vertex.m_scattering_modes,
+                            temp_vertex_radiance,
+                            unshaded_ibl_radiance,
+                            shaded_ibl_radiance,
                             m_light_path_stream);
                     }
                 }
 
                 // Apply path throughput.
                 vertex_radiance *= vertex.m_throughput;
+
+                vertex.m_shadow_catcher = &m_shadow_catcher;
+
+                // Store shadow catcher radiance
+                // Apply env unshaded radiance to shadow catcher
+                if (strcmp(vertex.m_shading_point->get_object_instance().get_name(), "Box001_sc_inst") == 0)
+                {
+                    float unshaded_dl_value = luminance(unshaded_dl_radiance.to_rgb(g_std_lighting_conditions));
+                    float shaded_dl_value = luminance(shaded_dl_radiance.to_rgb(g_std_lighting_conditions));
+                    float unshaded_ibl_value = luminance(unshaded_ibl_radiance.to_rgb(g_std_lighting_conditions));
+                    float shaded_ibl_value = luminance(shaded_ibl_radiance.to_rgb(g_std_lighting_conditions));
+
+                    assert(!(shaded_dl_value > unshaded_dl_value));
+                    assert(!(shaded_ibl_value > unshaded_ibl_value));
+
+                    float dl_ratio(0.0f), ibl_ratio(0.0f);
+                    if (unshaded_dl_value > 0.0f && m_params.m_enable_dl)
+                        dl_ratio = (shaded_dl_value * safe_rcp(unshaded_dl_value, 0.0f));
+                    if (unshaded_ibl_value > 0.0f)
+                        ibl_ratio = (shaded_ibl_value * safe_rcp(unshaded_ibl_value, 0.0f));
+
+                    unshaded_ibl_radiance *= vertex.m_throughput;
+                    shaded_ibl_radiance *= vertex.m_throughput;
+                    unshaded_dl_radiance *= vertex.m_throughput;
+                    shaded_dl_radiance *= vertex.m_throughput;
+
+                    const float shadow_value = std::max(ibl_ratio, dl_ratio);
+
+                    m_shadow_catcher.m_direct_unshaded_radiance = unshaded_ibl_radiance;
+                    m_shadow_catcher.m_shadow_ratio = shadow_value;
+
+                    m_path_radiance.add_shadowcatcher_emission(
+                        vertex.m_path_length,
+                        vertex.m_aov_mode,
+                        unshaded_ibl_radiance * shadow_value);
+
+                    return;
+                }
 
                 // Optionally clamp secondary rays contribution.
                 if (m_params.m_has_max_ray_intensity && vertex.m_path_length > 1 && vertex.m_prev_mode != ScatteringMode::Specular)
@@ -755,9 +850,15 @@ namespace
                 const void*                 bsdf_data,
                 const int                   scattering_modes,
                 DirectShadingComponents&    vertex_radiance,
+                Spectrum&                   unshaded_radiance,
+                Spectrum&                   shaded_radiance,
                 LightPathStream*            light_path_stream)
             {
                 DirectShadingComponents dl_radiance;
+                Spectrum dl_unshaded_radiance(Spectrum::Illuminance);
+                Spectrum dl_shaded_radiance(Spectrum::Illuminance);
+                dl_unshaded_radiance.set(0.0f);
+                dl_shaded_radiance.set(0.0f);
 
                 const size_t light_sample_count =
                     stochastic_cast<size_t>(
@@ -789,14 +890,24 @@ namespace
                     MISPower2,
                     outgoing,
                     dl_radiance,
+                    dl_unshaded_radiance,
+                    dl_shaded_radiance,
                     light_path_stream);
 
                 // Divide by the sample count when this number is less than 1.
                 if (m_params.m_rcp_dl_light_sample_count > 0.0f)
+                {
                     dl_radiance *= m_params.m_rcp_dl_light_sample_count;
+                    dl_unshaded_radiance *= m_params.m_rcp_dl_light_sample_count;
+                    dl_shaded_radiance *= m_params.m_rcp_dl_light_sample_count;
+                }
 
                 // Add direct lighting contribution.
                 vertex_radiance += dl_radiance;
+
+                // Add lighting contribution for shadow catcher
+                unshaded_radiance += dl_unshaded_radiance;
+                shaded_radiance += dl_shaded_radiance;
             }
 
             void add_image_based_lighting_contribution_bsdf(
@@ -806,9 +917,15 @@ namespace
                 const void*                 bsdf_data,
                 const int                   scattering_modes,
                 DirectShadingComponents&    vertex_radiance,
+                Spectrum&                   unshaded_radiance,
+                Spectrum&                   shaded_radiance,
                 LightPathStream*            light_path_stream)
             {
                 DirectShadingComponents ibl_radiance;
+                Spectrum dl_unshaded_radiance(Spectrum::Illuminance);
+                Spectrum dl_shaded_radiance(Spectrum::Illuminance);
+                dl_unshaded_radiance.set(0.0f);
+                dl_shaded_radiance.set(0.0f);
 
                 const size_t env_sample_count =
                     stochastic_cast<size_t>(
@@ -832,14 +949,24 @@ namespace
                     1,                      // bsdf_sample_count
                     env_sample_count,
                     ibl_radiance,
+                    dl_unshaded_radiance,
+                    dl_shaded_radiance,
                     light_path_stream);
 
                 // Divide by the sample count when this number is less than 1.
                 if (m_params.m_rcp_ibl_env_sample_count > 0.0f)
+                {
                     ibl_radiance *= m_params.m_rcp_ibl_env_sample_count;
+                    dl_unshaded_radiance *= m_params.m_rcp_ibl_env_sample_count;
+                    dl_shaded_radiance *= m_params.m_rcp_ibl_env_sample_count;
+                }
 
                 // Add image-based lighting contribution.
                 vertex_radiance += ibl_radiance;
+
+                // Add lighting contribution for shadow catcher
+                unshaded_radiance += dl_unshaded_radiance;
+                shaded_radiance += dl_shaded_radiance;
             }
         };
 
