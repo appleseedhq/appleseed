@@ -88,6 +88,8 @@ class DirectLightingIntegrator
         SamplingContext&                sampling_context,
         const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
         DirectShadingComponents&        radiance,
+        Spectrum&                       unshaded_radiance,
+        Spectrum&                       shaded_radiance,
         LightPathStream*                light_path_stream) const;
 
     // Compute outgoing radiance due to direct lighting via BSDF sampling only.
@@ -103,6 +105,8 @@ class DirectLightingIntegrator
         const foundation::MISHeuristic  mis_heuristic,
         const foundation::Dual3d&       outgoing,                   // world space outgoing direction, unit-length
         DirectShadingComponents&        radiance,
+        Spectrum&                       unshaded_radiance,
+        Spectrum&                       shaded_radiance,
         LightPathStream*                light_path_stream) const;
 
   private:
@@ -130,6 +134,8 @@ class DirectLightingIntegrator
         const foundation::MISHeuristic  mis_heuristic,
         const foundation::Dual3d&       outgoing,
         DirectShadingComponents&        radiance,
+        Spectrum&                       unshaded_radiance,
+        Spectrum&                       shaded_radiance,
         LightPathStream*                light_path_stream) const;
 
     void add_non_physical_light_sample_contribution(
@@ -137,6 +143,8 @@ class DirectLightingIntegrator
         const LightSample&              sample,
         const foundation::Dual3d&       outgoing,
         DirectShadingComponents&        radiance,
+        Spectrum&                       unshaded_radiance,
+        Spectrum&                       shaded_radiance,
         LightPathStream*                light_path_stream) const;
 };
 

@@ -66,6 +66,8 @@ void compute_ibl_combined_sampling(
     const size_t                    material_sample_count,  // number of samples in BSDF sampling
     const size_t                    env_sample_count,       // number of samples in environment sampling
     DirectShadingComponents&        radiance,
+    Spectrum&                       unshaded_radiance,
+    Spectrum&                       shaded_radiance,
     LightPathStream*                light_path_stream);
 
 // Compute outgoing radiance due to image-based lighting via BSDF sampling only.
@@ -90,6 +92,8 @@ void compute_ibl_environment_sampling(
     const size_t                    material_sample_count,
     const size_t                    env_sample_count,       // number of samples in environment sampling
     DirectShadingComponents&        radiance,
+    Spectrum&                       unshaded_radiance,
+    Spectrum&                       shaded_radiance,
     LightPathStream*                light_path_stream);
 
 }   // namespace renderer
