@@ -406,6 +406,12 @@ namespace
             {
             }
 
+            // This function is added for consistence with pt engine interface and it will
+            // be called in the path tracer, do nothing here.
+            void on_terminate(const TerminateType& terminate_type)
+            {
+            }
+
             void add_direct_lighting_contribution(
                 const PathVertex&               vertex,
                 DirectShadingComponents&        vertex_radiance)

@@ -393,7 +393,8 @@ namespace
                 FrameFactory::create(
                     frame->get_name(),
                     new_params,
-                    frame->aovs());
+                    frame->aovs(),
+                    frame->lpe_aovs());
 
             // Recreate post-processing stages.
             for (PostProcessingStage& stage : frame->post_processing_stages())

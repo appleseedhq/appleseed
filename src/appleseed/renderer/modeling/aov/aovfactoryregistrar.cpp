@@ -47,6 +47,7 @@
 #include "renderer/modeling/aov/positionaov.h"
 #include "renderer/modeling/aov/screenspacevelocityaov.h"
 #include "renderer/modeling/aov/uvaov.h"
+#include "renderer/modeling/aov/lpeaov.h"
 #include "renderer/modeling/entity/entityfactoryregistrar.h"
 
 // appleseed.foundation headers.
@@ -94,6 +95,7 @@ AOVFactoryRegistrar::AOVFactoryRegistrar(const SearchPaths& search_paths)
     impl->register_factory(auto_release_ptr<FactoryType>(new UVAOVFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new CryptomatteAOVFactory(CryptomatteAOV::CryptomatteType::ObjectNames)));
     impl->register_factory(auto_release_ptr<FactoryType>(new CryptomatteAOVFactory(CryptomatteAOV::CryptomatteType::MaterialNames)));
+    impl->register_factory(auto_release_ptr<FactoryType>(new LPEAOVFactory()));
 }
 
 AOVFactoryRegistrar::~AOVFactoryRegistrar()
