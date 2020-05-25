@@ -101,20 +101,76 @@ namespace
             return true;
         }
 
-        static void blur_x(Image& image)
+        static Color3f sample_box(Image& image, Vector2u pixel_coord, std::size_t offset) {
+                std::size_t top_coord    = min(pixel_coord.y + offset, image.properties().m_canvas_height);
+                std::size_t right_coord  = min(pixel_coord.x + offset, image.properties().m_canvas_width);
+                std::size_t bottom_coord = max(pixel_coord.y, offset) - offset;
+                std::size_t left_coord   = max(pixel_coord.x, offset) - offset;
+
+                Color3f top_left, top_right, bottom_left, bottom_right;
+                image.get_pixel(left_coord, top_coord, top_left);
+                image.get_pixel(right_coord, top_coord, top_right);
+                image.get_pixel(left_coord, bottom_coord, bottom_left);
+                image.get_pixel(right_coord, bottom_coord, bottom_right);
+
+                return 0.25f * (top_left + top_right + bottom_left + bottom_right);
+        }
+
+        static Color3f sample_box_borderless(Image& image, Vector2u pixel_coord, std::size_t offset) {
+                std::size_t sampled_count = 0;
+                Color3f sampled_color, sampled_color_sum(0.0f, 0.0f, 0.0f);
+
+                bool sample_bottom = pixel_coord.y >= offset;
+                bool sample_right = pixel_coord.x + offset <= image.properties().m_canvas_width;
+                bool sample_left = pixel_coord.x >= offset;
+                bool sample_top = pixel_coord.y + offset <= image.properties().m_canvas_height;
+
+                if (sample_top)
+                {
+                    std::size_t top_coord = pixel_coord.y + offset;
+                    if (sample_right)
+                    {
+                        image.get_pixel(pixel_coord.x + offset, top_coord, sampled_color);
+                        sampled_color_sum += sampled_color;
+                        sampled_count += 1;
+                    }
+                    if (sample_left)
+                    {
+                        image.get_pixel(pixel_coord.x - offset, top_coord, sampled_color);
+                        sampled_color_sum += sampled_color;
+                        sampled_count += 1;
+                    }
+                }
+                if (sample_bottom)
+                {
+                    std::size_t bottom_coord = pixel_coord.y - offset;
+                    if (sample_right)
+                    {
+                        image.get_pixel(pixel_coord.x + offset, bottom_coord, sampled_color);
+                        sampled_color_sum += sampled_color;
+                        sampled_count += 1;
+                    }
+                    if (sample_left)
+                    {
+                        image.get_pixel(pixel_coord.x - offset, bottom_coord, sampled_color);
+                        sampled_color_sum += sampled_color;
+                        sampled_count += 1;
+                    }
+                }
+
+                return (1.0f / static_cast<float>(sampled_count)) * sampled_color_sum;
+        }
+
+        static void box_blur(Image& src_image, Image& dst_image, std::size_t offset)
         {
-            const CanvasProperties& props = image.properties();
+            const CanvasProperties& props = src_image.properties();
 
             for (std::size_t y = 0; y < props.m_canvas_height; ++y)
             {
                 for (std::size_t x = 0; x < props.m_canvas_width; ++x)
                 {
-                    Color4f pixel;
-                    image.get_pixel(x, y, pixel);
-
-                    pixel.r *= 10.0f;
-
-                    image.set_pixel(x, y, pixel);
+                    Color3f color = sample_box_borderless(src_image, Vector2u(x, y), offset);
+                    dst_image.set_pixel(x, y, color);
                 }
             }
         }
@@ -123,12 +179,15 @@ namespace
         {
             // TODO bloom :)
             // - start with progressive downsampling and rendering to a temporary "texture"
-            Image tmp(frame.image());
+            Image tmp1(frame.image());
+            Image tmp2(frame.image());
 
-            blur_x(tmp);
-            // blur_y(tmp);
+            box_blur(tmp1, tmp2, 1);
+            box_blur(tmp2, tmp1, 2);
+            box_blur(tmp2, tmp1, 2);
+            box_blur(tmp1, tmp2, 3);
 
-            frame.image().copy_from(tmp);
+            frame.image().copy_from(tmp2);
         }
 
       private:
