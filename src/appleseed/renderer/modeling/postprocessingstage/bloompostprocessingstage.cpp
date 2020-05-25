@@ -46,6 +46,8 @@
 // Standard headers.
 #include <cstddef>
 
+#include <iostream>
+
 using namespace foundation;
 
 namespace renderer
@@ -101,67 +103,40 @@ namespace
             return true;
         }
 
-        static Color3f sample_box(Image& image, Vector2u pixel_coord, std::size_t offset) {
-                std::size_t top_coord    = min(pixel_coord.y + offset, image.properties().m_canvas_height);
-                std::size_t right_coord  = min(pixel_coord.x + offset, image.properties().m_canvas_width);
-                std::size_t bottom_coord = max(pixel_coord.y, offset) - offset;
-                std::size_t left_coord   = max(pixel_coord.x, offset) - offset;
+        static Color4f kawase_sample(Image& image, std::size_t x, std::size_t y, std::size_t offset)
+        {
+            // TODO add a black border to the image and remove bound checks
+            // (create a width+2*offset x height+2*offset buffer and blit into it)
 
-                Color3f top_left, top_right, bottom_left, bottom_right;
-                image.get_pixel(left_coord, top_coord, top_left);
+            bool sample_bottom = y >= offset;
+            bool sample_right = x + offset <= image.properties().m_canvas_width;
+            bool sample_left = x >= offset;
+            bool sample_top = y + offset <= image.properties().m_canvas_height;
+
+            std::size_t bottom_coord = max(y, offset) - offset;
+            std::size_t right_coord = min(x + offset, image.properties().m_canvas_width);
+            std::size_t left_coord = max(x, offset) - offset;
+            std::size_t top_coord = min(y + offset, image.properties().m_canvas_height);
+
+            Color3f top_right(0.0f, 0.0f, 0.0f);
+            if (sample_top && sample_right)
                 image.get_pixel(right_coord, top_coord, top_right);
-                image.get_pixel(left_coord, bottom_coord, bottom_left);
+            Color3f top_left(0.0f, 0.0f, 0.0f);
+            if (sample_top && sample_left)
+                image.get_pixel(left_coord, top_coord, top_left);
+            Color3f bottom_right(0.0f, 0.0f, 0.0f);
+            if (sample_bottom && sample_right)
                 image.get_pixel(right_coord, bottom_coord, bottom_right);
+            Color3f bottom_left(0.0f, 0.0f, 0.0f);
+            if (sample_bottom && sample_left)
+                image.get_pixel(left_coord, bottom_coord, bottom_left);
 
-                return 0.25f * (top_left + top_right + bottom_left + bottom_right);
+            Color3f sample = 0.25f * (top_right + top_left + bottom_right + bottom_left);
+
+            return Color4f(sample.r, sample.g, sample.b, 1.0f);
         }
 
-        static Color3f sample_box_borderless(Image& image, Vector2u pixel_coord, std::size_t offset) {
-                std::size_t sampled_count = 0;
-                Color3f sampled_color, sampled_color_sum(0.0f, 0.0f, 0.0f);
-
-                bool sample_bottom = pixel_coord.y >= offset;
-                bool sample_right = pixel_coord.x + offset <= image.properties().m_canvas_width;
-                bool sample_left = pixel_coord.x >= offset;
-                bool sample_top = pixel_coord.y + offset <= image.properties().m_canvas_height;
-
-                if (sample_top)
-                {
-                    std::size_t top_coord = pixel_coord.y + offset;
-                    if (sample_right)
-                    {
-                        image.get_pixel(pixel_coord.x + offset, top_coord, sampled_color);
-                        sampled_color_sum += sampled_color;
-                        sampled_count += 1;
-                    }
-                    if (sample_left)
-                    {
-                        image.get_pixel(pixel_coord.x - offset, top_coord, sampled_color);
-                        sampled_color_sum += sampled_color;
-                        sampled_count += 1;
-                    }
-                }
-                if (sample_bottom)
-                {
-                    std::size_t bottom_coord = pixel_coord.y - offset;
-                    if (sample_right)
-                    {
-                        image.get_pixel(pixel_coord.x + offset, bottom_coord, sampled_color);
-                        sampled_color_sum += sampled_color;
-                        sampled_count += 1;
-                    }
-                    if (sample_left)
-                    {
-                        image.get_pixel(pixel_coord.x - offset, bottom_coord, sampled_color);
-                        sampled_color_sum += sampled_color;
-                        sampled_count += 1;
-                    }
-                }
-
-                return (1.0f / static_cast<float>(sampled_count)) * sampled_color_sum;
-        }
-
-        static void box_blur(Image& src_image, Image& dst_image, std::size_t offset)
+        static void kawase_blur(Image& src_image, Image& dst_image, std::size_t offset)
         {
             const CanvasProperties& props = src_image.properties();
 
@@ -169,7 +144,7 @@ namespace
             {
                 for (std::size_t x = 0; x < props.m_canvas_width; ++x)
                 {
-                    Color3f color = sample_box_borderless(src_image, Vector2u(x, y), offset);
+                    Color4f color = kawase_sample(src_image, x, y, offset);
                     dst_image.set_pixel(x, y, color);
                 }
             }
@@ -177,17 +152,38 @@ namespace
 
         void execute(Frame& frame, const std::size_t thread_count) const override
         {
+            const CanvasProperties& props = frame.image().properties();
+            Image& image = frame.image();
+
+            // Set the offset values used for sampling in Kawase blur.
+            const std::size_t iterations = 2; // FIXME replace with m_iterations after debugging
+            const std::vector<std::size_t> iteration_offset = {0, 1, 2, 2, 3};
+            assert(iteration_offset.size() <= iterations);
+
+            // Copy the image to temporary buffers used for blurring.
+            Image blur_buffer_1(frame.image());
+            Image blur_buffer_2(frame.image());
+
+            // Iteratively blur the image.
+            for (std::size_t i = 0; i < iterations; ++i)
+            {
+                if (i % 2 == 0)
+                    kawase_blur(blur_buffer_1, blur_buffer_2, iteration_offset[i]);
+                else
+                    kawase_blur(blur_buffer_2, blur_buffer_1, iteration_offset[i]);
+            }
+            Image& blur_buffer = iterations % 2 == 1 ? blur_buffer_2 : blur_buffer_1;
+
+            {//* FIXME remove after debugging
+                for (size_t ty = 0; ty < props.m_tile_count_y; ++ty)
+                    for (size_t tx = props.m_tile_count_x / 2; tx < props.m_tile_count_x; ++tx)
+                        image.tile(tx, ty).copy_from(blur_buffer.tile(tx, ty));
+                return;
+            //*/
+            }
+
+            frame.image().copy_from(blur_buffer);
             // TODO bloom :)
-            // - start with progressive downsampling and rendering to a temporary "texture"
-            Image tmp1(frame.image());
-            Image tmp2(frame.image());
-
-            box_blur(tmp1, tmp2, 1);
-            box_blur(tmp2, tmp1, 2);
-            box_blur(tmp2, tmp1, 2);
-            box_blur(tmp1, tmp2, 3);
-
-            frame.image().copy_from(tmp2);
         }
 
       private:
@@ -245,12 +241,12 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
             .insert("use", "optional")
             .insert("default", "0.5"));
 
-    // TODO fix min/max values and enforce uint type
+    // TODO fix min/max values
     metadata.push_back(
         Dictionary()
             .insert("name", "iterations")
             .insert("label", "Iterations")
-            .insert("type", "numeric")
+            .insert("type", "int")
             .insert("min",
                     Dictionary()
                         .insert("value", "1")
@@ -262,12 +258,12 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
             .insert("use", "optional")
             .insert("default", "4"));
 
-    // TODO fix min/max values and enforce uint type
+    // TODO fix min/max values
     metadata.push_back(
         Dictionary()
             .insert("name", "threshold")
             .insert("label", "Threshold")
-            .insert("type", "numeric")
+            .insert("type", "int")
             .insert("min",
                     Dictionary()
                         .insert("value", "0")
