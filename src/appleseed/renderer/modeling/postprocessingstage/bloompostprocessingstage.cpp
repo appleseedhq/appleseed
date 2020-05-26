@@ -103,20 +103,20 @@ namespace
             return true;
         }
 
-        static Color4f kawase_sample(Image& image, std::size_t x, std::size_t y, std::size_t offset)
+        static Color4f kawase_sample(Image& image, float frac_x, float frac_y, std::size_t offset)
         {
             // TODO add a black border to the image and remove bound checks
             // (create a width+2*offset x height+2*offset buffer and blit into it)
 
-            bool sample_bottom = y >= offset;
-            bool sample_right = x + offset <= image.properties().m_canvas_width;
-            bool sample_left = x >= offset;
-            bool sample_top = y + offset <= image.properties().m_canvas_height;
+            std::size_t bottom_coord = static_cast<std::size_t>(frac_y - 0.5f); // - offset; // >= 0
+            std::size_t right_coord = static_cast<std::size_t>(frac_x + 0.5f); // + offset; // < width
+            std::size_t left_coord = static_cast<std::size_t>(frac_x - 0.5f); // - offset; // >= 0
+            std::size_t top_coord = static_cast<std::size_t>(frac_y + 0.5f); // + offset; // < height
 
-            std::size_t bottom_coord = max(y, offset) - offset;
-            std::size_t right_coord = min(x + offset, image.properties().m_canvas_width);
-            std::size_t left_coord = max(x, offset) - offset;
-            std::size_t top_coord = min(y + offset, image.properties().m_canvas_height);
+            bool sample_bottom = frac_y - 0.5f - offset >= 0;
+            bool sample_right = frac_x + 0.5f + offset < image.properties().m_canvas_width;
+            bool sample_left = frac_x - 0.5f - offset >= 0;
+            bool sample_top = frac_y + 0.5f + offset <= image.properties().m_canvas_height;
 
             Color3f top_right(0.0f, 0.0f, 0.0f);
             if (sample_top && sample_right)
@@ -144,8 +144,11 @@ namespace
             {
                 for (std::size_t x = 0; x < props.m_canvas_width; ++x)
                 {
-                    Color4f color = kawase_sample(src_image, x, y, offset);
-                    dst_image.set_pixel(x, y, color);
+                    Color4f top_right    = kawase_sample(src_image, x + 0.5f, y + 0.5f, offset);
+                    Color4f top_left     = kawase_sample(src_image, x - 0.5f, y + 0.5f, offset);
+                    Color4f bottom_right = kawase_sample(src_image, x + 0.5f, y - 0.5f, offset);
+                    Color4f bottom_left  = kawase_sample(src_image, x - 0.5f, y - 0.5f, offset);
+                    dst_image.set_pixel(x, y, 0.25f * (top_right + top_left + bottom_right + bottom_left));
                 }
             }
         }
@@ -156,25 +159,25 @@ namespace
             Image& image = frame.image();
 
             // Set the offset values used for sampling in Kawase blur.
-            const std::size_t iterations = 2; // FIXME replace with m_iterations after debugging
             const std::vector<std::size_t> iteration_offset = {0, 1, 2, 2, 3};
-            assert(iteration_offset.size() <= iterations);
+            assert(iteration_offset.size() <= m_iterations);
 
             // Copy the image to temporary buffers used for blurring.
             Image blur_buffer_1(frame.image());
             Image blur_buffer_2(frame.image());
 
             // Iteratively blur the image.
-            for (std::size_t i = 0; i < iterations; ++i)
+            for (std::size_t i = 0; i < m_iterations; ++i)
             {
+                // "Ping-pong" between two temporaries used for storing intermediate results.
                 if (i % 2 == 0)
                     kawase_blur(blur_buffer_1, blur_buffer_2, iteration_offset[i]);
                 else
                     kawase_blur(blur_buffer_2, blur_buffer_1, iteration_offset[i]);
             }
-            Image& blur_buffer = iterations % 2 == 1 ? blur_buffer_2 : blur_buffer_1;
+            Image& blur_buffer = m_iterations % 2 == 1 ? blur_buffer_2 : blur_buffer_1;
 
-            {//* FIXME remove after debugging
+            {//* FIXME remove after debugging (only blurs the right side of image)
                 for (size_t ty = 0; ty < props.m_tile_count_y; ++ty)
                     for (size_t tx = props.m_tile_count_x / 2; tx < props.m_tile_count_x; ++tx)
                         image.tile(tx, ty).copy_from(blur_buffer.tile(tx, ty));
