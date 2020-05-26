@@ -64,7 +64,7 @@ namespace
     // TODO add default settings
     static constexpr float DefaultIntensity = 0.5f;
     static constexpr std::size_t DefaultIterations = 4;
-    static constexpr std::size_t DefaultThreshold = 1;
+    static constexpr float DefaultThreshold = 0.8f;
 
     class BloomPostProcessingStage
       : public PostProcessingStage
@@ -154,7 +154,7 @@ namespace
                     float contribution = (brightness - threshold);
 
                     if (contribution <= 0.0f)
-                        color.rgb() = Color3f(0.0f); // FIXME start with a clear image to skip this
+                        color.rgb() = Color3f(0.0f); // FIXME start with a clear image to skip doing this
                     else
                         color.rgb() *= contribution / max(brightness, 0.0001f); // avoid division by zero (0.0001 is arbitrary)
 
@@ -174,18 +174,18 @@ namespace
 
             // Copy the image to temporary render targets used for blurring.
             Image blur_buffer_1(frame.image());
-            prefilter_in_place(blur_buffer_1, /*m_threshold*/0.5f);
+            prefilter_in_place(blur_buffer_1, m_threshold);
             Image blur_buffer_2(blur_buffer_1);
 
             // Iteratively blur the image.
-            // for (std::size_t i = 0; i < m_iterations; ++i)
-            // {
-            //     // "Ping-pong" between two temporaries used for storing intermediate results.
-            //     if (i % 2 == 0)
-            //         kawase_blur(blur_buffer_1, blur_buffer_2, iteration_offset[i]);
-            //     else
-            //         kawase_blur(blur_buffer_2, blur_buffer_1, iteration_offset[i]);
-            // }
+            for (std::size_t i = 0; i < m_iterations; ++i)
+            {
+                // "Ping-pong" between two temporaries used for storing intermediate results.
+                if (i % 2 == 0)
+                    kawase_blur(blur_buffer_1, blur_buffer_2, iteration_offset[i]);
+                else
+                    kawase_blur(blur_buffer_2, blur_buffer_1, iteration_offset[i]);
+            }
             Image& blur_buffer = m_iterations % 2 == 1 ? blur_buffer_2 : blur_buffer_1;
 
             {//* FIXME remove after debugging (only blurs the right side of image)
@@ -196,15 +196,15 @@ namespace
             //*/
             }
 
+            // TODO blend the blur buffer with the frame image for bloom :)
             frame.image().copy_from(blur_buffer);
-            // TODO bloom :)
         }
 
       private:
         // TODO add default settings
         float m_intensity;
         std::size_t m_iterations;
-        std::size_t m_threshold;
+        float m_threshold;
     };
 }
 
@@ -255,7 +255,6 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
             .insert("use", "optional")
             .insert("default", "0.5"));
 
-    // TODO fix min/max values
     metadata.push_back(
         Dictionary()
             .insert("name", "iterations")
@@ -263,31 +262,30 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
             .insert("type", "int")
             .insert("min",
                     Dictionary()
-                        .insert("value", "1")
-                        .insert("type", "hard"))
-            .insert("max",
-                    Dictionary()
-                        .insert("value", "16")
-                        .insert("type", "hard"))
-            .insert("use", "optional")
-            .insert("default", "4"));
-
-    // TODO fix min/max values
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "threshold")
-            .insert("label", "Threshold")
-            .insert("type", "int")
-            .insert("min",
-                    Dictionary()
                         .insert("value", "0")
                         .insert("type", "hard"))
             .insert("max",
                     Dictionary()
-                        .insert("value", "10")
+                        .insert("value", "5")
                         .insert("type", "hard"))
             .insert("use", "optional")
-            .insert("default", "1"));
+            .insert("default", "4"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "threshold")
+            .insert("label", "Threshold")
+            .insert("type", "numeric")
+            .insert("min",
+                    Dictionary()
+                        .insert("value", "0.0")
+                        .insert("type", "hard"))
+            .insert("max",
+                    Dictionary()
+                        .insert("value", "10.0")
+                        .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "0.8"));
 
     return metadata;
 }
