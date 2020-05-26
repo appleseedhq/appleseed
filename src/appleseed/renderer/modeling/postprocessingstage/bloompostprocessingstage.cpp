@@ -105,7 +105,7 @@ namespace
 
         static Color4f kawase_sample(Image& image, float frac_x, float frac_y, std::size_t offset)
         {
-            // Samples the edge-most pixel when the coordinate is outside the image (i.e. texture clamping).
+            // Sample the edge-most pixel when the coordinate is outside the image (i.e. texture clamping).
             std::size_t bottom_coord = static_cast<std::size_t>(max(frac_y - 0.5f - offset, 0.0f));
             std::size_t right_coord = static_cast<std::size_t>(min(frac_x + 0.5f + offset, image.properties().m_canvas_width - 1.0f));
             std::size_t left_coord = static_cast<std::size_t>(max(frac_x - 0.5f - offset, 0.0f));
@@ -117,8 +117,9 @@ namespace
             image.get_pixel(right_coord, top_coord, top_right);
             image.get_pixel(left_coord, top_coord, top_left);
 
+            // Average sample colors.
             Color3f sample = 0.25f * (top_right + top_left + bottom_right + bottom_left);
-            return Color4f(sample.r, sample.g, sample.b, 1.0f);
+            return Color4f(sample.r, sample.g, sample.b, 1.0f); // TODO sample alphas (?)
         }
 
         static void kawase_blur(Image& src_image, Image& dst_image, std::size_t offset)
@@ -129,11 +130,35 @@ namespace
             {
                 for (std::size_t x = 0; x < props.m_canvas_width; ++x)
                 {
-                    Color4f top_right    = kawase_sample(src_image, x + 0.5f, y + 0.5f, offset);
-                    Color4f top_left     = kawase_sample(src_image, x - 0.5f, y + 0.5f, offset);
                     Color4f bottom_right = kawase_sample(src_image, x + 0.5f, y - 0.5f, offset);
-                    Color4f bottom_left  = kawase_sample(src_image, x - 0.5f, y - 0.5f, offset);
+                    Color4f bottom_left = kawase_sample(src_image, x - 0.5f, y - 0.5f, offset);
+                    Color4f top_right = kawase_sample(src_image, x + 0.5f, y + 0.5f, offset);
+                    Color4f top_left = kawase_sample(src_image, x - 0.5f, y + 0.5f, offset);
                     dst_image.set_pixel(x, y, 0.25f * (top_right + top_left + bottom_right + bottom_left));
+                }
+            }
+        }
+
+        static void prefilter_in_place(Image& image, float threshold)
+        {
+            const CanvasProperties& props = image.properties();
+
+            for (std::size_t y = 0; y < props.m_canvas_height; ++y)
+            {
+                for (std::size_t x = 0; x < props.m_canvas_width; ++x)
+                {
+                    Color4f color;
+                    image.get_pixel(x, y, color);
+
+                    float brightness = max_value(color.rgb());
+                    float contribution = (brightness - threshold);
+
+                    if (contribution <= 0.0f)
+                        color.rgb() = Color3f(0.0f); // FIXME start with a clear image to skip this
+                    else
+                        color.rgb() *= contribution / max(brightness, 0.0001f); // avoid division by zero (0.0001 is arbitrary)
+
+                    image.set_pixel(x, y, color);
                 }
             }
         }
@@ -144,22 +169,23 @@ namespace
             Image& image = frame.image();
 
             // Set the offset values used for sampling in Kawase blur.
-            const std::vector<std::size_t> iteration_offset = {0, 1, 2, 2, 3};
+            const std::vector<std::size_t> iteration_offset = { 0, 1, 2, 2, 3 };
             assert(iteration_offset.size() <= m_iterations);
 
-            // Copy the image to temporary buffers used for blurring.
+            // Copy the image to temporary render targets used for blurring.
             Image blur_buffer_1(frame.image());
-            Image blur_buffer_2(frame.image());
+            prefilter_in_place(blur_buffer_1, /*m_threshold*/0.5f);
+            Image blur_buffer_2(blur_buffer_1);
 
             // Iteratively blur the image.
-            for (std::size_t i = 0; i < m_iterations; ++i)
-            {
-                // "Ping-pong" between two temporaries used for storing intermediate results.
-                if (i % 2 == 0)
-                    kawase_blur(blur_buffer_1, blur_buffer_2, iteration_offset[i]);
-                else
-                    kawase_blur(blur_buffer_2, blur_buffer_1, iteration_offset[i]);
-            }
+            // for (std::size_t i = 0; i < m_iterations; ++i)
+            // {
+            //     // "Ping-pong" between two temporaries used for storing intermediate results.
+            //     if (i % 2 == 0)
+            //         kawase_blur(blur_buffer_1, blur_buffer_2, iteration_offset[i]);
+            //     else
+            //         kawase_blur(blur_buffer_2, blur_buffer_1, iteration_offset[i]);
+            // }
             Image& blur_buffer = m_iterations % 2 == 1 ? blur_buffer_2 : blur_buffer_1;
 
             {//* FIXME remove after debugging (only blurs the right side of image)
