@@ -105,34 +105,19 @@ namespace
 
         static Color4f kawase_sample(Image& image, float frac_x, float frac_y, std::size_t offset)
         {
-            // TODO add a black border to the image and remove bound checks
-            // (create a width+2*offset x height+2*offset buffer and blit into it)
+            // Samples the edge-most pixel when the coordinate is outside the image (i.e. texture clamping).
+            std::size_t bottom_coord = static_cast<std::size_t>(max(frac_y - 0.5f - offset, 0.0f));
+            std::size_t right_coord = static_cast<std::size_t>(min(frac_x + 0.5f + offset, image.properties().m_canvas_width - 1.0f));
+            std::size_t left_coord = static_cast<std::size_t>(max(frac_x - 0.5f - offset, 0.0f));
+            std::size_t top_coord = static_cast<std::size_t>(min(frac_y + 0.5f + offset, image.properties().m_canvas_height - 1.0f));
 
-            std::size_t bottom_coord = static_cast<std::size_t>(frac_y - 0.5f); // - offset; // >= 0
-            std::size_t right_coord = static_cast<std::size_t>(frac_x + 0.5f); // + offset; // < width
-            std::size_t left_coord = static_cast<std::size_t>(frac_x - 0.5f); // - offset; // >= 0
-            std::size_t top_coord = static_cast<std::size_t>(frac_y + 0.5f); // + offset; // < height
-
-            bool sample_bottom = frac_y - 0.5f - offset >= 0;
-            bool sample_right = frac_x + 0.5f + offset < image.properties().m_canvas_width;
-            bool sample_left = frac_x - 0.5f - offset >= 0;
-            bool sample_top = frac_y + 0.5f + offset <= image.properties().m_canvas_height;
-
-            Color3f top_right(0.0f, 0.0f, 0.0f);
-            if (sample_top && sample_right)
-                image.get_pixel(right_coord, top_coord, top_right);
-            Color3f top_left(0.0f, 0.0f, 0.0f);
-            if (sample_top && sample_left)
-                image.get_pixel(left_coord, top_coord, top_left);
-            Color3f bottom_right(0.0f, 0.0f, 0.0f);
-            if (sample_bottom && sample_right)
-                image.get_pixel(right_coord, bottom_coord, bottom_right);
-            Color3f bottom_left(0.0f, 0.0f, 0.0f);
-            if (sample_bottom && sample_left)
-                image.get_pixel(left_coord, bottom_coord, bottom_left);
+            Color3f bottom_right, bottom_left, top_right, top_left;
+            image.get_pixel(right_coord, bottom_coord, bottom_right);
+            image.get_pixel(left_coord, bottom_coord, bottom_left);
+            image.get_pixel(right_coord, top_coord, top_right);
+            image.get_pixel(left_coord, top_coord, top_left);
 
             Color3f sample = 0.25f * (top_right + top_left + bottom_right + bottom_left);
-
             return Color4f(sample.r, sample.g, sample.b, 1.0f);
         }
 
