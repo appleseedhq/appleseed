@@ -139,30 +139,6 @@ namespace
             }
         }
 
-        static void prefilter_in_place(Image& image, float threshold)
-        {
-            const CanvasProperties& props = image.properties();
-
-            for (std::size_t y = 0; y < props.m_canvas_height; ++y)
-            {
-                for (std::size_t x = 0; x < props.m_canvas_width; ++x)
-                {
-                    Color4f color;
-                    image.get_pixel(x, y, color);
-
-                    float brightness = max_value(color.rgb());
-                    float contribution = (brightness - threshold);
-
-                    if (contribution <= 0.0f)
-                        color.rgb() = Color3f(0.0f); // FIXME start with a clear image to skip doing this
-                    else
-                        color.rgb() *= contribution / max(brightness, 0.0001f); // avoid division by zero (0.0001 is arbitrary)
-
-                    image.set_pixel(x, y, color);
-                }
-            }
-        }
-
         static inline Image prefiltered(const Image& image, float threshold)
         {
             const CanvasProperties& props = image.properties();
