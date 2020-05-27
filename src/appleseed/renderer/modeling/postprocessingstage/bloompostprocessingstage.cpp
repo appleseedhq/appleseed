@@ -119,7 +119,7 @@ namespace
 
             // Average sample colors.
             Color3f sample = 0.25f * (top_right + top_left + bottom_right + bottom_left);
-            return Color4f(sample.r, sample.g, sample.b, 1.0f); // TODO sample alphas (?)
+            return Color4f(sample, 1.0f); // TODO sample alphas (?)
         }
 
         static void kawase_blur(Image& src_image, Image& dst_image, std::size_t offset)
@@ -163,24 +163,112 @@ namespace
             }
         }
 
+        static inline Image prefiltered(const Image& image, float threshold)
+        {
+            const CanvasProperties& props = image.properties();
+            Image prefiltered_image(props);
+
+            for (std::size_t y = 0; y < props.m_canvas_height; ++y)
+            {
+                for (std::size_t x = 0; x < props.m_canvas_width; ++x)
+                {
+                    Color4f color;
+                    image.get_pixel(x, y, color);
+
+                    float brightness = max_value(color.rgb());
+                    float contribution = (brightness - threshold);
+
+                    if (contribution > 0.0f)
+                        color.rgb() *= contribution / max(brightness, 0.0001f); // avoid division by zero (0.0001 is arbitrary)
+
+                    prefiltered_image.set_pixel(x, y, color);
+                }
+            }
+
+            return prefiltered_image;
+        }
+
+        static void bilinear_filter_in_place(Image& src_image, Image& dst_image)
+        {
+            const CanvasProperties& src_props = src_image.properties();
+            const std::size_t src_width = src_props.m_canvas_width;
+            const std::size_t src_height = src_props.m_canvas_height;
+
+            const CanvasProperties& dst_props = dst_image.properties();
+            const std::size_t dst_width = dst_props.m_canvas_width;
+            const std::size_t dst_height = dst_props.m_canvas_height;
+
+            // Perform bilinear interpolation for up/down sampling.
+            for (std::size_t y = 0; y < dst_height; ++y)
+            {
+                for (std::size_t x = 0; x < dst_width; ++x)
+                {
+                    float fx = static_cast<float>(x) / (dst_width - 1);
+                    float fy = static_cast<float>(y) / (dst_height - 1);
+
+                    fx *= src_width - 1;
+                    fy *= src_height - 1;
+
+                    // Retrieve the four surrounding pixels.
+                    Color3f c00, c10, c01, c11;
+
+                    const std::size_t x0 = truncate<std::size_t>(fx);
+                    const std::size_t y0 = truncate<std::size_t>(fy);
+                    const std::size_t x1 = std::min<std::size_t>(x0 + 1, src_width - 1);
+                    const std::size_t y1 = std::min<std::size_t>(y0 + 1, src_height - 1);
+
+                    src_image.get_pixel(x0, y0, c00);
+                    src_image.get_pixel(x1, y0, c10);
+                    src_image.get_pixel(x0, y1, c01);
+                    src_image.get_pixel(x1, y1, c11);
+
+                    // Compute weights.
+                    const float wx1 = fx - x0;
+                    const float wy1 = fy - y0;
+                    const float wx0 = 1.0f - wx1;
+                    const float wy0 = 1.0f - wy1;
+
+                    // Store the weighted sum.
+                    const Color3f result =
+                        c00 * wx0 * wy0 +
+                        c10 * wx1 * wy0 +
+                        c01 * wx0 * wy1 +
+                        c11 * wx1 * wy1;
+
+                    dst_image.set_pixel(x, y, Color4f(result, 1.0f)); // TODO sample alphas (?)
+                }
+            }
+        }
+
+        static inline CanvasProperties scaled_props(const CanvasProperties& props, float scaling_factor)
+        {
+            return CanvasProperties(
+                    static_cast<std::size_t>(scaling_factor * props.m_canvas_width),
+                    static_cast<std::size_t>(scaling_factor * props.m_canvas_height),
+                    static_cast<std::size_t>(scaling_factor * props.m_tile_width),
+                    static_cast<std::size_t>(scaling_factor * props.m_tile_height),
+                    props.m_channel_count,
+                    props.m_pixel_format);
+        }
+
         void execute(Frame& frame, const std::size_t thread_count) const override
         {
             const CanvasProperties& props = frame.image().properties();
             Image& image = frame.image();
+
+            const Image image_copy(image); // FIXME remove
 
             // Set the offset values used for sampling in Kawase blur.
             const std::vector<std::size_t> iteration_offset = { 0, 1, 2, 2, 3 };
             assert(iteration_offset.size() <= m_iterations);
 
             // Copy the image to temporary render targets used for blurring.
-            Image blur_buffer_1(frame.image());
-            prefilter_in_place(blur_buffer_1, m_threshold);
+            Image blur_buffer_1 = prefiltered(image, m_threshold);
             Image blur_buffer_2(blur_buffer_1);
 
             // Iteratively blur the image.
             for (std::size_t i = 0; i < m_iterations; ++i)
             {
-                // "Ping-pong" between two temporaries used for storing intermediate results.
                 if (i % 2 == 0)
                     kawase_blur(blur_buffer_1, blur_buffer_2, iteration_offset[i]);
                 else
@@ -188,21 +276,18 @@ namespace
             }
             Image& blur_buffer = m_iterations % 2 == 1 ? blur_buffer_2 : blur_buffer_1;
 
-            {//* FIXME remove after debugging (only blurs the right side of image)
-                for (size_t ty = 0; ty < props.m_tile_count_y; ++ty)
-                    for (size_t tx = props.m_tile_count_x / 2; tx < props.m_tile_count_x; ++tx)
-                        image.tile(tx, ty).copy_from(blur_buffer.tile(tx, ty));
-                return;
-            //*/
-            }
-
             // TODO blend the blur buffer with the frame image for bloom :)
-            frame.image().copy_from(blur_buffer);
+            image.copy_from(blur_buffer);
+
+            // FIXME remove after debugging ("restores" the left side of the image)
+            for (size_t ty = 0; ty < props.m_tile_count_y; ++ty)
+                for (size_t tx = 0; tx < props.m_tile_count_x / 2; ++tx)
+                    image.tile(tx, ty).copy_from(image_copy.tile(tx, ty));
         }
 
       private:
         // TODO add default settings
-        float m_intensity;
+        float m_intensity; // TODO decide if the value should be set in gamma space (so a conversion will be needed)
         std::size_t m_iterations;
         float m_threshold;
     };
