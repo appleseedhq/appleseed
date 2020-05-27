@@ -139,31 +139,6 @@ namespace
             }
         }
 
-        static inline Image prefiltered(const Image& image, float threshold)
-        {
-            const CanvasProperties& props = image.properties();
-            Image prefiltered_image(props);
-
-            for (std::size_t y = 0; y < props.m_canvas_height; ++y)
-            {
-                for (std::size_t x = 0; x < props.m_canvas_width; ++x)
-                {
-                    Color4f color;
-                    image.get_pixel(x, y, color);
-
-                    float brightness = max_value(color.rgb());
-                    float contribution = (brightness - threshold);
-
-                    if (contribution > 0.0f)
-                        color.rgb() *= contribution / max(brightness, 0.0001f); // avoid division by zero (0.0001 is arbitrary)
-
-                    prefiltered_image.set_pixel(x, y, color);
-                }
-            }
-
-            return prefiltered_image;
-        }
-
         static void bilinear_filter_in_place(Image& src_image, Image& dst_image)
         {
             const CanvasProperties& src_props = src_image.properties();
@@ -216,7 +191,32 @@ namespace
             }
         }
 
-        static inline CanvasProperties scaled_props(const CanvasProperties& props, float scaling_factor)
+        static inline Image prefiltered(const Image& image, float threshold)
+        {
+            const CanvasProperties& props = image.properties();
+            Image prefiltered_image(props);
+
+            for (std::size_t y = 0; y < props.m_canvas_height; ++y)
+            {
+                for (std::size_t x = 0; x < props.m_canvas_width; ++x)
+                {
+                    Color4f color;
+                    image.get_pixel(x, y, color);
+
+                    float brightness = max_value(color.rgb());
+                    float contribution = (brightness - threshold);
+
+                    if (contribution > 0.0f)
+                        color.rgb() *= contribution / max(brightness, 0.0001f); // avoid division by zero (0.0001 is arbitrary)
+
+                    prefiltered_image.set_pixel(x, y, color);
+                }
+            }
+
+            return prefiltered_image;
+        }
+
+        static inline CanvasProperties scaled(const CanvasProperties& props, float scaling_factor)
         {
             return CanvasProperties(
                     static_cast<std::size_t>(scaling_factor * props.m_canvas_width),
@@ -239,23 +239,35 @@ namespace
             assert(iteration_offset.size() <= m_iterations);
 
             // Copy the image to temporary render targets used for blurring.
-            Image blur_buffer_1 = prefiltered(image, m_threshold);
-            Image blur_buffer_2(blur_buffer_1);
+            Image bloom_blur_1 = prefiltered(image, m_threshold);
+            Image bloom_blur_2 = Image(bloom_blur_1);
+            Image& bloom_blur = m_iterations % 2 == 1 ? bloom_blur_2 : bloom_blur_1; // last blur target
 
             // Iteratively blur the image.
             for (std::size_t i = 0; i < m_iterations; ++i)
             {
                 if (i % 2 == 0)
-                    kawase_blur(blur_buffer_1, blur_buffer_2, iteration_offset[i]);
+                    kawase_blur(bloom_blur_1, bloom_blur_2, iteration_offset[i]);
                 else
-                    kawase_blur(blur_buffer_2, blur_buffer_1, iteration_offset[i]);
+                    kawase_blur(bloom_blur_2, bloom_blur_1, iteration_offset[i]);
             }
-            Image& blur_buffer = m_iterations % 2 == 1 ? blur_buffer_2 : blur_buffer_1;
 
-            // TODO blend the blur buffer with the frame image for bloom :)
-            image.copy_from(blur_buffer);
+            // Additively blend colors from the original and the blurred image to achieve bloom.
+            for (std::size_t y = 0; y < props.m_canvas_height; ++y)
+            {
+                for (std::size_t x = 0; x < props.m_canvas_width; ++x)
+                {
+                    Color4f color, bloom_color;
+                    image.get_pixel(x, y, color);
+                    bloom_blur.get_pixel(x, y, bloom_color);
+
+                    color.rgb() += bloom_color.rgb(); // additive blend
+                    image.set_pixel(x, y, color);
+                }
+            }
 
             // FIXME remove after debugging ("restores" the left side of the image)
+            // image.copy_from(bloom_blur);
             for (size_t ty = 0; ty < props.m_tile_count_y; ++ty)
                 for (size_t tx = 0; tx < props.m_tile_count_x / 2; ++tx)
                     image.tile(tx, ty).copy_from(image_copy.tile(tx, ty));
