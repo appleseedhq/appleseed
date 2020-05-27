@@ -103,7 +103,7 @@ namespace
             return true;
         }
 
-        static Color4f kawase_sample(Image& image, float frac_x, float frac_y, std::size_t offset)
+        static Color3f kawase_sample(Image& image, float frac_x, float frac_y, std::size_t offset)
         {
             // Sample the edge-most pixel when the coordinate is outside the image (i.e. texture clamping).
             std::size_t bottom_coord = static_cast<std::size_t>(max(frac_y - 0.5f - offset, 0.0f));
@@ -118,22 +118,27 @@ namespace
             image.get_pixel(left_coord, top_coord, top_left);
 
             // Average sample colors.
-            Color3f sample = 0.25f * (top_right + top_left + bottom_right + bottom_left);
-            return Color4f(sample, 1.0f); // TODO sample alphas (?)
+            return 0.25f * (top_right + top_left + bottom_right + bottom_left);
         }
 
         static void kawase_blur(Image& src_image, Image& dst_image, std::size_t offset)
         {
-            const CanvasProperties& props = src_image.properties();
+            const CanvasProperties& src_props = src_image.properties();
+            const CanvasProperties& dst_props = dst_image.properties();
 
-            for (std::size_t y = 0; y < props.m_canvas_height; ++y)
+            assert(src_props.m_channel_count == 3);
+            assert(dst_props.m_channel_count == 3);
+            assert(src_props.m_canvas_width == dst_props.m_canvas_width);
+            assert(src_props.m_canvas_height == dst_props.m_canvas_height);
+
+            for (std::size_t y = 0; y < src_props.m_canvas_height; ++y)
             {
-                for (std::size_t x = 0; x < props.m_canvas_width; ++x)
+                for (std::size_t x = 0; x < src_props.m_canvas_width; ++x)
                 {
-                    Color4f bottom_right = kawase_sample(src_image, x + 0.5f, y - 0.5f, offset);
-                    Color4f bottom_left = kawase_sample(src_image, x - 0.5f, y - 0.5f, offset);
-                    Color4f top_right = kawase_sample(src_image, x + 0.5f, y + 0.5f, offset);
-                    Color4f top_left = kawase_sample(src_image, x - 0.5f, y + 0.5f, offset);
+                    Color3f bottom_right = kawase_sample(src_image, x + 0.5f, y - 0.5f, offset);
+                    Color3f bottom_left = kawase_sample(src_image, x - 0.5f, y - 0.5f, offset);
+                    Color3f top_right = kawase_sample(src_image, x + 0.5f, y + 0.5f, offset);
+                    Color3f top_left = kawase_sample(src_image, x - 0.5f, y + 0.5f, offset);
                     dst_image.set_pixel(x, y, 0.25f * (top_right + top_left + bottom_right + bottom_left));
                 }
             }
@@ -142,10 +147,13 @@ namespace
         static void bilinear_filter_in_place(Image& src_image, Image& dst_image)
         {
             const CanvasProperties& src_props = src_image.properties();
+            const CanvasProperties& dst_props = dst_image.properties();
+
+            assert(src_props.m_channel_count == 3);
+            assert(dst_props.m_channel_count == 3);
+
             const std::size_t src_width = src_props.m_canvas_width;
             const std::size_t src_height = src_props.m_canvas_height;
-
-            const CanvasProperties& dst_props = dst_image.properties();
             const std::size_t dst_width = dst_props.m_canvas_width;
             const std::size_t dst_height = dst_props.m_canvas_height;
 
@@ -186,15 +194,24 @@ namespace
                         c01 * wx0 * wy1 +
                         c11 * wx1 * wy1;
 
-                    dst_image.set_pixel(x, y, Color4f(result, 1.0f)); // TODO sample alphas (?)
+                    dst_image.set_pixel(x, y, result);
                 }
             }
         }
 
-        static inline Image prefiltered(const Image& image, float threshold)
+        static Image prefiltered(const Image& image, float threshold)
         {
             const CanvasProperties& props = image.properties();
-            Image prefiltered_image(props);
+            assert(props.m_channel_count == 4);
+
+            Image prefiltered_image(
+                props.m_canvas_width,
+                props.m_canvas_height,
+                props.m_tile_width,
+                props.m_tile_height,
+                3,
+                props.m_pixel_format);
+            // prefiltered_image.clear(Color3f(0.0f));
 
             for (std::size_t y = 0; y < props.m_canvas_height; ++y)
             {
@@ -207,9 +224,10 @@ namespace
                     float contribution = (brightness - threshold);
 
                     if (contribution > 0.0f)
+                    {
                         color.rgb() *= contribution / max(brightness, 0.0001f); // avoid division by zero (0.0001 is arbitrary)
-
-                    prefiltered_image.set_pixel(x, y, color);
+                        prefiltered_image.set_pixel(x, y, color.rgb());
+                    }
                 }
             }
 
@@ -257,17 +275,18 @@ namespace
             {
                 for (std::size_t x = 0; x < props.m_canvas_width; ++x)
                 {
-                    Color4f color, bloom_color;
+                    Color4f color;
                     image.get_pixel(x, y, color);
+
+                    Color3f bloom_color;
                     bloom_blur.get_pixel(x, y, bloom_color);
 
-                    color.rgb() += bloom_color.rgb(); // additive blend
+                    color.rgb() += bloom_color; // additive blend
                     image.set_pixel(x, y, color);
                 }
             }
 
             // FIXME remove after debugging ("restores" the left side of the image)
-            // image.copy_from(bloom_blur);
             for (size_t ty = 0; ty < props.m_tile_count_y; ++ty)
                 for (size_t tx = 0; tx < props.m_tile_count_x / 2; ++tx)
                     image.tile(tx, ty).copy_from(image_copy.tile(tx, ty));
