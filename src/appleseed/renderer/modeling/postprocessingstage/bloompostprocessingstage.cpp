@@ -62,9 +62,10 @@ namespace
     const char* Model = "bloom_post_processing_stage";
 
     // TODO add default settings
+    static constexpr std::size_t DefaultIterations = 5;
     static constexpr float DefaultIntensity = 0.5f;
-    static constexpr std::size_t DefaultIterations = 4;
     static constexpr float DefaultThreshold = 0.8f;
+    static constexpr float DefaultSoftThreshold = 0.5f;
 
     class BloomPostProcessingStage
       : public PostProcessingStage
@@ -96,9 +97,10 @@ namespace
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
             // TODO add default settings
-            m_intensity = m_params.get_optional("intensity", DefaultIntensity, context);
             m_iterations = m_params.get_optional("iterations", DefaultIterations, context);
+            m_intensity = m_params.get_optional("intensity", DefaultIntensity, context);
             m_threshold = m_params.get_optional("threshold", DefaultThreshold, context);
+            m_soft_threshold = m_params.get_optional("soft_threshold", DefaultSoftThreshold, context);
 
             return true;
         }
@@ -209,7 +211,7 @@ namespace
             }
         }
 
-        static Image bright_pass_prefiltered(const Image& image, float threshold)
+        static Image bright_pass(const Image& image, float threshold, float soft_threshold)
         {
             // TODO inline (?)
 
@@ -225,6 +227,8 @@ namespace
                 props.m_pixel_format);
             // prefiltered_image.clear(Color3f(0.0f));
 
+            const float eps = default_eps<float>(); // used to avoid divisions by zero
+
             for (std::size_t y = 0; y < props.m_canvas_height; ++y)
             {
                 for (std::size_t x = 0; x < props.m_canvas_width; ++x)
@@ -235,9 +239,18 @@ namespace
                     float brightness = max_value(color.rgb());
                     float contribution = (brightness - threshold);
 
+                    float knee = threshold * soft_threshold;
+                    if (knee > 0.0f)
+                    {
+                        float soft = contribution + knee;
+                        soft = clamp(soft, 0.0f, 2.0f * knee);
+                        soft = soft * soft / (4.0f * knee + eps);
+                        contribution = max(soft, contribution);
+                    }
+
                     if (contribution > 0.0f)
                     {
-                        color.rgb() *= contribution / max(brightness, 0.0001f); // avoid division by zero (0.0001 is arbitrary)
+                        color.rgb() *= contribution / max(brightness, eps);
                         prefiltered_image.set_pixel(x, y, color.rgb());
                     }
                 }
@@ -269,7 +282,7 @@ namespace
             assert(iteration_offset.size() <= m_iterations);
 
             // Copy the image to temporary render targets used for blurring.
-            Image bloom_blur_1 = bright_pass_prefiltered(image, m_threshold);
+            Image bloom_blur_1 = bright_pass(image, m_threshold, m_soft_threshold); // prefilter the original image
             Image bloom_blur_2 = Image(bloom_blur_1);
             Image& bloom_blur = m_iterations % 2 == 1 ? bloom_blur_2 : bloom_blur_1; // last blur target
 
@@ -293,7 +306,7 @@ namespace
                     Color3f bloom_color;
                     bloom_blur.get_pixel(x, y, bloom_color);
 
-                    color.rgb() += m_intensity * bloom_color; // additive blend
+                    color.rgb() += m_intensity * bloom_color; // additive blend (modulated by intensity)
                     image.set_pixel(x, y, color);
                 }
             }
@@ -301,9 +314,10 @@ namespace
 
       private:
         // TODO add default settings
-        float m_intensity;
         std::size_t m_iterations;
+        float m_intensity;
         float m_threshold;
+        float m_soft_threshold; // also called soft knee
     };
 }
 
@@ -340,22 +354,6 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "intensity")
-            .insert("label", "Intensity")
-            .insert("type", "numeric")
-            .insert("min",
-                    Dictionary()
-                        .insert("value", "0.0")
-                        .insert("type", "hard"))
-            .insert("max",
-                    Dictionary()
-                        .insert("value", "1.0")
-                        .insert("type", "hard"))
-            .insert("use", "optional")
-            .insert("default", "0.5"));
-
-    metadata.push_back(
-        Dictionary()
             .insert("name", "iterations")
             .insert("label", "Iterations")
             .insert("type", "int")
@@ -372,6 +370,22 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
+            .insert("name", "intensity")
+            .insert("label", "Intensity")
+            .insert("type", "numeric")
+            .insert("min",
+                    Dictionary()
+                        .insert("value", "0.0")
+                        .insert("type", "hard"))
+            .insert("max",
+                    Dictionary()
+                        .insert("value", "1.0")
+                        .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "0.5"));
+
+    metadata.push_back(
+        Dictionary()
             .insert("name", "threshold")
             .insert("label", "Threshold")
             .insert("type", "numeric")
@@ -385,6 +399,22 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
                         .insert("type", "hard"))
             .insert("use", "optional")
             .insert("default", "0.8"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "soft_threshold")
+            .insert("label", "Soft Threshold")
+            .insert("type", "numeric")
+            .insert("min",
+                    Dictionary()
+                        .insert("value", "0.0")
+                        .insert("type", "hard"))
+            .insert("max",
+                    Dictionary()
+                        .insert("value", "1.0")
+                        .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "0.5"));
 
     return metadata;
 }
