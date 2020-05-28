@@ -135,6 +135,7 @@ namespace
             {
                 for (std::size_t x = 0; x < src_props.m_canvas_width; ++x)
                 {
+                    // Since each kawase_sample is an average of 4 values, 16 pixels are used in total.
                     Color3f bottom_right = kawase_sample(src_image, x + 0.5f, y - 0.5f, offset);
                     Color3f bottom_left = kawase_sample(src_image, x - 0.5f, y - 0.5f, offset);
                     Color3f top_right = kawase_sample(src_image, x + 0.5f, y + 0.5f, offset);
@@ -268,16 +269,9 @@ namespace
             assert(iteration_offset.size() <= m_iterations);
 
             // Copy the image to temporary render targets used for blurring.
-            // Image bloom_blur_1 = bright_pass_prefiltered(image, m_threshold);
-            // Image bloom_blur_2 = Image(bloom_blur_1);
-            // Image& bloom_blur = m_iterations % 2 == 1 ? bloom_blur_2 : bloom_blur_1; // last blur target
-
-            Image downsample_x2(scaled(props, 0.5f));
-            bilinear_filter_in_place(image, downsample_x2);
-
-            Image bloom_blur_1 = bright_pass_prefiltered(downsample_x2, m_threshold);
+            Image bloom_blur_1 = bright_pass_prefiltered(image, m_threshold);
             Image bloom_blur_2 = Image(bloom_blur_1);
-            Image& bloom_blur_ = m_iterations % 2 == 1 ? bloom_blur_2 : bloom_blur_1; // last blur target
+            Image& bloom_blur = m_iterations % 2 == 1 ? bloom_blur_2 : bloom_blur_1; // last blur target
 
             // Iteratively blur the image.
             for (std::size_t i = 0; i < m_iterations; ++i)
@@ -287,9 +281,6 @@ namespace
                 else
                     kawase_blur(bloom_blur_2, bloom_blur_1, iteration_offset[i]);
             }
-
-            Image bloom_blur(props);
-            bilinear_filter_in_place(bloom_blur_, bloom_blur);
 
             // Additively blend colors from the original and the blurred image to achieve bloom.
             for (std::size_t y = 0; y < props.m_canvas_height; ++y)
@@ -302,20 +293,15 @@ namespace
                     Color3f bloom_color;
                     bloom_blur.get_pixel(x, y, bloom_color);
 
-                    color.rgb() += bloom_color; // additive blend
+                    color.rgb() += m_intensity * bloom_color; // additive blend
                     image.set_pixel(x, y, color);
                 }
             }
-
-            // FIXME remove after debugging ("restores" the left side of the image)
-            for (size_t ty = 0; ty < props.m_tile_count_y; ++ty)
-                for (size_t tx = 0; tx < props.m_tile_count_x / 2; ++tx)
-                    image.tile(tx, ty).copy_from(image_copy.tile(tx, ty));
         }
 
       private:
         // TODO add default settings
-        float m_intensity; // TODO decide if the value should be set in gamma space (so a conversion will be needed)
+        float m_intensity;
         std::size_t m_iterations;
         float m_threshold;
     };
