@@ -86,8 +86,8 @@ class TreeRepository
 template <typename TreeType>
 TreeRepository<TreeType>::~TreeRepository()
 {
-    for (foundation::each<TreeContainer> i = m_trees; i; ++i)
-        delete i->second.m_tree;
+    for (auto& i : m_trees)
+        delete i.second.m_tree;
 }
 
 template <typename TreeType>
@@ -139,8 +139,8 @@ template <typename TreeType>
 template <typename Func>
 void TreeRepository<TreeType>::for_each(Func& func)
 {
-    for (foundation::each<TreeContainer> i = m_trees; i; ++i)
-        func(*(i->second.m_tree), i->second.m_ref);
+    for (auto& i : m_trees)
+        func(*(i.second.m_tree), i.second.m_ref);
 }
 
 }   // namespace renderer
