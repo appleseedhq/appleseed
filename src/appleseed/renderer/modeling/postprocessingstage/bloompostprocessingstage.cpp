@@ -121,7 +121,7 @@ namespace
             return 0.25f * (top_right + top_left + bottom_right + bottom_left);
         }
 
-        static void kawase_blur(Image& src_image, Image& dst_image, std::size_t offset)
+        static void kawase_blur(Image& src_image, Image& dst_image, std::size_t offset, bool additive_blend = true)
         {
             const CanvasProperties& src_props = src_image.properties();
             const CanvasProperties& dst_props = dst_image.properties();
@@ -139,7 +139,16 @@ namespace
                     Color3f bottom_left = kawase_sample(src_image, x - 0.5f, y - 0.5f, offset);
                     Color3f top_right = kawase_sample(src_image, x + 0.5f, y + 0.5f, offset);
                     Color3f top_left = kawase_sample(src_image, x - 0.5f, y + 0.5f, offset);
-                    dst_image.set_pixel(x, y, 0.25f * (top_right + top_left + bottom_right + bottom_left));
+                    Color3f result = 0.25f * (top_right + top_left + bottom_right + bottom_left);
+
+                    if (additive_blend)
+                    {
+                        Color3f color;
+                        dst_image.get_pixel(x, y, color);
+                        result += color;
+                    }
+
+                    dst_image.set_pixel(x, y, result);
                 }
             }
         }
@@ -149,7 +158,7 @@ namespace
             const CanvasProperties& src_props = src_image.properties();
             const CanvasProperties& dst_props = dst_image.properties();
 
-            assert(src_props.m_channel_count == 3);
+            assert(src_props.m_channel_count == 3); // FIXME
             assert(dst_props.m_channel_count == 3);
 
             const std::size_t src_width = src_props.m_canvas_width;
@@ -199,8 +208,10 @@ namespace
             }
         }
 
-        static Image prefiltered(const Image& image, float threshold)
+        static Image bright_pass_prefiltered(const Image& image, float threshold)
         {
+            // TODO inline (?)
+
             const CanvasProperties& props = image.properties();
             assert(props.m_channel_count == 4);
 
@@ -257,9 +268,16 @@ namespace
             assert(iteration_offset.size() <= m_iterations);
 
             // Copy the image to temporary render targets used for blurring.
-            Image bloom_blur_1 = prefiltered(image, m_threshold);
+            // Image bloom_blur_1 = bright_pass_prefiltered(image, m_threshold);
+            // Image bloom_blur_2 = Image(bloom_blur_1);
+            // Image& bloom_blur = m_iterations % 2 == 1 ? bloom_blur_2 : bloom_blur_1; // last blur target
+
+            Image downsample_x2(scaled(props, 0.5f));
+            bilinear_filter_in_place(image, downsample_x2);
+
+            Image bloom_blur_1 = bright_pass_prefiltered(downsample_x2, m_threshold);
             Image bloom_blur_2 = Image(bloom_blur_1);
-            Image& bloom_blur = m_iterations % 2 == 1 ? bloom_blur_2 : bloom_blur_1; // last blur target
+            Image& bloom_blur_ = m_iterations % 2 == 1 ? bloom_blur_2 : bloom_blur_1; // last blur target
 
             // Iteratively blur the image.
             for (std::size_t i = 0; i < m_iterations; ++i)
@@ -269,6 +287,9 @@ namespace
                 else
                     kawase_blur(bloom_blur_2, bloom_blur_1, iteration_offset[i]);
             }
+
+            Image bloom_blur(props);
+            bilinear_filter_in_place(bloom_blur_, bloom_blur);
 
             // Additively blend colors from the original and the blurred image to achieve bloom.
             for (std::size_t y = 0; y < props.m_canvas_height; ++y)
