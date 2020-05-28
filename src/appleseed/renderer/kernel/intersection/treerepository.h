@@ -86,7 +86,7 @@ class TreeRepository
 template <typename TreeType>
 TreeRepository<TreeType>::~TreeRepository()
 {
-    for (auto& i : m_trees)
+    for (auto &i : m_trees)
         delete i.second.m_tree;
 }
 
@@ -139,7 +139,7 @@ template <typename TreeType>
 template <typename Func>
 void TreeRepository<TreeType>::for_each(Func& func)
 {
-    for (auto& i : m_trees)
+    for (auto &i : m_trees)
         func(*(i.second.m_tree), i.second.m_ref);
 }
 

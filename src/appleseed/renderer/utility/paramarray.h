@@ -578,9 +578,9 @@ bool ParamArray::contains(
     const StringVec&            allowed_values,
     const T&                    value)
 {
-    for (foundation::const_each<StringVec> i = allowed_values; i; ++i)
+    for (auto const &i : allowed_values)
     {
-        if (value == foundation::from_string<T>(*i))
+        if (value == foundation::from_string<T>(i))
             return true;
     }
 
