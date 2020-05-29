@@ -105,13 +105,13 @@ namespace
             return true;
         }
 
-        static Color3f kawase_sample(Image& image, float frac_x, float frac_y, std::size_t offset)
+        static Color3f kawase_sample(const Image& image, const float frac_x, const float frac_y, const std::size_t offset)
         {
             // Sample the edge-most pixel when the coordinate is outside the image (i.e. texture clamping).
-            std::size_t bottom_coord = static_cast<std::size_t>(max(frac_y - 0.5f - offset, 0.0f));
-            std::size_t right_coord = static_cast<std::size_t>(min(frac_x + 0.5f + offset, image.properties().m_canvas_width - 1.0f));
-            std::size_t left_coord = static_cast<std::size_t>(max(frac_x - 0.5f - offset, 0.0f));
-            std::size_t top_coord = static_cast<std::size_t>(min(frac_y + 0.5f + offset, image.properties().m_canvas_height - 1.0f));
+            const std::size_t bottom_coord = static_cast<std::size_t>(max(frac_y - 0.5f - offset, 0.0f));
+            const std::size_t right_coord = static_cast<std::size_t>(min(frac_x + 0.5f + offset, image.properties().m_canvas_width - 1.0f));
+            const std::size_t left_coord = static_cast<std::size_t>(max(frac_x - 0.5f - offset, 0.0f));
+            const std::size_t top_coord = static_cast<std::size_t>(min(frac_y + 0.5f + offset, image.properties().m_canvas_height - 1.0f));
 
             Color3f bottom_right, bottom_left, top_right, top_left;
             image.get_pixel(right_coord, bottom_coord, bottom_right);
@@ -123,7 +123,7 @@ namespace
             return 0.25f * (top_right + top_left + bottom_right + bottom_left);
         }
 
-        static void kawase_blur(Image& src_image, Image& dst_image, std::size_t offset, bool additive_blend = true)
+        static void kawase_blur(const Image& src_image, Image& dst_image, const std::size_t offset, const bool additive_blend = true)
         {
             const CanvasProperties& src_props = src_image.properties();
             const CanvasProperties& dst_props = dst_image.properties();
@@ -138,10 +138,10 @@ namespace
                 for (std::size_t x = 0; x < src_props.m_canvas_width; ++x)
                 {
                     // Since each kawase_sample is an average of 4 values, 16 pixels are used in total.
-                    Color3f bottom_right = kawase_sample(src_image, x + 0.5f, y - 0.5f, offset);
-                    Color3f bottom_left = kawase_sample(src_image, x - 0.5f, y - 0.5f, offset);
-                    Color3f top_right = kawase_sample(src_image, x + 0.5f, y + 0.5f, offset);
-                    Color3f top_left = kawase_sample(src_image, x - 0.5f, y + 0.5f, offset);
+                    const Color3f bottom_right = kawase_sample(src_image, x + 0.5f, y - 0.5f, offset);
+                    const Color3f bottom_left = kawase_sample(src_image, x - 0.5f, y - 0.5f, offset);
+                    const Color3f top_right = kawase_sample(src_image, x + 0.5f, y + 0.5f, offset);
+                    const Color3f top_left = kawase_sample(src_image, x - 0.5f, y + 0.5f, offset);
                     Color3f result = 0.25f * (top_right + top_left + bottom_right + bottom_left);
 
                     if (additive_blend)
@@ -211,7 +211,7 @@ namespace
             }
         }
 
-        static Image bright_pass(const Image& image, float threshold, float soft_threshold)
+        static Image bright_pass(const Image& image, const float threshold, const float soft_threshold)
         {
             // TODO inline (?)
 
@@ -228,6 +228,7 @@ namespace
             // prefiltered_image.clear(Color3f(0.0f));
 
             const float eps = default_eps<float>(); // used to avoid divisions by zero
+            const float knee = threshold * soft_threshold;
 
             for (std::size_t y = 0; y < props.m_canvas_height; ++y)
             {
@@ -236,21 +237,20 @@ namespace
                     Color4f color;
                     image.get_pixel(x, y, color);
 
-                    float brightness = max_value(color.rgb());
+                    const float brightness = max_value(color.rgb());
                     float contribution = (brightness - threshold);
 
-                    float knee = threshold * soft_threshold;
                     if (knee > 0.0f)
                     {
                         float soft = contribution + knee;
                         soft = clamp(soft, 0.0f, 2.0f * knee);
-                        soft = soft * soft / (4.0f * knee + eps);
+                        soft = soft * soft * safe_rcp<float>(4.0f * knee, eps);
                         contribution = max(soft, contribution);
                     }
 
                     if (contribution > 0.0f)
                     {
-                        color.rgb() *= contribution / max(brightness, eps);
+                        color.rgb() *= contribution * safe_rcp<float>(brightness, eps);
                         prefiltered_image.set_pixel(x, y, color.rgb());
                     }
                 }
@@ -259,15 +259,15 @@ namespace
             return prefiltered_image;
         }
 
-        static inline CanvasProperties scaled(const CanvasProperties& props, float scaling_factor)
+        static inline CanvasProperties scaled(const CanvasProperties& props, const float scaling_factor)
         {
             return CanvasProperties(
-                    static_cast<std::size_t>(scaling_factor * props.m_canvas_width),
-                    static_cast<std::size_t>(scaling_factor * props.m_canvas_height),
-                    static_cast<std::size_t>(scaling_factor * props.m_tile_width),
-                    static_cast<std::size_t>(scaling_factor * props.m_tile_height),
-                    props.m_channel_count,
-                    props.m_pixel_format);
+                static_cast<std::size_t>(scaling_factor * props.m_canvas_width),
+                static_cast<std::size_t>(scaling_factor * props.m_canvas_height),
+                static_cast<std::size_t>(scaling_factor * props.m_tile_width),
+                static_cast<std::size_t>(scaling_factor * props.m_tile_height),
+                props.m_channel_count,
+                props.m_pixel_format);
         }
 
         void execute(Frame& frame, const std::size_t thread_count) const override
