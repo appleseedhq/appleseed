@@ -105,6 +105,11 @@ namespace
             return true;
         }
 
+        //
+        // Image sampling methods.
+        //
+
+        // Sampling filter from Masaki Kawase's GDC2003 Presentation: "Frame Buffer Postprocessing Effects in DOUBLE-S.T.E.A.L (Wreckless)".
         static Color3f kawase_sample(const Image& image, const float frac_x, const float frac_y, const std::size_t offset)
         {
             // Sample the edge-most pixel when the coordinate is outside the image (i.e. texture clamping).
@@ -122,6 +127,50 @@ namespace
             // Average sample colors.
             return 0.25f * (top_right + top_left + bottom_right + bottom_left);
         }
+
+        // Downsampling filter from Marius Bjørge's SIGGRAPH2015 Presentation: "Bandwidth-Efficient Rendering".
+        static Color3f dual_filter_downsample(const Image& image, const float frac_x, const float frac_y)
+        {
+            // Use 0 offset to emulate hardware bilinear filtering by sampling between the 4 pixels.
+            Color3f bottom_right = kawase_sample(image, frac_x + 1.0f, frac_y - 1.0f, 0);
+            Color3f bottom_left = kawase_sample(image, frac_x - 1.0f, frac_y - 1.0f, 0);
+            Color3f top_right = kawase_sample(image, frac_x + 1.0f, frac_y + 1.0f, 0);
+            Color3f top_left = kawase_sample(image, frac_x - 1.0f, frac_y + 1.0f, 0);
+            Color3f center = kawase_sample(image, frac_x, frac_y, 0);
+
+            return (4.0f * center + (top_right + top_left + bottom_right + bottom_left)) / 8.0f;
+        }
+
+        // Upsampling filter from Marius Bjørge's SIGGRAPH2015 Presentation: "Bandwidth-Efficient Rendering".
+        static Color3f dual_filter_upsample(const Image& image, const std::size_t x, const std::size_t y)
+        {
+            const float fx = static_cast<float>(x);
+            const float fy = static_cast<float>(y);
+
+            // Sample the edge-most pixel when the coordinate is outside the image (i.e. texture clamping).
+            const std::size_t bottom_coord = static_cast<std::size_t>(max(fy - 1.0f, 0.0f));
+            const std::size_t right_coord = static_cast<std::size_t>(min(fx + 1.0f, image.properties().m_canvas_width - 1.0f));
+            const std::size_t left_coord = static_cast<std::size_t>(max(fx - 1.0f, 0.0f));
+            const std::size_t top_coord = static_cast<std::size_t>(min(fy + 1.0f, image.properties().m_canvas_height - 1.0f));
+
+            Color3f bottom, right, left, top;
+            image.get_pixel(x, bottom_coord, bottom);
+            image.get_pixel(right_coord, y, right);
+            image.get_pixel(left_coord, y, left);
+            image.get_pixel(x, top_coord, top);
+
+            // Use 0 offset to emulate hardware bilinear filtering by sampling between the 4 pixels.
+            Color3f bottom_right = kawase_sample(image, fx + 0.5f, fy - 0.5f, 0);
+            Color3f bottom_left = kawase_sample(image, fx - 0.5f, fy - 0.5f, 0);
+            Color3f top_right = kawase_sample(image, fx + 0.5f, fy + 0.5f, 0);
+            Color3f top_left = kawase_sample(image, fx - 0.5f, fy + 0.5f, 0);
+
+            return ((bottom, right, left, top) + 2.0f * (top_right + top_left + bottom_right + bottom_left)) / 12.0f;
+        }
+
+        //
+        // Image blurring.
+        //
 
         static void kawase_blur(const Image& src_image, Image& dst_image, const std::size_t offset, const bool additive_blend = true)
         {
@@ -156,48 +205,59 @@ namespace
             }
         }
 
-        // Marius Bjørge's downsample filter.
-        static Color3f dual_filter_downsample(const Image& image, const float frac_x, const float frac_y)
-        {
-            // Use 0 offset to emulate hardware bilinear filtering by sampling between the 4 pixels.
-            Color3f bottom_right = kawase_sample(image, frac_x + 1.0f, frac_y - 1.0f, 0.0f);
-            Color3f bottom_left = kawase_sample(image, frac_x - 1.0f, frac_y - 1.0f, 0.0f);
-            Color3f top_right = kawase_sample(image, frac_x + 1.0f, frac_y + 1.0f, 0.0f);
-            Color3f top_left = kawase_sample(image, frac_x - 1.0f, frac_y + 1.0f, 0.0f);
-            Color3f center = kawase_sample(image, frac_x, frac_y, 0.0f);
+        //
+        // Image prefiltering.
+        //
 
-            return (4.0f * center + (top_right + top_left + bottom_right + bottom_left)) / 8.0f;
+        static Image bright_pass(const Image& image, const float threshold, const float soft_threshold)
+        {
+            // TODO inline (?)
+
+            const CanvasProperties& props = image.properties();
+            assert(props.m_channel_count == 4);
+
+            Image prefiltered_image(
+                props.m_canvas_width,
+                props.m_canvas_height,
+                props.m_tile_width,
+                props.m_tile_height,
+                3,
+                props.m_pixel_format);
+            // prefiltered_image.clear(Color3f(0.0f));
+
+            const float eps = default_eps<float>(); // used to avoid divisions by zero
+            const float knee = threshold * soft_threshold;
+
+            for (std::size_t y = 0; y < props.m_canvas_height; ++y)
+            {
+                for (std::size_t x = 0; x < props.m_canvas_width; ++x)
+                {
+                    Color4f color;
+                    image.get_pixel(x, y, color);
+
+                    const float brightness = max_value(color.rgb());
+                    float contribution = (brightness - threshold);
+
+                    if (knee > 0.0f)
+                    {
+                        float soft = contribution + knee;
+                        soft = clamp(soft, 0.0f, 2.0f * knee);
+                        soft = soft * soft * safe_rcp<float>(4.0f * knee, eps);
+                        contribution = max(soft, contribution);
+                    }
+
+                    if (contribution > 0.0f)
+                    {
+                        color.rgb() *= contribution * safe_rcp<float>(brightness, eps);
+                        prefiltered_image.set_pixel(x, y, color.rgb());
+                    }
+                }
+            }
+
+            return prefiltered_image;
         }
 
-        // Marius Bjørge's upsample filter.
-        static Color3f dual_filter_upsample(const Image& image, const std::size_t x, const std::size_t y)
-        {
-            const float fx = static_cast<float>(x);
-            const float fy = static_cast<float>(y);
-
-            // Sample the edge-most pixel when the coordinate is outside the image (i.e. texture clamping).
-            const std::size_t bottom_coord = static_cast<std::size_t>(max(fy - 1.0f, 0.0f));
-            const std::size_t right_coord = static_cast<std::size_t>(min(fx + 1.0f, image.properties().m_canvas_width - 1.0f));
-            const std::size_t left_coord = static_cast<std::size_t>(max(fx - 1.0f, 0.0f));
-            const std::size_t top_coord = static_cast<std::size_t>(min(fy + 1.0f, image.properties().m_canvas_height - 1.0f));
-
-            Color3f bottom, right, left, top;
-            image.get_pixel(x, bottom_coord, bottom);
-            image.get_pixel(right_coord, y, right);
-            image.get_pixel(left_coord, y, left);
-            image.get_pixel(x, top_coord, top);
-
-            // Use 0 offset to emulate hardware bilinear filtering by sampling between the 4 pixels.
-            Color3f bottom_right = kawase_sample(image, fx + 0.5f, fy - 0.5f, 0.0f);
-            Color3f bottom_left = kawase_sample(image, fx - 0.5f, fy - 0.5f, 0.0f);
-            Color3f top_right = kawase_sample(image, fx + 0.5f, fy + 0.5f, 0.0f);
-            Color3f top_left = kawase_sample(image, fx - 0.5f, fy + 0.5f, 0.0f);
-
-            return ((bottom, right, left, top) + 2.0f * (top_right + top_left + bottom_right + bottom_left)) / 12.0f;
-        }
-
-
-        static void bilinear_filter_in_place(Image& src_image, Image& dst_image)
+        static void bilinear_interpolation_in_place(Image& src_image, Image& dst_image)
         {
             const CanvasProperties& src_props = src_image.properties();
             const CanvasProperties& dst_props = dst_image.properties();
@@ -252,61 +312,13 @@ namespace
             }
         }
 
-        static Image bright_pass(const Image& image, const float threshold, const float soft_threshold)
-        {
-            // TODO inline (?)
-
-            const CanvasProperties& props = image.properties();
-            assert(props.m_channel_count == 4);
-
-            Image prefiltered_image(
-                props.m_canvas_width,
-                props.m_canvas_height,
-                props.m_tile_width,
-                props.m_tile_height,
-                3,
-                props.m_pixel_format);
-            // prefiltered_image.clear(Color3f(0.0f));
-
-            const float eps = default_eps<float>(); // used to avoid divisions by zero
-            const float knee = threshold * soft_threshold;
-
-            for (std::size_t y = 0; y < props.m_canvas_height; ++y)
-            {
-                for (std::size_t x = 0; x < props.m_canvas_width; ++x)
-                {
-                    Color4f color;
-                    image.get_pixel(x, y, color);
-
-                    const float brightness = max_value(color.rgb());
-                    float contribution = (brightness - threshold);
-
-                    if (knee > 0.0f)
-                    {
-                        float soft = contribution + knee;
-                        soft = clamp(soft, 0.0f, 2.0f * knee);
-                        soft = soft * soft * safe_rcp<float>(4.0f * knee, eps);
-                        contribution = max(soft, contribution);
-                    }
-
-                    if (contribution > 0.0f)
-                    {
-                        color.rgb() *= contribution * safe_rcp<float>(brightness, eps);
-                        prefiltered_image.set_pixel(x, y, color.rgb());
-                    }
-                }
-            }
-
-            return prefiltered_image;
-        }
-
-        static inline CanvasProperties scaled(const CanvasProperties& props, const float scaling_factor)
+        static inline CanvasProperties scaled_canvas(const CanvasProperties& props, const float scaling_factor)
         {
             return CanvasProperties(
-                static_cast<std::size_t>(scaling_factor * props.m_canvas_width),
-                static_cast<std::size_t>(scaling_factor * props.m_canvas_height),
-                static_cast<std::size_t>(scaling_factor * props.m_tile_width),
-                static_cast<std::size_t>(scaling_factor * props.m_tile_height),
+                static_cast<std::size_t>(scaling_factor * static_cast<float>(props.m_canvas_width)),
+                static_cast<std::size_t>(scaling_factor * static_cast<float>(props.m_canvas_height)),
+                static_cast<std::size_t>(scaling_factor * static_cast<float>(props.m_tile_width)),
+                static_cast<std::size_t>(scaling_factor * static_cast<float>(props.m_tile_height)),
                 props.m_channel_count,
                 props.m_pixel_format);
         }
