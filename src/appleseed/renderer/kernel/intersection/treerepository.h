@@ -86,7 +86,7 @@ class TreeRepository
 template <typename TreeType>
 TreeRepository<TreeType>::~TreeRepository()
 {
-    for (std::pair<const std::uint64_t, TreeInfo>& tree : m_trees)
+    for (std::pair<std::uint64_t, TreeInfo>& tree : m_trees)
         delete tree.second.m_tree;
 }
 
@@ -139,7 +139,7 @@ template <typename TreeType>
 template <typename Func>
 void TreeRepository<TreeType>::for_each(Func& func)
 {
-    for (std::pair<const std::uint64_t, TreeInfo>& tree : m_trees)
+    for (std::pair<std::uint64_t, TreeInfo>& tree : m_trees)
         func(*(tree.second.m_tree), tree.second.m_ref);
 }
 
