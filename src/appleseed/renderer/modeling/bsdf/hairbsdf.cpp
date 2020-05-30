@@ -443,13 +443,13 @@ namespace
             const ParamArray&           params)
           : BSDF(name, AllBSDFTypes, ScatteringMode::Glossy, params)
         {
-            m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("melanin", InputFormatFloat, "0.3");
-            m_inputs.declare("melanin_redness", InputFormatFloat, "0.0");
-            m_inputs.declare("eta", InputFormatFloat, "1.55");
-            m_inputs.declare("beta_M", InputFormatFloat, "0.3");
-            m_inputs.declare("beta_N", InputFormatFloat, "0.3");
-            m_inputs.declare("alpha", InputFormatFloat, "2.0");
+            m_inputs.declare("reflectance", InputFormat::SpectralReflectance);
+            m_inputs.declare("melanin", InputFormat::Float, "0.3");
+            m_inputs.declare("melanin_redness", InputFormat::Float, "0.0");
+            m_inputs.declare("eta", InputFormat::Float, "1.55");
+            m_inputs.declare("beta_M", InputFormat::Float, "0.3");
+            m_inputs.declare("beta_N", InputFormat::Float, "0.3");
+            m_inputs.declare("alpha", InputFormat::Float, "2.0");
         }
 
         void release() override

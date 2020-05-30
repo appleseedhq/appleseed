@@ -52,16 +52,16 @@ DipoleBSSRDF::DipoleBSSRDF(
   : SeparableBSSRDF(name, params)
   , m_has_sigma_sources(false)
 {
-    m_inputs.declare("weight", InputFormatFloat, "1.0");
-    m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-    m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
-    m_inputs.declare("mfp", InputFormatSpectralReflectance);
-    m_inputs.declare("mfp_multiplier", InputFormatFloat, "1.0");
-    m_inputs.declare("sigma_a", InputFormatSpectralReflectance, "");
-    m_inputs.declare("sigma_s", InputFormatSpectralReflectance, "");
-    m_inputs.declare("g", InputFormatFloat, "0.0");
-    m_inputs.declare("ior", InputFormatFloat);
-    m_inputs.declare("fresnel_weight", InputFormatFloat, "1.0");
+    m_inputs.declare("weight", InputFormat::Float, "1.0");
+    m_inputs.declare("reflectance", InputFormat::SpectralReflectance);
+    m_inputs.declare("reflectance_multiplier", InputFormat::Float, "1.0");
+    m_inputs.declare("mfp", InputFormat::SpectralReflectance);
+    m_inputs.declare("mfp_multiplier", InputFormat::Float, "1.0");
+    m_inputs.declare("sigma_a", InputFormat::SpectralReflectance, "");
+    m_inputs.declare("sigma_s", InputFormat::SpectralReflectance, "");
+    m_inputs.declare("g", InputFormat::Float, "0.0");
+    m_inputs.declare("ior", InputFormat::Float);
+    m_inputs.declare("fresnel_weight", InputFormat::Float, "1.0");
 }
 
 size_t DipoleBSSRDF::compute_input_data_size() const

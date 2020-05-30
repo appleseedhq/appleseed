@@ -78,8 +78,8 @@ namespace
           : EnvironmentShader(name, params)
           , m_env_edf(nullptr)
         {
-            m_inputs.declare("environment_edf", InputFormatEntity);
-            m_inputs.declare("alpha_value", InputFormatFloat, "1.0");
+            m_inputs.declare("environment_edf", InputFormat::Entity);
+            m_inputs.declare("alpha_value", InputFormat::Float, "1.0");
         }
 
         void release() override

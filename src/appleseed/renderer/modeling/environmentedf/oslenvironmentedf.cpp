@@ -159,7 +159,7 @@ namespace
           , m_importance_map_size(0)
           , m_probability_scale(0.0f)
         {
-            m_inputs.declare("osl_background", InputFormatEntity, "");
+            m_inputs.declare("osl_background", InputFormat::Entity, "");
         }
 
         void release() override

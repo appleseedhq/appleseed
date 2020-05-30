@@ -71,11 +71,11 @@ class GenericVolume
         const ParamArray&   params)
       : Volume(name, params)
     {
-        m_inputs.declare("absorption", InputFormatSpectralReflectance);
-        m_inputs.declare("absorption_multiplier", InputFormatFloat, "1.0");
-        m_inputs.declare("scattering", InputFormatSpectralReflectance);
-        m_inputs.declare("scattering_multiplier", InputFormatFloat, "1.0");
-        m_inputs.declare("average_cosine", InputFormatFloat, "0.0");
+        m_inputs.declare("absorption", InputFormat::SpectralReflectance);
+        m_inputs.declare("absorption_multiplier", InputFormat::Float, "1.0");
+        m_inputs.declare("scattering", InputFormat::SpectralReflectance);
+        m_inputs.declare("scattering_multiplier", InputFormat::Float, "1.0");
+        m_inputs.declare("average_cosine", InputFormat::Float, "0.0");
     }
 
     void release() override

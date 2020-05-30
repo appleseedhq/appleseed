@@ -105,8 +105,8 @@ namespace
             const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::Glossy, params)
         {
-            m_inputs.declare("exponent", InputFormatFloat, "0.5");
-            m_inputs.declare("ior", InputFormatFloat, "1.5");
+            m_inputs.declare("exponent", InputFormat::Float, "0.5");
+            m_inputs.declare("ior", InputFormat::Float, "1.5");
         }
 
         void release() override

@@ -74,9 +74,9 @@ namespace
             const ParamArray&           params)
           : SurfaceShader(name, params)
         {
-            m_inputs.declare("color", InputFormatSpectralIlluminanceWithAlpha);
-            m_inputs.declare("color_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("alpha_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("color", InputFormat::SpectralIlluminanceWithAlpha);
+            m_inputs.declare("color_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("alpha_multiplier", InputFormat::Float, "1.0");
 
             const std::string alpha_source = m_params.get_optional<std::string>("alpha_source", "color");
             if (alpha_source == "color")

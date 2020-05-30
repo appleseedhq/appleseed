@@ -83,13 +83,13 @@ namespace
             const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::Diffuse | ScatteringMode::Glossy, params)
         {
-            m_inputs.declare("diffuse_reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("diffuse_reflectance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("glossy_reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("glossy_reflectance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("fresnel_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("shininess_u", InputFormatFloat);
-            m_inputs.declare("shininess_v", InputFormatFloat);
+            m_inputs.declare("diffuse_reflectance", InputFormat::SpectralReflectance);
+            m_inputs.declare("diffuse_reflectance_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("glossy_reflectance", InputFormat::SpectralReflectance);
+            m_inputs.declare("glossy_reflectance_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("fresnel_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("shininess_u", InputFormat::Float);
+            m_inputs.declare("shininess_v", InputFormat::Float);
         }
 
         void release() override

@@ -78,8 +78,8 @@ namespace
             const ParamArray&           params)
           : SurfaceShader(name, params)
         {
-            m_inputs.declare("color_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("alpha_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("color_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("alpha_multiplier", InputFormat::Float, "1.0");
         }
 
         void release() override

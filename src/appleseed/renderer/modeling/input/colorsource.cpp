@@ -60,13 +60,13 @@ ColorSource::ColorSource(const ColorEntity& color_entity, const InputFormat form
     // Retrieve the color values.
     if (color_entity.get_color_space() == ColorSpaceSpectral)
     {
-        initialize_from_spectrum(color_entity, (format == InputFormatSpectralIlluminance ||
-            format == InputFormatSpectralIlluminanceWithAlpha) ? Spectrum::Illuminance : Spectrum::Reflectance);
+        initialize_from_spectrum(color_entity, (format == InputFormat::SpectralIlluminance ||
+            format == InputFormat::SpectralIlluminanceWithAlpha) ? Spectrum::Illuminance : Spectrum::Reflectance);
     }
     else
     {
-        initialize_from_color3(color_entity, (format == InputFormat::InputFormatSpectralIlluminance ||
-            format == InputFormatSpectralIlluminanceWithAlpha) ? Spectrum::Illuminance : Spectrum::Reflectance);
+        initialize_from_color3(color_entity, (format == InputFormat::SpectralIlluminance ||
+            format == InputFormat::SpectralIlluminanceWithAlpha) ? Spectrum::Illuminance : Spectrum::Reflectance);
     }
 
     // Apply the multiplier to the color values.
