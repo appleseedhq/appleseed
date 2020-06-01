@@ -137,7 +137,7 @@ namespace
 
             shading_components.m_emission = value;
 
-            shading_result.m_main.rgb() = value.illuminance_to_rgb(g_std_cmf);
+            shading_result.m_main.rgb() = value.illuminance_to_rgb(g_std_lighting_conditions);
             shading_result.m_main.a = m_alpha_value;
         }
 

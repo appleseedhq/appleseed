@@ -120,7 +120,7 @@ namespace
                 &values);
 
             // Initialize the shading result.
-            shading_result.m_main.rgb() = values.m_color.illuminance_to_ciexyz(g_std_cmf);
+            shading_result.m_main.rgb() = values.m_color.illuminance_to_rgb(g_std_lighting_conditions);
 
             // This surface shader can override alpha.
             if (m_alpha_source == AlphaSourceColor)

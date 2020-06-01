@@ -173,7 +173,7 @@ namespace
                 compute_sky_radiance(shading_context, shifted_outgoing, radiance);
             else radiance.set(0.0f);
 
-            value.set(radiance, g_std_cmf, Spectrum::Illuminance);
+            value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
             probability = shifted_outgoing.y > 0.0f ? shifted_outgoing.y * RcpPi<float>() : 0.0f;
             assert(probability >= 0.0f);
         }
@@ -195,7 +195,7 @@ namespace
                 compute_sky_radiance(shading_context, shifted_outgoing, radiance);
             else radiance.set(0.0f);
 
-            value.set(radiance, g_std_cmf, Spectrum::Illuminance);
+            value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
         }
 
         void evaluate(
@@ -216,7 +216,7 @@ namespace
                 compute_sky_radiance(shading_context, shifted_outgoing, radiance);
             else radiance.set(0.0f);
 
-            value.set(radiance, g_std_cmf, Spectrum::Illuminance);
+            value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
             probability = shifted_outgoing.y > 0.0f ? shifted_outgoing.y * RcpPi<float>() : 0.0f;
             assert(probability >= 0.0f);
         }

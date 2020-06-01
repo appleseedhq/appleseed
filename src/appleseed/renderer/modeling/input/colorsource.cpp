@@ -36,7 +36,6 @@
 #include "renderer/modeling/color/wavelengths.h"
 #include "renderer/modeling/entity/entity.h"
 
-
 // appleseed.foundation headers.
 #include "foundation/image/colorspace.h"
 #include "foundation/image/regularspectrum.h"
@@ -126,10 +125,10 @@ void ColorSource::initialize_from_spectrum(const ColorEntity& color_entity, cons
     }
     else
     {
-        m_spectrum.set(s, g_std_cmf, intent);
+        m_spectrum.set(s, g_std_lighting_conditions, intent);
         m_linear_rgb =
             ciexyz_to_linear_rgb(
-                spectral_illuminance_to_ciexyz<float>(g_std_cmf, s));
+                spectral_illuminance_to_ciexyz<float>(g_std_lighting_conditions, s));
     }
 }
 

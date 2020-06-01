@@ -1466,47 +1466,27 @@ LightingConditions::LightingConditions(
     const RegularSpectrum31f    cmf[3])
 {
     // Precompute convolution of color matching functions and illuminant.
-    for (size_t w = 0; w < 31; ++w)
+    for (std::size_t w = 0; w < 31; ++w)
     {
-        m_cmf[w][0] = cmf[0][w] * illuminant[w];
-        m_cmf[w][1] = cmf[1][w] * illuminant[w];
-        m_cmf[w][2] = cmf[2][w] * illuminant[w];
-        m_cmf[w][3] = 0.0f;
+        m_cmf_reflectance[w][0] = m_cmf_illuminance[w][0] = cmf[0][w];
+        m_cmf_reflectance[w][1] = m_cmf_illuminance[w][1] = cmf[1][w];
+        m_cmf_reflectance[w][2] = m_cmf_illuminance[w][2] = cmf[2][w];
+        m_cmf_illuminance[w][3] = m_cmf_reflectance[w][3] = 0.0f;
+        m_cmf_reflectance[w] *= illuminant[w];
     }
 
-    m_cmf[31][0] = 0.0f;
-    m_cmf[31][1] = 0.0f;
-    m_cmf[31][2] = 0.0f;
-    m_cmf[31][3] = 0.0f;
+    m_cmf_illuminance[31].set(0.0f);
+    m_cmf_reflectance[31].set(0.0f);
 
-    m_rcp_n = get_cmf_normalizer(m_cmf);
-}
+    const float reflectance_normalizer = get_cmf_normalizer(m_cmf_reflectance);
+    const float illuminance_normalizer = get_cmf_normalizer(m_cmf_illuminance);
 
-
-//
-// Color matching functions implementation.
-//
-
-ColorMatchingFunction::ColorMatchingFunction()
-{
-}
-
-ColorMatchingFunction::ColorMatchingFunction(const RegularSpectrum31f cmf[3])
-{
-    for (std::size_t i = 0; i < 31; i++)
+    // Normalize color matching functions.
+    for (std::size_t w = 0; w < 31; ++w)
     {
-        m_cmf[i][0] = cmf[0][i];
-        m_cmf[i][1] = cmf[1][i];
-        m_cmf[i][2] = cmf[2][i];
-        m_cmf[i][3] = 0.0f;
+        m_cmf_reflectance[w] *= reflectance_normalizer;
+        m_cmf_illuminance[w] *= illuminance_normalizer;
     }
-
-    m_cmf[31][0] = 0.0f;
-    m_cmf[31][1] = 0.0f;
-    m_cmf[31][2] = 0.0f;
-    m_cmf[31][3] = 0.0f;
-
-    m_rcp_n = get_cmf_normalizer(m_cmf);
 }
 
 
@@ -1523,22 +1503,6 @@ void spectral_reflectance_to_ciexyz_standard(
     const Color3f c =
         spectral_reflectance_to_ciexyz<float, RegularSpectrum31f>(
             lighting_conditions,
-            RegularSpectrum31f::from_array(spectrum));
-
-    ciexyz[0] = c[0];
-    ciexyz[1] = c[1];
-    ciexyz[2] = c[2];
-}
-
-void spectral_illuminance_to_ciexyz_standard(
-    const float                 spectrum[],
-    float                       ciexyz[3])
-{
-    const ColorMatchingFunction cmf(XYZCMFCIE19312Deg);
-
-    const Color3f c =
-        spectral_illuminance_to_ciexyz<float, RegularSpectrum31f>(
-            cmf,
             RegularSpectrum31f::from_array(spectrum));
 
     ciexyz[0] = c[0];

@@ -156,37 +156,19 @@ extern const RegularSpectrum31f RGBToSpectrumBlueIlluminance;
 
 //
 // Lighting conditions, defined as a set of color matching functions and an illuminant.
-// Used in spectral illuminance conversion.
 //
 
 class LightingConditions
 {
   public:
-    APPLESEED_SIMD4_ALIGN Color4f   m_cmf[32];                  // precomputed values of (cmf[0], cmf[1], cmf[2]) * illuminant
-    APPLESEED_SIMD4_ALIGN float     m_rcp_n;                    // Rescale the color matching functions such that luminance integrates to 1.
+    APPLESEED_SIMD4_ALIGN Color4f   m_cmf_reflectance[32];      // precomputed values of (cmf[0], cmf[1], cmf[2]) * illuminant
+    APPLESEED_SIMD4_ALIGN Color4f   m_cmf_illuminance[32];      // Rescale the color matching functions such that luminance integrates to 1.
 
     LightingConditions();                                       // leaves the object uninitialized
 
     LightingConditions(
         const RegularSpectrum31f&   illuminant,                 // illuminant
         const RegularSpectrum31f    cmf[3]);                    // color matching functions
-};
-
-
-//
-// Color matching functions and its normalization factor.
-// Used in spectral illuminance conversion.
-//
-
-class ColorMatchingFunction
-{
-public:
-    APPLESEED_SIMD4_ALIGN Color4f   m_cmf[32];
-    APPLESEED_SIMD4_ALIGN float     m_rcp_n;              // Rescale the color matching functions such that luminance integrates to 1.
-
-    ColorMatchingFunction();
-
-    ColorMatchingFunction(const RegularSpectrum31f cmf[3]);
 };
 
 
@@ -360,16 +342,12 @@ Color<T, 3> spectral_reflectance_to_ciexyz(
 
 template <typename T, typename SpectrumType>
 Color<T, 3> spectral_illuminance_to_ciexyz(
-    const ColorMatchingFunction& cmf,
-    const SpectrumType& spectrum);
+    const LightingConditions&   lighting,
+    const SpectrumType&         spectrum);
 
 // Convert a spectrum to a color in the CIE XYZ color space using the CIE D65 illuminant
 // and the CIE 1964 10-deg color matching functions.
 APPLESEED_DLLSYMBOL void spectral_reflectance_to_ciexyz_standard(
-    const float                 spectrum[],
-    float                       ciexyz[3]);
-
-APPLESEED_DLLSYMBOL void spectral_illuminance_to_ciexyz_standard(
     const float                 spectrum[],
     float                       ciexyz[3]);
 
@@ -870,7 +848,6 @@ inline T luminance(const Color<T, 3>& linear_rgb)
 template <typename T, typename SpectrumType>
 inline Color<T, 3> spectrum_to_ciexyz(
     const Color4f   cmf[32],
-    const float     rcp_n,
     const SpectrumType& spectrum)
 {
     static_assert(
@@ -889,10 +866,6 @@ inline Color<T, 3> spectrum_to_ciexyz(
         z += cmf[w][2] * val;
     }
 
-    x *= rcp_n;
-    y *= rcp_n;
-    z *= rcp_n;
-
     return Color<T, 3>(x, y, z);
 }
 
@@ -900,7 +873,6 @@ inline Color<T, 3> spectrum_to_ciexyz(
 template <>
 inline Color3f spectrum_to_ciexyz<float, RegularSpectrum31f>(
     const Color4f   cmf[32],
-    const float     rcp_n,
     const RegularSpectrum31f& spectrum)
 {
     __m128 xyz1 = _mm_setzero_ps();
@@ -920,8 +892,6 @@ inline Color3f spectrum_to_ciexyz<float, RegularSpectrum31f>(
     xyz3 = _mm_add_ps(xyz3, xyz4);
     xyz1 = _mm_add_ps(xyz1, xyz3);
 
-    xyz1 = _mm_mul_ps(xyz1, _mm_set1_ps(rcp_n));
-
     APPLESEED_SIMD4_ALIGN float transfer[4];
     _mm_store_ps(transfer, xyz1);
 
@@ -934,15 +904,15 @@ Color<T, 3> spectral_reflectance_to_ciexyz(
     const LightingConditions&   lighting,
     const SpectrumType&         spectrum)
 {
-    return spectrum_to_ciexyz<T, SpectrumType>(lighting.m_cmf, lighting.m_rcp_n, spectrum);
+    return spectrum_to_ciexyz<T, SpectrumType>(lighting.m_cmf_reflectance, spectrum);
 }
 
 template <typename T, typename SpectrumType>
 Color<T, 3> spectral_illuminance_to_ciexyz(
-    const ColorMatchingFunction& cmf,
+    const LightingConditions& lighting,
     const SpectrumType& spectrum)
 {
-    return spectrum_to_ciexyz<T, SpectrumType>(cmf.m_cmf, cmf.m_rcp_n, spectrum);
+    return spectrum_to_ciexyz<T, SpectrumType>(lighting.m_cmf_illuminance, spectrum);
 }
 
 template <typename T, typename SpectrumType>

@@ -41,11 +41,4 @@ namespace renderer
 
 extern foundation::LightingConditions       g_std_lighting_conditions;
 
-
-//
-// Standard Color matching function CIE 1931 2-deg
-//
-
-extern foundation::ColorMatchingFunction    g_std_cmf;
-
 }   // namespace renderer
