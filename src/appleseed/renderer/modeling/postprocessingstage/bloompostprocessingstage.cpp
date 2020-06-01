@@ -240,12 +240,42 @@ namespace
                 props.m_pixel_format);
         }
 
-        static Image bilinear_interpolation(Image& image, const float scaling_factor)
+        static Color3f blerp(
+            const Image&        image,
+            const std::size_t   x0,
+            const std::size_t   y0,
+            const std::size_t   x1,
+            const std::size_t   y1,
+            const float         fx,
+            const float         fy)
+        {
+            // Retrieve the four surrounding pixels.
+            Color3f c00, c10, c01, c11;
+            image.get_pixel(x0, y0, c00);
+            image.get_pixel(x1, y0, c10);
+            image.get_pixel(x0, y1, c01);
+            image.get_pixel(x1, y1, c11);
+
+            // Compute weights.
+            const float wx1 = fx - x0;
+            const float wy1 = fy - y0;
+            const float wx0 = 1.0f - wx1;
+            const float wy0 = 1.0f - wy1;
+
+            // Store the weighted sum.
+            const Color3f result =
+                c00 * wx0 * wy0 +
+                c10 * wx1 * wy0 +
+                c01 * wx0 * wy1 +
+                c11 * wx1 * wy1;
+
+            return result; // bilinear interpolation
+        }
+
+        static Image bilinear_filtered(const Image& image, const float scaling_factor)
         {
             if (feq(scaling_factor, 1.0f))
-            {
                 return Image(image);
-            }
 
             const CanvasProperties& src_props = image.properties();
             assert(src_props.m_channel_count == 3);
@@ -254,8 +284,8 @@ namespace
             const CanvasProperties& dst_props = scaled_image.properties();
 
             const std::size_t src_width = src_props.m_canvas_width;
-            const std::size_t src_height = src_props.m_canvas_height;
             const std::size_t dst_width = dst_props.m_canvas_width; // src_width * scaling_factor
+            const std::size_t src_height = src_props.m_canvas_height;
             const std::size_t dst_height = dst_props.m_canvas_height; // src_height * scaling_factor
 
             // Perform bilinear interpolation for up/down sampling.
@@ -263,37 +293,15 @@ namespace
             {
                 for (std::size_t x = 0; x < dst_width; ++x)
                 {
-                    float fx = static_cast<float>(x) / (dst_width - 1);
-                    float fy = static_cast<float>(y) / (dst_height - 1);
-
-                    fx *= src_width - 1;
-                    fy *= src_height - 1;
-
-                    // Retrieve the four surrounding pixels.
-                    Color3f c00, c10, c01, c11;
+                    const float fx = (static_cast<float>(x) / (dst_width - 1)) * (src_width - 1);
+                    const float fy = (static_cast<float>(y) / (dst_height - 1)) * (src_height - 1);
 
                     const std::size_t x0 = truncate<std::size_t>(fx);
                     const std::size_t y0 = truncate<std::size_t>(fy);
                     const std::size_t x1 = std::min<std::size_t>(x0 + 1, src_width - 1);
                     const std::size_t y1 = std::min<std::size_t>(y0 + 1, src_height - 1);
 
-                    image.get_pixel(x0, y0, c00);
-                    image.get_pixel(x1, y0, c10);
-                    image.get_pixel(x0, y1, c01);
-                    image.get_pixel(x1, y1, c11);
-
-                    // Compute weights.
-                    const float wx1 = fx - x0;
-                    const float wy1 = fy - y0;
-                    const float wx0 = 1.0f - wx1;
-                    const float wy0 = 1.0f - wy1;
-
-                    // Store the weighted sum.
-                    const Color3f result =
-                        c00 * wx0 * wy0 +
-                        c10 * wx1 * wy0 +
-                        c01 * wx0 * wy1 +
-                        c11 * wx1 * wy1;
+                    const Color3f result = blerp(image, x0, y0, x1, y1, fx, fy);
 
                     scaled_image.set_pixel(x, y, result);
                 }
@@ -338,7 +346,7 @@ namespace
                         float soft = contribution + knee;
                         soft = clamp(soft, 0.0f, 2.0f * knee);
                         soft = soft * soft * safe_rcp<float>(4.0f * knee, eps);
-                        contribution = max(soft, contribution);
+                        contribution = std::max(soft, contribution);
                     }
 
                     if (contribution > 0.0f)
@@ -362,7 +370,7 @@ namespace
             assert(iteration_offset.size() <= m_iterations);
 
             // Copy the image to temporary render targets used for blurring.
-            Image bloom_blur_1 = bilinear_interpolation(
+            Image bloom_blur_1 = bilinear_filtered(
                 prefiltered(image, m_threshold, m_soft_threshold),
                 m_fast_mode ? 0.5f : 1.0f);
             Image bloom_blur_2 = Image(bloom_blur_1);
@@ -377,7 +385,7 @@ namespace
                     kawase_blur(bloom_blur_2, bloom_blur_1, iteration_offset[i]);
             }
 
-            const Image &bloom_target = m_fast_mode ? bilinear_interpolation(bloom_blur, 2.0f) : bloom_blur;
+            const Image &bloom_target = m_fast_mode ? bilinear_filtered(bloom_blur, 2.0f) : bloom_blur;
 
             // Blend colors from the original and the blurred image to achieve bloom.
             for (std::size_t y = 0; y < props.m_canvas_height; ++y)
@@ -404,6 +412,7 @@ namespace
         float           m_intensity;
         float           m_threshold;
         float           m_soft_threshold;
+
         bool            m_fast_mode;
         bool            m_downsample;
         bool            m_debug_blur;
