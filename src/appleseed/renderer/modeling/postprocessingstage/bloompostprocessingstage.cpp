@@ -106,66 +106,91 @@ namespace
         }
 
         //
-        // Image sampling methods.
+        // Simple image color sampling.
         //
 
-        // Sampling filter from Masaki Kawase's GDC2003 Presentation: "Frame Buffer Postprocessing Effects in DOUBLE-S.T.E.A.L (Wreckless)".
-        static Color3f kawase_sample(const Image& image, const float frac_x, const float frac_y, const std::size_t offset)
+        // Average the color values of a 2x2 block around (half_x, half_y).
+        static Color3f corner_sample(const Image& image, const float half_x, const float half_y)
         {
-            // Sample the edge-most pixel when the coordinate is outside the image (i.e. texture clamping).
-            const std::size_t bottom_coord = static_cast<std::size_t>(max(frac_y - 0.5f - offset, 0.0f));
-            const std::size_t right_coord = static_cast<std::size_t>(min(frac_x + 0.5f + offset, image.properties().m_canvas_width - 1.0f));
-            const std::size_t left_coord = static_cast<std::size_t>(max(frac_x - 0.5f - offset, 0.0f));
-            const std::size_t top_coord = static_cast<std::size_t>(min(frac_y + 0.5f + offset, image.properties().m_canvas_height - 1.0f));
+            const float max_x = image.properties().m_canvas_width - 1.0f;
+            const float max_y = image.properties().m_canvas_height - 1.0f;
 
-            Color3f bottom_right, bottom_left, top_right, top_left;
-            image.get_pixel(right_coord, bottom_coord, bottom_right);
-            image.get_pixel(left_coord, bottom_coord, bottom_left);
-            image.get_pixel(right_coord, top_coord, top_right);
+            // Sample the edge-most pixel when the coordinate is outside the image (i.e. texture clamping).
+            const std::size_t top_coord = static_cast<std::size_t>(clamp(half_y + 0.5f, 0.0f, max_y));
+            const std::size_t left_coord = static_cast<std::size_t>(clamp(half_x - 0.5f, 0.0f, max_x));
+            const std::size_t right_coord = static_cast<std::size_t>(clamp(half_x + 0.5f, 0.0f, max_x));
+            const std::size_t bottom_coord = static_cast<std::size_t>(clamp(half_y - 0.5f, 0.0f, max_y));
+
+            Color3f top_left, top_right, bottom_left, bottom_right;
             image.get_pixel(left_coord, top_coord, top_left);
+            image.get_pixel(right_coord, top_coord, top_right);
+            image.get_pixel(left_coord, bottom_coord, bottom_left);
+            image.get_pixel(right_coord, bottom_coord, bottom_right);
+
+            // Average pixel colors.
+            return 0.25f * (top_left + top_right + bottom_left + bottom_right);
+        }
+
+        //
+        // Sampling filter from Masaki Kawase's GDC2003 Presentation: "Frame Buffer Postprocessing Effects in DOUBLE-S.T.E.A.L (Wreckless)".
+        //
+
+        static Color3f kawase_sample(const Image& image, const std::size_t x, const std::size_t y, const std::size_t offset)
+        {
+            const float fx = static_cast<float>(x);
+            const float fy = static_cast<float>(y);
+            const float off = offset + 0.5f;
+
+            // Since each corner sample is an average of 4 values, 16 pixels are used in total.
+            Color3f top_left = corner_sample(image, fx - off, fy + off);
+            Color3f top_right = corner_sample(image, fx + off, fy + off);
+            Color3f bottom_left = corner_sample(image, fx - off, fy - off);
+            Color3f bottom_right = corner_sample(image, fx + off, fy - off);
 
             // Average sample colors.
-            return 0.25f * (top_right + top_left + bottom_right + bottom_left);
+            return 0.25f * (top_left + top_right + bottom_left + bottom_right);
         }
 
-        // Downsampling filter from Marius Bjørge's SIGGRAPH2015 Presentation: "Bandwidth-Efficient Rendering".
-        static Color3f dual_filter_downsample(const Image& image, const float frac_x, const float frac_y)
+        //
+        // Sampling filters from Marius Bjørge's SIGGRAPH2015 Presentation: "Bandwidth-Efficient Rendering".
+        //
+
+        static Color3f dual_filter_downsample(const Image& image, const float half_x, const float half_y)
         {
-            // Use 0 offset to emulate hardware bilinear filtering by sampling between the 4 pixels.
-            Color3f bottom_right = kawase_sample(image, frac_x + 1.0f, frac_y - 1.0f, 0);
-            Color3f bottom_left = kawase_sample(image, frac_x - 1.0f, frac_y - 1.0f, 0);
-            Color3f top_right = kawase_sample(image, frac_x + 1.0f, frac_y + 1.0f, 0);
-            Color3f top_left = kawase_sample(image, frac_x - 1.0f, frac_y + 1.0f, 0);
-            Color3f center = kawase_sample(image, frac_x, frac_y, 0);
+            Color3f center = corner_sample(image, half_x, half_y);
+            Color3f top_left = corner_sample(image, half_x - 1.0f, half_y + 1.0f);
+            Color3f top_right = corner_sample(image, half_x + 1.0f, half_y + 1.0f);
+            Color3f bottom_left = corner_sample(image, half_x - 1.0f, half_y - 1.0f);
+            Color3f bottom_right = corner_sample(image, half_x + 1.0f, half_y - 1.0f);
 
-            return (4.0f * center + (top_right + top_left + bottom_right + bottom_left)) / 8.0f;
+            return ((4.0f * center) + (top_left + top_right + bottom_left + bottom_right)) / 8.0f;
         }
 
-        // Upsampling filter from Marius Bjørge's SIGGRAPH2015 Presentation: "Bandwidth-Efficient Rendering".
         static Color3f dual_filter_upsample(const Image& image, const std::size_t x, const std::size_t y)
         {
             const float fx = static_cast<float>(x);
             const float fy = static_cast<float>(y);
+            const float max_x = image.properties().m_canvas_width - 1.0f;
+            const float max_y = image.properties().m_canvas_height - 1.0f;
 
             // Sample the edge-most pixel when the coordinate is outside the image (i.e. texture clamping).
-            const std::size_t bottom_coord = static_cast<std::size_t>(max(fy - 1.0f, 0.0f));
-            const std::size_t right_coord = static_cast<std::size_t>(min(fx + 1.0f, image.properties().m_canvas_width - 1.0f));
-            const std::size_t left_coord = static_cast<std::size_t>(max(fx - 1.0f, 0.0f));
-            const std::size_t top_coord = static_cast<std::size_t>(min(fy + 1.0f, image.properties().m_canvas_height - 1.0f));
+            const std::size_t top_coord = static_cast<std::size_t>(clamp(fy + 1.0f, 0.0f, max_y));
+            const std::size_t left_coord = static_cast<std::size_t>(clamp(fx - 1.0f, 0.0f, max_x));
+            const std::size_t right_coord = static_cast<std::size_t>(clamp(fx + 1.0f, 0.0f, max_x));
+            const std::size_t bottom_coord = static_cast<std::size_t>(clamp(fy - 1.0f, 0.0f, max_y));
 
-            Color3f bottom, right, left, top;
-            image.get_pixel(x, bottom_coord, bottom);
-            image.get_pixel(right_coord, y, right);
-            image.get_pixel(left_coord, y, left);
+            Color3f top, left, right, bottom;
             image.get_pixel(x, top_coord, top);
+            image.get_pixel(left_coord, y, left);
+            image.get_pixel(right_coord, y, right);
+            image.get_pixel(x, bottom_coord, bottom);
 
-            // Use 0 offset to emulate hardware bilinear filtering by sampling between the 4 pixels.
-            Color3f bottom_right = kawase_sample(image, fx + 0.5f, fy - 0.5f, 0);
-            Color3f bottom_left = kawase_sample(image, fx - 0.5f, fy - 0.5f, 0);
-            Color3f top_right = kawase_sample(image, fx + 0.5f, fy + 0.5f, 0);
-            Color3f top_left = kawase_sample(image, fx - 0.5f, fy + 0.5f, 0);
+            Color3f top_left = corner_sample(image, fx - 0.5f, fy + 0.5f);
+            Color3f top_right = corner_sample(image, fx + 0.5f, fy + 0.5f);
+            Color3f bottom_left = corner_sample(image, fx - 0.5f, fy - 0.5f);
+            Color3f bottom_right = corner_sample(image, fx + 0.5f, fy - 0.5f);
 
-            return ((bottom, right, left, top) + 2.0f * (top_right + top_left + bottom_right + bottom_left)) / 12.0f;
+            return ((top, left, right, bottom) + 2.0f * (top_left + top_right + bottom_left + bottom_right)) / 12.0f;
         }
 
         //
@@ -186,12 +211,7 @@ namespace
             {
                 for (std::size_t x = 0; x < src_props.m_canvas_width; ++x)
                 {
-                    // Since each kawase_sample is an average of 4 values, 16 pixels are used in total.
-                    const Color3f bottom_right = kawase_sample(src_image, x + 0.5f, y - 0.5f, offset);
-                    const Color3f bottom_left = kawase_sample(src_image, x - 0.5f, y - 0.5f, offset);
-                    const Color3f top_right = kawase_sample(src_image, x + 0.5f, y + 0.5f, offset);
-                    const Color3f top_left = kawase_sample(src_image, x - 0.5f, y + 0.5f, offset);
-                    Color3f result = 0.25f * (top_right + top_left + bottom_right + bottom_left);
+                    Color3f result = kawase_sample(src_image, x, y, offset);
 
                     if (additive_blend)
                     {
