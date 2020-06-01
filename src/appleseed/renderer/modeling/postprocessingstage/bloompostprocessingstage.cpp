@@ -59,8 +59,6 @@ namespace
 
     const char* Model = "bloom_post_processing_stage";
 
-    // TODO add default settings
-    static constexpr float DefaultScalingFactor = 2.0f;
     static constexpr std::size_t DefaultIterations = 5;
     static constexpr float DefaultIntensity = 0.5f;
     static constexpr float DefaultThreshold = 0.8f;
@@ -95,12 +93,14 @@ namespace
         {
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
-            // TODO add default settings
-            m_scaling_factor = m_params.get_optional("scaling_factor", DefaultScalingFactor, context);
             m_iterations = m_params.get_optional("iterations", DefaultIterations, context);
             m_intensity = m_params.get_optional("intensity", DefaultIntensity, context);
             m_threshold = m_params.get_optional("threshold", DefaultThreshold, context);
             m_soft_threshold = m_params.get_optional("soft_threshold", DefaultSoftThreshold, context);
+
+            m_fast_mode = m_params.get_optional("fast_mode", false, context);
+            m_downsample = m_params.get_optional("downsample", false, context);
+            m_debug_blur = m_params.get_optional("debug_blur", false, context);
 
             return true;
         }
@@ -296,9 +296,9 @@ namespace
                 props.m_canvas_height,
                 props.m_tile_width,
                 props.m_tile_height,
-                3,
+                3, // alpha is ignored
                 props.m_pixel_format);
-            // prefiltered_image.clear(Color3f(0.0f));
+            prefiltered_image.clear(Color3f(0.0f));
 
             const float eps = default_eps<float>(); // used to avoid divisions by zero
             const float knee = threshold * soft_threshold;
@@ -342,7 +342,9 @@ namespace
             assert(iteration_offset.size() <= m_iterations);
 
             // Copy the image to temporary render targets used for blurring.
-            Image bloom_blur_1 = bilinear_interpolation(prefiltered(image, m_threshold, m_soft_threshold), 1.0f / m_scaling_factor); // downsampling
+            Image bloom_blur_1 = bilinear_interpolation(
+                prefiltered(image, m_threshold, m_soft_threshold),
+                m_fast_mode ? 0.5f : 1.0f);
             Image bloom_blur_2 = Image(bloom_blur_1);
             Image& bloom_blur = m_iterations % 2 == 1 ? bloom_blur_2 : bloom_blur_1; // last blur target
 
@@ -355,9 +357,9 @@ namespace
                     kawase_blur(bloom_blur_2, bloom_blur_1, iteration_offset[i]);
             }
 
-            const Image bloom_target = bilinear_interpolation(bloom_blur, m_scaling_factor); // upsampling
+            const Image &bloom_target = m_fast_mode ? bilinear_interpolation(bloom_blur, 2.0f) : bloom_blur;
 
-            // Additively blend colors from the original and the blurred image to achieve bloom.
+            // Blend colors from the original and the blurred image to achieve bloom.
             for (std::size_t y = 0; y < props.m_canvas_height; ++y)
             {
                 for (std::size_t x = 0; x < props.m_canvas_width; ++x)
@@ -368,19 +370,23 @@ namespace
                     Color3f bloom_color;
                     bloom_target.get_pixel(x, y, bloom_color);
 
-                    color.rgb() += m_intensity * bloom_color; // additive blend (modulated by intensity)
+                    if (m_debug_blur)
+                        color.rgb() = bloom_color;
+                    else
+                        color.rgb() += m_intensity * bloom_color; // additive blend (weighted by intensity)
                     image.set_pixel(x, y, color);
                 }
             }
         }
 
       private:
-        // TODO add default settings
-        float m_scaling_factor;
-        std::size_t m_iterations;
-        float m_intensity;
-        float m_threshold;
-        float m_soft_threshold; // also called soft knee
+        std::size_t     m_iterations;
+        float           m_intensity;
+        float           m_threshold;
+        float           m_soft_threshold;
+        bool            m_fast_mode;
+        bool            m_downsample;
+        bool            m_debug_blur;
     };
 }
 
@@ -412,24 +418,6 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
     DictionaryArray metadata;
 
     add_common_input_metadata(metadata);
-
-    // TODO add default settings
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "scaling_factor")
-            .insert("label", "Scaling factor")
-            .insert("type", "numeric")
-            .insert("min",
-                    Dictionary()
-                        .insert("value", "1")
-                        .insert("type", "hard"))
-            .insert("max",
-                    Dictionary()
-                        .insert("value", "8")
-                        .insert("type", "hard"))
-            .insert("use", "optional")
-            .insert("default", "2"));
 
     metadata.push_back(
         Dictionary()
@@ -494,6 +482,32 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
                         .insert("type", "hard"))
             .insert("use", "optional")
             .insert("default", "0.5"));
+
+    // TODO remove:
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "fast_mode")
+            .insert("label", "Fast Mode")
+            .insert("type", "bool")
+            .insert("use", "optional")
+            .insert("default", "false"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "downsample")
+            .insert("label", "Downsample")
+            .insert("type", "bool")
+            .insert("use", "optional")
+            .insert("default", "false"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "debug_blur")
+            .insert("label", "Debug Blur")
+            .insert("type", "bool")
+            .insert("use", "optional")
+            .insert("default", "false"));
 
     return metadata;
 }
