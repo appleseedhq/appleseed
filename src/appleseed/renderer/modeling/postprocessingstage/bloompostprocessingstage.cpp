@@ -60,6 +60,7 @@ namespace
     const char* Model = "bloom_post_processing_stage";
 
     // TODO add default settings
+    static constexpr float DefaultScalingFactor = 2.0f;
     static constexpr std::size_t DefaultIterations = 5;
     static constexpr float DefaultIntensity = 0.5f;
     static constexpr float DefaultThreshold = 0.8f;
@@ -95,6 +96,7 @@ namespace
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
             // TODO add default settings
+            m_scaling_factor = m_params.get_optional("scaling_factor", DefaultScalingFactor, context);
             m_iterations = m_params.get_optional("iterations", DefaultIterations, context);
             m_intensity = m_params.get_optional("intensity", DefaultIntensity, context);
             m_threshold = m_params.get_optional("threshold", DefaultThreshold, context);
@@ -220,6 +222,11 @@ namespace
 
         static Image bilinear_interpolation(Image& image, const float scaling_factor)
         {
+            if (feq(scaling_factor, 1.0f))
+            {
+                return Image(image);
+            }
+
             const CanvasProperties& src_props = image.properties();
             assert(src_props.m_channel_count == 3);
 
@@ -335,11 +342,7 @@ namespace
             assert(iteration_offset.size() <= m_iterations);
 
             // Copy the image to temporary render targets used for blurring.
-#ifdef DOWNSAMPLE
-            Image bloom_blur_1 = prefiltered(image, m_threshold, m_soft_threshold);
-#else
-            Image bloom_blur_1 = bilinear_interpolation(prefiltered(image, m_threshold, m_soft_threshold), 0.5f); // 2x downsampling
-#endif
+            Image bloom_blur_1 = bilinear_interpolation(prefiltered(image, m_threshold, m_soft_threshold), 1.0f / m_scaling_factor); // downsampling
             Image bloom_blur_2 = Image(bloom_blur_1);
             Image& bloom_blur = m_iterations % 2 == 1 ? bloom_blur_2 : bloom_blur_1; // last blur target
 
@@ -352,11 +355,7 @@ namespace
                     kawase_blur(bloom_blur_2, bloom_blur_1, iteration_offset[i]);
             }
 
-#ifdef DOWNSAMPLE
-            const Image bloom_target = bilinear_interpolation(bloom_blur, 2.0f); // 2x upsampling
-#else
-            const Image& bloom_target = bloom_blur;
-#endif
+            const Image bloom_target = bilinear_interpolation(bloom_blur, m_scaling_factor); // upsampling
 
             // Additively blend colors from the original and the blurred image to achieve bloom.
             for (std::size_t y = 0; y < props.m_canvas_height; ++y)
@@ -377,6 +376,7 @@ namespace
 
       private:
         // TODO add default settings
+        float m_scaling_factor;
         std::size_t m_iterations;
         float m_intensity;
         float m_threshold;
@@ -414,6 +414,22 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
     add_common_input_metadata(metadata);
 
     // TODO add default settings
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "scaling_factor")
+            .insert("label", "Scaling factor")
+            .insert("type", "numeric")
+            .insert("min",
+                    Dictionary()
+                        .insert("value", "1")
+                        .insert("type", "hard"))
+            .insert("max",
+                    Dictionary()
+                        .insert("value", "8")
+                        .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "2"));
 
     metadata.push_back(
         Dictionary()
