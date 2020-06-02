@@ -360,11 +360,18 @@ namespace
             return prefiltered_image;
         }
 
-        void execute(Frame& frame, const std::size_t thread_count) const override
+        static void execute_kawase_bloom(
+            const CanvasProperties& props,
+            Image&              image,
+            // FIXME update names/params after testing
+            const std::size_t   m_iterations,
+            const float         m_intensity,
+            const float         m_threshold,
+            const float         m_soft_threshold,
+            const bool          m_fast_mode,
+            const bool          m_downsample,
+            const bool          m_debug_blur)
         {
-            const CanvasProperties& props = frame.image().properties();
-            Image& image = frame.image();
-
             // Set the offset values used for sampling in Kawase blur.
             const std::vector<std::size_t> iteration_offset = { 0, 1, 2, 2, 3 };
             assert(iteration_offset.size() <= m_iterations);
@@ -405,6 +412,23 @@ namespace
                     image.set_pixel(x, y, color);
                 }
             }
+        }
+
+        void execute(Frame& frame, const std::size_t thread_count) const override
+        {
+            const CanvasProperties& props = frame.image().properties();
+            Image& image = frame.image();
+
+            execute_kawase_bloom(
+                props,
+                image,
+                m_iterations,
+                m_intensity,
+                m_threshold,
+                m_soft_threshold,
+                m_fast_mode,
+                m_downsample,
+                m_debug_blur);
         }
 
       private:
