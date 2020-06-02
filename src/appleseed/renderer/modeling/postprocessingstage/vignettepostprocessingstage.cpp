@@ -30,23 +30,17 @@
 #include "vignettepostprocessingstage.h"
 
 // appleseed.renderer headers.
-#include "renderer/global/globallogger.h"
 #include "renderer/modeling/frame/frame.h"
-#include "renderer/modeling/postprocessingstage/postprocessingstage.h"
-#include "renderer/modeling/postprocessingstage/effect/postprocessingeffectjob.h"
+#include "renderer/modeling/postprocessingstage/multithreadedpostprocessingstage.h"
 #include "renderer/modeling/postprocessingstage/effect/vignettepostprocessingeffect.h"
 
 // appleseed.foundation headers.
 #include "foundation/containers/dictionary.h"
 #include "foundation/image/canvasproperties.h"
-#include "foundation/image/color.h"
 #include "foundation/image/image.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
-#include "foundation/utility/job/ijob.h"
-#include "foundation/utility/job/jobmanager.h"
-#include "foundation/utility/job/jobqueue.h"
 
 using namespace foundation;
 
@@ -66,13 +60,13 @@ namespace
     static constexpr float DefaultAnisotropy = 0.0f;
 
     class VignettePostProcessingStage
-      : public PostProcessingStage
+      : public MultithreadPostProcessingStage
     {
       public:
         VignettePostProcessingStage(
             const char*             name,
             const ParamArray&       params)
-          : PostProcessingStage(name, params)
+          : MultithreadPostProcessingStage(name, params)
         {
         }
 
@@ -120,26 +114,11 @@ namespace
             const VignetteApplierFactory effect_applier_factory(effect_params);
             const std::unique_ptr<const IImageEffectApplier> effect_applier(effect_applier_factory.create());
 
-            // Create effect applier jobs.
-            const ImageEffectJobFactory effect_job_factory;
-            const ImageEffectJobFactory::EffectJobVector effect_jobs =
-                effect_job_factory.create(
-                    frame,
-                    *effect_applier);
-
-            // Schedule effect applier jobs.
-            JobQueue job_queue;
-            for (ImageEffectJob* const effect_job : effect_jobs)
-                job_queue.schedule(effect_job);
-
-            // Create a job manager to wait until jobs have effectively stopped.
-            JobManager job_manager(
-                global_logger(),
-                job_queue,
+            // Apply the effect onto each image tile.
+            MultithreadPostProcessingStage::execute(
+                frame,
+                *effect_applier,
                 thread_count);
-
-            job_manager.start();
-            job_queue.wait_until_completion();
         }
 
       private:

@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2020 Tiago Chaves, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,13 +28,35 @@
 
 #pragma once
 
-// API headers.
-#include "renderer/modeling/postprocessingstage/colormappostprocessingstage.h"
-#include "renderer/modeling/postprocessingstage/ipostprocessingstagefactory.h"
-#include "renderer/modeling/postprocessingstage/multithreadedpostprocessingstage.h"
+// appleseed.renderer headers.
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
-#include "renderer/modeling/postprocessingstage/postprocessingstagecontainer.h"
-#include "renderer/modeling/postprocessingstage/postprocessingstagefactoryregistrar.h"
-#include "renderer/modeling/postprocessingstage/postprocessingstagetraits.h"
-#include "renderer/modeling/postprocessingstage/renderstamppostprocessingstage.h"
-#include "renderer/modeling/postprocessingstage/vignettepostprocessingstage.h"
+#include "renderer/modeling/postprocessingstage/effect/ipostprocessingeffect.h"
+
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
+// Forward declarations.
+namespace renderer  { class Frame; }
+namespace renderer  { class ParamArray; }
+
+namespace renderer
+{
+
+class APPLESEED_DLLSYMBOL MultithreadPostProcessingStage
+  : public PostProcessingStage
+{
+  public:
+    // Constructor.
+    MultithreadPostProcessingStage(
+        const char*             name,
+        const ParamArray&       params);
+
+    // Execute this post-processing stage on a given frame
+    // by scheduling a job for each tile to apply the image effect.
+    virtual void execute(
+        Frame&                          frame,
+        const IImageEffectApplier&      effect_applier,
+        const std::size_t               thread_count = 1) const;
+};
+
+}   // namespace renderer
