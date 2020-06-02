@@ -52,11 +52,9 @@ class ImageEffectJob
   : public foundation::IJob
 {
   public:
-    typedef std::vector<IImageEffectApplier*> EffectApplierVector;
-
     // Constructor.
     ImageEffectJob(
-        const EffectApplierVector&  effect_appliers,
+        const IImageEffectApplier&  effect_applier,
         const Frame&                frame,
         const std::size_t           tile_x,
         const std::size_t           tile_y);
@@ -65,7 +63,7 @@ class ImageEffectJob
     void execute(const std::size_t thread_index);
 
   private:
-    const EffectApplierVector&  m_effect_appliers;
+    const IImageEffectApplier&  m_effect_applier;
     const Frame&                m_frame;
     const std::size_t           m_tile_x;
     const std::size_t           m_tile_y;
@@ -83,8 +81,8 @@ class ImageEffectJobFactory
 
     // Create effect jobs for a given frame.
     EffectJobVector create(
-        const Frame&                                frame,
-        const ImageEffectJob::EffectApplierVector&  effect_appliers);
+        const Frame&                frame,
+        const IImageEffectApplier&  effect_applier) const;
 };
 
 }   // namespace renderer

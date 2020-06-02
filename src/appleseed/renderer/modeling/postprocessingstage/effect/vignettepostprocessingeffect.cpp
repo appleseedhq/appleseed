@@ -157,7 +157,7 @@ void VignetteApplierFactory::release()
     delete this;
 }
 
-IImageEffectApplier* VignetteApplierFactory::create()
+IImageEffectApplier* VignetteApplierFactory::create() const
 {
     return new VignetteApplier(m_intensity, m_resolution, m_vignette_resolution);
 }

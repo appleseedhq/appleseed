@@ -74,7 +74,7 @@ class VignetteApplierFactory
     void release() override;
 
     // Return a new effect applier instance.
-    IImageEffectApplier* create() override;
+    IImageEffectApplier* create() const override;
 
   private:
     const float                     m_intensity;

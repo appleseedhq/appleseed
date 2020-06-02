@@ -51,11 +51,11 @@ namespace renderer
 //
 
 ImageEffectJob::ImageEffectJob(
-    const EffectApplierVector&      effect_appliers,
+    const IImageEffectApplier&      effect_applier,
     const Frame&                    frame,
     const std::size_t               tile_x,
     const std::size_t               tile_y)
-  : m_effect_appliers(effect_appliers)
+  : m_effect_applier(effect_applier)
   , m_frame(frame)
   , m_tile_x(tile_x)
   , m_tile_y(tile_y)
@@ -64,10 +64,8 @@ ImageEffectJob::ImageEffectJob(
 
 void ImageEffectJob::execute(const std::size_t thread_index)
 {
-    assert(thread_index < m_effect_appliers.size());
-
     // Apply the post-processing effect to the tile.
-    m_effect_appliers[thread_index]->apply(
+    m_effect_applier.apply(
         m_frame,
         m_tile_x,
         m_tile_y);
@@ -79,8 +77,8 @@ void ImageEffectJob::execute(const std::size_t thread_index)
 //
 
 ImageEffectJobFactory::EffectJobVector ImageEffectJobFactory::create(
-    const Frame&                                frame,
-    const ImageEffectJob::EffectApplierVector&  effect_appliers)
+    const Frame&                    frame,
+    const IImageEffectApplier&      effect_applier) const
 {
     // Retrieve frame properties.
     const CanvasProperties& props = frame.image().properties();
@@ -107,7 +105,7 @@ ImageEffectJobFactory::EffectJobVector ImageEffectJobFactory::create(
         // Create the tile job.
         effect_jobs.push_back(
             new ImageEffectJob(
-                effect_appliers,
+                effect_applier,
                 frame,
                 tile_x,
                 tile_y));

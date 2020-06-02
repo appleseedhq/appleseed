@@ -109,27 +109,23 @@ namespace
             const CanvasProperties& props = frame.image().properties();
 
             // Initialize effect-specific settings and context.
-            VignetteParams effect_params {
+            const VignetteParams effect_params {
                 m_intensity,
                 m_anisotropy,
                 static_cast<float>(props.m_canvas_width),
                 static_cast<float>(props.m_canvas_height)
             };
 
-            // Instantiate effect appliers, one per rendering thread.
-            VignetteApplierFactory effect_applier_factory(effect_params);
-            ImageEffectJob::EffectApplierVector effect_appliers;
-
-            effect_appliers.reserve(thread_count);
-            for (std::size_t i = 0; i < thread_count; ++i)
-                effect_appliers.push_back(effect_applier_factory.create());
+            // Instantiate an effect applier.
+            const VignetteApplierFactory effect_applier_factory(effect_params);
+            const std::unique_ptr<const IImageEffectApplier> effect_applier(effect_applier_factory.create());
 
             // Create effect applier jobs.
-            ImageEffectJobFactory effect_job_factory;
-            ImageEffectJobFactory::EffectJobVector effect_jobs =
+            const ImageEffectJobFactory effect_job_factory;
+            const ImageEffectJobFactory::EffectJobVector effect_jobs =
                 effect_job_factory.create(
                     frame,
-                    effect_appliers);
+                    *effect_applier);
 
             // Schedule effect applier jobs.
             JobQueue job_queue;
