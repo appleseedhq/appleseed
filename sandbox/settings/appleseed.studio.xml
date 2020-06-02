@@ -10,6 +10,16 @@
         <parameter name="tile_ordering" value="spiral" />
     </parameters>
     <parameters name="ui">
+        <parameters name="file_dialog">
+            <parameters name="frames">
+                <parameter name="last_directory" value="D:\Pictures\Temp" />
+                <parameter name="selected_filter" value="PNG Files (*.png)" />
+            </parameters>
+            <parameters name="projects">
+                <parameter name="last_directory" value="D:\dev\Appleseed\appleseed\sandbox\tests\test scenes\bloom" />
+                <parameter name="selected_filter" value="Plain Project Files (*.appleseed)" />
+            </parameters>
+        </parameters>
         <parameters name="render_region">
             <parameter name="triggers_rendering" value="true" />
         </parameters>
