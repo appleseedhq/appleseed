@@ -194,39 +194,7 @@ namespace
         }
 
         //
-        // Image blurring.
-        //
-
-        static void kawase_blur(const Image& src_image, Image& dst_image, const std::size_t offset, const bool additive_blend = true)
-        {
-            const CanvasProperties& src_props = src_image.properties();
-            const CanvasProperties& dst_props = dst_image.properties();
-
-            assert(src_props.m_channel_count == 3);
-            assert(dst_props.m_channel_count == 3);
-            assert(src_props.m_canvas_width == dst_props.m_canvas_width);
-            assert(src_props.m_canvas_height == dst_props.m_canvas_height);
-
-            for (std::size_t y = 0; y < src_props.m_canvas_height; ++y)
-            {
-                for (std::size_t x = 0; x < src_props.m_canvas_width; ++x)
-                {
-                    Color3f result = kawase_sample(src_image, x, y, offset);
-
-                    if (additive_blend)
-                    {
-                        Color3f color;
-                        dst_image.get_pixel(x, y, color);
-                        result += color;
-                    }
-
-                    dst_image.set_pixel(x, y, result);
-                }
-            }
-        }
-
-        //
-        // Image up/down sampling through bilinear interpolation.
+        // Image up/down sampling with bilinear filtering.
         //
 
         static inline CanvasProperties scaled_canvas(const CanvasProperties& props, const float scaling_factor)
@@ -262,14 +230,14 @@ namespace
             const float wx0 = 1.0f - wx1;
             const float wy0 = 1.0f - wy1;
 
-            // Store the weighted sum.
+            // Return the weighted sum.
             const Color3f result =
                 c00 * wx0 * wy0 +
                 c10 * wx1 * wy0 +
                 c01 * wx0 * wy1 +
                 c11 * wx1 * wy1;
 
-            return result; // bilinear interpolation
+            return result;
         }
 
         static Image bilinear_filtered(const Image& image, const float scaling_factor)
@@ -301,7 +269,7 @@ namespace
                     const std::size_t x1 = std::min<std::size_t>(x0 + 1, src_width - 1);
                     const std::size_t y1 = std::min<std::size_t>(y0 + 1, src_height - 1);
 
-                    const Color3f result = blerp(image, x0, y0, x1, y1, fx, fy);
+                    const Color3f result = blerp(image, x0, y0, x1, y1, fx, fy); // bilinear interpolation
 
                     scaled_image.set_pixel(x, y, result);
                 }
@@ -360,7 +328,94 @@ namespace
             return prefiltered_image;
         }
 
+        //
+        // Kawase bloom.
+        //
+
+        static void kawase_blur(const Image& src_image, Image& dst_image, const std::size_t offset)
+        {
+            const CanvasProperties& src_props = src_image.properties();
+            const CanvasProperties& dst_props = dst_image.properties();
+
+            assert(src_props.m_channel_count == 3);
+            assert(dst_props.m_channel_count == 3);
+            assert(src_props.m_canvas_width == dst_props.m_canvas_width);
+            assert(src_props.m_canvas_height == dst_props.m_canvas_height);
+
+            for (std::size_t y = 0; y < src_props.m_canvas_height; ++y)
+            {
+                for (std::size_t x = 0; x < src_props.m_canvas_width; ++x)
+                {
+                    Color3f result = kawase_sample(src_image, x, y, offset);
+
+                    Color3f color;
+                    dst_image.get_pixel(x, y, color);
+                    result += color; // additive blend
+
+                    dst_image.set_pixel(x, y, result);
+                }
+            }
+        }
+
         static void execute_kawase_bloom(
+            const CanvasProperties& props,
+            Image&              image,
+            // FIXME update names/params after testing
+            const std::size_t   m_iterations,
+            const float         m_intensity,
+            const float         m_threshold,
+            const float         m_soft_threshold,
+            const bool          m_fast_mode,
+            const bool          m_downsample,
+            const bool          m_debug_blur)
+        {
+            // Set the offset values used for sampling in Kawase blur.
+            const std::vector<std::size_t> iteration_offset = { 0, 1, 2, 2, 3 };
+            assert(iteration_offset.size() <= m_iterations);
+
+            // Copy the image to temporary render targets used for blurring.
+            Image bloom_blur_1 = bilinear_filtered(
+                prefiltered(image, m_threshold, m_soft_threshold),
+                m_fast_mode ? 0.5f : 1.0f);
+            Image bloom_blur_2 = Image(bloom_blur_1);
+            Image& bloom_blur = m_iterations % 2 == 1 ? bloom_blur_2 : bloom_blur_1; // last blur target
+
+            // Iteratively blur the image, "ping-ponging" between two temporaries.
+            for (std::size_t i = 0; i < m_iterations; ++i)
+            {
+                if (i % 2 == 0)
+                    kawase_blur(bloom_blur_1, bloom_blur_2, iteration_offset[i]);
+                else
+                    kawase_blur(bloom_blur_2, bloom_blur_1, iteration_offset[i]);
+            }
+
+            // Blend colors from the original and the blurred image to achieve bloom.
+            const Image &bloom_target = m_fast_mode ? bilinear_filtered(bloom_blur, 2.0f) : bloom_blur;
+
+            for (std::size_t y = 0; y < props.m_canvas_height; ++y)
+            {
+                for (std::size_t x = 0; x < props.m_canvas_width; ++x)
+                {
+                    Color4f color;
+                    image.get_pixel(x, y, color);
+
+                    Color3f bloom_color;
+                    bloom_target.get_pixel(x, y, bloom_color);
+
+                    if (m_debug_blur)
+                        color.rgb() = bloom_color;
+                    else
+                        color.rgb() += m_intensity * bloom_color; // additive blend (weighted by intensity)
+                    image.set_pixel(x, y, color);
+                }
+            }
+        }
+
+        //
+        // Kino bloom.
+        //
+
+        static void execute_kino_bloom(
             const CanvasProperties& props,
             Image&              image,
             // FIXME update names/params after testing
@@ -419,16 +474,28 @@ namespace
             const CanvasProperties& props = frame.image().properties();
             Image& image = frame.image();
 
-            execute_kawase_bloom(
-                props,
-                image,
-                m_iterations,
-                m_intensity,
-                m_threshold,
-                m_soft_threshold,
-                m_fast_mode,
-                m_downsample,
-                m_debug_blur);
+            if (m_downsample)
+                execute_kino_bloom(
+                    props,
+                    image,
+                    m_iterations,
+                    m_intensity,
+                    m_threshold,
+                    m_soft_threshold,
+                    m_fast_mode,
+                    m_downsample,
+                    m_debug_blur);
+            else
+                execute_kawase_bloom(
+                    props,
+                    image,
+                    m_iterations,
+                    m_intensity,
+                    m_threshold,
+                    m_soft_threshold,
+                    m_fast_mode,
+                    m_downsample,
+                    m_debug_blur);
         }
 
       private:
