@@ -31,7 +31,7 @@
 // API headers.
 #include "renderer/modeling/postprocessingstage/colormappostprocessingstage.h"
 #include "renderer/modeling/postprocessingstage/ipostprocessingstagefactory.h"
-#include "renderer/modeling/postprocessingstage/multithreadedpostprocessingstage.h"
+#include "renderer/modeling/postprocessingstage/multithreadpostprocessingstage.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstagecontainer.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstagefactoryregistrar.h"

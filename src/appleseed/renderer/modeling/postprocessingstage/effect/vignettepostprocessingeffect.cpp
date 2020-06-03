@@ -39,6 +39,9 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 
+// Standard headers.
+#include <cstddef>
+
 using namespace foundation;
 
 namespace renderer

@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "multithreadedpostprocessingstage.h"
+#include "multithreadpostprocessingstage.h"
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"

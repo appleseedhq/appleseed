@@ -31,7 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/frame/frame.h"
-#include "renderer/modeling/postprocessingstage/multithreadedpostprocessingstage.h"
+#include "renderer/modeling/postprocessingstage/multithreadpostprocessingstage.h"
 #include "renderer/modeling/postprocessingstage/effect/vignettepostprocessingeffect.h"
 
 // appleseed.foundation headers.

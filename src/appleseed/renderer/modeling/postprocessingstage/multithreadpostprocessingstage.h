@@ -32,9 +32,6 @@
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
 #include "renderer/modeling/postprocessingstage/effect/ipostprocessingeffect.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
 // Forward declarations.
 namespace renderer  { class Frame; }
 namespace renderer  { class ParamArray; }
@@ -42,7 +39,7 @@ namespace renderer  { class ParamArray; }
 namespace renderer
 {
 
-class APPLESEED_DLLSYMBOL MultithreadPostProcessingStage
+class MultithreadPostProcessingStage
   : public PostProcessingStage
 {
   public:

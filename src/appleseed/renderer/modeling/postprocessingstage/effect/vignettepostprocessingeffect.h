@@ -34,9 +34,6 @@
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
 
-// Standard headers.
-#include <cstddef>
-
 // Forward declarations.
 namespace renderer  { class Frame; }
 
