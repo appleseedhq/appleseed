@@ -478,41 +478,26 @@ namespace
                 level_height = std::max(level_height / 2, MinSize);
             }
 
-            // FIXME store the last down buffer in a more C++-ish way
-            Image* last_buffer_ptr = &prefiltered_image;
-
             // Downsample.
-            for (std::size_t i = 0; i < iterations; ++i)
+            // blur_pyramid_down[0] = downsample of prefiltered_image
+            for (std::size_t level = 1; level < iterations; ++level)
             {
-                const Image& last_buffer = *last_buffer_ptr;
-                const CanvasProperties& props = last_buffer.properties();
-
-                // Halve the size of each dimension from the previous buffer.
-                // TODO don't downsample too much (e.g. reaching 2x2 images will give terrible results)
-                const float scaling_factor =
-                    std::min(props.m_canvas_width, props.m_canvas_height) <= 4 ? 1.0f : 0.5f;
-
-                blur_pyramid_down.push_back(
-                    bilinear_filtered(last_buffer, scaling_factor));
-
-                blur_pyramid_up.push_back(
-                    Image(scaled_canvas(last_buffer.properties(), scaling_factor)));
-
-                last_buffer_ptr = &blur_pyramid_down[i];
+                // blur_pyramid_down[level] = downsample of blur_pyramid_down[level - 1]
             }
 
             // Upsample and blend.
             if (iterations > 1)
             {
-                for (std::size_t i = iterations - 2; i >= 0; --i)
+                // blur_pyramid_up[iterations - 1] = blur_pyramid_down[iterations - 1]
+                for (std::size_t level = iterations - 2; level >= 0; --level)
                 {
-                    Image& base_buffer = blur_pyramid_down[i];
-
-                    // TODO upsample base_buffer into blur_pyramid_up[i] and blend
+                    // blur_pyramid_up[level] = upsample of blur_pyramid_(?)[level + 1]
+                    // blur_pyramid_up[level] += blur_pyramid_down[level] (blend colors)
                 }
             }
 
             // Resolve pass.
+            // additive blend colors of image and blur_pyramid_up[0]
         }
 
         //
