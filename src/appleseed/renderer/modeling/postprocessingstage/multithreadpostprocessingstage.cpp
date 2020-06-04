@@ -57,7 +57,7 @@ MultithreadPostProcessingStage::MultithreadPostProcessingStage(
 {
 }
 
-void MultithreadPostProcessingStage::execute(
+void MultithreadPostProcessingStage::execute_on_tiles(
     Frame&                          frame,
     const IImageEffectApplier&      effect_applier,
     const std::size_t               thread_count) const

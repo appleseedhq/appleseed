@@ -119,7 +119,7 @@ namespace
             const std::unique_ptr<const IImageEffectApplier> effect_applier(effect_applier_factory.create());
 
             // Apply the effect onto each image tile.
-            MultithreadPostProcessingStage::execute(
+            MultithreadPostProcessingStage::execute_on_tiles(
                 frame,
                 *effect_applier,
                 thread_count);

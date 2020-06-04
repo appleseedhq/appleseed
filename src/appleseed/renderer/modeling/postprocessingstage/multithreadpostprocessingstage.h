@@ -43,8 +43,6 @@ class MultithreadPostProcessingStage
   : public PostProcessingStage
 {
   public:
-    using PostProcessingStage::execute; // avoid -Woverloaded-virtual
-
     // Constructor.
     MultithreadPostProcessingStage(
         const char*             name,
@@ -52,7 +50,7 @@ class MultithreadPostProcessingStage
 
     // Execute this post-processing stage on a given frame
     // by scheduling a job for each tile to apply the image effect.
-    virtual void execute(
+    virtual void execute_on_tiles(
         Frame&                          frame,
         const IImageEffectApplier&      effect_applier,
         const std::size_t               thread_count = 1) const;
