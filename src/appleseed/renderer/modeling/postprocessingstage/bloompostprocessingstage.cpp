@@ -45,6 +45,8 @@
 
 // Standard headers.
 #include <cstddef>
+#include <memory>
+#include <vector>
 
 using namespace foundation;
 
@@ -244,17 +246,6 @@ namespace
         // Image up/down sampling with bilinear filtering.
         //
 
-        static inline CanvasProperties scaled_canvas(const CanvasProperties& props, const float scaling_factor)
-        {
-            return CanvasProperties(
-                static_cast<std::size_t>(scaling_factor * static_cast<float>(props.m_canvas_width)),
-                static_cast<std::size_t>(scaling_factor * static_cast<float>(props.m_canvas_height)),
-                static_cast<std::size_t>(scaling_factor * static_cast<float>(props.m_tile_width)),
-                static_cast<std::size_t>(scaling_factor * static_cast<float>(props.m_tile_height)),
-                props.m_channel_count,
-                props.m_pixel_format);
-        }
-
         static Color3f blerp(
             const Image&        image,
             const std::size_t   x0,
@@ -287,21 +278,18 @@ namespace
             return result;
         }
 
-        static Image bilinear_filtered(const Image& image, const float scaling_factor)
+        static void bilinear_filter_in_place(const Image& src_image, Image& dst_image)
         {
-            if (feq(scaling_factor, 1.0f))
-                return Image(image);
-
-            const CanvasProperties& src_props = image.properties();
-            assert(src_props.m_channel_count == 3);
-
-            Image scaled_image(scaled_canvas(src_props, scaling_factor));
-            const CanvasProperties& dst_props = scaled_image.properties();
+            const CanvasProperties& src_props = src_image.properties();
+            const CanvasProperties& dst_props = dst_image.properties();
 
             const std::size_t src_width = src_props.m_canvas_width;
-            const std::size_t dst_width = dst_props.m_canvas_width; // src_width * scaling_factor
+            const std::size_t dst_width = dst_props.m_canvas_width;
             const std::size_t src_height = src_props.m_canvas_height;
-            const std::size_t dst_height = dst_props.m_canvas_height; // src_height * scaling_factor
+            const std::size_t dst_height = dst_props.m_canvas_height;
+
+            assert(src_props.m_channel_count == 3);
+            assert(dst_props.m_channel_count == 3);
 
             // Perform bilinear interpolation for up/down sampling.
             for (std::size_t y = 0; y < dst_height; ++y)
@@ -316,11 +304,30 @@ namespace
                     const std::size_t x1 = std::min<std::size_t>(x0 + 1, src_width - 1);
                     const std::size_t y1 = std::min<std::size_t>(y0 + 1, src_height - 1);
 
-                    const Color3f result = blerp(image, x0, y0, x1, y1, fx, fy); // bilinear interpolation
+                    const Color3f result = blerp(src_image, x0, y0, x1, y1, fx, fy); // bilinear interpolation
 
-                    scaled_image.set_pixel(x, y, result);
+                    dst_image.set_pixel(x, y, result);
                 }
             }
+        }
+
+        static Image bilinear_filtered(const Image& image, const float scaling_factor)
+        {
+            if (feq(scaling_factor, 1.0f))
+                return Image(image);
+
+            const CanvasProperties& props = image.properties();
+
+            CanvasProperties scaled_props(
+                static_cast<std::size_t>(scaling_factor * props.m_canvas_width),
+                static_cast<std::size_t>(scaling_factor * props.m_canvas_height),
+                static_cast<std::size_t>(scaling_factor * props.m_tile_width),
+                static_cast<std::size_t>(scaling_factor * props.m_tile_height),
+                props.m_channel_count,
+                props.m_pixel_format);
+
+            Image scaled_image(scaled_props);
+            bilinear_filter_in_place(image, scaled_image);
 
             return scaled_image;
         }
@@ -476,73 +483,114 @@ namespace
             const bool          m_downsample,
             const bool          m_debug_blur)
         {
+            const std::size_t MaxIterations = 16;
+            const std::size_t MinBufferSize = 8;
+
             // Prefilter pass.
             Image prefiltered_image = prefiltered(image, m_threshold, m_soft_threshold);
 
             // Determine the iteration count.
-            const std::size_t MaxIterations = 16;
-
             const std::size_t width = m_fast_mode ? props.m_canvas_width / 2 : props.m_canvas_width;
             const std::size_t height = m_fast_mode ? props.m_canvas_height / 2 : props.m_canvas_height;
             const std::size_t min_dimension = std::min(width, height);
 
             const float max_iterations_float = std::log2(static_cast<float>(min_dimension)); // + m_radius - 8.0f
-            const std::size_t max_iterations = log2_int<std::size_t>(min_dimension); // static_cast<int>(max_iterations_float)
-            // const float sample_scale = 0.5f + max_iterations_float - max_iterations;
+            const std::size_t max_iterations = static_cast<int>(max_iterations_float);
+            const float sample_scale = 0.5f + max_iterations_float - max_iterations;
 
             const std::size_t iterations = clamp<std::size_t>(max_iterations, 1, MaxIterations);
 
             // Create blur buffer pyramids.
-            std::vector<Image> blur_pyramid_down;
-            blur_pyramid_down.reserve(iterations);
+            std::vector<Image*> blur_pyramid_down;
+            std::vector<Image*> blur_pyramid_up;
 
-            std::vector<Image> blur_pyramid_up;
+            blur_pyramid_down.reserve(iterations);
             blur_pyramid_up.reserve(iterations);
 
-            const std::size_t MinSize = 8; // TODO test different values
-            size_t level_width = width;
-            size_t level_height = height;
-
-            for (std::size_t level = 0; level < iterations; ++level)
+            for (std::size_t level = 0, level_width = width, level_height = height
+                ; level < iterations
+                ; ++level)
             {
                 const CanvasProperties level_props(
-                    level_width,
-                    level_height,
-                    level_width, // FIXME tile_width
-                    level_height, // FIXME tile_height
+                    level_width, level_height,
+                    level_width, level_height,
                     props.m_channel_count,
                     props.m_pixel_format);
 
-                // TODO allocate on heap and delete before exiting, i.e.:
-                //      use std::vector<Image*> and new Image(level_props)
-                blur_pyramid_down.push_back(Image(level_props));
-                blur_pyramid_up.push_back(Image(level_props));
+                blur_pyramid_down.push_back(new Image(level_props));
+                blur_pyramid_up.push_back(new Image(level_props));
 
                 // Halve dimensions for the next buffer level.
-                level_width = std::max(level_width / 2, MinSize);
-                level_height = std::max(level_height / 2, MinSize);
+                if (level_width >= 2 * MinBufferSize && level_height >= 2 * MinBufferSize)
+                {
+                    level_width /= 2;
+                    level_height /= 2;
+                }
             }
 
             // Downsample.
-            // blur_pyramid_down[0] = downsample of prefiltered_image
+            bilinear_filter_in_place(image, *blur_pyramid_down[0]);
             for (std::size_t level = 1; level < iterations; ++level)
             {
-                // blur_pyramid_down[level] = downsample of blur_pyramid_down[level - 1]
+                bilinear_filter_in_place(
+                    *blur_pyramid_down[level - 1], *blur_pyramid_down[level]);
             }
 
             // Upsample and blend.
+            blur_pyramid_up[iterations - 1]->copy_from(*blur_pyramid_down[iterations - 1]);
             if (iterations > 1)
             {
-                // blur_pyramid_up[iterations - 1] = blur_pyramid_down[iterations - 1]
                 for (std::size_t level = iterations - 2; level >= 0; --level)
                 {
-                    // blur_pyramid_up[level] = upsample of blur_pyramid_(?)[level + 1]
-                    // blur_pyramid_up[level] += blur_pyramid_down[level] (blend colors)
+                    bilinear_filter_in_place(
+                        *blur_pyramid_up[level + 1], *blur_pyramid_up[level]);
+
+                    // TODO extract this into a separate function
+                    const CanvasProperties& props = blur_pyramid_up[level]->properties();
+                    for (std::size_t y = 0; y < props.m_canvas_height; ++y)
+                    {
+                        for (std::size_t x = 0; x < props.m_canvas_width; ++x)
+                        {
+                            Color3f result;
+                            blur_pyramid_up[level]->get_pixel(x, y, result);
+
+                            Color3f color;
+                            blur_pyramid_down[level]->get_pixel(x, y, color);
+                            result += color; // additive blend
+
+                            blur_pyramid_up[level]->set_pixel(x, y, result);
+                        }
+                    }
                 }
             }
 
             // Resolve pass.
-            // additive blend colors of image and blur_pyramid_up[0]
+            Image bloom_target(props);
+            bilinear_filter_in_place(*blur_pyramid_up[0], bloom_target);
+
+            for (std::size_t y = 0; y < props.m_canvas_height; ++y)
+            {
+                for (std::size_t x = 0; x < props.m_canvas_width; ++x)
+                {
+                    Color4f color;
+                    image.get_pixel(x, y, color);
+
+                    Color3f bloom_color;
+                    bloom_target.get_pixel(x, y, bloom_color);
+
+                    color.rgb() += m_intensity * bloom_color; // additive blend (weighted by intensity)
+                    image.set_pixel(x, y, color);
+                }
+            }
+
+            // Clear temporary buffer pyramids.
+            for (std::size_t level = 0; level < iterations; ++level)
+            {
+                delete blur_pyramid_down[level];
+                delete blur_pyramid_up[level];
+            }
+            blur_pyramid_down.clear();
+            blur_pyramid_up.clear();
         }
 
         //
