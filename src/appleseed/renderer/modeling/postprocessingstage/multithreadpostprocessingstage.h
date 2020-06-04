@@ -43,6 +43,8 @@ class MultithreadPostProcessingStage
   : public PostProcessingStage
 {
   public:
+    using PostProcessingStage::execute; // avoid -Woverloaded-virtual
+
     // Constructor.
     MultithreadPostProcessingStage(
         const char*             name,

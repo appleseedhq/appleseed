@@ -42,6 +42,10 @@
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 
+// Standard headers.
+#include <cstddef>
+#include <memory>
+
 using namespace foundation;
 
 namespace renderer
