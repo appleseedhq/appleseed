@@ -65,7 +65,7 @@ namespace
     static constexpr float DefaultIntensity = 0.5f;
     static constexpr float DefaultThreshold = 0.8f;
     static constexpr float DefaultSoftThreshold = 0.5f;
-    static constexpr float DefaultRadius = 2.5f;
+    static constexpr float DefaultRadius = 3.0f;
 
     class BloomPostProcessingStage
       : public PostProcessingStage
@@ -492,17 +492,18 @@ namespace
             // Determine the iteration count.
             const std::size_t width = m_fast_mode ? props.m_canvas_width / 2 : props.m_canvas_width;
             const std::size_t height = m_fast_mode ? props.m_canvas_height / 2 : props.m_canvas_height;
-            const std::size_t min_dimension = std::min(width, height);
 
-            const float max_iterations_float = std::log2(static_cast<float>(min_dimension)); // + m_radius - 8.0f
-            const std::size_t max_iterations = static_cast<int>(max_iterations_float);
-            const float sample_scale = 0.5f + max_iterations_float - max_iterations;
+            const float max_iterations =
+                std::log2(static_cast<float>(std::min(width, height)))
+                + max(0.0f, m_radius - 8.0f); // adjusts the minimum size a buffer can have (e.g. 0.0f = 2x2 buffer)
 
-            const std::size_t iterations = clamp<std::size_t>(max_iterations, 1, MaxIterations);
+            const std::size_t iterations = clamp<std::size_t>(static_cast<int>(max_iterations), 1, MaxIterations);
+
+            // const float sample_scale = 0.5f + max_iterations - static_cast<int>(max_iterations);
 
             // Create blur buffer pyramids.
-            std::vector<Image*> blur_pyramid_down;
-            std::vector<Image*> blur_pyramid_up;
+            std::vector<Image> blur_pyramid_down;
+            std::vector<Image> blur_pyramid_up;
 
             blur_pyramid_down.reserve(iterations);
             blur_pyramid_up.reserve(iterations);
@@ -514,14 +515,14 @@ namespace
                 const CanvasProperties level_props(
                     level_width, level_height,
                     level_width, level_height,
-                    props.m_channel_count,
+                    3, // alpha is ignored
                     props.m_pixel_format);
 
-                blur_pyramid_down.push_back(new Image(level_props));
-                blur_pyramid_up.push_back(new Image(level_props));
+                blur_pyramid_down.push_back(Image(level_props));
+                blur_pyramid_up.push_back(Image(level_props));
 
                 // Halve dimensions for the next buffer level.
-                if (level_width >= 2 * MinBufferSize && level_height >= 2 * MinBufferSize)
+                if (level_width >= 4 && level_height >= 4)
                 {
                     level_width /= 2;
                     level_height /= 2;
@@ -529,44 +530,42 @@ namespace
             }
 
             // Downsample.
-            bilinear_filter_in_place(image, *blur_pyramid_down[0]);
+            bilinear_filter_in_place(prefiltered_image, blur_pyramid_down[0]);
             for (std::size_t level = 1; level < iterations; ++level)
-            {
-                bilinear_filter_in_place(
-                    *blur_pyramid_down[level - 1], *blur_pyramid_down[level]);
-            }
+                bilinear_filter_in_place(blur_pyramid_down[level - 1], blur_pyramid_down[level]);
 
             // Upsample and blend.
-            blur_pyramid_up[iterations - 1]->copy_from(*blur_pyramid_down[iterations - 1]);
+            blur_pyramid_up[iterations - 1].copy_from(blur_pyramid_down[iterations - 1]);
             if (iterations > 1)
             {
                 for (std::size_t level = iterations - 2; level >= 0; --level)
                 {
-                    bilinear_filter_in_place(
-                        *blur_pyramid_up[level + 1], *blur_pyramid_up[level]);
+                    bilinear_filter_in_place(blur_pyramid_up[level + 1], blur_pyramid_up[level]);
 
-                    // TODO extract this into a separate function
-                    const CanvasProperties& props = blur_pyramid_up[level]->properties();
-                    for (std::size_t y = 0; y < props.m_canvas_height; ++y)
+                    const CanvasProperties& level_props = blur_pyramid_up[level].properties();
+                    const std::size_t level_width = level_props.m_canvas_width;
+                    const std::size_t level_height = level_props.m_canvas_height;
+
+                    for (std::size_t y = 0; y < level_height; ++y)
                     {
-                        for (std::size_t x = 0; x < props.m_canvas_width; ++x)
+                        for (std::size_t x = 0; x < level_width; ++x)
                         {
-                            Color3f result;
-                            blur_pyramid_up[level]->get_pixel(x, y, result);
+                            Color3f color_up;
+                            blur_pyramid_up[level].get_pixel(x, y, color_up);
 
-                            Color3f color;
-                            blur_pyramid_down[level]->get_pixel(x, y, color);
-                            result += color; // additive blend
+                            Color3f color_down;
+                            blur_pyramid_down[level].get_pixel(x, y, color_down);
 
-                            blur_pyramid_up[level]->set_pixel(x, y, result);
+                            color_up += color_down; // additive blend
+                            blur_pyramid_up[level].set_pixel(x, y, color_up);
                         }
                     }
                 }
             }
 
             // Resolve pass.
-            Image bloom_target(props);
-            bilinear_filter_in_place(*blur_pyramid_up[0], bloom_target);
+            Image bloom_target(prefiltered_image.properties());
+            bilinear_filter_in_place(blur_pyramid_up[0], bloom_target);
 
             for (std::size_t y = 0; y < props.m_canvas_height; ++y)
             {
@@ -582,15 +581,6 @@ namespace
                     image.set_pixel(x, y, color);
                 }
             }
-
-            // Clear temporary buffer pyramids.
-            for (std::size_t level = 0; level < iterations; ++level)
-            {
-                delete blur_pyramid_down[level];
-                delete blur_pyramid_up[level];
-            }
-            blur_pyramid_down.clear();
-            blur_pyramid_up.clear();
         }
 
         //
@@ -752,7 +742,7 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
                         .insert("value", "10.0")
                         .insert("type", "hard"))
             .insert("use", "optional")
-            .insert("default", "2.5"));
+            .insert("default", "3.0"));
 
     // TODO remove:
 
