@@ -133,6 +133,51 @@ namespace
             return 0.25f * (top_left + top_right + bottom_left + bottom_right);
         }
 
+        // 4x4-box bilinear downsampler.
+        static inline Color3f box_downsample(const Image& image, const std::size_t x, const std::size_t y)
+        {
+            const float max_x = image.properties().m_canvas_width - 1.0f;
+            const float max_y = image.properties().m_canvas_height - 1.0f;
+
+            // Sample the edge-most pixel when the coordinate is outside the image (i.e. texture clamping).
+            const std::size_t top_coord = static_cast<std::size_t>(clamp(y + 1.0f, 0.0f, max_y));
+            const std::size_t left_coord = static_cast<std::size_t>(clamp(x - 1.0f, 0.0f, max_x));
+            const std::size_t right_coord = static_cast<std::size_t>(clamp(x + 1.0f, 0.0f, max_x));
+            const std::size_t bottom_coord = static_cast<std::size_t>(clamp(y - 1.0f, 0.0f, max_y));
+
+            Color3f top_left, top_right, bottom_left, bottom_right;
+            image.get_pixel(left_coord, top_coord, top_left);
+            image.get_pixel(right_coord, top_coord, top_right);
+            image.get_pixel(left_coord, bottom_coord, bottom_left);
+            image.get_pixel(right_coord, bottom_coord, bottom_right);
+
+            // Average pixel colors.
+            return 0.25f * (top_left + top_right + bottom_left + bottom_right);
+        }
+
+        // 4x4-box bilinear upsampler.
+        static Color3f box_upsample(const Image& image, const std::size_t x, const std::size_t y, const float sample_scale)
+        {
+            const float max_x = image.properties().m_canvas_width - 1.0f;
+            const float max_y = image.properties().m_canvas_height - 1.0f;
+            const float off = 0.5f * sample_scale;
+
+            // Sample the edge-most pixel when the coordinate is outside the image (i.e. texture clamping).
+            const std::size_t top_coord = static_cast<std::size_t>(clamp(y + off, 0.0f, max_y));
+            const std::size_t left_coord = static_cast<std::size_t>(clamp(x - off, 0.0f, max_x));
+            const std::size_t right_coord = static_cast<std::size_t>(clamp(x + off, 0.0f, max_x));
+            const std::size_t bottom_coord = static_cast<std::size_t>(clamp(y - off, 0.0f, max_y));
+
+            Color3f top_left, top_right, bottom_left, bottom_right;
+            image.get_pixel(left_coord, top_coord, top_left);
+            image.get_pixel(right_coord, top_coord, top_right);
+            image.get_pixel(left_coord, bottom_coord, bottom_left);
+            image.get_pixel(right_coord, bottom_coord, bottom_right);
+
+            // Average pixel colors.
+            return 0.25f * (top_left + top_right + bottom_left + bottom_right);
+        }
+
         //
         // Sampling filter from Masaki Kawase's GDC2003 Presentation: "Frame Buffer Postprocessing Effects in DOUBLE-S.T.E.A.L (Wreckless)".
         //
