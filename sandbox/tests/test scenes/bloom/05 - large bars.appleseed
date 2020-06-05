@@ -20,8 +20,8 @@
             <parameter name="shutter_open_end_time" value="0" />
             <transform time="0">
                 <matrix>
-                    1.00000000000000000 0.00000000000000000 0.00000000000000000 1.25000000000000000
-                    0.00000000000000000 0.00000000000000006 1.00000000000000000 11.00000000000000000
+                    1.00000000000000000 0.00000000000000000 0.00000000000000000 2.00000000000000000
+                    0.00000000000000000 0.00000000000000006 1.00000000000000000 8.00000000000000000
                     0.00000000000000000 -1.00000000000000000 0.00000000000000006 0.00000000000000067
                     0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
                 </matrix>
@@ -100,28 +100,10 @@
             <object name="Plane.001_obj" model="mesh_object">
                 <parameter name="filename" value="_geometry/8ced3720fa574cde9f4db51e0ea6039f.binarymesh" />
             </object>
-            <object name="Plane.002_obj" model="mesh_object">
-                <parameter name="filename" value="_geometry/8ced3720fa574cde9f4db51e0ea6039f.binarymesh" />
-            </object>
-            <object name="Plane.003_obj" model="mesh_object">
-                <parameter name="filename" value="_geometry/8ced3720fa574cde9f4db51e0ea6039f.binarymesh" />
-            </object>
             <object name="Plane.004_obj" model="mesh_object">
                 <parameter name="filename" value="_geometry/8ced3720fa574cde9f4db51e0ea6039f.binarymesh" />
             </object>
             <object name="Plane.005_obj" model="mesh_object">
-                <parameter name="filename" value="_geometry/8ced3720fa574cde9f4db51e0ea6039f.binarymesh" />
-            </object>
-            <object name="Plane.006_obj" model="mesh_object">
-                <parameter name="filename" value="_geometry/8ced3720fa574cde9f4db51e0ea6039f.binarymesh" />
-            </object>
-            <object name="Plane.007_obj" model="mesh_object">
-                <parameter name="filename" value="_geometry/8ced3720fa574cde9f4db51e0ea6039f.binarymesh" />
-            </object>
-            <object name="Plane.008_obj" model="mesh_object">
-                <parameter name="filename" value="_geometry/8ced3720fa574cde9f4db51e0ea6039f.binarymesh" />
-            </object>
-            <object name="Plane.009_obj" model="mesh_object">
                 <parameter name="filename" value="_geometry/8ced3720fa574cde9f4db51e0ea6039f.binarymesh" />
             </object>
             <object name="Plane.010_obj" model="mesh_object">
@@ -131,9 +113,6 @@
                 <parameter name="filename" value="_geometry/8ced3720fa574cde9f4db51e0ea6039f.binarymesh" />
             </object>
             <object name="Plane.012_obj" model="mesh_object">
-                <parameter name="filename" value="_geometry/8ced3720fa574cde9f4db51e0ea6039f.binarymesh" />
-            </object>
-            <object name="Plane.013_obj" model="mesh_object">
                 <parameter name="filename" value="_geometry/8ced3720fa574cde9f4db51e0ea6039f.binarymesh" />
             </object>
             <object name="Plane.014_obj" model="mesh_object">
@@ -158,9 +137,9 @@
                 </parameters>
                 <transform>
                     <matrix>
-                        0.20000000298023224 0.00000000000000000 0.00000000000000000 2.30000000000000000
-                        0.00000000000000000 0.00000000000000001 0.20000000298023224 -0.50000000000000000
-                        0.00000000000000000 -0.20000000298023224 0.00000000000000001 -0.00000000000000003
+                        0.30000001192092896 0.00000000000000000 0.00000000000000000 2.09999990463256836
+                        0.00000000000000000 0.00000000000000002 0.30000001192092896 -0.50000000000000000
+                        0.00000000000000000 -0.30000001192092896 0.00000000000000002 -0.00000000000000003
                         0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
                     </matrix>
                 </transform>
@@ -183,7 +162,7 @@
                 </parameters>
                 <transform>
                     <matrix>
-                        0.10000000149011612 0.00000000000000000 0.00000000000000000 0.00000000000000000
+                        0.15000000596046448 0.00000000000000000 0.00000000000000000 0.00000000000000000
                         0.00000000000000000 0.00000000000000021 1.00000000000000000 0.00000000000000000
                         0.00000000000000000 -3.50047206878662109 0.00000000000000006 0.00000000000000000
                         0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
@@ -208,57 +187,7 @@
                 </parameters>
                 <transform>
                     <matrix>
-                        0.10000000149011612 0.00000000000000000 0.00000000000000000 1.00000000000000000
-                        0.00000000000000000 0.00000000000000021 1.00000000000000000 0.00000000000000000
-                        0.00000000000000000 -3.50047206878662109 0.00000000000000006 0.00000000000000000
-                        0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
-                    </matrix>
-                </transform>
-                <assign_material slot="default" side="front" material="Bars_mat" />
-                <assign_material slot="default" side="back" material="Bars_mat" />
-            </object_instance>
-            <object_instance name="Plane.002" object="Plane.002_obj.mesh">
-                <parameter name="medium_priority" value="0" />
-                <parameter name="photon_target" value="false" />
-                <parameter name="ray_bias_distance" value="0" />
-                <parameter name="ray_bias_method" value="none" />
-                <parameters name="visibility">
-                    <parameter name="camera" value="true" />
-                    <parameter name="diffuse" value="true" />
-                    <parameter name="glossy" value="true" />
-                    <parameter name="light" value="true" />
-                    <parameter name="shadow" value="true" />
-                    <parameter name="specular" value="true" />
-                    <parameter name="transparency" value="true" />
-                </parameters>
-                <transform>
-                    <matrix>
-                        0.10000000149011612 0.00000000000000000 0.00000000000000000 1.50000000000000000
-                        0.00000000000000000 0.00000000000000021 1.00000000000000000 0.00000000000000000
-                        0.00000000000000000 -3.50047206878662109 0.00000000000000006 0.00000000000000000
-                        0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
-                    </matrix>
-                </transform>
-                <assign_material slot="default" side="front" material="Bars_mat" />
-                <assign_material slot="default" side="back" material="Bars_mat" />
-            </object_instance>
-            <object_instance name="Plane.003" object="Plane.003_obj.mesh">
-                <parameter name="medium_priority" value="0" />
-                <parameter name="photon_target" value="false" />
-                <parameter name="ray_bias_distance" value="0" />
-                <parameter name="ray_bias_method" value="none" />
-                <parameters name="visibility">
-                    <parameter name="camera" value="true" />
-                    <parameter name="diffuse" value="true" />
-                    <parameter name="glossy" value="true" />
-                    <parameter name="light" value="true" />
-                    <parameter name="shadow" value="true" />
-                    <parameter name="specular" value="true" />
-                    <parameter name="transparency" value="true" />
-                </parameters>
-                <transform>
-                    <matrix>
-                        0.10000000149011612 0.00000000000000000 0.00000000000000000 0.50000000000000000
+                        0.15000000596046448 0.00000000000000000 0.00000000000000000 1.39999997615814209
                         0.00000000000000000 0.00000000000000021 1.00000000000000000 0.00000000000000000
                         0.00000000000000000 -3.50047206878662109 0.00000000000000006 0.00000000000000000
                         0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
@@ -283,7 +212,7 @@
                 </parameters>
                 <transform>
                     <matrix>
-                        0.10000000149011612 0.00000000000000000 0.00000000000000000 -2.00000000000000000
+                        0.15000000596046448 0.00000000000000000 0.00000000000000000 -2.79999995231628418
                         0.00000000000000000 0.00000000000000021 1.00000000000000000 0.00000000000000000
                         0.00000000000000000 -3.50047206878662109 0.00000000000000006 0.00000000000000000
                         0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
@@ -308,107 +237,7 @@
                 </parameters>
                 <transform>
                     <matrix>
-                        0.10000000149011612 0.00000000000000000 0.00000000000000000 -1.00000000000000000
-                        0.00000000000000000 0.00000000000000021 1.00000000000000000 0.00000000000000000
-                        0.00000000000000000 -3.50047206878662109 0.00000000000000006 0.00000000000000000
-                        0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
-                    </matrix>
-                </transform>
-                <assign_material slot="default" side="front" material="Bars_mat" />
-                <assign_material slot="default" side="back" material="Bars_mat" />
-            </object_instance>
-            <object_instance name="Plane.006" object="Plane.006_obj.mesh">
-                <parameter name="medium_priority" value="0" />
-                <parameter name="photon_target" value="false" />
-                <parameter name="ray_bias_distance" value="0" />
-                <parameter name="ray_bias_method" value="none" />
-                <parameters name="visibility">
-                    <parameter name="camera" value="true" />
-                    <parameter name="diffuse" value="true" />
-                    <parameter name="glossy" value="true" />
-                    <parameter name="light" value="true" />
-                    <parameter name="shadow" value="true" />
-                    <parameter name="specular" value="true" />
-                    <parameter name="transparency" value="true" />
-                </parameters>
-                <transform>
-                    <matrix>
-                        0.10000000149011612 0.00000000000000000 0.00000000000000000 -0.50000000000000000
-                        0.00000000000000000 0.00000000000000021 1.00000000000000000 0.00000000000000000
-                        0.00000000000000000 -3.50047206878662109 0.00000000000000006 0.00000000000000000
-                        0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
-                    </matrix>
-                </transform>
-                <assign_material slot="default" side="front" material="Bars_mat" />
-                <assign_material slot="default" side="back" material="Bars_mat" />
-            </object_instance>
-            <object_instance name="Plane.007" object="Plane.007_obj.mesh">
-                <parameter name="medium_priority" value="0" />
-                <parameter name="photon_target" value="false" />
-                <parameter name="ray_bias_distance" value="0" />
-                <parameter name="ray_bias_method" value="none" />
-                <parameters name="visibility">
-                    <parameter name="camera" value="true" />
-                    <parameter name="diffuse" value="true" />
-                    <parameter name="glossy" value="true" />
-                    <parameter name="light" value="true" />
-                    <parameter name="shadow" value="true" />
-                    <parameter name="specular" value="true" />
-                    <parameter name="transparency" value="true" />
-                </parameters>
-                <transform>
-                    <matrix>
-                        0.10000000149011612 0.00000000000000000 0.00000000000000000 -1.50000000000000000
-                        0.00000000000000000 0.00000000000000021 1.00000000000000000 0.00000000000000000
-                        0.00000000000000000 -3.50047206878662109 0.00000000000000006 0.00000000000000000
-                        0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
-                    </matrix>
-                </transform>
-                <assign_material slot="default" side="front" material="Bars_mat" />
-                <assign_material slot="default" side="back" material="Bars_mat" />
-            </object_instance>
-            <object_instance name="Plane.008" object="Plane.008_obj.mesh">
-                <parameter name="medium_priority" value="0" />
-                <parameter name="photon_target" value="false" />
-                <parameter name="ray_bias_distance" value="0" />
-                <parameter name="ray_bias_method" value="none" />
-                <parameters name="visibility">
-                    <parameter name="camera" value="true" />
-                    <parameter name="diffuse" value="true" />
-                    <parameter name="glossy" value="true" />
-                    <parameter name="light" value="true" />
-                    <parameter name="shadow" value="true" />
-                    <parameter name="specular" value="true" />
-                    <parameter name="transparency" value="true" />
-                </parameters>
-                <transform>
-                    <matrix>
-                        0.10000000149011612 0.00000000000000000 0.00000000000000000 2.50000000000000000
-                        0.00000000000000000 0.00000000000000021 1.00000000000000000 0.00000000000000000
-                        0.00000000000000000 -3.50047206878662109 0.00000000000000006 0.00000000000000000
-                        0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
-                    </matrix>
-                </transform>
-                <assign_material slot="default" side="front" material="Bars_mat" />
-                <assign_material slot="default" side="back" material="Bars_mat" />
-            </object_instance>
-            <object_instance name="Plane.009" object="Plane.009_obj.mesh">
-                <parameter name="medium_priority" value="0" />
-                <parameter name="photon_target" value="false" />
-                <parameter name="ray_bias_distance" value="0" />
-                <parameter name="ray_bias_method" value="none" />
-                <parameters name="visibility">
-                    <parameter name="camera" value="true" />
-                    <parameter name="diffuse" value="true" />
-                    <parameter name="glossy" value="true" />
-                    <parameter name="light" value="true" />
-                    <parameter name="shadow" value="true" />
-                    <parameter name="specular" value="true" />
-                    <parameter name="transparency" value="true" />
-                </parameters>
-                <transform>
-                    <matrix>
-                        0.10000000149011612 0.00000000000000000 0.00000000000000000 3.50000000000000000
+                        0.15000000596046448 0.00000000000000000 0.00000000000000000 -1.39999997615814209
                         0.00000000000000000 0.00000000000000021 1.00000000000000000 0.00000000000000000
                         0.00000000000000000 -3.50047206878662109 0.00000000000000006 0.00000000000000000
                         0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
@@ -433,7 +262,7 @@
                 </parameters>
                 <transform>
                     <matrix>
-                        0.10000000149011612 0.00000000000000000 0.00000000000000000 4.00000000000000000
+                        0.15000000596046448 0.00000000000000000 0.00000000000000000 5.59999990463256836
                         0.00000000000000000 0.00000000000000021 1.00000000000000000 0.00000000000000000
                         0.00000000000000000 -3.50047206878662109 0.00000000000000006 0.00000000000000000
                         0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
@@ -458,7 +287,7 @@
                 </parameters>
                 <transform>
                     <matrix>
-                        0.10000000149011612 0.00000000000000000 0.00000000000000000 3.00000000000000000
+                        0.15000000596046448 0.00000000000000000 0.00000000000000000 4.19999980926513672
                         0.00000000000000000 0.00000000000000021 1.00000000000000000 0.00000000000000000
                         0.00000000000000000 -3.50047206878662109 0.00000000000000006 0.00000000000000000
                         0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
@@ -483,33 +312,8 @@
                 </parameters>
                 <transform>
                     <matrix>
-                        0.10000000149011612 0.00000000000000000 0.00000000000000000 2.00000000000000000
+                        0.15000000596046448 0.00000000000000000 0.00000000000000000 2.79999995231628418
                         0.00000000000000000 0.00000000000000021 1.00000000000000000 0.00000000000000000
-                        0.00000000000000000 -3.50047206878662109 0.00000000000000006 0.00000000000000000
-                        0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
-                    </matrix>
-                </transform>
-                <assign_material slot="default" side="front" material="Bars_mat" />
-                <assign_material slot="default" side="back" material="Bars_mat" />
-            </object_instance>
-            <object_instance name="Plane.013" object="Plane.013_obj.mesh">
-                <parameter name="medium_priority" value="0" />
-                <parameter name="photon_target" value="false" />
-                <parameter name="ray_bias_distance" value="0" />
-                <parameter name="ray_bias_method" value="none" />
-                <parameters name="visibility">
-                    <parameter name="camera" value="true" />
-                    <parameter name="diffuse" value="true" />
-                    <parameter name="glossy" value="true" />
-                    <parameter name="light" value="true" />
-                    <parameter name="shadow" value="true" />
-                    <parameter name="specular" value="true" />
-                    <parameter name="transparency" value="true" />
-                </parameters>
-                <transform>
-                    <matrix>
-                        0.10000000149011612 0.00000000000000000 0.00000000000000000 4.50000000000000000
-                        0.00000000000000000 0.00000000000000021 1.00000000000000000 0.00000002075030459
                         0.00000000000000000 -3.50047206878662109 0.00000000000000006 0.00000000000000000
                         0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
                     </matrix>
@@ -566,12 +370,12 @@
                 <post_processing_stage name="bloom_stage" model="bloom_post_processing_stage">
                     <parameter name="order" value="0" />
                     <parameter name="iterations" value="5" />
-                    <parameter name="intensity" value="10.0" />
+                    <parameter name="intensity" value="0.5" />
                     <parameter name="threshold" value="0.8" />
                     <parameter name="soft_threshold" value="0.5" />
-                    <parameter name="radius" value="15.0" />
+                    <parameter name="radius" value="3.0" />
                     <parameter name="fast_mode" value="false" />
-                    <parameter name="downsample" value="true" />
+                    <parameter name="downsample" value="false" />
                     <parameter name="debug_blur" value="false" />
                 </post_processing_stage>
             </post_processing_stages>
