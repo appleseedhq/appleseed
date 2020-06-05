@@ -393,12 +393,14 @@
             <parameter name="tile_size" value="64 64" />
             <post_processing_stages>
                 <post_processing_stage name="bloom_stage" model="bloom_post_processing_stage">
-                    <parameter name="intensity" value="0.5" />
-                    <parameter name="iterations" value="5" />
                     <parameter name="order" value="0" />
+                    <parameter name="iterations" value="5" />
+                    <parameter name="intensity" value="0.5" />
                     <parameter name="threshold" value="0.8" />
                     <parameter name="soft_threshold" value="0.5" />
-                    <parameter name="fast_mode" value="true" />
+                    <parameter name="radius" value="3.0" />
+                    <parameter name="fast_mode" value="false" />
+                    <parameter name="downsample" value="false" />
                     <parameter name="debug_blur" value="false" />
                 </post_processing_stage>
             </post_processing_stages>
