@@ -147,8 +147,8 @@ namespace
         // Returns the weighted average of the four pixels closest to the image coordinate (fx, fy).
         static Color3f box_sample(const Image& image, const float fx, const float fy)
         {
-            const std::size_t x0 = std::floor(fx);
-            const std::size_t y0 = std::floor(fy);
+            const std::size_t x0 = truncate<std::size_t>(fx);
+            const std::size_t y0 = truncate<std::size_t>(fy);
             const std::size_t x1 = std::min<std::size_t>(x0 + 1, image.properties().m_canvas_width - 1);
             const std::size_t y1 = std::min<std::size_t>(y0 + 1, image.properties().m_canvas_height - 1);
 
@@ -156,77 +156,56 @@ namespace
         }
 
         // Returns the weighted average of the four pixels closest to the image coordinate (fx, fy).
+        // Samples the edge-most pixels when coordinates are outside the image (i.e. texture clamping).
         static Color3f clamped_box_sample(const Image& image, const float fx, const float fy)
         {
             const std::size_t width = image.properties().m_canvas_width;
             const std::size_t height = image.properties().m_canvas_height;
 
-            //
-            //   Image        /         |          |
-            //  regions:     /     -+   |    0+    |  ++
-            //              /    _______|__________|_______ height-1
-            //  -+ 0+ ++   /            |          |
-            //  -0 00 +0  =        -0   |    00    |  +0
-            //  -- 0- +-   \     _______|__________|_______ 0
-            //              \           |          |
-            //               \     --   |    0-    |  +-
-            //                \         |          |
-            //                          0       width-1
-            //
-            // There are three base cases:
-            //  - inside: 00
-            //  - outside lateral: 0+, -0, +0, 0- (product equals 0)
-            //  - outside diagonal: -+, ++, --, +- (product does not equal 0)
-            //
+            // Compute to which region the coordinate (fx, fy) belongs, similar to Cohen–Sutherland's algorithm.
+            const int x_region = (fx < 0.0f) ? -1 : (fx > width - 1.0f) ? 1 : 0;
+            const int y_region = (fy < 0.0f) ? -1 : (fy > height - 1.0f) ? 1 : 0;
 
-            const int x_region = (fx < 0.0f) ? -1 : (fx >= static_cast<float>(width)) ? 1 : 0;
-            const int y_region = (fy < 0.0f) ? -1 : (fy >= static_cast<float>(width)) ? 1 : 0;
+            // There are 9 regions relative to the image, with 3 base cases:
+            //   -+ 0+ ++    inside: 00
+            //   -0 00 +0    outside lateral: 0+, -0, +0, 0-
+            //   -- 0- +-    outside diagonal: -+, ++, --, +-
+
+            // Thus, we can easily check the region of (fx, fy) and clamp it to be inside.
+            const std::size_t x = static_cast<std::size_t>((x_region == -1) ? 0 : width - 1);
+            const std::size_t y = static_cast<std::size_t>((y_region == -1) ? 0 : height - 1);
 
             if (x_region * y_region != 0)
             {
                 Color3f corner_pixel;
-                image.get_pixel(
-                    static_cast<std::size_t>((x_region == -1) ? 0 : width - 1),
-                    static_cast<std::size_t>((y_region == -1) ? 0 : height - 1),
-                    corner_pixel);
+                image.get_pixel(x, y, corner_pixel);
 
                 return corner_pixel;
             }
 
+            const std::size_t x0 = truncate<std::size_t>(fx);
+            const std::size_t y0 = truncate<std::size_t>(fy);
+            const std::size_t x1 = std::min<std::size_t>(x0 + 1, width - 1);
+            const std::size_t y1 = std::min<std::size_t>(y0 + 1, height - 1);
+
             if (x_region != 0)
             {
-                const std::size_t x = static_cast<std::size_t>((x_region == -1) ? 0 : width - 1);
-
-                const std::size_t y0 = truncate<std::size_t>(fy);
-                const std::size_t y1 = std::min<std::size_t>(y0 + 1, height - 1);
-
                 Color3f top_pixel, bottom_pixel;
-                image.get_pixel(x, y1, top_pixel);
                 image.get_pixel(x, y0, bottom_pixel);
+                image.get_pixel(x, y1, top_pixel);
 
-                return 0.5f * (top_pixel + bottom_pixel);
+                return lerp(bottom_pixel, top_pixel, fy - y0);
             }
             else if (y_region != 0)
             {
-                const std::size_t y = static_cast<std::size_t>((y_region == -1) ? 0 : height - 1);
-
-                const std::size_t x0 = truncate<std::size_t>(fx);
-                const std::size_t x1 = std::min<std::size_t>(x0 + 1, width - 1);
-
                 Color3f left_pixel, right_pixel;
                 image.get_pixel(x0, y, left_pixel);
                 image.get_pixel(x1, y, right_pixel);
 
-                return 0.5f * (left_pixel + right_pixel);
-
+                return lerp(left_pixel, right_pixel, fx - x0);
             }
             else // inside the image
             {
-                const std::size_t x0 = truncate<std::size_t>(fx);
-                const std::size_t y0 = truncate<std::size_t>(fy);
-                const std::size_t x1 = std::min<std::size_t>(x0 + 1, width - 1);
-                const std::size_t y1 = std::min<std::size_t>(y0 + 1, height - 1);
-
                 return blerp(image, x0, y0, x1, y1, fx, fy);
             }
         }
