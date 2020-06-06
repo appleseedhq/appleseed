@@ -111,7 +111,7 @@ namespace
         // Simple image color sampling.
         //
 
-        // Bilinear interpolation.
+        // Bilinear interpolation of colors.
         static Color3f blerp(
             const Image&        image,
             const std::size_t   x0,
@@ -210,28 +210,6 @@ namespace
             }
         }
 
-        // Average the color values of a 2x2 block around (half_x, half_y).
-        static Color3f corner_sample(const Image& image, const float half_x, const float half_y)
-        {
-            const float max_x = image.properties().m_canvas_width - 1.0f;
-            const float max_y = image.properties().m_canvas_height - 1.0f;
-
-            // Sample the edge-most pixel when the coordinate is outside the image (i.e. texture clamping).
-            const std::size_t top_coord = static_cast<std::size_t>(clamp(half_y + 0.5f, 0.0f, max_y));
-            const std::size_t left_coord = static_cast<std::size_t>(clamp(half_x - 0.5f, 0.0f, max_x));
-            const std::size_t right_coord = static_cast<std::size_t>(clamp(half_x + 0.5f, 0.0f, max_x));
-            const std::size_t bottom_coord = static_cast<std::size_t>(clamp(half_y - 0.5f, 0.0f, max_y));
-
-            Color3f top_left, top_right, bottom_left, bottom_right;
-            image.get_pixel(left_coord, top_coord, top_left);
-            image.get_pixel(right_coord, top_coord, top_right);
-            image.get_pixel(left_coord, bottom_coord, bottom_left);
-            image.get_pixel(right_coord, bottom_coord, bottom_right);
-
-            // Average pixel colors.
-            return 0.25f * (top_left + top_right + bottom_left + bottom_right);
-        }
-
         //
         // Sampling filter from Masaki Kawase's GDC2003 Presentation: "Frame Buffer Postprocessing Effects in DOUBLE-S.T.E.A.L (Wreckless)".
         //
@@ -247,10 +225,10 @@ namespace
             const float off = static_cast<float>(offset) + 0.5f;
 
             // Since each corner sample is an average of 4 values, 16 pixels are used in total.
-            Color3f top_left = corner_sample(image, fx - off, fy + off);
-            Color3f top_right = corner_sample(image, fx + off, fy + off);
-            Color3f bottom_left = corner_sample(image, fx - off, fy - off);
-            Color3f bottom_right = corner_sample(image, fx + off, fy - off);
+            Color3f top_left = clamped_box_sample(image, fx - off, fy + off);
+            Color3f top_right = clamped_box_sample(image, fx + off, fy + off);
+            Color3f bottom_left = clamped_box_sample(image, fx - off, fy - off);
+            Color3f bottom_right = clamped_box_sample(image, fx + off, fy - off);
 
             // Average sample colors.
             return 0.25f * (top_left + top_right + bottom_left + bottom_right);
@@ -271,11 +249,11 @@ namespace
             const float fy = corner_y;
             const float half_off = 0.5f * static_cast<float>(offset);
 
-            Color3f center = corner_sample(image, fx, fy);
-            Color3f top_left = corner_sample(image, fx - half_off, fy + half_off);
-            Color3f top_right = corner_sample(image, fx + half_off, fy + half_off);
-            Color3f bottom_left = corner_sample(image, fx - half_off, fy - half_off);
-            Color3f bottom_right = corner_sample(image, fx + half_off, fy - half_off);
+            Color3f center = clamped_box_sample(image, fx, fy);
+            Color3f top_left = clamped_box_sample(image, fx - half_off, fy + half_off);
+            Color3f top_right = clamped_box_sample(image, fx + half_off, fy + half_off);
+            Color3f bottom_left = clamped_box_sample(image, fx - half_off, fy - half_off);
+            Color3f bottom_right = clamped_box_sample(image, fx + half_off, fy - half_off);
 
             return (
                 4.0f * center
@@ -294,20 +272,22 @@ namespace
             const float off = static_cast<float>(offset);
             const float half_off = 0.5f * off;
 
-            Color3f top_left = corner_sample(image, fx - half_off, fy + half_off);
-            Color3f top_right = corner_sample(image, fx + half_off, fy + half_off);
-            Color3f bottom_left = corner_sample(image, fx - half_off, fy - half_off);
-            Color3f bottom_right = corner_sample(image, fx + half_off, fy - half_off);
+            Color3f top_left = clamped_box_sample(image, fx - half_off, fy + half_off);
+            Color3f top_right = clamped_box_sample(image, fx + half_off, fy + half_off);
+            Color3f bottom_left = clamped_box_sample(image, fx - half_off, fy - half_off);
+            Color3f bottom_right = clamped_box_sample(image, fx + half_off, fy - half_off);
 
             // Sample the edge-most pixel when the coordinate is outside the image (i.e. texture clamping).
-            const float max_x = image.properties().m_canvas_width - 1.0f;
-            const float max_y = image.properties().m_canvas_height - 1.0f;
+            const std::size_t top_y = static_cast<std::size_t>(std::min(fy + off, image.properties().m_canvas_height - 1.0f));
+            const std::size_t left_x = static_cast<std::size_t>(std::max(fx - off, 0.0f));
+            const std::size_t right_x = static_cast<std::size_t>(std::min(fx + off, image.properties().m_canvas_width - 1.0f));
+            const std::size_t bottom_y = static_cast<std::size_t>(std::max(fy - off, 0.0f));
 
             Color3f top, left, right, bottom;
-            image.get_pixel(center_x, static_cast<std::size_t>(clamp(fy + off, 0.0f, max_y)), top);
-            image.get_pixel(static_cast<std::size_t>(clamp(fx - off, 0.0f, max_x)), center_y, left);
-            image.get_pixel(static_cast<std::size_t>(clamp(fx + off, 0.0f, max_x)), center_y, right);
-            image.get_pixel(center_x, static_cast<std::size_t>(clamp(fy - off, 0.0f, max_y)), bottom);
+            image.get_pixel(center_x, top_y, top);
+            image.get_pixel(left_x, center_y, left);
+            image.get_pixel(right_x, center_y, right);
+            image.get_pixel(center_x, bottom_y, bottom);
 
             return (
                 top + left + right + bottom
@@ -454,16 +434,15 @@ namespace
 
         static void execute_kawase_bloom(
             const CanvasProperties& props,
-            Image&              image,
+            Image&                  image,
             // FIXME update names/params after testing
-            const std::size_t   m_iterations,
-            const float         m_intensity,
-            const float         m_threshold,
-            const float         m_soft_threshold,
-            const float         m_radius,
-            const bool          m_fast_mode,
-            const bool          m_downsample,
-            const bool          m_debug_blur)
+            const std::size_t       m_iterations,
+            const float             m_intensity,
+            const float             m_threshold,
+            const float             m_soft_threshold,
+            const bool              m_fast_mode,
+            const bool              m_debug_blur,
+            const bool              m_debug_threshold)
         {
             // Set the offset values used for sampling in Kawase blur.
             const std::vector<std::size_t> iteration_offset = { 0, 1, 2, 2, 3 };
@@ -513,16 +492,15 @@ namespace
 
         static void execute_kino_bloom(
             const CanvasProperties& props,
-            Image&              image,
+            Image&                  image,
             // FIXME update names/params after testing
-            const std::size_t   m_iterations,
-            const float         m_intensity,
-            const float         m_threshold,
-            const float         m_soft_threshold,
-            const float         m_radius,
-            const bool          m_fast_mode,
-            const bool          m_downsample,
-            const bool          m_debug_blur)
+            const std::size_t       m_iterations,
+            const float             m_intensity,
+            const float             m_threshold,
+            const float             m_soft_threshold,
+            const bool              m_fast_mode,
+            const bool              m_debug_blur,
+            const bool              m_debug_threshold)
         {
             const std::size_t MaxIterations = 16;
             const std::size_t MinBufferSize = 8;
@@ -639,32 +617,29 @@ namespace
             const CanvasProperties& props = frame.image().properties();
             Image& image = frame.image();
 
-            if (m_downsample)
-                // Use a pyramid of up/down scaled blurred buffers.
-                execute_kino_bloom(
-                    props,
-                    image,
-                    m_iterations,
-                    m_intensity,
-                    m_threshold,
-                    m_soft_threshold,
-                    m_radius,
-                    m_fast_mode,
-                    m_downsample,
-                    m_debug_blur);
-            else
-                // Ping-pong between two equally sized blur buffers.
-                execute_kawase_bloom(
-                    props,
-                    image,
-                    m_iterations,
-                    m_intensity,
-                    m_threshold,
-                    m_soft_threshold,
-                    m_radius,
-                    m_fast_mode,
-                    m_downsample,
-                    m_debug_blur);
+            // Use a pyramid of up/down scaled blur buffers.
+            execute_kino_bloom(
+                props,
+                image,
+                m_iterations,
+                m_intensity,
+                m_threshold,
+                m_soft_threshold,
+                m_fast_mode,
+                m_debug_blur,
+                m_debug_threshold);
+
+            // // Ping-pong between two equally sized blur buffers.
+            // execute_kawase_bloom(
+            //     props,
+            //     image,
+            //     m_iterations,
+            //     m_intensity,
+            //     m_threshold,
+            //     m_soft_threshold,
+            //     m_fast_mode,
+            //     m_debug_blur,
+            //     m_debug_threshold);
         }
 
       private:
