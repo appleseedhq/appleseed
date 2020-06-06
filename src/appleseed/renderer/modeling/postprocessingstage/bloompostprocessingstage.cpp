@@ -65,7 +65,6 @@ namespace
     static constexpr float DefaultIntensity = 0.5f;
     static constexpr float DefaultThreshold = 0.8f;
     static constexpr float DefaultSoftThreshold = 0.5f;
-    static constexpr float DefaultRadius = 3.0f;
 
     class BloomPostProcessingStage
       : public PostProcessingStage
@@ -100,11 +99,10 @@ namespace
             m_intensity = m_params.get_optional("intensity", DefaultIntensity, context);
             m_threshold = m_params.get_optional("threshold", DefaultThreshold, context);
             m_soft_threshold = m_params.get_optional("soft_threshold", DefaultSoftThreshold, context);
-            m_radius = m_params.get_optional("radius", DefaultRadius, context);
 
             m_fast_mode = m_params.get_optional("fast_mode", false, context);
-            m_downsample = m_params.get_optional("downsample", false, context);
             m_debug_blur = m_params.get_optional("debug_blur", false, context);
+            m_debug_threshold = m_params.get_optional("debug_threshold", false, context);
 
             return true;
         }
@@ -113,139 +111,7 @@ namespace
         // Simple image color sampling.
         //
 
-        // Average the color values of a 2x2 block around (half_x, half_y).
-        static Color3f corner_sample(const Image& image, const float half_x, const float half_y)
-        {
-            const float max_x = image.properties().m_canvas_width - 1.0f;
-            const float max_y = image.properties().m_canvas_height - 1.0f;
-
-            // Sample the edge-most pixel when the coordinate is outside the image (i.e. texture clamping).
-            const std::size_t top_coord = static_cast<std::size_t>(clamp(half_y + 0.5f, 0.0f, max_y));
-            const std::size_t left_coord = static_cast<std::size_t>(clamp(half_x - 0.5f, 0.0f, max_x));
-            const std::size_t right_coord = static_cast<std::size_t>(clamp(half_x + 0.5f, 0.0f, max_x));
-            const std::size_t bottom_coord = static_cast<std::size_t>(clamp(half_y - 0.5f, 0.0f, max_y));
-
-            Color3f top_left, top_right, bottom_left, bottom_right;
-            image.get_pixel(left_coord, top_coord, top_left);
-            image.get_pixel(right_coord, top_coord, top_right);
-            image.get_pixel(left_coord, bottom_coord, bottom_left);
-            image.get_pixel(right_coord, bottom_coord, bottom_right);
-
-            // Average pixel colors.
-            return 0.25f * (top_left + top_right + bottom_left + bottom_right);
-        }
-
-        // 4x4-box bilinear downsampler.
-        static inline Color3f box_downsample(const Image& image, const std::size_t x, const std::size_t y)
-        {
-            const float max_x = image.properties().m_canvas_width - 1.0f;
-            const float max_y = image.properties().m_canvas_height - 1.0f;
-
-            // Sample the edge-most pixel when the coordinate is outside the image (i.e. texture clamping).
-            const std::size_t top_coord = static_cast<std::size_t>(clamp(y + 1.0f, 0.0f, max_y));
-            const std::size_t left_coord = static_cast<std::size_t>(clamp(x - 1.0f, 0.0f, max_x));
-            const std::size_t right_coord = static_cast<std::size_t>(clamp(x + 1.0f, 0.0f, max_x));
-            const std::size_t bottom_coord = static_cast<std::size_t>(clamp(y - 1.0f, 0.0f, max_y));
-
-            Color3f top_left, top_right, bottom_left, bottom_right;
-            image.get_pixel(left_coord, top_coord, top_left);
-            image.get_pixel(right_coord, top_coord, top_right);
-            image.get_pixel(left_coord, bottom_coord, bottom_left);
-            image.get_pixel(right_coord, bottom_coord, bottom_right);
-
-            // Average pixel colors.
-            return 0.25f * (top_left + top_right + bottom_left + bottom_right);
-        }
-
-        // 4x4-box bilinear upsampler.
-        static Color3f box_upsample(const Image& image, const std::size_t x, const std::size_t y, const float sample_scale)
-        {
-            const float max_x = image.properties().m_canvas_width - 1.0f;
-            const float max_y = image.properties().m_canvas_height - 1.0f;
-            const float off = 0.5f * sample_scale;
-
-            // Sample the edge-most pixel when the coordinate is outside the image (i.e. texture clamping).
-            const std::size_t top_coord = static_cast<std::size_t>(clamp(y + off, 0.0f, max_y));
-            const std::size_t left_coord = static_cast<std::size_t>(clamp(x - off, 0.0f, max_x));
-            const std::size_t right_coord = static_cast<std::size_t>(clamp(x + off, 0.0f, max_x));
-            const std::size_t bottom_coord = static_cast<std::size_t>(clamp(y - off, 0.0f, max_y));
-
-            Color3f top_left, top_right, bottom_left, bottom_right;
-            image.get_pixel(left_coord, top_coord, top_left);
-            image.get_pixel(right_coord, top_coord, top_right);
-            image.get_pixel(left_coord, bottom_coord, bottom_left);
-            image.get_pixel(right_coord, bottom_coord, bottom_right);
-
-            // Average pixel colors.
-            return 0.25f * (top_left + top_right + bottom_left + bottom_right);
-        }
-
-        //
-        // Sampling filter from Masaki Kawase's GDC2003 Presentation: "Frame Buffer Postprocessing Effects in DOUBLE-S.T.E.A.L (Wreckless)".
-        //
-
-        static Color3f kawase_sample(const Image& image, const std::size_t x, const std::size_t y, const std::size_t offset)
-        {
-            const float fx = static_cast<float>(x);
-            const float fy = static_cast<float>(y);
-            const float off = offset + 0.5f;
-
-            // Since each corner sample is an average of 4 values, 16 pixels are used in total.
-            Color3f top_left = corner_sample(image, fx - off, fy + off);
-            Color3f top_right = corner_sample(image, fx + off, fy + off);
-            Color3f bottom_left = corner_sample(image, fx - off, fy - off);
-            Color3f bottom_right = corner_sample(image, fx + off, fy - off);
-
-            // Average sample colors.
-            return 0.25f * (top_left + top_right + bottom_left + bottom_right);
-        }
-
-        //
-        // Sampling filters from Marius Bjørge's SIGGRAPH2015 Presentation: "Bandwidth-Efficient Rendering".
-        //
-
-        static Color3f dual_filter_downsample(const Image& image, const float half_x, const float half_y)
-        {
-            Color3f center = corner_sample(image, half_x, half_y);
-            Color3f top_left = corner_sample(image, half_x - 1.0f, half_y + 1.0f);
-            Color3f top_right = corner_sample(image, half_x + 1.0f, half_y + 1.0f);
-            Color3f bottom_left = corner_sample(image, half_x - 1.0f, half_y - 1.0f);
-            Color3f bottom_right = corner_sample(image, half_x + 1.0f, half_y - 1.0f);
-
-            return ((4.0f * center) + (top_left + top_right + bottom_left + bottom_right)) / 8.0f;
-        }
-
-        static Color3f dual_filter_upsample(const Image& image, const std::size_t x, const std::size_t y)
-        {
-            const float fx = static_cast<float>(x);
-            const float fy = static_cast<float>(y);
-            const float max_x = image.properties().m_canvas_width - 1.0f;
-            const float max_y = image.properties().m_canvas_height - 1.0f;
-
-            // Sample the edge-most pixel when the coordinate is outside the image (i.e. texture clamping).
-            const std::size_t top_coord = static_cast<std::size_t>(clamp(fy + 1.0f, 0.0f, max_y));
-            const std::size_t left_coord = static_cast<std::size_t>(clamp(fx - 1.0f, 0.0f, max_x));
-            const std::size_t right_coord = static_cast<std::size_t>(clamp(fx + 1.0f, 0.0f, max_x));
-            const std::size_t bottom_coord = static_cast<std::size_t>(clamp(fy - 1.0f, 0.0f, max_y));
-
-            Color3f top, left, right, bottom;
-            image.get_pixel(x, top_coord, top);
-            image.get_pixel(left_coord, y, left);
-            image.get_pixel(right_coord, y, right);
-            image.get_pixel(x, bottom_coord, bottom);
-
-            Color3f top_left = corner_sample(image, fx - 0.5f, fy + 0.5f);
-            Color3f top_right = corner_sample(image, fx + 0.5f, fy + 0.5f);
-            Color3f bottom_left = corner_sample(image, fx - 0.5f, fy - 0.5f);
-            Color3f bottom_right = corner_sample(image, fx + 0.5f, fy - 0.5f);
-
-            return ((top, left, right, bottom) + 2.0f * (top_left + top_right + bottom_left + bottom_right)) / 12.0f;
-        }
-
-        //
-        // Image up/down sampling with bilinear filtering.
-        //
-
+        // Bilinear interpolation.
         static Color3f blerp(
             const Image&        image,
             const std::size_t   x0,
@@ -277,6 +143,202 @@ namespace
 
             return result;
         }
+
+        // Returns the weighted average of the four pixels closest to the image coordinate (fx, fy).
+        static Color3f box_sample(const Image& image, const float fx, const float fy)
+        {
+            const std::size_t x0 = std::floor(fx);
+            const std::size_t y0 = std::floor(fy);
+            const std::size_t x1 = std::min<std::size_t>(x0 + 1, image.properties().m_canvas_width - 1);
+            const std::size_t y1 = std::min<std::size_t>(y0 + 1, image.properties().m_canvas_height - 1);
+
+            return blerp(image, x0, y0, x1, y1, fx, fy);
+        }
+
+        // Returns the weighted average of the four pixels closest to the image coordinate (fx, fy).
+        static Color3f clamped_box_sample(const Image& image, const float fx, const float fy)
+        {
+            const std::size_t width = image.properties().m_canvas_width;
+            const std::size_t height = image.properties().m_canvas_height;
+
+            //
+            //   Image        /         |          |
+            //  regions:     /     -+   |    0+    |  ++
+            //              /    _______|__________|_______ height-1
+            //  -+ 0+ ++   /            |          |
+            //  -0 00 +0  =        -0   |    00    |  +0
+            //  -- 0- +-   \     _______|__________|_______ 0
+            //              \           |          |
+            //               \     --   |    0-    |  +-
+            //                \         |          |
+            //                          0       width-1
+            //
+            // There are three base cases:
+            //  - inside: 00
+            //  - outside lateral: 0+, -0, +0, 0- (product equals 0)
+            //  - outside diagonal: -+, ++, --, +- (product does not equal 0)
+            //
+
+            const int x_region = (fx < 0.0f) ? -1 : (fx >= static_cast<float>(width)) ? 1 : 0;
+            const int y_region = (fy < 0.0f) ? -1 : (fy >= static_cast<float>(width)) ? 1 : 0;
+
+            if (x_region * y_region != 0)
+            {
+                Color3f corner_pixel;
+                image.get_pixel(
+                    static_cast<std::size_t>((x_region == -1) ? 0 : width - 1),
+                    static_cast<std::size_t>((y_region == -1) ? 0 : height - 1),
+                    corner_pixel);
+
+                return corner_pixel;
+            }
+
+            if (x_region != 0)
+            {
+                const std::size_t x = static_cast<std::size_t>((x_region == -1) ? 0 : width - 1);
+
+                const std::size_t y0 = truncate<std::size_t>(fy);
+                const std::size_t y1 = std::min<std::size_t>(y0 + 1, height - 1);
+
+                Color3f top_pixel, bottom_pixel;
+                image.get_pixel(x, y1, top_pixel);
+                image.get_pixel(x, y0, bottom_pixel);
+
+                return 0.5f * (top_pixel + bottom_pixel);
+            }
+            else if (y_region != 0)
+            {
+                const std::size_t y = static_cast<std::size_t>((y_region == -1) ? 0 : height - 1);
+
+                const std::size_t x0 = truncate<std::size_t>(fx);
+                const std::size_t x1 = std::min<std::size_t>(x0 + 1, width - 1);
+
+                Color3f left_pixel, right_pixel;
+                image.get_pixel(x0, y, left_pixel);
+                image.get_pixel(x1, y, right_pixel);
+
+                return 0.5f * (left_pixel + right_pixel);
+
+            }
+            else // inside the image
+            {
+                const std::size_t x0 = truncate<std::size_t>(fx);
+                const std::size_t y0 = truncate<std::size_t>(fy);
+                const std::size_t x1 = std::min<std::size_t>(x0 + 1, width - 1);
+                const std::size_t y1 = std::min<std::size_t>(y0 + 1, height - 1);
+
+                return blerp(image, x0, y0, x1, y1, fx, fy);
+            }
+        }
+
+        // Average the color values of a 2x2 block around (half_x, half_y).
+        static Color3f corner_sample(const Image& image, const float half_x, const float half_y)
+        {
+            const float max_x = image.properties().m_canvas_width - 1.0f;
+            const float max_y = image.properties().m_canvas_height - 1.0f;
+
+            // Sample the edge-most pixel when the coordinate is outside the image (i.e. texture clamping).
+            const std::size_t top_coord = static_cast<std::size_t>(clamp(half_y + 0.5f, 0.0f, max_y));
+            const std::size_t left_coord = static_cast<std::size_t>(clamp(half_x - 0.5f, 0.0f, max_x));
+            const std::size_t right_coord = static_cast<std::size_t>(clamp(half_x + 0.5f, 0.0f, max_x));
+            const std::size_t bottom_coord = static_cast<std::size_t>(clamp(half_y - 0.5f, 0.0f, max_y));
+
+            Color3f top_left, top_right, bottom_left, bottom_right;
+            image.get_pixel(left_coord, top_coord, top_left);
+            image.get_pixel(right_coord, top_coord, top_right);
+            image.get_pixel(left_coord, bottom_coord, bottom_left);
+            image.get_pixel(right_coord, bottom_coord, bottom_right);
+
+            // Average pixel colors.
+            return 0.25f * (top_left + top_right + bottom_left + bottom_right);
+        }
+
+        //
+        // Sampling filter from Masaki Kawase's GDC2003 Presentation: "Frame Buffer Postprocessing Effects in DOUBLE-S.T.E.A.L (Wreckless)".
+        //
+
+        static Color3f kawase_sample(
+            const Image& image,
+            const std::size_t x,
+            const std::size_t y,
+            const std::size_t offset)
+        {
+            const float fx = static_cast<float>(x);
+            const float fy = static_cast<float>(y);
+            const float off = static_cast<float>(offset) + 0.5f;
+
+            // Since each corner sample is an average of 4 values, 16 pixels are used in total.
+            Color3f top_left = corner_sample(image, fx - off, fy + off);
+            Color3f top_right = corner_sample(image, fx + off, fy + off);
+            Color3f bottom_left = corner_sample(image, fx - off, fy - off);
+            Color3f bottom_right = corner_sample(image, fx + off, fy - off);
+
+            // Average sample colors.
+            return 0.25f * (top_left + top_right + bottom_left + bottom_right);
+        }
+
+        //
+        // Sampling filters from Marius Bjørge's SIGGRAPH2015 Presentation: "Bandwidth-Efficient Rendering".
+        //
+
+        // Note: corner_x and corner_y should be half-integer values.
+        static Color3f dual_filter_downsample(
+            const Image& image,
+            const float corner_x,
+            const float corner_y,
+            const std::size_t offset = 1)
+        {
+            const float fx = corner_x;
+            const float fy = corner_y;
+            const float half_off = 0.5f * static_cast<float>(offset);
+
+            Color3f center = corner_sample(image, fx, fy);
+            Color3f top_left = corner_sample(image, fx - half_off, fy + half_off);
+            Color3f top_right = corner_sample(image, fx + half_off, fy + half_off);
+            Color3f bottom_left = corner_sample(image, fx - half_off, fy - half_off);
+            Color3f bottom_right = corner_sample(image, fx + half_off, fy - half_off);
+
+            return (
+                4.0f * center
+                + top_left + top_right + bottom_left + bottom_right)
+                / 8.0f;
+        }
+
+        static Color3f dual_filter_upsample(
+            const Image& image,
+            const std::size_t center_x,
+            const std::size_t center_y,
+            const std::size_t offset = 1)
+        {
+            const float fx = static_cast<float>(center_x);
+            const float fy = static_cast<float>(center_y);
+            const float off = static_cast<float>(offset);
+            const float half_off = 0.5f * off;
+
+            Color3f top_left = corner_sample(image, fx - half_off, fy + half_off);
+            Color3f top_right = corner_sample(image, fx + half_off, fy + half_off);
+            Color3f bottom_left = corner_sample(image, fx - half_off, fy - half_off);
+            Color3f bottom_right = corner_sample(image, fx + half_off, fy - half_off);
+
+            // Sample the edge-most pixel when the coordinate is outside the image (i.e. texture clamping).
+            const float max_x = image.properties().m_canvas_width - 1.0f;
+            const float max_y = image.properties().m_canvas_height - 1.0f;
+
+            Color3f top, left, right, bottom;
+            image.get_pixel(center_x, static_cast<std::size_t>(clamp(fy + off, 0.0f, max_y)), top);
+            image.get_pixel(static_cast<std::size_t>(clamp(fx - off, 0.0f, max_x)), center_y, left);
+            image.get_pixel(static_cast<std::size_t>(clamp(fx + off, 0.0f, max_x)), center_y, right);
+            image.get_pixel(center_x, static_cast<std::size_t>(clamp(fy - off, 0.0f, max_y)), bottom);
+
+            return (
+                top + left + right + bottom
+                + 2.0f * (top_left + top_right + bottom_left + bottom_right))
+                / 12.0f;
+        }
+
+        //
+        // Image up/down sampling with bilinear filtering.
+        //
 
         static void bilinear_filter_in_place(const Image& src_image, Image& dst_image)
         {
@@ -494,11 +556,13 @@ namespace
             const std::size_t width = m_fast_mode ? props.m_canvas_width / 2 : props.m_canvas_width;
             const std::size_t height = m_fast_mode ? props.m_canvas_height / 2 : props.m_canvas_height;
 
-            const float max_iterations =
-                std::log2(static_cast<float>(std::min(width, height)))
-                + m_radius - RadiusOffset; // adjusts the minimum size a buffer can have (e.g. 0.0f = 2x2 buffer)
+            // const float max_iterations =
+            //     std::log2(static_cast<float>(std::min(width, height)))
+            //     + m_radius - RadiusOffset; // adjusts the minimum size a buffer can have (e.g. 0.0f = 2x2 buffer)
 
-            const std::size_t iterations = clamp<std::size_t>(static_cast<int>(max_iterations), 1, MaxIterations);
+            const std::size_t iterations = clamp<std::size_t>(
+                m_iterations, // FIXME uncomment after testing: static_cast<int>(max_iterations),
+                1, MaxIterations);
 
             // const float sample_scale = 0.5f + max_iterations - static_cast<int>(max_iterations);
 
@@ -629,11 +693,10 @@ namespace
         float           m_intensity;
         float           m_threshold;
         float           m_soft_threshold;
-        float           m_radius;
 
         bool            m_fast_mode;
-        bool            m_downsample;
         bool            m_debug_blur;
+        bool            m_debug_threshold;
     };
 }
 
@@ -730,24 +793,6 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
             .insert("use", "optional")
             .insert("default", "0.5"));
 
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "radius")
-            .insert("label", "Radius")
-            .insert("type", "numeric")
-            .insert("min",
-                    Dictionary()
-                        // .insert("value", "1.0")
-                        .insert("value", "0.0")
-                        .insert("type", "hard"))
-            .insert("max",
-                    Dictionary()
-                        // .insert("value", "7.0")
-                        .insert("value", "10.0")
-                        .insert("type", "hard"))
-            .insert("use", "optional")
-            .insert("default", "3.0"));
-
     // TODO remove:
 
     metadata.push_back(
@@ -760,16 +805,16 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "downsample")
-            .insert("label", "Downsample")
+            .insert("name", "debug_blur")
+            .insert("label", "Debug Blur")
             .insert("type", "bool")
             .insert("use", "optional")
             .insert("default", "false"));
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "debug_blur")
-            .insert("label", "Debug Blur")
+            .insert("name", "debug_threshold")
+            .insert("label", "Debug Threshold")
             .insert("type", "bool")
             .insert("use", "optional")
             .insert("default", "false"));
