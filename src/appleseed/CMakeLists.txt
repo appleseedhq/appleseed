@@ -2179,6 +2179,8 @@ set (renderer_utility_sources
     renderer/utility/pluginstore.h
     renderer/utility/projectpoints.cpp
     renderer/utility/projectpoints.h
+    renderer/utility/rgbcolorsampling.cpp
+    renderer/utility/rgbcolorsampling.h
     renderer/utility/rgbspectrum.h
     renderer/utility/settingsparsing.cpp
     renderer/utility/settingsparsing.h
