@@ -186,21 +186,6 @@ namespace
             m_shader_group =
                 static_cast<ShaderGroup*>(m_inputs.get_entity("osl_background"));
 
-            return true;
-        }
-
-        bool on_frame_begin(
-            const Project&          project,
-            const BaseGroup*        parent,
-            OnFrameBeginRecorder&   recorder,
-            IAbortSwitch*           abort_switch) override
-        {
-            if (!EnvironmentEDF::on_frame_begin(project, parent, recorder, abort_switch))
-                return false;
-
-            m_shader_group =
-                static_cast<ShaderGroup*>(m_inputs.get_entity("osl_background"));
-
             if (!m_importance_sampler || m_shader_group->get_version_id() != m_shader_group_version_id)
             {
                 m_shader_group_version_id = m_shader_group->get_version_id();
@@ -213,15 +198,6 @@ namespace
             return true;
         }
 
-        void on_frame_end(
-            const Project&     project,
-            const BaseGroup*   parent) override
-        {
-            m_shader_group = nullptr;
-
-            EnvironmentEDF::on_frame_end(project, parent);
-        }
-
         void sample(
             const ShadingContext&   shading_context,
             const Vector2f&         s,
@@ -229,7 +205,6 @@ namespace
             Spectrum&               value,
             float&                  probability) const override
         {
-
             if (!m_importance_sampler)
             {
                 RENDERER_LOG_WARNING(
