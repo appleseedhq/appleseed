@@ -307,8 +307,8 @@ namespace
                     &values[0],
                     output_spectrum);
 
+                // todo: spectral_illuminance_to_ciexyz_standard() should be used for emitters.
                 Color3f ciexyz;
-                // todo: this is not correct for emmiter. Use refractance_to_ciexyz for emiiters.
                 spectral_reflectance_to_ciexyz_standard(&output_spectrum[0], &ciexyz[0]);
 
                 return linear_rgb_to_srgb(ciexyz_to_linear_rgb(ciexyz));
