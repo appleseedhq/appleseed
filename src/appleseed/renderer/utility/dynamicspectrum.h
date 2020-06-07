@@ -496,7 +496,7 @@ inline foundation::Color<T, 3> DynamicSpectrum<T, N>::reflectance_to_rgb(
         s_mode == RGB
             ? foundation::Color<T, 3>(m_samples[0], m_samples[1], m_samples[2])
             : foundation::ciexyz_to_linear_rgb(
-                  foundation::spectral_reflectance_to_ciexyz<T>(lighting_conditions, *this));
+                foundation::spectral_reflectance_to_ciexyz<T>(lighting_conditions, *this));
 }
 
 template <typename T, size_t N>
@@ -505,9 +505,9 @@ inline foundation::Color<T, 3> DynamicSpectrum<T, N>::illuminance_to_rgb(
 {
     return
         s_mode == RGB
-        ? foundation::Color<T, 3>(m_samples[0], m_samples[1], m_samples[2])
-        : foundation::ciexyz_to_linear_rgb(
-            foundation::spectral_illuminance_to_ciexyz<T>(lighting_conditions, *this));
+            ? foundation::Color<T, 3>(m_samples[0], m_samples[1], m_samples[2])
+            : foundation::ciexyz_to_linear_rgb(
+                foundation::spectral_illuminance_to_ciexyz<T>(lighting_conditions, *this));
 }
 
 template <typename T, size_t N>
@@ -517,7 +517,7 @@ inline foundation::Color<T, 3> DynamicSpectrum<T, N>::reflectance_to_ciexyz(
     return
         s_mode == RGB
             ? linear_rgb_to_ciexyz(
-                  foundation::Color<T, 3>(m_samples[0], m_samples[1], m_samples[2]))
+                foundation::Color<T, 3>(m_samples[0], m_samples[1], m_samples[2]))
             : foundation::spectral_reflectance_to_ciexyz<T>(lighting_conditions, *this);
 }
 
@@ -527,9 +527,9 @@ inline foundation::Color<T, 3> DynamicSpectrum<T, N>::illuminance_to_ciexyz(
 {
     return
         s_mode == RGB
-        ? linear_rgb_to_ciexyz(
-            foundation::Color<T, 3>(m_samples[0], m_samples[1], m_samples[2]))
-        : foundation::spectral_illuminance_to_ciexyz<T>(lighting_conditions, *this);
+            ? linear_rgb_to_ciexyz(
+                foundation::Color<T, 3>(m_samples[0], m_samples[1], m_samples[2]))
+            : foundation::spectral_illuminance_to_ciexyz<T>(lighting_conditions, *this);
 }
 
 template <typename T, size_t N>

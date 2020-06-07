@@ -1443,13 +1443,16 @@ const RegularSpectrum31f RGBToSpectrumRedIlluminance(RegularSpectrum31f::from_ar
 const RegularSpectrum31f RGBToSpectrumGreenIlluminance(RegularSpectrum31f::from_array(RGBToSpectrumGreenIlluminanceTab));
 const RegularSpectrum31f RGBToSpectrumBlueIlluminance(RegularSpectrum31f::from_array(RGBToSpectrumBlueIlluminanceTab));
 
-// Get color matching functions normalizer
-float get_cmf_normalizer(Color4f cmf[32])
+namespace
 {
-    float n = 0.0f;
-    for (std::size_t w = 0; w < 31; ++w)
-        n += cmf[w][1];
-   return 1.0f / n;
+    // Get color matching functions normalizer
+    float get_cmf_normalizer(const Color4f cmf[32])
+    {
+        float n = 0.0f;
+        for (std::size_t w = 0; w < 31; ++w)
+            n += cmf[w][1];
+        return 1.0f / n;
+    }
 }
 
 

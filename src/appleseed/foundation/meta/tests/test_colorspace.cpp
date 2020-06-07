@@ -478,7 +478,7 @@ TEST_SUITE(Foundation_Image_ColorSpace)
         return RegularSpectrum31f::from_array(Values);
     }
 
-    TEST_CASE(TestSpectrumToCIEXYZConversion)
+    TEST_CASE(TestReclectanceSpectrumToCIEXYZConversion)
     {
         const RegularSpectrum31f spectrum = get_white_spectrum();
         const LightingConditions lighting_conditions(IlluminantCIED65, XYZCMFCIE19312Deg);

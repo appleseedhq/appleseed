@@ -116,16 +116,15 @@ void ColorSource::initialize_from_spectrum(const ColorEntity& color_entity, cons
         &values[0],
         s);
 
+    m_spectrum.set(s, g_std_lighting_conditions, intent);
     if (intent == Spectrum::Reflectance)
     {
-        m_spectrum.set(s, g_std_lighting_conditions, intent);
         m_linear_rgb =
             ciexyz_to_linear_rgb(
                 spectral_reflectance_to_ciexyz<float>(g_std_lighting_conditions, s));
     }
     else
     {
-        m_spectrum.set(s, g_std_lighting_conditions, intent);
         m_linear_rgb =
             ciexyz_to_linear_rgb(
                 spectral_illuminance_to_ciexyz<float>(g_std_lighting_conditions, s));
