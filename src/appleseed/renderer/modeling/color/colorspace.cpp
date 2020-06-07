@@ -34,7 +34,7 @@ using namespace foundation;
 namespace renderer
 {
 
-LightingConditions      g_std_lighting_conditions;
+LightingConditions g_std_lighting_conditions;
 
 namespace
 {
