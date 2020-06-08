@@ -167,6 +167,58 @@ namespace
             return scaled_image;
         }
 
+        static void downsample_in_place(const Image& src_image, Image& dst_image)
+        {
+            const CanvasProperties& src_props = src_image.properties();
+            const CanvasProperties& dst_props = dst_image.properties();
+
+            const std::size_t src_width = src_props.m_canvas_width;
+            const std::size_t dst_width = dst_props.m_canvas_width;
+            const std::size_t src_height = src_props.m_canvas_height;
+            const std::size_t dst_height = dst_props.m_canvas_height;
+            assert(src_width >= dst_width);
+            assert(src_height >= dst_height);
+
+            for (std::size_t y = 0; y < dst_height; ++y)
+            {
+                for (std::size_t x = 0; x < dst_width; ++x)
+                {
+                    const float fx = (static_cast<float>(x) / (dst_width - 1)) * (src_width - 1);
+                    const float fy = (static_cast<float>(y) / (dst_height - 1)) * (src_height - 1);
+
+                    const Color3f result = clamped_box_sample(src_image, fx, fy);
+
+                    dst_image.set_pixel(x, y, result);
+                }
+            }
+        }
+
+        static void upsample_in_place(const Image& src_image, Image& dst_image)
+        {
+            const CanvasProperties& src_props = src_image.properties();
+            const CanvasProperties& dst_props = dst_image.properties();
+
+            const std::size_t src_width = src_props.m_canvas_width;
+            const std::size_t dst_width = dst_props.m_canvas_width;
+            const std::size_t src_height = src_props.m_canvas_height;
+            const std::size_t dst_height = dst_props.m_canvas_height;
+            assert(src_width <= dst_width);
+            assert(src_height <= dst_height);
+
+            for (std::size_t y = 0; y < dst_height; ++y)
+            {
+                for (std::size_t x = 0; x < dst_width; ++x)
+                {
+                    const float fx = (static_cast<float>(x) / (dst_width - 1)) * (src_width - 1);
+                    const float fy = (static_cast<float>(y) / (dst_height - 1)) * (src_height - 1);
+
+                    const Color3f result = box_9tap_upsample(src_image, fx, fy);
+
+                    dst_image.set_pixel(x, y, result);
+                }
+            }
+        }
+
         //
         // Image bright pass prefiltering.
         //
@@ -361,9 +413,9 @@ namespace
             // Downsample pass.
             //
 
-            bilinear_filter_in_place(prefiltered_image, blur_pyramid_down.at(0));
+            downsample_in_place(prefiltered_image, blur_pyramid_down.at(0));
             for (std::size_t level = 1; level < iterations; ++level)
-                bilinear_filter_in_place(blur_pyramid_down.at(level - 1), blur_pyramid_down.at(level));
+                downsample_in_place(blur_pyramid_down.at(level - 1), blur_pyramid_down.at(level));
 
             //
             // Upsample and blend pass.
@@ -374,7 +426,7 @@ namespace
             {
                 const std::size_t level = level_plus_one - 1;
 
-                bilinear_filter_in_place(blur_pyramid_up.at(level + 1), blur_pyramid_up.at(level));
+                upsample_in_place(blur_pyramid_up.at(level + 1), blur_pyramid_up.at(level));
 
                 const CanvasProperties& level_props = blur_pyramid_up.at(level).properties();
                 const std::size_t level_width = level_props.m_canvas_width;
@@ -402,7 +454,7 @@ namespace
             //
 
             Image bloom_target(prefiltered_image.properties());
-            bilinear_filter_in_place(blur_pyramid_up.at(0), bloom_target);
+            upsample_in_place(blur_pyramid_up.at(0), bloom_target);
 
             for (std::size_t y = 0; y < props.m_canvas_height; ++y)
             {

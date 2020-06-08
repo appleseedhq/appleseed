@@ -64,6 +64,16 @@ foundation::Color3f clamped_box_sample(
     const float fx,
     const float fy);
 
+// FIXME
+foundation::Color3f box_9tap_upsample(
+    const foundation::Image& image,
+    const float fx,
+    const float fy);
+foundation::Color3f box_13tap_downsample(
+    const foundation::Image& image,
+    const float fx,
+    const float fy);
+
 //
 // Sampling filter from Masaki Kawase's GDC2003 Presentation:
 // "Frame Buffer Postprocessing Effects in DOUBLE-S.T.E.A.L (Wreckless)".
