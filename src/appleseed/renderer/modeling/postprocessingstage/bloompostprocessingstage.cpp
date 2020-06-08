@@ -46,6 +46,7 @@
 
 // Standard headers.
 #include <cstddef>
+#include <cmath>
 #include <memory>
 #include <vector>
 
@@ -182,7 +183,6 @@ namespace
                 props.m_tile_height,
                 3, // alpha is ignored
                 props.m_pixel_format);
-            prefiltered_image.clear(Color3f(0.0f));
 
             const float eps = default_eps<float>(); // used to avoid divisions by zero
             const float knee = threshold * soft_threshold;
@@ -205,11 +205,13 @@ namespace
                         contribution = std::max(soft, contribution);
                     }
 
+                    // Filter out dark pixels.
                     if (contribution > 0.0f)
-                    {
                         color.rgb() *= contribution * safe_rcp<float>(brightness, eps);
-                        prefiltered_image.set_pixel(x, y, color.rgb());
-                    }
+                    else
+                        color.rgb() *= 0.0f;
+
+                    prefiltered_image.set_pixel(x, y, color.rgb());
                 }
             }
 
@@ -315,28 +317,15 @@ namespace
             const bool              m_debug_blur,
             const bool              m_debug_threshold)
         {
-            const std::size_t MaxIterations = 16;
-            const std::size_t MinBufferSize = 8;
-            const float RadiusOffset = 8;
-
-            // Prefilter pass.
-            Image prefiltered_image = prefiltered(image, m_threshold, m_soft_threshold);
-
-            // Determine the iteration count.
+            // Determine the dimensions of the largest temporary buffer used for blurring.
             const std::size_t width = m_fast_mode ? props.m_canvas_width / 2 : props.m_canvas_width;
             const std::size_t height = m_fast_mode ? props.m_canvas_height / 2 : props.m_canvas_height;
 
-            // const float max_iterations =
-            //     std::log2(static_cast<float>(std::min(width, height)))
-            //     + m_radius - RadiusOffset; // adjusts the minimum size a buffer can have (e.g. 0.0f = 2x2 buffer)
+            // Compute how many downsampling iterations we can do before a buffer has a side smaller than 2 pixels.
+            const float max_iterations = std::log2(std::min(width, height) / 2.0f);
+            const std::size_t iterations = clamp<std::size_t>(m_iterations, 1, static_cast<int>(max_iterations));
 
-            const std::size_t iterations = clamp<std::size_t>(
-                m_iterations, // FIXME uncomment after testing: static_cast<int>(max_iterations),
-                1, MaxIterations);
-
-            // const float sample_scale = 0.5f + max_iterations - static_cast<int>(max_iterations);
-
-            // Create blur buffer pyramids.
+            // Create blur buffer pyramids (note that lower levels have larger images).
             std::vector<Image> blur_pyramid_down;
             std::vector<Image> blur_pyramid_up;
 
@@ -357,51 +346,61 @@ namespace
                 blur_pyramid_up.push_back(Image(level_props));
 
                 // Halve dimensions for the next buffer level.
-                if (level_width >= 4 && level_height >= 4)
-                {
-                    level_width /= 2;
-                    level_height /= 2;
-                }
+                assert(level_width >= 4 && level_height >= 4);
+                level_width /= 2;
+                level_height /= 2;
             }
 
-            // Downsample.
+            //
+            // Prefilter pass.
+            //
+
+            Image prefiltered_image = prefiltered(image, m_threshold, m_soft_threshold);
+
+            //
+            // Downsample pass.
+            //
+
             bilinear_filter_in_place(prefiltered_image, blur_pyramid_down.at(0));
             for (std::size_t level = 1; level < iterations; ++level)
                 bilinear_filter_in_place(blur_pyramid_down.at(level - 1), blur_pyramid_down.at(level));
 
-            // Upsample and blend.
+            //
+            // Upsample and blend pass.
+            //
+
             blur_pyramid_up.at(iterations - 1).copy_from(blur_pyramid_down.at(iterations - 1));
-            if (iterations > 1)
+            for (std::size_t level_plus_one = iterations - 1; level_plus_one > 0; --level_plus_one)
             {
-                for (std::size_t level = iterations - 2; ; --level)
+                const std::size_t level = level_plus_one - 1;
+
+                bilinear_filter_in_place(blur_pyramid_up.at(level + 1), blur_pyramid_up.at(level));
+
+                const CanvasProperties& level_props = blur_pyramid_up.at(level).properties();
+                const std::size_t level_width = level_props.m_canvas_width;
+                const std::size_t level_height = level_props.m_canvas_height;
+
+                // Blend each upsampled buffer with the downsample buffer in the same level.
+                for (std::size_t y = 0; y < level_height; ++y)
                 {
-                    bilinear_filter_in_place(blur_pyramid_up.at(level + 1), blur_pyramid_up.at(level));
-
-                    const CanvasProperties& level_props = blur_pyramid_up.at(level).properties();
-                    const std::size_t level_width = level_props.m_canvas_width;
-                    const std::size_t level_height = level_props.m_canvas_height;
-
-                    for (std::size_t y = 0; y < level_height; ++y)
+                    for (std::size_t x = 0; x < level_width; ++x)
                     {
-                        for (std::size_t x = 0; x < level_width; ++x)
-                        {
-                            Color3f color_up;
-                            blur_pyramid_up.at(level).get_pixel(x, y, color_up);
+                        Color3f color_up;
+                        blur_pyramid_up.at(level).get_pixel(x, y, color_up);
 
-                            Color3f color_down;
-                            blur_pyramid_down.at(level).get_pixel(x, y, color_down);
+                        Color3f color_down;
+                        blur_pyramid_down.at(level).get_pixel(x, y, color_down);
 
-                            color_up += color_down; // additive blend
-                            blur_pyramid_up.at(level).set_pixel(x, y, color_up);
-                        }
+                        color_up += color_down; // additive blend
+                        blur_pyramid_up.at(level).set_pixel(x, y, color_up);
                     }
-
-                    if (level == 0)
-                        break;
                 }
             }
 
+            //
             // Resolve pass.
+            //
+
             Image bloom_target(prefiltered_image.properties());
             bilinear_filter_in_place(blur_pyramid_up.at(0), bloom_target);
 
@@ -503,7 +502,7 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
             .insert("type", "int")
             .insert("min",
                     Dictionary()
-                        .insert("value", "0")
+                        .insert("value", "1")
                         .insert("type", "hard"))
             .insert("max",
                     Dictionary()
