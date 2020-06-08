@@ -85,7 +85,7 @@ ImageEffectJobFactory::EffectJobVector ImageEffectJobFactory::create(
 
     // Generate tiles in linear order.
     std::vector<std::size_t> tiles;
-    linear_ordering(tiles, props.m_tile_count);
+    hilbert_ordering(tiles, props.m_tile_count_x, props.m_tile_count_y);
 
     // Make sure the right number of tiles was created.
     assert(tiles.size() == props.m_tile_count);

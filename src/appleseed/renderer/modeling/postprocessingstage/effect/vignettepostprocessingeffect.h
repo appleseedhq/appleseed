@@ -44,7 +44,8 @@ namespace renderer
 // Vignette-specific parameters.
 //
 
-struct VignetteParams {
+struct VignetteParams
+{
     // Settings.
     float       intensity;
     float       anisotropy; // 0 = no anisotropy (i.e. perfectly rounded)
@@ -65,7 +66,7 @@ class VignetteApplierFactory
 {
   public:
     // Constructor.
-    VignetteApplierFactory(const VignetteParams& params);
+    explicit VignetteApplierFactory(const VignetteParams& params);
 
     // Delete this instance.
     void release() override;

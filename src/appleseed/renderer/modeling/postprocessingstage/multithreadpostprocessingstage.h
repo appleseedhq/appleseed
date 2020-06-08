@@ -32,6 +32,9 @@
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
 #include "renderer/modeling/postprocessingstage/effect/ipostprocessingeffect.h"
 
+// Standard headers.
+#include <cstddef>
+
 // Forward declarations.
 namespace renderer  { class Frame; }
 namespace renderer  { class ParamArray; }

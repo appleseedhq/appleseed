@@ -101,13 +101,14 @@ namespace
         void execute(Frame& frame, const std::size_t thread_count) const override
         {
             // Skip vignetting if the intensity is zero.
-            if (feq(m_intensity, 0.0f))
+            if (m_intensity == 0.0f)
                 return;
 
             const CanvasProperties& props = frame.image().properties();
 
             // Initialize effect-specific settings and context.
-            const VignetteParams effect_params {
+            const VignetteParams effect_params
+            {
                 m_intensity,
                 m_anisotropy,
                 static_cast<float>(props.m_canvas_width),
