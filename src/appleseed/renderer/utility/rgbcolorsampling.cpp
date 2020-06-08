@@ -209,4 +209,56 @@ Color3f dual_filter_upsample(
         / 12.0f;
 }
 
+// FIXME
+
+Color3f box_9tap_upsample(
+    const Image& image,
+    const float fx,
+    const float fy)
+{
+    const float off = 1.0f;
+
+    return (
+        clamped_box_sample(image, fx - off, fy - off) +
+        clamped_box_sample(image, fx      , fy - off) * 2.0f +
+        clamped_box_sample(image, fx + off, fy - off) +
+
+        clamped_box_sample(image, fx - off, fy      ) * 2.0f +
+        clamped_box_sample(image, fx      , fy      ) * 4.0f +
+        clamped_box_sample(image, fx + off, fy      ) * 2.0f +
+
+        clamped_box_sample(image, fx - off, fy + off) +
+        clamped_box_sample(image, fx      , fy + off) * 2.0f +
+        clamped_box_sample(image, fx + off, fy + off))
+        / 16.0f;
+}
+
+Color3f box_13tap_downsample(
+    const Image& image,
+    const float fx,
+    const float fy)
+{
+    Color3f A = clamped_box_sample(image, fx - 1.0f, fy - 1.0f);
+    Color3f B = clamped_box_sample(image, fx       , fy - 1.0f);
+    Color3f C = clamped_box_sample(image, fx + 1.0f, fy - 1.0f);
+    Color3f D = clamped_box_sample(image, fx - 0.5f, fy - 0.5f);
+    Color3f E = clamped_box_sample(image, fx + 0.5f, fy - 0.5f);
+    Color3f F = clamped_box_sample(image, fx - 1.0f, fy       );
+    Color3f G = clamped_box_sample(image, fx,        fy       );
+    Color3f H = clamped_box_sample(image, fx + 1.0f, fy       );
+    Color3f I = clamped_box_sample(image, fx - 0.5f, fy + 0.5f);
+    Color3f J = clamped_box_sample(image, fx + 0.5f, fy + 0.5f);
+    Color3f K = clamped_box_sample(image, fx - 1.0f, fy + 1.0f);
+    Color3f L = clamped_box_sample(image, fx       , fy + 1.0f);
+    Color3f M = clamped_box_sample(image, fx + 1.0f, fy + 1.0f);
+
+    return (
+        (D + E + I + J) * 0.5f +
+        (A + B + G + F) * 0.125f +
+        (B + C + H + G) * 0.125f +
+        (F + G + L + K) * 0.125f +
+        (G + H + M + L) * 0.125f)
+        / 4.0f;
+}
+
 }   // namespace renderer
