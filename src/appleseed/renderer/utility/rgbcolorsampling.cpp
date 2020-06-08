@@ -135,12 +135,10 @@ Color3f clamped_box_sample(const Image& image, const float fx, const float fy)
 
 Color3f kawase_sample(
     const Image&        image,
-    const std::size_t   x,
-    const std::size_t   y,
+    const float         fx,
+    const float         fy,
     const std::size_t   offset)
 {
-    const float fx = static_cast<float>(x);
-    const float fy = static_cast<float>(y);
     const float off = static_cast<float>(offset) + 0.5f;
 
     // Since each corner sample is an average of 4 values, 16 pixels are used in total.
@@ -155,12 +153,10 @@ Color3f kawase_sample(
 
 Color3f dual_filter_downsample(
     const Image&        image,
-    const float         corner_x,
-    const float         corner_y,
+    const float         fx,
+    const float         fy,
     const std::size_t   offset)
 {
-    const float fx = corner_x;
-    const float fy = corner_y;
     const float half_off = 0.5f * static_cast<float>(offset);
 
     Color3f center = clamped_box_sample(image, fx, fy);
@@ -177,12 +173,10 @@ Color3f dual_filter_downsample(
 
 Color3f dual_filter_upsample(
     const Image&        image,
-    const std::size_t   center_x,
-    const std::size_t   center_y,
+    const float         fx,
+    const float         fy,
     const std::size_t   offset)
 {
-    const float fx = static_cast<float>(center_x);
-    const float fy = static_cast<float>(center_y);
     const float off = static_cast<float>(offset);
     const float half_off = 0.5f * off;
 
@@ -196,6 +190,10 @@ Color3f dual_filter_upsample(
     const std::size_t left_x = static_cast<std::size_t>(std::max(fx - off, 0.0f));
     const std::size_t right_x = static_cast<std::size_t>(std::min(fx + off, image.properties().m_canvas_width - 1.0f));
     const std::size_t bottom_y = static_cast<std::size_t>(std::max(fy - off, 0.0f));
+
+    // FIXME
+    const std::size_t center_x = clamp(static_cast<std::size_t>(fx), left_x, right_x);
+    const std::size_t center_y = clamp(static_cast<std::size_t>(fy), bottom_y, top_y);
 
     Color3f top, left, right, bottom;
     image.get_pixel(center_x, top_y, top);

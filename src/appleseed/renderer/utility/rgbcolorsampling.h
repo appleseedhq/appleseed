@@ -85,8 +85,8 @@ foundation::Color3f box_13tap_downsample(
 
 foundation::Color3f kawase_sample(
     const foundation::Image&    image,
-    const std::size_t           x,
-    const std::size_t           y,
+    const float                 fx,
+    const float                 fy,
     const std::size_t           offset);
 
 //
@@ -98,17 +98,16 @@ foundation::Color3f kawase_sample(
 //
 //
 
-// Note: corner_x and corner_y should be half-integer values.
 foundation::Color3f dual_filter_downsample(
     const foundation::Image&    image,
-    const float                 corner_x,
-    const float                 corner_y,
+    const float                 fx,
+    const float                 fy,
     const std::size_t           offset = 1);
 
 foundation::Color3f dual_filter_upsample(
     const foundation::Image&    image,
-    const std::size_t           center_x,
-    const std::size_t           center_y,
+    const float                 fx,
+    const float                 fy,
     const std::size_t           offset = 1);
 
 }   // namespace renderer
