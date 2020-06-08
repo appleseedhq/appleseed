@@ -116,13 +116,12 @@ namespace
             };
 
             // Instantiate an effect applier.
-            const VignetteApplierFactory effect_applier_factory(effect_params);
-            const std::unique_ptr<const IImageEffectApplier> effect_applier(effect_applier_factory.create());
+            const VignetteApplier effect_applier(effect_params);
 
             // Apply the effect onto each image tile.
             MultithreadPostProcessingStage::execute_on_tiles(
                 frame,
-                *effect_applier,
+                effect_applier,
                 thread_count);
         }
 

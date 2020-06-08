@@ -55,17 +55,4 @@ class IImageEffectApplier
         const std::size_t   tile_y) const = 0;
 };
 
-
-//
-// Interface of an IImageEffectApplier factory.
-//
-
-class IImageEffectApplierFactory
-  : public foundation::IUnknown
-{
-  public:
-    // Return a new post-processing effect applier instance.
-    virtual IImageEffectApplier* create() const = 0;
-};
-
 }   // namespace renderer

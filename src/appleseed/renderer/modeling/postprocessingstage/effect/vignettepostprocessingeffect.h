@@ -58,21 +58,24 @@ struct VignetteParams
 
 
 //
-// Vignette post-processing effect applier factory.
+// Vignette post-processing effect applier.
 //
 
-class VignetteApplierFactory
-  : public IImageEffectApplierFactory
+class VignetteApplier
+  : public IImageEffectApplier
 {
   public:
     // Constructor.
-    explicit VignetteApplierFactory(const VignetteParams& params);
+    explicit VignetteApplier(const VignetteParams& params);
 
     // Delete this instance.
     void release() override;
 
-    // Return a new effect applier instance.
-    IImageEffectApplier* create() const override;
+    // Apply the vignette effect to a given tile.
+    void apply(
+        const Frame&        frame,
+        const std::size_t   tile_x,
+        const std::size_t   tile_y) const override;
 
   private:
     const float                     m_intensity;

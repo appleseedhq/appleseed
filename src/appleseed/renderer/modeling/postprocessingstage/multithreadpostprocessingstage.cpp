@@ -74,7 +74,7 @@ void MultithreadPostProcessingStage::execute_on_tiles(
     for (ImageEffectJob* const effect_job : effect_jobs)
         job_queue.schedule(effect_job);
 
-    // Create a job manager to wait until jobs have effectively stopped.
+    // Create a job manager and wait until jobs have effectively stopped.
     JobManager job_manager(
         global_logger(),
         job_queue,
