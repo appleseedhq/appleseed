@@ -64,16 +64,6 @@ foundation::Color3f clamped_box_sample(
     const float fx,
     const float fy);
 
-// FIXME
-foundation::Color3f box_9tap_upsample(
-    const foundation::Image& image,
-    const float fx,
-    const float fy);
-foundation::Color3f box_13tap_downsample(
-    const foundation::Image& image,
-    const float fx,
-    const float fy);
-
 //
 // Sampling filter from Masaki Kawase's GDC2003 Presentation:
 // "Frame Buffer Postprocessing Effects in DOUBLE-S.T.E.A.L (Wreckless)".
@@ -90,7 +80,8 @@ foundation::Color3f kawase_sample(
     const std::size_t           offset);
 
 //
-// Sampling filters from Marius Bjørge's SIGGRAPH2015 Presentation: "Bandwidth-Efficient Rendering".
+// Sampling filters from Marius Bjørge's SIGGRAPH2015 Presentation:
+// "Bandwidth-Efficient Rendering".
 //
 // Reference:
 //
@@ -109,5 +100,25 @@ foundation::Color3f dual_filter_upsample(
     const float                 fx,
     const float                 fy,
     const std::size_t           offset = 1);
+
+//
+// Sampling filters from Jorge Jimenez's SIGGRAPH2014 Presentation:
+// "Next Generation Post Processing in Call of Duty: Advanced Warfare".
+//
+// Reference:
+//
+//   http://advances.realtimerendering.com/s2014/#_NEXT_GENERATION_POST
+//
+//
+
+foundation::Color3f box_9tap_upsample(
+    const foundation::Image&    image,
+    const float                 fx,
+    const float                 fy);
+
+foundation::Color3f box_13tap_downsample(
+    const foundation::Image&    image,
+    const float                 fx,
+    const float                 fy);
 
 }   // namespace renderer
