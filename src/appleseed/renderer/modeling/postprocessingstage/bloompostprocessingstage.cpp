@@ -113,60 +113,6 @@ namespace
         // Image up/down sampling with bilinear filtering.
         //
 
-        static void bilinear_filter_in_place(const Image& src_image, Image& dst_image)
-        {
-            const CanvasProperties& src_props = src_image.properties();
-            const CanvasProperties& dst_props = dst_image.properties();
-
-            const std::size_t src_width = src_props.m_canvas_width;
-            const std::size_t dst_width = dst_props.m_canvas_width;
-            const std::size_t src_height = src_props.m_canvas_height;
-            const std::size_t dst_height = dst_props.m_canvas_height;
-
-            assert(src_props.m_channel_count == 3);
-            assert(dst_props.m_channel_count == 3);
-
-            // Perform bilinear interpolation for up/down sampling.
-            for (std::size_t y = 0; y < dst_height; ++y)
-            {
-                for (std::size_t x = 0; x < dst_width; ++x)
-                {
-                    const float fx = (static_cast<float>(x) / (dst_width - 1)) * (src_width - 1);
-                    const float fy = (static_cast<float>(y) / (dst_height - 1)) * (src_height - 1);
-
-                    const std::size_t x0 = truncate<std::size_t>(fx);
-                    const std::size_t y0 = truncate<std::size_t>(fy);
-                    const std::size_t x1 = std::min<std::size_t>(x0 + 1, src_width - 1);
-                    const std::size_t y1 = std::min<std::size_t>(y0 + 1, src_height - 1);
-
-                    const Color3f result = blerp(src_image, x0, y0, x1, y1, fx, fy); // bilinear interpolation
-
-                    dst_image.set_pixel(x, y, result);
-                }
-            }
-        }
-
-        static Image bilinear_filtered(const Image& image, const float scaling_factor)
-        {
-            if (feq(scaling_factor, 1.0f))
-                return Image(image);
-
-            const CanvasProperties& props = image.properties();
-
-            CanvasProperties scaled_props(
-                static_cast<std::size_t>(scaling_factor * props.m_canvas_width),
-                static_cast<std::size_t>(scaling_factor * props.m_canvas_height),
-                static_cast<std::size_t>(scaling_factor * props.m_tile_width),
-                static_cast<std::size_t>(scaling_factor * props.m_tile_height),
-                props.m_channel_count,
-                props.m_pixel_format);
-
-            Image scaled_image(scaled_props);
-            bilinear_filter_in_place(image, scaled_image);
-
-            return scaled_image;
-        }
-
         static void downsample_in_place(const Image& src_image, Image& dst_image)
         {
             const CanvasProperties& src_props = src_image.properties();
@@ -186,7 +132,7 @@ namespace
                     const float fx = (static_cast<float>(x) / (dst_width - 1)) * (src_width - 1);
                     const float fy = (static_cast<float>(y) / (dst_height - 1)) * (src_height - 1);
 
-                    const Color3f result = clamped_box_sample(src_image, fx, fy);
+                    const Color3f result = kawase_sample(src_image, fx, fy, 1);
 
                     dst_image.set_pixel(x, y, result);
                 }
@@ -212,7 +158,7 @@ namespace
                     const float fx = (static_cast<float>(x) / (dst_width - 1)) * (src_width - 1);
                     const float fy = (static_cast<float>(y) / (dst_height - 1)) * (src_height - 1);
 
-                    const Color3f result = box_9tap_upsample(src_image, fx, fy);
+                    const Color3f result = kawase_sample(src_image, fx, fy, 1);
 
                     dst_image.set_pixel(x, y, result);
                 }
@@ -288,7 +234,11 @@ namespace
             {
                 for (std::size_t x = 0; x < src_props.m_canvas_width; ++x)
                 {
-                    Color3f result = kawase_sample(src_image, x, y, offset);
+                    Color3f result = kawase_sample(
+                        src_image,
+                        static_cast<float>(x),
+                        static_cast<float>(y),
+                        offset);
 
                     Color3f color;
                     dst_image.get_pixel(x, y, color);
@@ -316,9 +266,7 @@ namespace
             assert(iteration_offset.size() <= m_iterations);
 
             // Copy the image to temporary render targets used for blurring.
-            Image bloom_blur_1 = bilinear_filtered(
-                prefiltered(image, m_threshold, m_soft_threshold),
-                m_fast_mode ? 0.5f : 1.0f);
+            Image bloom_blur_1 = prefiltered(image, m_threshold, m_soft_threshold);
             Image bloom_blur_2 = Image(bloom_blur_1);
             Image& bloom_blur = m_iterations % 2 == 1 ? bloom_blur_2 : bloom_blur_1; // last blur target
 
@@ -332,7 +280,7 @@ namespace
             }
 
             // Blend colors from the original and the blurred image to achieve bloom.
-            const Image &bloom_target = m_fast_mode ? bilinear_filtered(bloom_blur, 2.0f) : bloom_blur;
+            const Image &bloom_target = bloom_blur;
 
             for (std::size_t y = 0; y < props.m_canvas_height; ++y)
             {
