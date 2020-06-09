@@ -207,35 +207,41 @@ Color3f dual_filter_upsample(
         / 12.0f;
 }
 
-// FIXME
-
 Color3f box_9tap_upsample(
-    const Image& image,
-    const float fx,
-    const float fy)
+    const Image&    image,
+    const float     fx,
+    const float     fy)
 {
     const float off = 1.0f;
 
     return (
-        clamped_box_sample(image, fx - off, fy - off) +
-        clamped_box_sample(image, fx      , fy - off) * 2.0f +
-        clamped_box_sample(image, fx + off, fy - off) +
+        clamped_box_sample(image, fx - off, fy - off) +           // bottom left
+        clamped_box_sample(image, fx      , fy - off) * 2.0f +    // bottom
+        clamped_box_sample(image, fx + off, fy - off) +           // bottom right
 
-        clamped_box_sample(image, fx - off, fy      ) * 2.0f +
-        clamped_box_sample(image, fx      , fy      ) * 4.0f +
-        clamped_box_sample(image, fx + off, fy      ) * 2.0f +
+        clamped_box_sample(image, fx - off, fy      ) * 2.0f +    // left
+        clamped_box_sample(image, fx      , fy      ) * 4.0f +    // center
+        clamped_box_sample(image, fx + off, fy      ) * 2.0f +    // right
 
-        clamped_box_sample(image, fx - off, fy + off) +
-        clamped_box_sample(image, fx      , fy + off) * 2.0f +
-        clamped_box_sample(image, fx + off, fy + off))
+        clamped_box_sample(image, fx - off, fy + off) +           // top left
+        clamped_box_sample(image, fx      , fy + off) * 2.0f +    // top
+        clamped_box_sample(image, fx + off, fy + off))            // top right
         / 16.0f;
 }
 
 Color3f box_13tap_downsample(
-    const Image& image,
-    const float fx,
-    const float fy)
+    const Image&    image,
+    const float     fx,
+    const float     fy)
 {
+    // . . . . . . .
+    // . A . B . C .
+    // . . D . E . .
+    // . F . G . H .
+    // . . I . J . .
+    // . K . L . M .
+    // . . . . . . .
+
     Color3f A = clamped_box_sample(image, fx - 1.0f, fy - 1.0f);
     Color3f B = clamped_box_sample(image, fx       , fy - 1.0f);
     Color3f C = clamped_box_sample(image, fx + 1.0f, fy - 1.0f);
@@ -251,11 +257,11 @@ Color3f box_13tap_downsample(
     Color3f M = clamped_box_sample(image, fx + 1.0f, fy + 1.0f);
 
     return (
-        (D + E + I + J) * 0.5f +
-        (A + B + G + F) * 0.125f +
-        (B + C + H + G) * 0.125f +
-        (F + G + L + K) * 0.125f +
-        (G + H + M + L) * 0.125f)
+        (D + E + I + J) * 0.5f +    // center
+        (A + B + G + F) * 0.125f +  // top left
+        (B + C + H + G) * 0.125f +  // top right
+        (F + G + L + K) * 0.125f +  // bottom left
+        (G + H + M + L) * 0.125f)   // bottom right
         / 4.0f;
 }
 
