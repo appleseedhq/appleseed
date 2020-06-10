@@ -135,10 +135,12 @@ Color3f clamped_box_sample(const Image& image, const float fx, const float fy)
 
 Color3f kawase_sample(
     const Image&        image,
-    const float         fx,
-    const float         fy,
+    const std::size_t   x,
+    const std::size_t   y,
     const std::size_t   offset)
 {
+    const float fx = static_cast<float>(x);
+    const float fy = static_cast<float>(y);
     const float off = static_cast<float>(offset) + 0.5f;
 
     // Since each corner sample is an average of 4 values, 16 pixels are used in total.
@@ -186,20 +188,22 @@ Color3f dual_filter_upsample(
     Color3f bottom_right = clamped_box_sample(image, fx + half_off, fy - half_off);
 
     // Sample the edge-most pixel when the coordinate is outside the image (i.e. texture clamping).
-    const std::size_t top_y = static_cast<std::size_t>(std::min(fy + off, image.properties().m_canvas_height - 1.0f));
-    const std::size_t left_x = static_cast<std::size_t>(std::max(fx - off, 0.0f));
-    const std::size_t right_x = static_cast<std::size_t>(std::min(fx + off, image.properties().m_canvas_width - 1.0f));
-    const std::size_t bottom_y = static_cast<std::size_t>(std::max(fy - off, 0.0f));
+    // const std::size_t top_y = static_cast<std::size_t>(std::min(fy + off, image.properties().m_canvas_height - 1.0f));
+    // const std::size_t left_x = static_cast<std::size_t>(std::max(fx - off, 0.0f));
+    // const std::size_t right_x = static_cast<std::size_t>(std::min(fx + off, image.properties().m_canvas_width - 1.0f));
+    // const std::size_t bottom_y = static_cast<std::size_t>(std::max(fy - off, 0.0f));
+    // const std::size_t center_x = clamp(static_cast<std::size_t>(round(fx)), left_x, right_x);
+    // const std::size_t center_y = clamp(static_cast<std::size_t>(round(fy)), bottom_y, top_y);
+    // Color3f top, left, right, bottom;
+    // image.get_pixel(center_x, top_y, top);
+    // image.get_pixel(left_x, center_y, left);
+    // image.get_pixel(right_x, center_y, right);
+    // image.get_pixel(center_x, bottom_y, bottom);
 
-    // FIXME
-    const std::size_t center_x = clamp(static_cast<std::size_t>(fx), left_x, right_x);
-    const std::size_t center_y = clamp(static_cast<std::size_t>(fy), bottom_y, top_y);
-
-    Color3f top, left, right, bottom;
-    image.get_pixel(center_x, top_y, top);
-    image.get_pixel(left_x, center_y, left);
-    image.get_pixel(right_x, center_y, right);
-    image.get_pixel(center_x, bottom_y, bottom);
+    Color3f top = clamped_box_sample(image, fx, fy + off);
+    Color3f left = clamped_box_sample(image, fx - off, fy);
+    Color3f right = clamped_box_sample(image, fx + off, fy);
+    Color3f bottom = clamped_box_sample(image, fx, fy - off);
 
     return (
         top + left + right + bottom
