@@ -63,10 +63,11 @@ namespace
 
     const char* Model = "bloom_post_processing_stage";
 
-    static constexpr std::size_t DefaultIterations = 5;
+    static constexpr std::size_t DefaultIterations = 4;
     static constexpr float DefaultIntensity = 0.5f;
     static constexpr float DefaultThreshold = 0.8f;
     static constexpr float DefaultSoftThreshold = 0.5f;
+    static constexpr bool DefaultAntiFlicker = false;
 
     class BloomPostProcessingStage
       : public PostProcessingStage
@@ -101,8 +102,8 @@ namespace
             m_intensity = m_params.get_optional("intensity", DefaultIntensity, context);
             m_threshold = m_params.get_optional("threshold", DefaultThreshold, context);
             m_soft_threshold = m_params.get_optional("soft_threshold", DefaultSoftThreshold, context);
+            m_anti_flicker = m_params.get_optional("anti_flicker", DefaultAntiFlicker, context);
 
-            m_fast_mode = m_params.get_optional("fast_mode", false, context);
             m_debug_blur = m_params.get_optional("debug_blur", false, context);
             m_debug_threshold = m_params.get_optional("debug_threshold", false, context);
 
@@ -166,7 +167,7 @@ namespace
                     image.get_pixel(x, y, color);
 
                     const float brightness = max_value(color.rgb());
-                    float contribution = (brightness - threshold);
+                    float contribution = brightness - threshold;
 
                     if (knee > 0.0f)
                     {
@@ -198,23 +199,20 @@ namespace
             const CanvasProperties& src_props = src_image.properties();
             const CanvasProperties& dst_props = dst_image.properties();
 
-            assert(src_props.m_channel_count == 3);
-            assert(dst_props.m_channel_count == 3);
             assert(src_props.m_canvas_width == dst_props.m_canvas_width);
             assert(src_props.m_canvas_height == dst_props.m_canvas_height);
+
+            assert(src_props.m_channel_count == 3);
+            assert(dst_props.m_channel_count == 3);
 
             for (std::size_t y = 0; y < src_props.m_canvas_height; ++y)
             {
                 for (std::size_t x = 0; x < src_props.m_canvas_width; ++x)
                 {
-                    Color3f result = kawase_sample(
-                        src_image,
-                        static_cast<float>(x),
-                        static_cast<float>(y),
-                        offset);
-
                     Color3f color;
                     dst_image.get_pixel(x, y, color);
+
+                    Color3f result = kawase_sample(src_image, x, y, offset);
                     result += color; // additive blend
 
                     dst_image.set_pixel(x, y, result);
@@ -223,28 +221,27 @@ namespace
         }
 
         static void execute_kawase_bloom(
-            const CanvasProperties& props,
-            Image&                  image,
-            // FIXME update names/params after testing
-            const std::size_t       m_iterations,
-            const float             m_intensity,
-            const float             m_threshold,
-            const float             m_soft_threshold,
-            const bool              m_fast_mode,
-            const bool              m_debug_blur,
-            const bool              m_debug_threshold)
+            Image&                      image,
+            const std::size_t           m_iterations,
+            const float                 m_intensity,
+            const float                 m_threshold,
+            const float                 m_soft_threshold,
+            const bool                  m_anti_flicker,
+            const bool                  m_debug_blur,
+            const bool                  m_debug_threshold)
         {
+            const CanvasProperties& props = image.properties();
+
             // Set the offset values used for sampling in Kawase blur.
             const std::vector<std::size_t> iteration_offset = { 0, 1, 2, 2, 3 };
-            assert(iteration_offset.size() <= m_iterations);
+            const std::size_t iterations = m_debug_threshold ? 0 : std::min(m_iterations, iteration_offset.size());
 
             // Copy the image to temporary render targets used for blurring.
             Image bloom_blur_1 = prefiltered(image, m_threshold, m_soft_threshold);
             Image bloom_blur_2 = Image(bloom_blur_1);
-            Image& bloom_blur = m_iterations % 2 == 1 ? bloom_blur_2 : bloom_blur_1; // last blur target
 
             // Iteratively blur the image, "ping-ponging" between two temporaries.
-            for (std::size_t i = 0; i < m_iterations; ++i)
+            for (std::size_t i = 0; i < iterations; ++i)
             {
                 if (i % 2 == 0)
                     kawase_blur(bloom_blur_1, bloom_blur_2, iteration_offset[i]);
@@ -252,8 +249,8 @@ namespace
                     kawase_blur(bloom_blur_2, bloom_blur_1, iteration_offset[i]);
             }
 
-            // Blend colors from the original and the blurred image to achieve bloom.
-            const Image &bloom_target = bloom_blur;
+            // Blend colors from the original and the last blurred image to achieve bloom.
+            const Image &bloom_target = iterations % 2 == 1 ? bloom_blur_2 : bloom_blur_1;
 
             for (std::size_t y = 0; y < props.m_canvas_height; ++y)
             {
@@ -265,7 +262,7 @@ namespace
                     Color3f bloom_color;
                     bloom_target.get_pixel(x, y, bloom_color);
 
-                    if (m_debug_blur)
+                    if (m_debug_blur || m_debug_threshold)
                         color.rgb() = bloom_color;
                     else
                         color.rgb() += m_intensity * bloom_color; // additive blend (weighted by intensity)
@@ -279,20 +276,20 @@ namespace
         //
 
         static void execute_kino_bloom(
-            const CanvasProperties& props,
             Image&                  image,
-            // FIXME update names/params after testing
             const std::size_t       m_iterations,
             const float             m_intensity,
             const float             m_threshold,
             const float             m_soft_threshold,
-            const bool              m_fast_mode,
+            const bool              m_anti_flicker,
             const bool              m_debug_blur,
             const bool              m_debug_threshold)
         {
+            const CanvasProperties& props = image.properties();
+
             // Determine the dimensions of the largest temporary buffer used for blurring.
-            const std::size_t width = m_fast_mode ? props.m_canvas_width / 2 : props.m_canvas_width;
-            const std::size_t height = m_fast_mode ? props.m_canvas_height / 2 : props.m_canvas_height;
+            const std::size_t width = props.m_canvas_width;
+            const std::size_t height = props.m_canvas_height;
 
             // Compute how many downsampling iterations we can do before a buffer has a side smaller than 2 pixels.
             const float max_iterations = std::log2(std::min(width, height) / 2.0f);
@@ -325,15 +322,21 @@ namespace
             }
 
             // Determine the functions used for down/up sampling buffers.
-            const auto downsampling_func = [](const Image& image, const float fx, const float fy)
-            {
-                return clamped_box_sample(image, fx, fy);
-            };
+            Color3f (*downsampling_func)(const Image&, float, float);
+            Color3f (*upsampling_func)(const Image&, float, float);
 
-            const auto upsampling_func = [](const Image& image, const float fx, const float fy)
+            if (m_anti_flicker)
             {
-                return clamped_box_sample(image, fx, fy);
-            };
+                downsampling_func = &box_13tap_downsample;
+                upsampling_func = &box_9tap_upsample;
+            }
+            else
+            {
+                downsampling_func = [](const Image& image, const float fx, const float fy) -> Color3f
+                    { return dual_filter_downsample(image, fx, fy); };
+                upsampling_func = [](const Image& image, const float fx, const float fy) -> Color3f
+                    { return dual_filter_upsample(image, fx, fy); };
+            }
 
             //
             // Prefilter pass.
@@ -345,7 +348,7 @@ namespace
             // Downsample pass.
             //
 
-            scale_in_place(prefiltered_image, blur_pyramid_down[0], downsampling_func);
+            scale_in_place(prefiltered_image, blur_pyramid_down[0], downsampling_func); // TODO optimize away
 
             for (std::size_t level = 1; level < iterations; ++level)
                 scale_in_place(blur_pyramid_down[level - 1], blur_pyramid_down[level], downsampling_func);
@@ -354,7 +357,7 @@ namespace
             // Upsample and blend pass.
             //
 
-            blur_pyramid_up[iterations - 1].copy_from(blur_pyramid_down[iterations - 1]);
+            blur_pyramid_up[iterations - 1].copy_from(blur_pyramid_down[iterations - 1]); // TODO optimize away
 
             for (std::size_t level_plus_one = iterations - 1; level_plus_one > 0; --level_plus_one)
             {
@@ -370,7 +373,6 @@ namespace
                     for (std::size_t x = 0; x < level_props.m_canvas_width; ++x)
                     {
                         Color3f color_up, color_down;
-
                         blur_pyramid_up[level].get_pixel(x, y, color_up);
                         blur_pyramid_down[level].get_pixel(x, y, color_down);
 
@@ -387,7 +389,7 @@ namespace
 
             Image bloom_target(prefiltered_image.properties());
 
-            scale_in_place(blur_pyramid_up[0], bloom_target, upsampling_func);
+            scale_in_place(blur_pyramid_up[0], bloom_target, upsampling_func); // TODO optimize away
 
             for (std::size_t y = 0; y < props.m_canvas_height; ++y)
             {
@@ -411,24 +413,21 @@ namespace
 
         void execute(Frame& frame, const std::size_t thread_count) const override
         {
-            const CanvasProperties& props = frame.image().properties();
             Image& image = frame.image();
 
-            // Use a pyramid of up/down scaled blur buffers.
+            // Use a pyramid of down/up scaled blur buffers.
             execute_kino_bloom(
-                props,
                 image,
                 m_iterations,
                 m_intensity,
                 m_threshold,
                 m_soft_threshold,
-                m_fast_mode,
+                m_anti_flicker,
                 m_debug_blur,
                 m_debug_threshold);
 
             // // Ping-pong between two equally sized blur buffers.
             // execute_kawase_bloom(
-            //     props,
             //     image,
             //     m_iterations,
             //     m_intensity,
@@ -444,8 +443,8 @@ namespace
         float           m_intensity;
         float           m_threshold;
         float           m_soft_threshold;
+        bool            m_anti_flicker;
 
-        bool            m_fast_mode;
         bool            m_debug_blur;
         bool            m_debug_threshold;
     };
@@ -544,15 +543,15 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
             .insert("use", "optional")
             .insert("default", "0.5"));
 
-    // TODO remove:
-
     metadata.push_back(
         Dictionary()
-            .insert("name", "fast_mode")
-            .insert("label", "Fast Mode")
+            .insert("name", "anti_flicker")
+            .insert("label", "Anti Flicker")
             .insert("type", "bool")
             .insert("use", "optional")
             .insert("default", "false"));
+
+    // TODO remove:
 
     metadata.push_back(
         Dictionary()

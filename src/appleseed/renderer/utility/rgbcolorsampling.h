@@ -75,8 +75,8 @@ foundation::Color3f clamped_box_sample(
 
 foundation::Color3f kawase_sample(
     const foundation::Image&    image,
-    const float                 fx,
-    const float                 fy,
+    const std::size_t           x,
+    const std::size_t           y,
     const std::size_t           offset);
 
 //
