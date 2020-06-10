@@ -105,7 +105,6 @@ namespace
             m_anti_flicker = m_params.get_optional("anti_flicker", DefaultAntiFlicker, context);
 
             m_debug_blur = m_params.get_optional("debug_blur", false, context);
-            m_debug_threshold = m_params.get_optional("debug_threshold", false, context);
 
             return true;
         }
@@ -227,14 +226,13 @@ namespace
             const float                 m_threshold,
             const float                 m_soft_threshold,
             const bool                  m_anti_flicker,
-            const bool                  m_debug_blur,
-            const bool                  m_debug_threshold)
+            const bool                  m_debug_blur)
         {
             const CanvasProperties& props = image.properties();
 
             // Set the offset values used for sampling in Kawase blur.
             const std::vector<std::size_t> iteration_offset = { 0, 1, 2, 2, 3 };
-            const std::size_t iterations = m_debug_threshold ? 0 : std::min(m_iterations, iteration_offset.size());
+            const std::size_t iterations = std::min(m_iterations, iteration_offset.size());
 
             // Copy the image to temporary render targets used for blurring.
             Image bloom_blur_1 = prefiltered(image, m_threshold, m_soft_threshold);
@@ -262,7 +260,7 @@ namespace
                     Color3f bloom_color;
                     bloom_target.get_pixel(x, y, bloom_color);
 
-                    if (m_debug_blur || m_debug_threshold)
+                    if (m_debug_blur)
                         color.rgb() = bloom_color;
                     else
                         color.rgb() += m_intensity * bloom_color; // additive blend (weighted by intensity)
@@ -282,8 +280,7 @@ namespace
             const float             m_threshold,
             const float             m_soft_threshold,
             const bool              m_anti_flicker,
-            const bool              m_debug_blur,
-            const bool              m_debug_threshold)
+            const bool              m_debug_blur)
         {
             const CanvasProperties& props = image.properties();
 
@@ -401,7 +398,10 @@ namespace
                     Color3f bloom_color;
                     bloom_target.get_pixel(x, y, bloom_color);
 
-                    color.rgb() += m_intensity * bloom_color; // additive blend (weighted by intensity)
+                    if (m_debug_blur)
+                        color.rgb() = bloom_color;
+                    else
+                        color.rgb() += m_intensity * bloom_color; // additive blend (weighted by intensity)
                     image.set_pixel(x, y, color);
                 }
             }
@@ -423,8 +423,7 @@ namespace
                 m_threshold,
                 m_soft_threshold,
                 m_anti_flicker,
-                m_debug_blur,
-                m_debug_threshold);
+                m_debug_blur);
 
             // // Ping-pong between two equally sized blur buffers.
             // execute_kawase_bloom(
@@ -434,8 +433,7 @@ namespace
             //     m_threshold,
             //     m_soft_threshold,
             //     m_fast_mode,
-            //     m_debug_blur,
-            //     m_debug_threshold);
+            //     m_debug_blur);
         }
 
       private:
@@ -446,7 +444,6 @@ namespace
         bool            m_anti_flicker;
 
         bool            m_debug_blur;
-        bool            m_debug_threshold;
     };
 }
 
@@ -551,20 +548,12 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
             .insert("use", "optional")
             .insert("default", "false"));
 
-    // TODO remove:
+    // FIXME remove:
 
     metadata.push_back(
         Dictionary()
             .insert("name", "debug_blur")
             .insert("label", "Debug Blur")
-            .insert("type", "bool")
-            .insert("use", "optional")
-            .insert("default", "false"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "debug_threshold")
-            .insert("label", "Debug Threshold")
             .insert("type", "bool")
             .insert("use", "optional")
             .insert("default", "false"));

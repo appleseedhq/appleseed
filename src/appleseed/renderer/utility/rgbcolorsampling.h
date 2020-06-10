@@ -68,9 +68,10 @@ foundation::Color3f clamped_box_sample(
 // Sampling filter from Masaki Kawase's GDC2003 Presentation:
 // "Frame Buffer Postprocessing Effects in DOUBLE-S.T.E.A.L (Wreckless)".
 //
-// Reference:
+// References:
 //
 //   http://www.daionet.gr.jp/~masa/archives/GDC2003_DSTEAL.ppt
+//   https://developer.amd.com/wordpress/media/2012/10/Oat-ScenePostprocessing.pdf
 //
 
 foundation::Color3f kawase_sample(
@@ -80,7 +81,7 @@ foundation::Color3f kawase_sample(
     const std::size_t           offset);
 
 //
-// Sampling filters from Marius Bjørge's SIGGRAPH2015 Presentation:
+// Sampling filters based on Marius Bjørge's SIGGRAPH2015 Presentation:
 // "Bandwidth-Efficient Rendering".
 //
 // Reference:
@@ -105,17 +106,19 @@ foundation::Color3f dual_filter_upsample(
 // Sampling filters from Jorge Jimenez's SIGGRAPH2014 Presentation:
 // "Next Generation Post Processing in Call of Duty: Advanced Warfare".
 //
-// Reference:
+// References:
 //
 //   http://advances.realtimerendering.com/s2014/#_NEXT_GENERATION_POST
-//
+//   http://wwwvis.informatik.uni-stuttgart.de/~kraus/preprints/grapp2007.pdf
 //
 
+// 3x3 triangular (Bartlett) filter.
 foundation::Color3f box_9tap_upsample(
     const foundation::Image&    image,
     const float                 fx,
     const float                 fy);
 
+// 5x5 custom filter for temporal stability.
 foundation::Color3f box_13tap_downsample(
     const foundation::Image&    image,
     const float                 fx,

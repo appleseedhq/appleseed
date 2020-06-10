@@ -72,10 +72,16 @@ Color3f blerp(
 
 Color3f box_sample(const Image& image, const float fx, const float fy)
 {
+    const std::size_t width = image.properties().m_canvas_width;
+    const std::size_t height = image.properties().m_canvas_height;
+
+    assert(0.0f <= fx && fx <= width - 1.0f);
+    assert(0.0f <= fy && fy <= height - 1.0f);
+
     const std::size_t x0 = truncate<std::size_t>(fx);
     const std::size_t y0 = truncate<std::size_t>(fy);
-    const std::size_t x1 = std::min<std::size_t>(x0 + 1, image.properties().m_canvas_width - 1);
-    const std::size_t y1 = std::min<std::size_t>(y0 + 1, image.properties().m_canvas_height - 1);
+    const std::size_t x1 = std::min<std::size_t>(x0 + 1, width - 1);
+    const std::size_t y1 = std::min<std::size_t>(y0 + 1, height - 1);
 
     return blerp(image, x0, y0, x1, y1, fx, fy);
 }
@@ -159,13 +165,13 @@ Color3f dual_filter_downsample(
     const float         fy,
     const std::size_t   offset)
 {
-    const float half_off = 0.5f * static_cast<float>(offset);
+    const float off = static_cast<float>(offset);
 
     Color3f center = clamped_box_sample(image, fx, fy);
-    Color3f top_left = clamped_box_sample(image, fx - half_off, fy + half_off);
-    Color3f top_right = clamped_box_sample(image, fx + half_off, fy + half_off);
-    Color3f bottom_left = clamped_box_sample(image, fx - half_off, fy - half_off);
-    Color3f bottom_right = clamped_box_sample(image, fx + half_off, fy - half_off);
+    Color3f top_left = clamped_box_sample(image, fx - off, fy + off);
+    Color3f top_right = clamped_box_sample(image, fx + off, fy + off);
+    Color3f bottom_left = clamped_box_sample(image, fx - off, fy - off);
+    Color3f bottom_right = clamped_box_sample(image, fx + off, fy - off);
 
     return (
         4.0f * center
@@ -182,28 +188,15 @@ Color3f dual_filter_upsample(
     const float off = static_cast<float>(offset);
     const float half_off = 0.5f * off;
 
-    Color3f top_left = clamped_box_sample(image, fx - half_off, fy + half_off);
-    Color3f top_right = clamped_box_sample(image, fx + half_off, fy + half_off);
-    Color3f bottom_left = clamped_box_sample(image, fx - half_off, fy - half_off);
-    Color3f bottom_right = clamped_box_sample(image, fx + half_off, fy - half_off);
-
-    // Sample the edge-most pixel when the coordinate is outside the image (i.e. texture clamping).
-    // const std::size_t top_y = static_cast<std::size_t>(std::min(fy + off, image.properties().m_canvas_height - 1.0f));
-    // const std::size_t left_x = static_cast<std::size_t>(std::max(fx - off, 0.0f));
-    // const std::size_t right_x = static_cast<std::size_t>(std::min(fx + off, image.properties().m_canvas_width - 1.0f));
-    // const std::size_t bottom_y = static_cast<std::size_t>(std::max(fy - off, 0.0f));
-    // const std::size_t center_x = clamp(static_cast<std::size_t>(round(fx)), left_x, right_x);
-    // const std::size_t center_y = clamp(static_cast<std::size_t>(round(fy)), bottom_y, top_y);
-    // Color3f top, left, right, bottom;
-    // image.get_pixel(center_x, top_y, top);
-    // image.get_pixel(left_x, center_y, left);
-    // image.get_pixel(right_x, center_y, right);
-    // image.get_pixel(center_x, bottom_y, bottom);
-
     Color3f top = clamped_box_sample(image, fx, fy + off);
     Color3f left = clamped_box_sample(image, fx - off, fy);
     Color3f right = clamped_box_sample(image, fx + off, fy);
     Color3f bottom = clamped_box_sample(image, fx, fy - off);
+
+    Color3f top_left = clamped_box_sample(image, fx - half_off, fy + half_off);
+    Color3f top_right = clamped_box_sample(image, fx + half_off, fy + half_off);
+    Color3f bottom_left = clamped_box_sample(image, fx - half_off, fy - half_off);
+    Color3f bottom_right = clamped_box_sample(image, fx + half_off, fy - half_off);
 
     return (
         top + left + right + bottom
