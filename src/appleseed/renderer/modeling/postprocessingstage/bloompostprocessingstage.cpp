@@ -64,10 +64,16 @@ namespace
     const char* Model = "bloom_post_processing_stage";
 
     static constexpr std::size_t DefaultIterations = 4;
+
     static constexpr float DefaultIntensity = 0.5f;
+
     static constexpr float DefaultThreshold = 0.8f;
+
     static constexpr float DefaultSoftThreshold = 0.5f;
+
     static constexpr bool DefaultAntiFlicker = false;
+
+    static constexpr bool DefaultDebugBlur = false;
 
     class BloomPostProcessingStage
       : public PostProcessingStage
@@ -99,12 +105,16 @@ namespace
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
             m_iterations = m_params.get_optional("iterations", DefaultIterations, context);
+
             m_intensity = m_params.get_optional("intensity", DefaultIntensity, context);
+
             m_threshold = m_params.get_optional("threshold", DefaultThreshold, context);
+
             m_soft_threshold = m_params.get_optional("soft_threshold", DefaultSoftThreshold, context);
+
             m_anti_flicker = m_params.get_optional("anti_flicker", DefaultAntiFlicker, context);
 
-            m_debug_blur = m_params.get_optional("debug_blur", false, context);
+            m_debug_blur = m_params.get_optional("debug_blur", DefaultDebugBlur, context);
 
             return true;
         }
@@ -190,98 +200,12 @@ namespace
         }
 
         //
-        // Kawase bloom.
+        // Bloom post-processing effect execution.
         //
 
-        static void kawase_blur(const Image& src_image, Image& dst_image, const std::size_t offset)
+        void execute(Frame& frame, const std::size_t thread_count) const override
         {
-            const CanvasProperties& src_props = src_image.properties();
-            const CanvasProperties& dst_props = dst_image.properties();
-
-            assert(src_props.m_canvas_width == dst_props.m_canvas_width);
-            assert(src_props.m_canvas_height == dst_props.m_canvas_height);
-
-            assert(src_props.m_channel_count == 3);
-            assert(dst_props.m_channel_count == 3);
-
-            for (std::size_t y = 0; y < src_props.m_canvas_height; ++y)
-            {
-                for (std::size_t x = 0; x < src_props.m_canvas_width; ++x)
-                {
-                    Color3f color;
-                    dst_image.get_pixel(x, y, color);
-
-                    Color3f result = kawase_sample(src_image, x, y, offset);
-                    result += color; // additive blend
-
-                    dst_image.set_pixel(x, y, result);
-                }
-            }
-        }
-
-        static void execute_kawase_bloom(
-            Image&                      image,
-            const std::size_t           m_iterations,
-            const float                 m_intensity,
-            const float                 m_threshold,
-            const float                 m_soft_threshold,
-            const bool                  m_anti_flicker,
-            const bool                  m_debug_blur)
-        {
-            const CanvasProperties& props = image.properties();
-
-            // Set the offset values used for sampling in Kawase blur.
-            const std::vector<std::size_t> iteration_offset = { 0, 1, 2, 2, 3 };
-            const std::size_t iterations = std::min(m_iterations, iteration_offset.size());
-
-            // Copy the image to temporary render targets used for blurring.
-            Image bloom_blur_1 = prefiltered(image, m_threshold, m_soft_threshold);
-            Image bloom_blur_2 = Image(bloom_blur_1);
-
-            // Iteratively blur the image, "ping-ponging" between two temporaries.
-            for (std::size_t i = 0; i < iterations; ++i)
-            {
-                if (i % 2 == 0)
-                    kawase_blur(bloom_blur_1, bloom_blur_2, iteration_offset[i]);
-                else
-                    kawase_blur(bloom_blur_2, bloom_blur_1, iteration_offset[i]);
-            }
-
-            // Blend colors from the original and the last blurred image to achieve bloom.
-            const Image &bloom_target = iterations % 2 == 1 ? bloom_blur_2 : bloom_blur_1;
-
-            for (std::size_t y = 0; y < props.m_canvas_height; ++y)
-            {
-                for (std::size_t x = 0; x < props.m_canvas_width; ++x)
-                {
-                    Color4f color;
-                    image.get_pixel(x, y, color);
-
-                    Color3f bloom_color;
-                    bloom_target.get_pixel(x, y, bloom_color);
-
-                    if (m_debug_blur)
-                        color.rgb() = bloom_color;
-                    else
-                        color.rgb() += m_intensity * bloom_color; // additive blend (weighted by intensity)
-                    image.set_pixel(x, y, color);
-                }
-            }
-        }
-
-        //
-        // Kino bloom.
-        //
-
-        static void execute_kino_bloom(
-            Image&                  image,
-            const std::size_t       m_iterations,
-            const float             m_intensity,
-            const float             m_threshold,
-            const float             m_soft_threshold,
-            const bool              m_anti_flicker,
-            const bool              m_debug_blur)
-        {
+            Image& image = frame.image();
             const CanvasProperties& props = image.properties();
 
             // Determine the dimensions of the largest temporary buffer used for blurring.
@@ -407,42 +331,12 @@ namespace
             }
         }
 
-        //
-        // Bloom post-processing effect execution.
-        //
-
-        void execute(Frame& frame, const std::size_t thread_count) const override
-        {
-            Image& image = frame.image();
-
-            // Use a pyramid of down/up scaled blur buffers.
-            execute_kino_bloom(
-                image,
-                m_iterations,
-                m_intensity,
-                m_threshold,
-                m_soft_threshold,
-                m_anti_flicker,
-                m_debug_blur);
-
-            // // Ping-pong between two equally sized blur buffers.
-            // execute_kawase_bloom(
-            //     image,
-            //     m_iterations,
-            //     m_intensity,
-            //     m_threshold,
-            //     m_soft_threshold,
-            //     m_fast_mode,
-            //     m_debug_blur);
-        }
-
       private:
         std::size_t     m_iterations;
         float           m_intensity;
         float           m_threshold;
         float           m_soft_threshold;
         bool            m_anti_flicker;
-
         bool            m_debug_blur;
     };
 }
@@ -547,8 +441,6 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
             .insert("type", "bool")
             .insert("use", "optional")
             .insert("default", "false"));
-
-    // FIXME remove:
 
     metadata.push_back(
         Dictionary()
