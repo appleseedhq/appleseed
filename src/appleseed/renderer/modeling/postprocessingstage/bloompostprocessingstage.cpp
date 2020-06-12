@@ -120,13 +120,11 @@ namespace
         }
 
         //
-        // Image scaling with custom sampling filters.
+        // Image scaling.
         //
 
-        static void scale_in_place(
-            const Image& src_image,
-            Image& dst_image,
-            Color3f (*sampling_func)(const Image&, float, float))
+        // Fill dst_image pixels by downsampling src_image with dual-filtering.
+        static void downscale_in_place(const Image& src_image, Image& dst_image)
         {
             const CanvasProperties& src_props = src_image.properties();
             const std::size_t src_width = src_props.m_canvas_width;
@@ -143,7 +141,30 @@ namespace
                     const float fx = static_cast<float>(x) / (dst_width - 1) * (src_width - 1);
                     const float fy = static_cast<float>(y) / (dst_height - 1) * (src_height - 1);
 
-                    dst_image.set_pixel(x, y, sampling_func(src_image, fx, fy));
+                    dst_image.set_pixel(x, y, dual_filter_downsample(src_image, fx, fy));
+                }
+            }
+        }
+
+        // Fill dst_image pixels by upsampling src_image with dual-filtering.
+        static void upscale_in_place(const Image& src_image, Image& dst_image)
+        {
+            const CanvasProperties& src_props = src_image.properties();
+            const std::size_t src_width = src_props.m_canvas_width;
+            const std::size_t src_height = src_props.m_canvas_height;
+
+            const CanvasProperties& dst_props = dst_image.properties();
+            const std::size_t dst_width = dst_props.m_canvas_width;
+            const std::size_t dst_height = dst_props.m_canvas_height;
+
+            for (std::size_t y = 0; y < dst_height; ++y)
+            {
+                for (std::size_t x = 0; x < dst_width; ++x)
+                {
+                    const float fx = static_cast<float>(x) / (dst_width - 1) * (src_width - 1);
+                    const float fy = static_cast<float>(y) / (dst_height - 1) * (src_height - 1);
+
+                    dst_image.set_pixel(x, y, dual_filter_upsample(src_image, fx, fy));
                 }
             }
         }
@@ -152,17 +173,20 @@ namespace
         // Image bright pass prefiltering.
         //
 
-        static Image prefiltered(const Image& image, const float threshold, const float soft_threshold)
+        static Image prefiltered(
+            const Image& image,
+            const float threshold,
+            const float soft_threshold)
         {
+            // Create an empty image with the same props, but ignore the alpha channel.
             const CanvasProperties& props = image.properties();
             assert(props.m_channel_count == 4);
-
             Image prefiltered_image(
                 props.m_canvas_width,
                 props.m_canvas_height,
                 props.m_tile_width,
                 props.m_tile_height,
-                3, // alpha is ignored
+                3,
                 props.m_pixel_format);
 
             const float eps = default_eps<float>(); // used to avoid divisions by zero
@@ -187,10 +211,10 @@ namespace
                     }
 
                     // Filter out dark pixels.
-                    if (contribution > 0.0f)
-                        color.rgb() *= contribution * safe_rcp<float>(brightness, eps);
-                    else
+                    if (contribution <= 0.0f)
                         color.rgb() *= 0.0f;
+                    else
+                        color.rgb() *= contribution * safe_rcp<float>(brightness, eps);
 
                     prefiltered_image.set_pixel(x, y, color.rgb());
                 }
@@ -214,7 +238,7 @@ namespace
 
             // Compute how many downsampling iterations we can do before a buffer has a side smaller than 2 pixels.
             const float max_iterations = std::log2(std::min(width, height) / 2.0f);
-            const std::size_t iterations = clamp<std::size_t>(m_iterations, 1, static_cast<int>(max_iterations));
+            const std::size_t iterations = clamp<std::size_t>(m_iterations, 0, static_cast<int>(max_iterations));
 
             // Create blur buffer pyramids (note that lower levels have larger images).
             std::vector<Image> blur_pyramid_down;
@@ -223,40 +247,33 @@ namespace
             blur_pyramid_down.reserve(iterations);
             blur_pyramid_up.reserve(iterations);
 
-            for (std::size_t level = 0, level_width = width, level_height = height
-                ; level < iterations
-                ; ++level)
             {
-                const CanvasProperties level_props(
-                    level_width, level_height,
-                    level_width, level_height,
-                    3, // alpha is ignored
-                    props.m_pixel_format);
+                // Copy the pixel format, but ignore the alpha channel for bloom.
+                assert(props.m_channel_count == 4);
+                const std::size_t channel_count = 3;
+                const PixelFormat pixel_format = props.m_pixel_format;
 
-                blur_pyramid_down.push_back(Image(level_props));
-                blur_pyramid_up.push_back(Image(level_props));
+                std::size_t level_width = width;
+                std::size_t level_height = height;
 
-                // Halve dimensions for the next buffer level.
-                assert(level_width >= 4 && level_height >= 4);
-                level_width /= 2;
-                level_height /= 2;
-            }
+                for (std::size_t level = 0; level < iterations; ++level)
+                {
+                    const CanvasProperties level_props(
+                        level_width,
+                        level_height,
+                        level_width,
+                        level_height,
+                        channel_count,
+                        pixel_format);
 
-            // Determine the functions used for down/up sampling buffers.
-            Color3f (*downsampling_func)(const Image&, float, float);
-            Color3f (*upsampling_func)(const Image&, float, float);
+                    blur_pyramid_down.push_back(Image(level_props));
+                    blur_pyramid_up.push_back(Image(level_props));
 
-            if (m_anti_flicker)
-            {
-                downsampling_func = &box_13tap_downsample;
-                upsampling_func = &box_9tap_upsample;
-            }
-            else
-            {
-                downsampling_func = [](const Image& image, const float fx, const float fy) -> Color3f
-                    { return dual_filter_downsample(image, fx, fy); };
-                upsampling_func = [](const Image& image, const float fx, const float fy) -> Color3f
-                    { return dual_filter_upsample(image, fx, fy); };
+                    // Halve dimensions for the next buffer level.
+                    assert(level_width >= 4 && level_height >= 4);
+                    level_width /= 2;
+                    level_height /= 2;
+                }
             }
 
             //
@@ -269,10 +286,10 @@ namespace
             // Downsample pass.
             //
 
-            scale_in_place(prefiltered_image, blur_pyramid_down[0], downsampling_func); // TODO optimize away
+            downscale_in_place(prefiltered_image, blur_pyramid_down[0]); // TODO optimize away
 
             for (std::size_t level = 1; level < iterations; ++level)
-                scale_in_place(blur_pyramid_down[level - 1], blur_pyramid_down[level], downsampling_func);
+                downscale_in_place(blur_pyramid_down[level - 1], blur_pyramid_down[level]);
 
             //
             // Upsample and blend pass.
@@ -284,7 +301,7 @@ namespace
             {
                 const std::size_t level = level_plus_one - 1;
 
-                scale_in_place(blur_pyramid_up[level + 1], blur_pyramid_up[level], upsampling_func);
+                upscale_in_place(blur_pyramid_up[level + 1], blur_pyramid_up[level]);
 
                 // Blend each upsampled buffer with the downsample buffer in the same level.
                 const CanvasProperties& level_props = blur_pyramid_up[level].properties();
@@ -309,8 +326,7 @@ namespace
             //
 
             Image bloom_target(prefiltered_image.properties());
-
-            scale_in_place(blur_pyramid_up[0], bloom_target, upsampling_func); // TODO optimize away
+            upscale_in_place(blur_pyramid_up[0], bloom_target); // TODO optimize away
 
             for (std::size_t y = 0; y < props.m_canvas_height; ++y)
             {
