@@ -3,7 +3,7 @@
 <project format_revision="31">
     <search_paths>
         <search_path>
-            C:\Users\tiago\AppData\Roaming\Blender Foundation\Blender\2.82\scripts\addons\blenderseed\appleseed\shaders
+            _shaders
         </search_path>
     </search_paths>
     <scene>
@@ -565,13 +565,11 @@
             <post_processing_stages>
                 <post_processing_stage name="bloom_stage" model="bloom_post_processing_stage">
                     <parameter name="order" value="0" />
-                    <parameter name="iterations" value="4" />
-                    <parameter name="intensity" value="0.5" />
-                    <parameter name="threshold" value="0.8" />
+                    <parameter name="iterations" value="5" />
+                    <parameter name="intensity" value="4.0" />
+                    <parameter name="threshold" value="1.0" />
                     <parameter name="soft_threshold" value="0.5" />
-                    <parameter name="anti_flicker" value="false" />
                     <parameter name="debug_blur" value="false" />
-                    <parameter name="debug_threshold" value="false" />
                 </post_processing_stage>
             </post_processing_stages>
         </frame>

@@ -3,7 +3,7 @@
 <project format_revision="31">
     <search_paths>
         <search_path>
-            C:\Users\tiago\AppData\Roaming\Blender Foundation\Blender\2.82\scripts\addons\blenderseed\appleseed\shaders
+            _shaders
         </search_path>
     </search_paths>
     <scene>
@@ -20,9 +20,9 @@
             <parameter name="shutter_open_end_time" value="0" />
             <transform time="0">
                 <matrix>
-                    -0.77474927902221680 -0.52426517009735107 0.35342580080032349 3.07768368721008301
-                    -0.23343627154827115 0.75666695833206177 0.61070680618286133 7.48232746124267667
-                    -0.58759790658950806 0.39064225554466253 -0.70860952138900757 -9.63335418701171875
+                    0.68592065572738647 -0.32401347160339355 0.65155822038650513 9.19144439697265625
+                    0.00000000000000004 0.89539563655853271 0.44527140259742731 6.76409530639648349
+                    -0.72767633199691772 -0.30542084574699396 0.61417037248611450 9.25066852569580078
                     0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
                 </matrix>
             </transform>
@@ -64,28 +64,6 @@
                 </shader>
                 <connect_shaders src_layer="asStandardSurface" src_param="out_outColor" dst_layer="asClosure2Surface" dst_param="in_input" />
             </shader_group>
-            <shader_group name="EmissiveBlackBody.001_tree">
-                <shader type="shader" name="as_blackbody" layer="asBlackbody">
-                    <parameter name="in_color" value="color 0.338087 0.24147 0.275301" />
-                    <parameter name="in_incandescence_amount" value="float 1" />
-                    <parameter name="in_incandescence_type" value="int 1" />
-                    <parameter name="in_matte_opacity_color" value="color 1 0.570206 0" />
-                </shader>
-                <shader type="surface" name="as_closure2surface" layer="asClosure2Surface">
-                </shader>
-                <connect_shaders src_layer="asBlackbody" src_param="out_color" dst_layer="asClosure2Surface" dst_param="in_input" />
-            </shader_group>
-            <shader_group name="EmissiveBlackBody.002_tree">
-                <shader type="shader" name="as_blackbody" layer="asBlackbody">
-                    <parameter name="in_color" value="color 0.338087 0.24147 0.275301" />
-                    <parameter name="in_incandescence_amount" value="float 1" />
-                    <parameter name="in_incandescence_type" value="int 1" />
-                    <parameter name="in_matte_opacity_color" value="color 1 0.570206 0" />
-                </shader>
-                <shader type="surface" name="as_closure2surface" layer="asClosure2Surface">
-                </shader>
-                <connect_shaders src_layer="asBlackbody" src_param="out_color" dst_layer="asClosure2Surface" dst_param="in_input" />
-            </shader_group>
             <shader_group name="EmissiveBlackBody_tree">
                 <shader type="shader" name="as_blackbody" layer="asBlackbody">
                     <parameter name="in_color" value="color 0.338087 0.24147 0.275301" />
@@ -104,15 +82,6 @@
                 <shader type="surface" name="as_closure2surface" layer="asClosure2Surface">
                 </shader>
                 <connect_shaders src_layer="asStandardSurface" src_param="out_outColor" dst_layer="asClosure2Surface" dst_param="in_input" />
-            </shader_group>
-            <shader_group name="Material_tree">
-                <shader type="shader" name="as_metal" layer="asMetal">
-                    <parameter name="in_face_reflectance" value="color 0.922295 0.724143 0.96" />
-                    <parameter name="in_roughness" value="float 0.13" />
-                </shader>
-                <shader type="surface" name="as_closure2surface" layer="asClosure2Surface">
-                </shader>
-                <connect_shaders src_layer="asMetal" src_param="out_outColor" dst_layer="asClosure2Surface" dst_param="in_input" />
             </shader_group>
             <shader_group name="SalmonPlastic_tree">
                 <shader type="shader" name="as_plastic" layer="asPlastic">
@@ -144,19 +113,10 @@
             <surface_shader name="BlueEmissive_surface" model="physical_surface_shader">
                 <parameter name="lighting_samples" value="1" />
             </surface_shader>
-            <surface_shader name="EmissiveBlackBody.001_surface" model="physical_surface_shader">
-                <parameter name="lighting_samples" value="1" />
-            </surface_shader>
-            <surface_shader name="EmissiveBlackBody.002_surface" model="physical_surface_shader">
-                <parameter name="lighting_samples" value="1" />
-            </surface_shader>
             <surface_shader name="EmissiveBlackBody_surface" model="physical_surface_shader">
                 <parameter name="lighting_samples" value="1" />
             </surface_shader>
             <surface_shader name="GreenSubSurface_surface" model="physical_surface_shader">
-                <parameter name="lighting_samples" value="1" />
-            </surface_shader>
-            <surface_shader name="Material_surface" model="physical_surface_shader">
                 <parameter name="lighting_samples" value="1" />
             </surface_shader>
             <surface_shader name="SalmonPlastic_surface" model="physical_surface_shader">
@@ -180,14 +140,6 @@
                 <parameter name="osl_surface" value="BlueEmissive_tree" />
                 <parameter name="surface_shader" value="BlueEmissive_surface" />
             </material>
-            <material name="EmissiveBlackBody.001_mat" model="osl_material">
-                <parameter name="osl_surface" value="EmissiveBlackBody.001_tree" />
-                <parameter name="surface_shader" value="EmissiveBlackBody.001_surface" />
-            </material>
-            <material name="EmissiveBlackBody.002_mat" model="osl_material">
-                <parameter name="osl_surface" value="EmissiveBlackBody.002_tree" />
-                <parameter name="surface_shader" value="EmissiveBlackBody.002_surface" />
-            </material>
             <material name="EmissiveBlackBody_mat" model="osl_material">
                 <parameter name="osl_surface" value="EmissiveBlackBody_tree" />
                 <parameter name="surface_shader" value="EmissiveBlackBody_surface" />
@@ -195,10 +147,6 @@
             <material name="GreenSubSurface_mat" model="osl_material">
                 <parameter name="osl_surface" value="GreenSubSurface_tree" />
                 <parameter name="surface_shader" value="GreenSubSurface_surface" />
-            </material>
-            <material name="Material_mat" model="osl_material">
-                <parameter name="osl_surface" value="Material_tree" />
-                <parameter name="surface_shader" value="Material_surface" />
             </material>
             <material name="SalmonPlastic_mat" model="osl_material">
                 <parameter name="osl_surface" value="SalmonPlastic_tree" />
@@ -239,12 +187,6 @@
             <object name="Cube.004_obj" model="mesh_object">
                 <parameter name="filename" value="_geometry/d2aaf0810f586692102e6d75d2435779.binarymesh" />
             </object>
-            <object name="Cube.005_obj" model="mesh_object">
-                <parameter name="filename" value="_geometry/d2aaf0810f586692102e6d75d2435779.binarymesh" />
-            </object>
-            <object name="Cube.006_obj" model="mesh_object">
-                <parameter name="filename" value="_geometry/d2aaf0810f586692102e6d75d2435779.binarymesh" />
-            </object>
             <object name="Cube_obj" model="mesh_object">
                 <parameter name="filename" value="_geometry/d2aaf0810f586692102e6d75d2435779.binarymesh" />
             </object>
@@ -253,9 +195,6 @@
             </object>
             <object name="Plane_obj" model="mesh_object">
                 <parameter name="filename" value="_geometry/8ced3720fa574cde9f4db51e0ea6039f.binarymesh" />
-            </object>
-            <object name="Suzanne_obj" model="mesh_object">
-                <parameter name="filename" value="_geometry/556abf3ab2047c784e640815979b4cea.binarymesh" />
             </object>
             <object_instance name="Cube" object="Cube_obj.mesh">
                 <parameter name="medium_priority" value="0" />
@@ -273,9 +212,9 @@
                 </parameters>
                 <transform>
                     <matrix>
-                        1.00000000000000000 0.00000000000000000 0.00000000000000000 0.49269810318946838
-                        0.00000000000000000 0.00000000000000006 1.00000000000000000 -0.70567893981933594
-                        0.00000000000000000 -1.00000000000000000 0.00000000000000006 0.14173690974712366
+                        1.00000000000000000 0.00000000000000000 0.00000000000000000 0.00000000000000000
+                        0.00000000000000000 0.00000000000000006 1.00000000000000000 0.00000000000000000
+                        0.00000000000000000 -1.00000000000000000 0.00000000000000006 0.00000000000000000
                         0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
                     </matrix>
                 </transform>
@@ -298,14 +237,14 @@
                 </parameters>
                 <transform>
                     <matrix>
-                        1.00000000000000000 0.00000000000000000 0.00000000000000000 -2.63348698616027832
-                        0.00000000000000000 0.00000000000000006 1.00000000000000000 1.06901693344116233
-                        0.00000000000000000 -1.00000000000000000 0.00000000000000006 -2.20135688781738281
+                        1.00000000000000000 0.00000000000000000 0.00000000000000000 0.31770142912864685
+                        0.00000000000000000 0.00000000000000006 1.00000000000000000 1.56936383247375510
+                        0.00000000000000000 -1.00000000000000000 0.00000000000000006 -2.22440648078918457
                         0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
                     </matrix>
                 </transform>
-                <assign_material slot="default" side="front" material="BlueEmissive_mat" />
-                <assign_material slot="default" side="back" material="BlueEmissive_mat" />
+                <assign_material slot="default" side="front" material="EmissiveBlackBody_mat" />
+                <assign_material slot="default" side="back" material="EmissiveBlackBody_mat" />
             </object_instance>
             <object_instance name="Cube.002" object="Cube.002_obj.mesh">
                 <parameter name="medium_priority" value="0" />
@@ -323,9 +262,9 @@
                 </parameters>
                 <transform>
                     <matrix>
-                        0.53600782155990601 0.00000000000000000 0.00000000000000000 -1.50225961208343506
-                        0.00000000000000000 0.00000000000000003 0.53600782155990601 0.55736815929412842
-                        0.00000000000000000 -0.53600782155990601 0.00000000000000003 0.46813553571701055
+                        0.53600782155990601 0.00000000000000000 0.00000000000000000 -1.73638820648193359
+                        0.00000000000000000 0.00000000000000003 0.53600782155990601 1.97196865081787109
+                        0.00000000000000000 -0.53600782155990601 0.00000000000000003 1.50063753128051780
                         0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
                     </matrix>
                 </transform>
@@ -348,9 +287,9 @@
                 </parameters>
                 <transform>
                     <matrix>
-                        0.53600782155990601 0.00000000000000000 0.00000000000000000 0.19652009010314941
-                        0.00000000000000000 0.00000000000000003 0.53600782155990601 -0.01438212394714338
-                        0.00000000000000000 -0.53600782155990601 0.00000000000000003 -2.76348614692687988
+                        0.53600782155990601 0.00000000000000000 0.00000000000000000 1.76486778259277344
+                        0.00000000000000000 0.00000000000000003 0.53600782155990601 -1.07981514930725075
+                        0.00000000000000000 -0.53600782155990601 0.00000000000000003 -2.66476869583129883
                         0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
                     </matrix>
                 </transform>
@@ -373,64 +312,14 @@
                 </parameters>
                 <transform>
                     <matrix>
-                        0.77560216188430786 0.00000000000000000 0.00000000000000000 -3.11007523536682129
-                        0.00000000000000000 0.00000000000000005 0.77560216188430786 -1.15518641471862793
-                        0.00000000000000000 -0.77560216188430786 0.00000000000000005 1.25959396362304688
+                        1.76681089401245117 0.00000000000000000 0.00000000000000000 -3.11007523536682129
+                        0.00000000000000000 0.00000000000000011 1.76681089401245117 -1.15518641471862793
+                        0.00000000000000000 -1.76681089401245117 0.00000000000000011 1.25959396362304688
                         0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
                     </matrix>
                 </transform>
-                <assign_material slot="default" side="front" material="EmissiveBlackBody_mat" />
-                <assign_material slot="default" side="back" material="EmissiveBlackBody_mat" />
-            </object_instance>
-            <object_instance name="Cube.005" object="Cube.005_obj.mesh">
-                <parameter name="medium_priority" value="0" />
-                <parameter name="photon_target" value="false" />
-                <parameter name="ray_bias_distance" value="0" />
-                <parameter name="ray_bias_method" value="none" />
-                <parameters name="visibility">
-                    <parameter name="camera" value="true" />
-                    <parameter name="diffuse" value="true" />
-                    <parameter name="glossy" value="true" />
-                    <parameter name="light" value="true" />
-                    <parameter name="shadow" value="true" />
-                    <parameter name="specular" value="true" />
-                    <parameter name="transparency" value="true" />
-                </parameters>
-                <transform>
-                    <matrix>
-                        0.77560216188430786 0.00000000000000000 0.00000000000000000 -4.66026258468627930
-                        0.00000000000000000 0.00000000000000005 0.77560216188430786 -3.56610965728759766
-                        0.00000000000000000 -0.77560216188430786 0.00000000000000005 -1.76702833175659202
-                        0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
-                    </matrix>
-                </transform>
-                <assign_material slot="default" side="front" material="EmissiveBlackBody.001_mat" />
-                <assign_material slot="default" side="back" material="EmissiveBlackBody.001_mat" />
-            </object_instance>
-            <object_instance name="Cube.006" object="Cube.006_obj.mesh">
-                <parameter name="medium_priority" value="0" />
-                <parameter name="photon_target" value="false" />
-                <parameter name="ray_bias_distance" value="0" />
-                <parameter name="ray_bias_method" value="none" />
-                <parameters name="visibility">
-                    <parameter name="camera" value="true" />
-                    <parameter name="diffuse" value="true" />
-                    <parameter name="glossy" value="true" />
-                    <parameter name="light" value="true" />
-                    <parameter name="shadow" value="true" />
-                    <parameter name="specular" value="true" />
-                    <parameter name="transparency" value="true" />
-                </parameters>
-                <transform>
-                    <matrix>
-                        0.68342465162277222 0.00000000000000000 0.00000000000000000 0.17082861065864563
-                        0.00000000000000000 0.00000000000000004 0.68342465162277222 1.30321896076202370
-                        0.00000000000000000 -0.68342465162277222 0.00000000000000004 2.72840929031372070
-                        0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
-                    </matrix>
-                </transform>
-                <assign_material slot="default" side="front" material="EmissiveBlackBody.002_mat" />
-                <assign_material slot="default" side="back" material="EmissiveBlackBody.002_mat" />
+                <assign_material slot="default" side="front" material="BlueEmissive_mat" />
+                <assign_material slot="default" side="back" material="BlueEmissive_mat" />
             </object_instance>
             <object_instance name="Plane" object="Plane_obj.mesh">
                 <parameter name="medium_priority" value="0" />
@@ -449,7 +338,7 @@
                 <transform>
                     <matrix>
                         43.63630294799804688 0.00000000000000000 0.00000000000000000 -2.13662004470825195
-                        0.00000000000000000 0.00000000000000069 9.23264122009277344 9.36786174774169922
+                        0.00000000000000000 0.00000000000000069 9.23264122009277344 7.02377414703369141
                         0.00000000000000000 -11.33838748931884766 0.00000000000000057 -2.85276627540588334
                         0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
                     </matrix>
@@ -482,31 +371,6 @@
                 <assign_material slot="default" side="front" material="BlackStandardSurface_mat" />
                 <assign_material slot="default" side="back" material="BlackStandardSurface_mat" />
             </object_instance>
-            <object_instance name="Suzanne" object="Suzanne_obj.mesh">
-                <parameter name="medium_priority" value="0" />
-                <parameter name="photon_target" value="false" />
-                <parameter name="ray_bias_distance" value="0" />
-                <parameter name="ray_bias_method" value="none" />
-                <parameters name="visibility">
-                    <parameter name="camera" value="true" />
-                    <parameter name="diffuse" value="true" />
-                    <parameter name="glossy" value="true" />
-                    <parameter name="light" value="true" />
-                    <parameter name="shadow" value="true" />
-                    <parameter name="specular" value="true" />
-                    <parameter name="transparency" value="true" />
-                </parameters>
-                <transform>
-                    <matrix>
-                        -0.89451241493225098 -0.15071853995323181 -0.34929922223091125 -0.34199374914169312
-                        -0.27653729915618896 -0.35530653595924383 0.86148869991302490 1.59666383266448975
-                        -0.26125305891036987 0.89214313030242920 0.28408747911453253 0.54361033439636242
-                        0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
-                    </matrix>
-                </transform>
-                <assign_material slot="default" side="front" material="Material_mat" />
-                <assign_material slot="default" side="back" material="Material_mat" />
-            </object_instance>
         </assembly>
         <assembly_instance name="assembly_inst" assembly="assembly">
         </assembly_instance>
@@ -523,20 +387,18 @@
             <parameter name="patch_distance_threshold" value="1" />
             <parameter name="prefilter_spikes" value="true" />
             <parameter name="random_pixel_order" value="true" />
-            <parameter name="resolution" value="1920 1080" />
+            <parameter name="resolution" value="640	360" />
             <parameter name="skip_denoised" value="true" />
             <parameter name="spike_threshold" value="2" />
             <parameter name="tile_size" value="32 32" />
             <post_processing_stages>
                 <post_processing_stage name="bloom_stage" model="bloom_post_processing_stage">
                     <parameter name="order" value="0" />
-                    <parameter name="iterations" value="4" />
+                    <parameter name="iterations" value="5" />
                     <parameter name="intensity" value="0.5" />
-                    <parameter name="threshold" value="0.8" />
+                    <parameter name="threshold" value="0.5" />
                     <parameter name="soft_threshold" value="0.5" />
-                    <parameter name="anti_flicker" value="false" />
-                    <parameter name="debug_blur" value="false" />
-                    <parameter name="debug_threshold" value="false" />
+                    <parameter name="debug_blur" value="true" />
                 </post_processing_stage>
             </post_processing_stages>
         </frame>

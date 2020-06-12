@@ -71,8 +71,6 @@ namespace
 
     static constexpr float DefaultSoftThreshold = 0.5f;
 
-    static constexpr bool DefaultAntiFlicker = false;
-
     static constexpr bool DefaultDebugBlur = false;
 
     class BloomPostProcessingStage
@@ -111,8 +109,6 @@ namespace
             m_threshold = m_params.get_optional("threshold", DefaultThreshold, context);
 
             m_soft_threshold = m_params.get_optional("soft_threshold", DefaultSoftThreshold, context);
-
-            m_anti_flicker = m_params.get_optional("anti_flicker", DefaultAntiFlicker, context);
 
             m_debug_blur = m_params.get_optional("debug_blur", DefaultDebugBlur, context);
 
@@ -229,6 +225,9 @@ namespace
 
         void execute(Frame& frame, const std::size_t thread_count) const override
         {
+            if (m_intensity == 0.0f && !m_debug_blur)
+                return;
+
             Image& image = frame.image();
             const CanvasProperties& props = image.properties();
 
@@ -239,6 +238,9 @@ namespace
             // Compute how many downsampling iterations we can do before a buffer has a side smaller than 2 pixels.
             const float max_iterations = std::log2(std::min(width, height) / 2.0f);
             const std::size_t iterations = clamp<std::size_t>(m_iterations, 0, static_cast<int>(max_iterations));
+
+            if (iterations == 0)
+                return;
 
             // Create blur buffer pyramids (note that lower levels have larger images).
             std::vector<Image> blur_pyramid_down;
@@ -352,7 +354,6 @@ namespace
         float           m_intensity;
         float           m_threshold;
         float           m_soft_threshold;
-        bool            m_anti_flicker;
         bool            m_debug_blur;
     };
 }
@@ -449,14 +450,6 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
                         .insert("type", "hard"))
             .insert("use", "optional")
             .insert("default", "0.5"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "anti_flicker")
-            .insert("label", "Anti Flicker")
-            .insert("type", "bool")
-            .insert("use", "optional")
-            .insert("default", "false"));
 
     metadata.push_back(
         Dictionary()

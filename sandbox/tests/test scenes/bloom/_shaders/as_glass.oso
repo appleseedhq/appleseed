@@ -1,0 +1,368 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.10.5
+# options: -O2 -DNDEBUG -IN:/appleseed/appleseed/src/appleseed.shaders/include -o N:/appleseed/appleseed/sandbox/shaders/appleseed/as_glass.oso
+shader as_glass	%meta{string,help,"Glass material with absorption."} %meta{string,icon,"asGlass.png"} %meta{string,URL,"https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_glass.html#label-as-glass"} %meta{string,as_node_name,"asGlass"} %meta{string,as_category,"shader"} %meta{string,as_max_class_id,"1785798004 1778718452"} %meta{string,as_max_plugin_type,"material"} %meta{int,as_maya_type_id,1210820} %meta{string,as_maya_classification,"drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch"} 
+param	color	in_surface_transmittance	1 1 1		%meta{string,as_maya_attribute_name,"color"} %meta{string,as_maya_attribute_short_name,"c"} %meta{string,label,"Transmittance Color"} %meta{string,page,"Transmittance"}  %read{116,116} %write{2147483647,-1}
+param	float	in_transmittance_amount	0.800000012		%meta{string,as_maya_attribute_name,"transmittanceAmount"} %meta{string,as_maya_attribute_short_name,"ta"} %meta{float,min,0} %meta{float,max,1} %meta{string,label,"Transmittance Weight"} %meta{string,page,"Transmittance"}  %read{116,116} %write{2147483647,-1}
+param	color	in_reflection_tint	1 1 1		%meta{string,as_maya_attribute_name,"reflectionTint"} %meta{string,as_maya_attribute_short_name,"rt"} %meta{string,label,"Reflection Tint"} %meta{string,page,"Specular"}  %read{21,117} %write{2147483647,-1}
+param	color	in_refraction_tint	1 1 1		%meta{string,as_maya_attribute_name,"refractionTint"} %meta{string,as_maya_attribute_short_name,"tt"} %meta{string,label,"Refraction Tint"} %meta{string,page,"Specular"}  %read{30,117} %write{2147483647,-1}
+param	float	in_ior	1.5		%meta{string,as_maya_attribute_name,"ior"} %meta{string,as_maya_attribute_short_name,"io"} %meta{float,min,1} %meta{float,max,10} %meta{float,softmax,2} %meta{string,label,"Index Of Refraction"} %meta{string,page,"Specular"} %meta{int,as_maya_attribute_connectable,0} %meta{int,as_maya_attribute_hidden,1} %meta{int,as_blender_input_socket,0} %meta{int,gafferNoduleLayoutVisible,0} %meta{int,divider,1}  %read{117,117} %write{2147483647,-1}
+param	string	in_distribution	"ggx"		%meta{string,as_maya_attribute_name,"distribution"} %meta{string,as_maya_attribute_short_name,"dd"} %meta{string,label,"Distribution"} %meta{string,widget,"popup"} %meta{string,options,"beckmann|ggx|std"} %meta{string,page,"Specular"} %meta{int,as_maya_attribute_connectable,0} %meta{int,as_maya_attribute_keyable,0} %meta{int,as_maya_attribute_hidden,1} %meta{int,as_blender_input_socket,0} %meta{int,gafferNoduleLayoutVisible,0} %meta{int,as_deprecated,1}  %read{2147483647,-1} %write{2147483647,-1}
+param	float	in_roughness	0.100000001		%meta{string,as_maya_attribute_name,"roughness"} %meta{string,as_maya_attribute_short_name,"ro"} %meta{float,min,0.00100000005} %meta{float,max,1} %meta{string,label,"Roughness"} %meta{string,page,"Specular"}  %read{117,117} %write{2147483647,-1}
+param	float	in_specular_spread	0.5		%meta{string,as_maya_attribute_name,"specularSpread"} %meta{string,as_maya_attribute_short_name,"ss"} %meta{float,min,0} %meta{float,max,1} %meta{string,label,"Specular Spread"} %meta{string,page,"Specular"} %meta{int,divider,1} %meta{int,as_deprecated,1}  %read{2147483647,-1} %write{2147483647,-1}
+param	float	in_anisotropy_amount	0		%meta{string,as_maya_attribute_name,"anisotropyAmount"} %meta{string,as_maya_attribute_short_name,"aa"} %meta{float,min,0} %meta{float,max,1} %meta{string,label,"Anisotropy Amount"} %meta{string,page,"Specular.Anisotropy"}  %read{42,117} %write{2147483647,-1}
+param	float	in_anisotropy_angle	0		%meta{string,as_maya_attribute_name,"anisotropyAngle"} %meta{string,as_maya_attribute_short_name,"an"} %meta{float,min,0} %meta{float,max,1} %meta{string,label,"Anisotropy Rotation"} %meta{string,page,"Specular.Anisotropy"} %meta{string,help,"The [0,1] range maps to [0,360] degrees range."} %meta{int,divider,1}  %read{61,63} %write{2147483647,-1}
+param	int	in_anisotropy_mode	0		%meta{string,as_maya_attribute_name,"anisotropyMode"} %meta{string,as_maya_attribute_short_name,"anm"} %meta{string,widget,"mapper"} %meta{string,options,"Anisotropy Map:0|Explicit Vector:1"} %meta{string,label,"Anisotropy Mode"} %meta{string,page,"Specular.Anisotropy"} %meta{string,help,"Use tangent vector field map, or explicit vector."} %meta{int,as_maya_attribute_connectable,0} %meta{int,as_maya_attribute_keyable,0} %meta{int,as_maya_attribute_hidden,1} %meta{int,as_blender_input_socket,0} %meta{int,gafferNoduleLayoutVisible,0} %meta{int,divider,1}  %read{44,44} %write{2147483647,-1}
+param	color	in_anisotropy_map	0 0 0		%meta{string,as_maya_attribute_name,"anisotropyVectorMap"} %meta{string,as_maya_attribute_short_name,"av"} %meta{string,label,"Anisotropy Vector Map"} %meta{string,page,"Specular.Anisotropy"} %meta{string,help,"Vector tangent field map, with XY in R,G channels."} %meta{int,divider,1}  %read{46,48} %write{2147483647,-1}
+param	vector	in_anisotropy_direction	0 0 0		%meta{string,as_maya_attribute_name,"anisotropyDirection"} %meta{string,as_maya_attribute_short_name,"and"} %meta{string,label,"Anisotropy Vector"} %meta{string,page,"Specular.Anisotropy"} %meta{string,help,"Explicit anisotropy vector, such as the vector output by a tangent field node."}  %read{60,60} %write{2147483647,-1}
+param	color	in_volume_transmittance	1 1 1		%meta{string,as_maya_attribute_name,"volumeTransmittance"} %meta{string,as_maya_attribute_short_name,"vt"} %meta{string,label,"Volume Transmittance"} %meta{string,page,"Volume"}  %read{117,117} %write{2147483647,-1}
+param	float	in_volume_transmittance_distance	0		%meta{string,as_maya_attribute_name,"volumeTransmittanceDistance"} %meta{string,as_maya_attribute_short_name,"vd"} %meta{float,min,0} %meta{float,max,1e+09} %meta{string,label,"Transmittance Distance"} %meta{string,page,"Volume"} %meta{int,gafferNoduleLayoutVisible,0}  %read{117,117} %write{2147483647,-1}
+param	normal	in_bump_normal	0 0 0		%meta{string,as_maya_attribute_name,"normalCamera"} %meta{string,as_maya_attribute_short_name,"n"} %meta{string,label,"Bump Normal"} %meta{string,page,"Bump"}  %read{40,40} %write{0,0} %initexpr
+param	int	in_enable_matte	0		%meta{string,as_maya_attribute_name,"enableMatte"} %meta{string,as_maya_attribute_short_name,"ema"} %meta{string,widget,"checkBox"} %meta{string,label,"Enable Matte Opacity"} %meta{string,page,"Matte Opacity"} %meta{int,as_maya_attribute_connectable,0} %meta{int,as_maya_attribute_keyable,0} %meta{int,as_maya_attribute_hidden,1} %meta{int,as_blender_input_socket,0} %meta{int,gafferNoduleLayoutVisible,0} %meta{int,divider,1}  %read{3,3} %write{2147483647,-1}
+param	float	in_matte_opacity	0		%meta{string,as_maya_attribute_name,"matteOpacity"} %meta{string,as_maya_attribute_short_name,"mao"} %meta{float,min,0} %meta{float,max,1} %meta{string,label,"Matte Opacity"} %meta{string,page,"Matte Opacity"} %meta{int,as_blender_input_socket,0} %meta{int,gafferNoduleLayoutVisible,0}  %read{4,4} %write{2147483647,-1}
+param	color	in_matte_opacity_color	1 0.5 0		%meta{string,as_maya_attribute_name,"matteOpacityColor"} %meta{string,as_maya_attribute_short_name,"mac"} %meta{string,label,"Matte Opacity Color"} %meta{string,page,"Matte Opacity"} %meta{int,as_blender_input_socket,0} %meta{int,gafferNoduleLayoutVisible,0}  %read{4,4} %write{2147483647,-1}
+param	int	in_maximum_ray_depth	100		%meta{string,as_maya_attribute_name,"maximumRayDepth"} %meta{string,as_maya_attribute_short_name,"mr"} %meta{int,min,0} %meta{int,max,100} %meta{int,softmax,16} %meta{string,label,"Ray Depth"} %meta{string,page,"Advanced"} %meta{int,as_maya_attribute_connectable,0} %meta{int,as_maya_attribute_keyable,0} %meta{int,as_maya_attribute_hidden,1} %meta{int,as_blender_input_socket,0} %meta{int,gafferNoduleLayoutVisible,0}  %read{15,15} %write{2147483647,-1}
+param	vector	Tn	0 0 0		%meta{int,lockgeom,0} %meta{int,as_maya_attribute_hidden,1} %meta{string,widget,"null"} %meta{int,as_blender_input_socket,0} %meta{int,gafferNoduleLayoutVisible,0}  %read{41,52} %write{2147483647,-1}
+param	vector	Bn	0 0 0		%meta{int,lockgeom,0} %meta{int,as_maya_attribute_hidden,1} %meta{string,widget,"null"} %meta{int,as_blender_input_socket,0} %meta{int,gafferNoduleLayoutVisible,0}  %read{54,54} %write{2147483647,-1}
+oparam	closure color	out_outColor			%meta{string,as_maya_attribute_name,"outColor"} %meta{string,as_maya_attribute_short_name,"oc"} %meta{string,widget,"null"}  %read{5,118} %write{5,118}
+oparam	closure color	out_outTransparency			%meta{string,as_maya_attribute_name,"outTransparency"} %meta{string,as_maya_attribute_short_name,"ot"} %meta{string,widget,"null"}  %read{2147483647,-1} %write{2147483647,-1}
+oparam	closure color	out_outMatteOpacity			%meta{string,as_maya_attribute_name,"outMatteOpacity"} %meta{string,as_maya_attribute_short_name,"om"} %meta{string,widget,"null"} %meta{int,as_maya_attribute_hidden,1} %meta{int,as_blender_input_socket,0} %meta{int,gafferNoduleLayoutVisible,0}  %read{5,5} %write{4,4}
+global	normal	N	%read{0,0} %write{2147483647,-1}
+local	vector	___254_axis	%read{70,72} %write{67,67}
+local	float	___254_cosang	%read{69,110} %write{68,68}
+local	float	___254_sinang	%read{80,105} %write{68,68}
+local	float	___254_cosang1	%read{79,104} %write{69,69}
+local	float	___254_x	%read{73,105} %write{70,70}
+local	float	___254_y	%read{78,103} %write{71,71}
+local	float	___254_z	%read{80,108} %write{72,72}
+local	matrix	___254_M	%read{114,114} %write{112,112}
+local	int	ray_depth	%read{15,15} %write{10,11}
+local	int	status	%read{12,12} %write{11,11}
+local	normal	Nn	%read{57,117} %write{40,40}
+local	vector	tangent	%read{113,117} %write{41,115}
+local	vector	___360_vector_map	%read{51,56} %write{50,50}
+temp	int	$tmp1	%read{2,2} %write{1,1}
+const	string	$const1	"transparency"		%read{1,1} %write{2147483647,-1}
+const	string	$const2	"as_matte"		%read{4,4} %write{2147483647,-1}
+temp	int	$tmp2	%read{8,8} %write{7,7}
+const	string	$const3	"shadow"		%read{7,7} %write{2147483647,-1}
+const	int	$const4	0		%read{10,70} %write{2147483647,-1}
+const	string	$const5	"path:ray_depth"		%read{11,11} %write{2147483647,-1}
+temp	int	$tmp3	%read{13,13} %write{12,12}
+temp	int	$tmp4	%read{14,18} %write{13,17}
+temp	int	$tmp5	%read{16,16} %write{15,15}
+temp	int	$tmp6	%read{17,17} %write{16,16}
+temp	float	$tmp7	%read{26,26} %write{25,25}
+const	string	$const6	"max"		%read{20,29} %write{2147483647,-1}
+temp	float	$tmp8	%read{25,25} %write{21,21}
+temp	float	$tmp9	%read{25,25} %write{24,24}
+const	int	$const7	1		%read{22,71} %write{2147483647,-1}
+temp	float	$tmp10	%read{24,24} %write{22,22}
+const	int	$const8	2		%read{23,72} %write{2147483647,-1}
+temp	float	$tmp11	%read{24,24} %write{23,23}
+const	float	$const9	0		%read{26,112} %write{2147483647,-1}
+temp	int	$tmp12	%read{27,27} %write{26,26}
+temp	int	$tmp13	%read{28,38} %write{27,37}
+temp	float	$tmp14	%read{35,35} %write{34,34}
+temp	float	$tmp15	%read{34,34} %write{30,30}
+temp	float	$tmp16	%read{34,34} %write{33,33}
+temp	float	$tmp17	%read{33,33} %write{31,31}
+temp	float	$tmp18	%read{33,33} %write{32,32}
+temp	int	$tmp19	%read{36,36} %write{35,35}
+temp	int	$tmp20	%read{37,37} %write{36,36}
+temp	int	$tmp21	%read{43,43} %write{42,42}
+temp	int	$tmp22	%read{45,45} %write{44,44}
+temp	int	$tmp23	%read{47,47} %write{46,46}
+const	float	$const10	2		%read{48,48} %write{2147483647,-1}
+temp	vector	$tmp24	%read{49,49} %write{48,48}
+const	float	$const11	1		%read{49,112} %write{2147483647,-1}
+temp	vector	$tmp25	%read{50,50} %write{49,49}
+temp	float	$tmp26	%read{52,52} %write{51,51}
+temp	vector	$tmp27	%read{55,55} %write{52,52}
+temp	float	$tmp28	%read{54,54} %write{53,53}
+temp	vector	$tmp29	%read{55,55} %write{54,54}
+temp	vector	$tmp30	%read{58,58} %write{55,55}
+temp	float	$tmp31	%read{57,57} %write{56,56}
+temp	normal	$tmp32	%read{58,58} %write{57,57}
+temp	vector	$tmp33	%read{59,59} %write{58,58}
+temp	int	$tmp34	%read{62,62} %write{61,61}
+const	float	$const12	6.28318548		%read{63,63} %write{2147483647,-1}
+temp	float	$tmp35	%read{68,68} %write{63,63}
+const	point	$const13	0 0 0		%read{66,115} %write{2147483647,-1}
+temp	point	$tmp37	%read{66,66} %write{64,64}
+const	string	$const14	"rotate"		%read{65,65} %write{2147483647,-1}
+temp	vector	$tmp38	%read{67,67} %write{66,66}
+temp	float	$tmp39	%read{77,77} %write{73,73}
+temp	float	$tmp40	%read{75,75} %write{74,74}
+temp	float	$tmp41	%read{76,76} %write{75,75}
+temp	float	$tmp42	%read{77,77} %write{76,76}
+temp	float	$tmp43	%read{112,112} %write{77,77}
+temp	float	$tmp44	%read{79,79} %write{78,78}
+temp	float	$tmp45	%read{81,81} %write{79,79}
+temp	float	$tmp46	%read{81,81} %write{80,80}
+temp	float	$tmp47	%read{112,112} %write{81,81}
+temp	float	$tmp48	%read{83,83} %write{82,82}
+temp	float	$tmp49	%read{85,85} %write{83,83}
+temp	float	$tmp50	%read{85,85} %write{84,84}
+temp	float	$tmp51	%read{112,112} %write{85,85}
+temp	float	$tmp52	%read{87,87} %write{86,86}
+temp	float	$tmp53	%read{89,89} %write{87,87}
+temp	float	$tmp54	%read{89,89} %write{88,88}
+temp	float	$tmp55	%read{112,112} %write{89,89}
+temp	float	$tmp56	%read{94,94} %write{90,90}
+temp	float	$tmp57	%read{92,92} %write{91,91}
+temp	float	$tmp58	%read{93,93} %write{92,92}
+temp	float	$tmp59	%read{94,94} %write{93,93}
+temp	float	$tmp60	%read{112,112} %write{94,94}
+temp	float	$tmp61	%read{96,96} %write{95,95}
+temp	float	$tmp62	%read{98,98} %write{96,96}
+temp	float	$tmp63	%read{98,98} %write{97,97}
+temp	float	$tmp64	%read{112,112} %write{98,98}
+temp	float	$tmp65	%read{100,100} %write{99,99}
+temp	float	$tmp66	%read{102,102} %write{100,100}
+temp	float	$tmp67	%read{102,102} %write{101,101}
+temp	float	$tmp68	%read{112,112} %write{102,102}
+temp	float	$tmp69	%read{104,104} %write{103,103}
+temp	float	$tmp70	%read{106,106} %write{104,104}
+temp	float	$tmp71	%read{106,106} %write{105,105}
+temp	float	$tmp72	%read{112,112} %write{106,106}
+temp	float	$tmp73	%read{111,111} %write{107,107}
+temp	float	$tmp74	%read{109,109} %write{108,108}
+temp	float	$tmp75	%read{110,110} %write{109,109}
+temp	float	$tmp76	%read{111,111} %write{110,110}
+temp	float	$tmp77	%read{112,112} %write{111,111}
+temp	vector	$tmp78	%read{115,115} %write{114,114}
+temp	vector	$tmp79	%read{114,114} %write{113,113}
+temp	closure color	$tmp80	%read{118,118} %write{117,117}
+temp	color	$tmp81	%read{117,117} %write{116,116}
+const	string	$const15	"as_glass"		%read{117,117} %write{2147483647,-1}
+code in_bump_normal
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:195
+#     normal in_bump_normal = N
+	assign		in_bump_normal N 	%filename{"N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl"} %line{195} %argrw{"wr"}
+code ___main___
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:291
+#     if (raytype("transparency"))
+	raytype		$tmp1 $const1 	%filename{"N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl"} %line{291} %argrw{"wr"}
+	if		$tmp1 7 7 	%argrw{"r"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:293
+#         if (in_enable_matte)
+	if		in_enable_matte 6 6 	%line{293} %argrw{"r"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:295
+#             out_outMatteOpacity = as_matte(
+	closure		out_outMatteOpacity $const2 in_matte_opacity_color in_matte_opacity 	%line{295} %argrw{"wrrr"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:299
+#             out_outColor += out_outMatteOpacity;
+	add		out_outColor out_outColor out_outMatteOpacity 	%line{299} %argrw{"wrr"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:301
+#         return;
+	exit	%line{301}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:304
+#     if (raytype("shadow"))
+	raytype		$tmp2 $const3 	%line{304} %argrw{"wr"}
+	if		$tmp2 10 10 	%argrw{"r"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:306
+#         return;
+	exit	%line{306}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:309
+#     int ray_depth = 0;
+	assign		ray_depth $const4 	%line{309} %argrw{"wr"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:310
+#     int status = getattribute("path:ray_depth", ray_depth);
+	getattribute	status $const5 ray_depth 	%line{310} %argrw{"wrw"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:312
+#     if (!status || ray_depth > in_maximum_ray_depth)
+	eq		$tmp3 status $const4 	%line{312} %argrw{"wrr"}
+	neq		$tmp4 $tmp3 $const4 	%argrw{"wrr"}
+	if		$tmp4 15 18 	%argrw{"r"}
+	gt		$tmp5 ray_depth in_maximum_ray_depth 	%argrw{"wrr"}
+	neq		$tmp6 $tmp5 $const4 	%argrw{"wrr"}
+	assign		$tmp4 $tmp6 	%argrw{"wr"}
+	if		$tmp4 20 20 	%argrw{"r"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:314
+#         return;
+	exit	%line{314}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:317
+#     if (max(in_reflection_tint) == 0.0 && max(in_refraction_tint) == 0.0)
+	functioncall	$const6 26 	%line{317} %argrw{"r"}
+# N:\appleseed\appleseed\sandbox\shaders\as_osl_extensions.h:48
+# float max(color C)  { return max(C[0], max(C[1], C[2])); }
+	compref		$tmp8 in_reflection_tint $const4 	%filename{"N:\appleseed\appleseed\sandbox\shaders\as_osl_extensions.h"} %line{48} %argrw{"wrr"}
+	compref		$tmp10 in_reflection_tint $const7 	%argrw{"wrr"}
+	compref		$tmp11 in_reflection_tint $const8 	%argrw{"wrr"}
+	max		$tmp9 $tmp10 $tmp11 	%argrw{"wrr"}
+	max		$tmp7 $tmp8 $tmp9 	%argrw{"wrr"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:317
+#     if (max(in_reflection_tint) == 0.0 && max(in_refraction_tint) == 0.0)
+	eq		$tmp12 $tmp7 $const9 	%filename{"N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl"} %line{317} %argrw{"wrr"}
+	neq		$tmp13 $tmp12 $const4 	%argrw{"wrr"}
+	if		$tmp13 38 38 	%argrw{"r"}
+	functioncall	$const6 35 	%argrw{"r"}
+# N:\appleseed\appleseed\sandbox\shaders\as_osl_extensions.h:48
+# float max(color C)  { return max(C[0], max(C[1], C[2])); }
+	compref		$tmp15 in_refraction_tint $const4 	%filename{"N:\appleseed\appleseed\sandbox\shaders\as_osl_extensions.h"} %line{48} %argrw{"wrr"}
+	compref		$tmp17 in_refraction_tint $const7 	%argrw{"wrr"}
+	compref		$tmp18 in_refraction_tint $const8 	%argrw{"wrr"}
+	max		$tmp16 $tmp17 $tmp18 	%argrw{"wrr"}
+	max		$tmp14 $tmp15 $tmp16 	%argrw{"wrr"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:317
+#     if (max(in_reflection_tint) == 0.0 && max(in_refraction_tint) == 0.0)
+	eq		$tmp19 $tmp14 $const9 	%filename{"N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl"} %line{317} %argrw{"wrr"}
+	neq		$tmp20 $tmp19 $const4 	%argrw{"wrr"}
+	assign		$tmp13 $tmp20 	%argrw{"wr"}
+	if		$tmp13 40 40 	%argrw{"r"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:319
+#         return;
+	exit	%line{319}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:322
+#     normal Nn = normalize(in_bump_normal);
+	normalize	Nn in_bump_normal 	%line{322} %argrw{"wr"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:323
+#     vector tangent = Tn;
+	assign		tangent Tn 	%line{323} %argrw{"wr"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:325
+#     if (in_anisotropy_amount > 0.0)
+	gt		$tmp21 in_anisotropy_amount $const9 	%line{325} %argrw{"wrr"}
+	if		$tmp21 116 116 	%argrw{"r"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:327
+#         if (in_anisotropy_mode == 0)
+	eq		$tmp22 in_anisotropy_mode $const4 	%line{327} %argrw{"wrr"}
+	if		$tmp22 60 61 	%argrw{"r"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:329
+#             if (isconnected(in_anisotropy_map))
+	isconnected	$tmp23 in_anisotropy_map 	%line{329} %argrw{"wr"}
+	if		$tmp23 60 60 	%argrw{"r"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:332
+#                     (vector) in_anisotropy_map * 2.0 - 1.0);
+	mul		$tmp24 in_anisotropy_map $const10 	%line{332} %argrw{"wrr"}
+	sub		$tmp25 $tmp24 $const11 	%argrw{"wrr"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:331
+#                 vector vector_map = normalize(
+	normalize	___360_vector_map $tmp25 	%line{331} %argrw{"wr"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:335
+#                     vector_map[0] * Tn +
+	compref		$tmp26 ___360_vector_map $const4 	%line{335} %argrw{"wrr"}
+	mul		$tmp27 $tmp26 Tn 	%argrw{"wrr"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:336
+#                     vector_map[1] * Bn +
+	compref		$tmp28 ___360_vector_map $const7 	%line{336} %argrw{"wrr"}
+	mul		$tmp29 $tmp28 Bn 	%argrw{"wrr"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:335
+#                     vector_map[0] * Tn +
+	add		$tmp30 $tmp27 $tmp29 	%line{335} %argrw{"wrr"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:337
+#                     vector_map[2] * Nn);
+	compref		$tmp31 ___360_vector_map $const8 	%line{337} %argrw{"wrr"}
+	mul		$tmp32 $tmp31 Nn 	%argrw{"wrr"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:336
+#                     vector_map[1] * Bn +
+	add		$tmp33 $tmp30 $tmp32 	%line{336} %argrw{"wrr"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:334
+#                 tangent = normalize(
+	normalize	tangent $tmp33 	%line{334} %argrw{"wr"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:342
+#             tangent = in_anisotropy_direction;
+	assign		tangent in_anisotropy_direction 	%line{342} %argrw{"wr"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:345
+#         if (in_anisotropy_angle > 0.0)
+	gt		$tmp34 in_anisotropy_angle $const9 	%line{345} %argrw{"wrr"}
+	if		$tmp34 116 116 	%argrw{"r"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:349
+#                 in_anisotropy_angle * M_2PI,
+	mul		$tmp35 in_anisotropy_angle $const12 	%line{349} %argrw{"wrr"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:351
+#                 point(Nn));
+	assign		$tmp37 Nn 	%line{351} %argrw{"wr"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:347
+#             tangent = rotate(
+	functioncall	$const14 116 	%line{347} %argrw{"r"}
+# N:\appleseed\appleseed\sandbox\shaders\stdosl.h:274
+#     vector axis = normalize (b - a);
+	sub		$tmp38 $tmp37 $const13 	%filename{"N:\appleseed\appleseed\sandbox\shaders\stdosl.h"} %line{274} %argrw{"wrr"}
+	normalize	___254_axis $tmp38 	%argrw{"wr"}
+# N:\appleseed\appleseed\sandbox\shaders\stdosl.h:276
+#     sincos (angle, sinang, cosang);
+	sincos		$tmp35 ___254_sinang ___254_cosang 	%line{276} %argrw{"rww"}
+# N:\appleseed\appleseed\sandbox\shaders\stdosl.h:277
+#     float cosang1 = 1.0 - cosang;
+	sub		___254_cosang1 $const11 ___254_cosang 	%line{277} %argrw{"wrr"}
+# N:\appleseed\appleseed\sandbox\shaders\stdosl.h:278
+#     float x = axis[0], y = axis[1], z = axis[2];
+	compref		___254_x ___254_axis $const4 	%line{278} %argrw{"wrr"}
+	compref		___254_y ___254_axis $const7 	%argrw{"wrr"}
+	compref		___254_z ___254_axis $const8 	%argrw{"wrr"}
+# N:\appleseed\appleseed\sandbox\shaders\stdosl.h:279
+#     matrix M = matrix (x * x + (1.0 - x * x) * cosang,
+	mul		$tmp39 ___254_x ___254_x 	%line{279} %argrw{"wrr"}
+	mul		$tmp40 ___254_x ___254_x 	%argrw{"wrr"}
+	sub		$tmp41 $const11 $tmp40 	%argrw{"wrr"}
+	mul		$tmp42 $tmp41 ___254_cosang 	%argrw{"wrr"}
+	add		$tmp43 $tmp39 $tmp42 	%argrw{"wrr"}
+# N:\appleseed\appleseed\sandbox\shaders\stdosl.h:280
+#                        x * y * cosang1 + z * sinang,
+	mul		$tmp44 ___254_x ___254_y 	%line{280} %argrw{"wrr"}
+	mul		$tmp45 $tmp44 ___254_cosang1 	%argrw{"wrr"}
+	mul		$tmp46 ___254_z ___254_sinang 	%argrw{"wrr"}
+	add		$tmp47 $tmp45 $tmp46 	%argrw{"wrr"}
+# N:\appleseed\appleseed\sandbox\shaders\stdosl.h:281
+#                        x * z * cosang1 - y * sinang,
+	mul		$tmp48 ___254_x ___254_z 	%line{281} %argrw{"wrr"}
+	mul		$tmp49 $tmp48 ___254_cosang1 	%argrw{"wrr"}
+	mul		$tmp50 ___254_y ___254_sinang 	%argrw{"wrr"}
+	sub		$tmp51 $tmp49 $tmp50 	%argrw{"wrr"}
+# N:\appleseed\appleseed\sandbox\shaders\stdosl.h:283
+#                        x * y * cosang1 - z * sinang,
+	mul		$tmp52 ___254_x ___254_y 	%line{283} %argrw{"wrr"}
+	mul		$tmp53 $tmp52 ___254_cosang1 	%argrw{"wrr"}
+	mul		$tmp54 ___254_z ___254_sinang 	%argrw{"wrr"}
+	sub		$tmp55 $tmp53 $tmp54 	%argrw{"wrr"}
+# N:\appleseed\appleseed\sandbox\shaders\stdosl.h:284
+#                        y * y + (1.0 - y * y) * cosang,
+	mul		$tmp56 ___254_y ___254_y 	%line{284} %argrw{"wrr"}
+	mul		$tmp57 ___254_y ___254_y 	%argrw{"wrr"}
+	sub		$tmp58 $const11 $tmp57 	%argrw{"wrr"}
+	mul		$tmp59 $tmp58 ___254_cosang 	%argrw{"wrr"}
+	add		$tmp60 $tmp56 $tmp59 	%argrw{"wrr"}
+# N:\appleseed\appleseed\sandbox\shaders\stdosl.h:285
+#                        y * z * cosang1 + x * sinang,
+	mul		$tmp61 ___254_y ___254_z 	%line{285} %argrw{"wrr"}
+	mul		$tmp62 $tmp61 ___254_cosang1 	%argrw{"wrr"}
+	mul		$tmp63 ___254_x ___254_sinang 	%argrw{"wrr"}
+	add		$tmp64 $tmp62 $tmp63 	%argrw{"wrr"}
+# N:\appleseed\appleseed\sandbox\shaders\stdosl.h:287
+#                        x * z * cosang1 + y * sinang,
+	mul		$tmp65 ___254_x ___254_z 	%line{287} %argrw{"wrr"}
+	mul		$tmp66 $tmp65 ___254_cosang1 	%argrw{"wrr"}
+	mul		$tmp67 ___254_y ___254_sinang 	%argrw{"wrr"}
+	add		$tmp68 $tmp66 $tmp67 	%argrw{"wrr"}
+# N:\appleseed\appleseed\sandbox\shaders\stdosl.h:288
+#                        y * z * cosang1 - x * sinang,
+	mul		$tmp69 ___254_y ___254_z 	%line{288} %argrw{"wrr"}
+	mul		$tmp70 $tmp69 ___254_cosang1 	%argrw{"wrr"}
+	mul		$tmp71 ___254_x ___254_sinang 	%argrw{"wrr"}
+	sub		$tmp72 $tmp70 $tmp71 	%argrw{"wrr"}
+# N:\appleseed\appleseed\sandbox\shaders\stdosl.h:289
+#                        z * z + (1.0 - z * z) * cosang,
+	mul		$tmp73 ___254_z ___254_z 	%line{289} %argrw{"wrr"}
+	mul		$tmp74 ___254_z ___254_z 	%argrw{"wrr"}
+	sub		$tmp75 $const11 $tmp74 	%argrw{"wrr"}
+	mul		$tmp76 $tmp75 ___254_cosang 	%argrw{"wrr"}
+	add		$tmp77 $tmp73 $tmp76 	%argrw{"wrr"}
+# N:\appleseed\appleseed\sandbox\shaders\stdosl.h:279
+#     matrix M = matrix (x * x + (1.0 - x * x) * cosang,
+	matrix		___254_M $tmp43 $tmp47 $tmp51 $const9 $tmp55 $tmp60 $tmp64 $const9 $tmp68 $tmp72 $tmp77 $const9 $const9 $const9 $const9 $const11 	%line{279} %argrw{"wrrrrrrrrrrrrrrrr"}
+# N:\appleseed\appleseed\sandbox\shaders\stdosl.h:292
+#     return transform (M, p-a) + a;
+	sub		$tmp79 tangent $const13 	%line{292} %argrw{"wrr"}
+	transformv	$tmp78 ___254_M $tmp79 	%argrw{"wrr"}
+	add		tangent $tmp78 $const13 	%argrw{"wrr"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:358
+#         in_transmittance_amount * in_surface_transmittance,
+	mul		$tmp81 in_transmittance_amount in_surface_transmittance 	%filename{"N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl"} %line{358} %argrw{"wrr"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:355
+#     out_outColor += as_glass(
+	closure		$tmp80 $const15 Nn tangent $tmp81 in_reflection_tint in_refraction_tint in_roughness in_anisotropy_amount in_ior in_volume_transmittance in_volume_transmittance_distance 	%line{355} %argrw{"wrrrrrrrrrrr"}
+# N:/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_glass.osl:365
+#         in_volume_transmittance_distance);
+	add		out_outColor out_outColor $tmp80 	%line{365} %argrw{"wrr"}
+	end
