@@ -390,9 +390,18 @@ void RGBSpectrum<T>::set(
     const foundation::LightingConditions&               lighting_conditions,
     const Intent                                        intent)
 {
-    reinterpret_cast<foundation::Color<T, 3>&>(m_samples[0]) =
-        foundation::ciexyz_to_linear_rgb(
-            foundation::spectrum_to_ciexyz<T>(lighting_conditions, spectrum));
+    if (intent == Reflectance)
+    {
+        reinterpret_cast<foundation::Color<T, 3>&>(m_samples[0]) =
+            foundation::ciexyz_to_linear_rgb(
+                foundation::spectral_reflectance_to_ciexyz<T>(lighting_conditions, spectrum));
+    }
+    else
+    {
+        reinterpret_cast<foundation::Color<T, 3>&>(m_samples[0]) =
+            foundation::ciexyz_to_linear_rgb(
+                foundation::spectral_illuminance_to_ciexyz<T>(spectrum));
+    }
 }
 
 template <typename T>

@@ -73,9 +73,9 @@ namespace
             const ParamArray&       params)
           : Light(name, params)
         {
-            m_inputs.declare("intensity", InputFormatSpectralIlluminance);
-            m_inputs.declare("intensity_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("exposure", InputFormatFloat, "0.0");
+            m_inputs.declare("intensity", InputFormat::SpectralIlluminance);
+            m_inputs.declare("intensity_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("exposure", InputFormat::Float, "0.0");
 
             // Point lights can be used by the LightTree.
             m_flags |= LightTreeCompatible;

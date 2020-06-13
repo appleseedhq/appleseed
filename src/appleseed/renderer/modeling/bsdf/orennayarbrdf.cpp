@@ -81,9 +81,9 @@ namespace
             const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::Diffuse, params)
         {
-            m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("roughness" , InputFormatFloat, "0.1");
+            m_inputs.declare("reflectance", InputFormat::SpectralReflectance);
+            m_inputs.declare("reflectance_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("roughness" , InputFormat::Float, "0.1");
         }
 
         void release() override

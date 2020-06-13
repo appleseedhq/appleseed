@@ -178,7 +178,7 @@ namespace
             const ParamArray&       params)
           : PerspectiveCamera(name, params)
         {
-            m_inputs.declare("diaphragm_map", InputFormatSpectralReflectance, "");
+            m_inputs.declare("diaphragm_map", InputFormat::SpectralReflectance, "");
         }
 
         void release() override

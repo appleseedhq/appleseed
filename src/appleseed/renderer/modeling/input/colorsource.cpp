@@ -53,14 +53,21 @@ namespace renderer
 // ColorSource class implementation.
 //
 
-ColorSource::ColorSource(const ColorEntity& color_entity)
+ColorSource::ColorSource(const ColorEntity& color_entity, const InputFormat format)
   : Source(true)
   , m_color_entity(color_entity)
 {
     // Retrieve the color values.
     if (color_entity.get_color_space() == ColorSpaceSpectral)
-        initialize_from_spectrum(color_entity);
-    else initialize_from_color3(color_entity);
+    {
+        initialize_from_spectrum(color_entity, (format == InputFormat::SpectralIlluminance ||
+            format == InputFormat::SpectralIlluminanceWithAlpha) ? Spectrum::Illuminance : Spectrum::Reflectance);
+    }
+    else
+    {
+        initialize_from_color3(color_entity, (format == InputFormat::SpectralIlluminance ||
+            format == InputFormat::SpectralIlluminanceWithAlpha) ? Spectrum::Illuminance : Spectrum::Reflectance);
+    }
 
     // Apply the multiplier to the color values.
     const float multiplier = color_entity.get_multiplier();
@@ -87,7 +94,7 @@ ColorSource::Hints ColorSource::get_hints() const
     return hints;
 }
 
-void ColorSource::initialize_from_spectrum(const ColorEntity& color_entity)
+void ColorSource::initialize_from_spectrum(const ColorEntity& color_entity, const Spectrum::Intent intent)
 {
     const ColorValueArray& values = color_entity.get_values();
 
@@ -109,14 +116,22 @@ void ColorSource::initialize_from_spectrum(const ColorEntity& color_entity)
         &values[0],
         s);
 
-    m_linear_rgb =
-        ciexyz_to_linear_rgb(
-            spectrum_to_ciexyz<float>(g_std_lighting_conditions, s));
-
-    m_spectrum.set(s, g_std_lighting_conditions, Spectrum::Reflectance);
+    m_spectrum.set(s, g_std_lighting_conditions, intent);
+    if (intent == Spectrum::Reflectance)
+    {
+        m_linear_rgb =
+            ciexyz_to_linear_rgb(
+                spectral_reflectance_to_ciexyz<float>(g_std_lighting_conditions, s));
+    }
+    else
+    {
+        m_linear_rgb =
+            ciexyz_to_linear_rgb(
+                spectral_illuminance_to_ciexyz<float>(g_std_lighting_conditions, s));
+    }
 }
 
-void ColorSource::initialize_from_color3(const ColorEntity& color_entity)
+void ColorSource::initialize_from_color3(const ColorEntity& color_entity, const Spectrum::Intent intent)
 {
     Color3f color;
 
@@ -154,7 +169,7 @@ void ColorSource::initialize_from_color3(const ColorEntity& color_entity)
         break;
     }
 
-    m_spectrum.set(m_linear_rgb, g_std_lighting_conditions, Spectrum::Reflectance);
+    m_spectrum.set(m_linear_rgb, g_std_lighting_conditions, intent);
 }
 
 }   // namespace renderer

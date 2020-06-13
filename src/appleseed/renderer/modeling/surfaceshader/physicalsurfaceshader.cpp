@@ -78,8 +78,8 @@ namespace
             const ParamArray&           params)
           : SurfaceShader(name, params)
         {
-            m_inputs.declare("color_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("alpha_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("color_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("alpha_multiplier", InputFormat::Float, "1.0");
         }
 
         void release() override
@@ -160,7 +160,7 @@ namespace
             }
 
             shading_result.m_main.rgb() =
-                shading_components.m_beauty.to_rgb(g_std_lighting_conditions);
+                shading_components.m_beauty.illuminance_to_rgb(g_std_lighting_conditions);
         }
 
       private:

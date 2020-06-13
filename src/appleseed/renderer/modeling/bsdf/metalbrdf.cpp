@@ -92,13 +92,13 @@ namespace
             const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::Glossy | ScatteringMode::Specular, params)
         {
-            m_inputs.declare("normal_reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("edge_tint", InputFormatSpectralReflectance);
-            m_inputs.declare("edge_tint_weight", InputFormatFloat, "1.0");
-            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("roughness", InputFormatFloat, "0.15");
-            m_inputs.declare("anisotropy", InputFormatFloat, "0.0");
-            m_inputs.declare("energy_compensation", InputFormatFloat, "0.0");
+            m_inputs.declare("normal_reflectance", InputFormat::SpectralReflectance);
+            m_inputs.declare("edge_tint", InputFormat::SpectralReflectance);
+            m_inputs.declare("edge_tint_weight", InputFormat::Float, "1.0");
+            m_inputs.declare("reflectance_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("roughness", InputFormat::Float, "0.15");
+            m_inputs.declare("anisotropy", InputFormat::Float, "0.0");
+            m_inputs.declare("energy_compensation", InputFormat::Float, "0.0");
         }
 
         void release() override

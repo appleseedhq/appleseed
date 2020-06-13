@@ -515,7 +515,7 @@ namespace
             {
                 assert(min_value(radiance) >= 0.0f);
 
-                const Color3f linear_rgb = radiance.to_rgb(g_std_lighting_conditions);
+                const Color3f linear_rgb = radiance.illuminance_to_rgb(g_std_lighting_conditions);
 
                 Sample sample;
                 sample.m_pixel_coords.x = static_cast<int>(position_ndc.x * m_canvas_width);

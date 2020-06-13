@@ -79,9 +79,9 @@ BENCHMARK_SUITE(Foundation_Image_ColorSpace)
         }
     };
 
-    BENCHMARK_CASE_F(SpectrumToCIEXYZ, SpectrumToCIEXYZFixture)
+    BENCHMARK_CASE_F(SpectralReflectanceToCIEXYZ, SpectrumToCIEXYZFixture)
     {
-        m_output = spectrum_to_ciexyz<float>(m_lighting_conditions, m_input);
+        m_output = spectral_reflectance_to_ciexyz<float>(m_lighting_conditions, m_input);
     }
 
     struct LinearRGBToSpectrumFixture

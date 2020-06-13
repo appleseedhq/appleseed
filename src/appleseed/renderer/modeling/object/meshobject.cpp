@@ -73,7 +73,7 @@ MeshObject::MeshObject(
   : Object(name, params)
   , impl(new Impl())
 {
-    m_inputs.declare("alpha_map", InputFormatFloat, "");
+    m_inputs.declare("alpha_map", InputFormat::Float, "");
 }
 
 MeshObject::~MeshObject()

@@ -358,17 +358,17 @@ namespace
             const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::Diffuse | ScatteringMode::Glossy, params)
         {
-            m_inputs.declare("base_color", InputFormatSpectralReflectance);
-            m_inputs.declare("subsurface", InputFormatFloat, "0.0");
-            m_inputs.declare("metallic", InputFormatFloat, "0.0");
-            m_inputs.declare("specular", InputFormatFloat, "0.0");
-            m_inputs.declare("specular_tint", InputFormatFloat, "0.0");
-            m_inputs.declare("anisotropic", InputFormatFloat, "0.0");
-            m_inputs.declare("roughness", InputFormatFloat, "0.1");
-            m_inputs.declare("sheen", InputFormatFloat, "0.0");
-            m_inputs.declare("sheen_tint", InputFormatFloat, "0.0");
-            m_inputs.declare("clearcoat", InputFormatFloat, "0.0");
-            m_inputs.declare("clearcoat_gloss", InputFormatFloat, "1.0");
+            m_inputs.declare("base_color", InputFormat::SpectralReflectance);
+            m_inputs.declare("subsurface", InputFormat::Float, "0.0");
+            m_inputs.declare("metallic", InputFormat::Float, "0.0");
+            m_inputs.declare("specular", InputFormat::Float, "0.0");
+            m_inputs.declare("specular_tint", InputFormat::Float, "0.0");
+            m_inputs.declare("anisotropic", InputFormat::Float, "0.0");
+            m_inputs.declare("roughness", InputFormat::Float, "0.1");
+            m_inputs.declare("sheen", InputFormat::Float, "0.0");
+            m_inputs.declare("sheen_tint", InputFormat::Float, "0.0");
+            m_inputs.declare("clearcoat", InputFormat::Float, "0.0");
+            m_inputs.declare("clearcoat_gloss", InputFormat::Float, "1.0");
         }
 
         void release() override
@@ -398,7 +398,7 @@ namespace
             new (&values->m_precomputed) InputValues::Precomputed();
 
             const Color3f tint_xyz =
-                values->m_base_color.to_ciexyz(g_std_lighting_conditions);
+                values->m_base_color.reflectance_to_ciexyz(g_std_lighting_conditions);
 
             values->m_precomputed.m_tint_color.set(
                 tint_xyz[1] > 0.0f

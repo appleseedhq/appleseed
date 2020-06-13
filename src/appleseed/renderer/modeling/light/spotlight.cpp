@@ -78,9 +78,9 @@ namespace
             const ParamArray&       params)
           : Light(name, params)
         {
-            m_inputs.declare("intensity", InputFormatSpectralIlluminance);
-            m_inputs.declare("intensity_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("exposure", InputFormatFloat, "0.0");
+            m_inputs.declare("intensity", InputFormat::Float);
+            m_inputs.declare("intensity_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("exposure", InputFormat::Float, "0.0");
         }
 
         void release() override

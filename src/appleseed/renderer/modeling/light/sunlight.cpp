@@ -95,11 +95,11 @@ namespace
             const ParamArray&       params)
           : Light(name, params)
         {
-            m_inputs.declare("environment_edf", InputFormatEntity, "");
-            m_inputs.declare("turbidity", InputFormatFloat);
-            m_inputs.declare("radiance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("size_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("distance", InputFormatFloat, "149.6");
+            m_inputs.declare("environment_edf", InputFormat::Entity, "");
+            m_inputs.declare("turbidity", InputFormat::Float);
+            m_inputs.declare("radiance_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("size_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("distance", InputFormat::Float, "149.6");
         }
 
         void release() override

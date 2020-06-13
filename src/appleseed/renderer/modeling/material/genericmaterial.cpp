@@ -59,12 +59,12 @@ namespace
             const ParamArray&       params)
           : Material(name, params)
         {
-            m_inputs.declare("bsdf", InputFormatEntity, "");
-            m_inputs.declare("bssrdf", InputFormatEntity, "");
-            m_inputs.declare("edf", InputFormatEntity, "");
-            m_inputs.declare("alpha_map", InputFormatFloat, "");
-            m_inputs.declare("displacement_map", InputFormatSpectralReflectance, "");
-            m_inputs.declare("volume", InputFormatEntity, "");
+            m_inputs.declare("bsdf", InputFormat::Entity, "");
+            m_inputs.declare("bssrdf", InputFormat::Entity, "");
+            m_inputs.declare("edf", InputFormat::Entity, "");
+            m_inputs.declare("alpha_map", InputFormat::Float, "");
+            m_inputs.declare("displacement_map", InputFormat::SpectralReflectance, "");
+            m_inputs.declare("volume", InputFormat::Entity, "");
         }
 
         void release() override

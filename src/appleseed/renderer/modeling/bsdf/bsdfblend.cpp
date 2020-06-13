@@ -81,9 +81,9 @@ namespace
             const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::All, params)
         {
-            m_inputs.declare("bsdf0", InputFormatEntity);
-            m_inputs.declare("bsdf1", InputFormatEntity);
-            m_inputs.declare("weight", InputFormatFloat);
+            m_inputs.declare("bsdf0", InputFormat::Entity);
+            m_inputs.declare("bsdf1", InputFormat::Entity);
+            m_inputs.declare("weight", InputFormat::Float);
         }
 
         void release() override
