@@ -31,11 +31,11 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
-#include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/postprocessingstage/effect/imageeffectjob.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/image.h"
 #include "foundation/utility/job/ijob.h"
 #include "foundation/utility/job/jobmanager.h"
 #include "foundation/utility/job/jobqueue.h"
@@ -50,14 +50,14 @@ namespace renderer
 //
 
 void ImageEffectApplier::apply_on_tiles(
-    Frame&              frame,
+    Image&              image,
     const std::size_t   thread_count) const
 {
     // Create effect applier jobs.
     const ImageEffectJobFactory effect_job_factory;
     const ImageEffectJobFactory::EffectJobVector effect_jobs =
         effect_job_factory.create(
-            frame,
+            image,
             *this);
 
     // Schedule effect applier jobs.

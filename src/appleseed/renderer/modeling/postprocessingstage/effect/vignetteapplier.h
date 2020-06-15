@@ -38,7 +38,7 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class Frame; }
+namespace foundation    { class Image; }
 
 namespace renderer
 {
@@ -49,14 +49,14 @@ namespace renderer
 
 struct VignetteParams
 {
+    // Context.
+    float       frame_width;
+    float       frame_height;
+
     // Settings.
     float       intensity;
     float       anisotropy; // 0 = no anisotropy (i.e. perfectly rounded)
                             // 1 = full anisotropy (i.e. respect the frame's aspect ratio)
-
-    // Context.
-    float       frame_width;
-    float       frame_height;
 };
 
 
@@ -76,9 +76,9 @@ class VignetteApplier
 
     // Apply the vignette effect to a given tile.
     void apply(
-        const Frame&        frame,
-        const std::size_t   tile_x,
-        const std::size_t   tile_y) const override;
+        foundation::Image&      image,
+        const std::size_t       tile_x,
+        const std::size_t       tile_y) const override;
 
   private:
     const float                     m_intensity;

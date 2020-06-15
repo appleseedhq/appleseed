@@ -29,9 +29,6 @@
 // Interface header.
 #include "imageeffectjob.h"
 
-// appleseed.renderer headers.
-#include "renderer/modeling/frame/frame.h"
-
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
@@ -52,11 +49,11 @@ namespace renderer
 
 ImageEffectJob::ImageEffectJob(
     const ImageEffectApplier&   effect_applier,
-    const Frame&                frame,
+    Image&                      image,
     const std::size_t           tile_x,
     const std::size_t           tile_y)
   : m_effect_applier(effect_applier)
-  , m_frame(frame)
+  , m_image(image)
   , m_tile_x(tile_x)
   , m_tile_y(tile_y)
 {
@@ -66,7 +63,7 @@ void ImageEffectJob::execute(const std::size_t thread_index)
 {
     // Apply the image effect to a single tile.
     m_effect_applier.apply(
-        m_frame,
+        m_image,
         m_tile_x,
         m_tile_y);
 }
@@ -77,11 +74,11 @@ void ImageEffectJob::execute(const std::size_t thread_index)
 //
 
 ImageEffectJobFactory::EffectJobVector ImageEffectJobFactory::create(
-    const Frame&                frame,
+    Image&                      image,
     const ImageEffectApplier&   effect_applier) const
 {
-    // Retrieve frame properties.
-    const CanvasProperties& props = frame.image().properties();
+    // Retrieve image properties.
+    const CanvasProperties& props = image.properties();
 
     // Generate tiles.
     std::vector<std::size_t> tiles;
@@ -95,7 +92,7 @@ ImageEffectJobFactory::EffectJobVector ImageEffectJobFactory::create(
     effect_jobs.reserve(props.m_tile_count);
     for (std::size_t i = 0; i < props.m_tile_count; ++i)
     {
-        // Compute coordinates of the tile in the frame.
+        // Compute coordinates of the tile in the image.
         const std::size_t tile_index = tiles[i];
         const std::size_t tile_x = tile_index % props.m_tile_count_x;
         const std::size_t tile_y = tile_index / props.m_tile_count_x;
@@ -106,7 +103,7 @@ ImageEffectJobFactory::EffectJobVector ImageEffectJobFactory::create(
         effect_jobs.push_back(
             new ImageEffectJob(
                 effect_applier,
-                frame,
+                image,
                 tile_x,
                 tile_y));
     }

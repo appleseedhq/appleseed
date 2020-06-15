@@ -35,7 +35,7 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer      { class Frame; }
+namespace foundation    { class Image; }
 
 namespace renderer
 {
@@ -50,14 +50,14 @@ class ImageEffectApplier
   public:
     // Apply the image effect to a given tile.
     virtual void apply(
-        const Frame&        frame,
-        const std::size_t   tile_x,
-        const std::size_t   tile_y) const = 0;
+        foundation::Image&      image,
+        const std::size_t       tile_x,
+        const std::size_t       tile_y) const = 0;
 
-    // Apply this effect on a given frame in parallel, by scheduling a job for each tile.
+    // Apply this effect on a given image, in parallel, by scheduling a job for each tile.
     void apply_on_tiles(
-        Frame&              frame,
-        const std::size_t   thread_count = 1) const;
+        foundation::Image&      image,
+        const std::size_t       thread_count = 1) const;
 };
 
 }   // namespace renderer

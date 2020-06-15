@@ -39,7 +39,7 @@
 #include <vector>
 
 // Forward declarations.
-namespace renderer      { class Frame; }
+namespace foundation    { class Image; }
 
 namespace renderer
 {
@@ -55,7 +55,7 @@ class ImageEffectJob
     // Constructor.
     ImageEffectJob(
         const ImageEffectApplier&   effect_applier,
-        const Frame&                frame,
+        foundation::Image&          image,
         const std::size_t           tile_x,
         const std::size_t           tile_y);
 
@@ -64,14 +64,14 @@ class ImageEffectJob
 
   private:
     const ImageEffectApplier&   m_effect_applier;
-    const Frame&                m_frame;
+    foundation::Image&          m_image;
     const std::size_t           m_tile_x;
     const std::size_t           m_tile_y;
 };
 
 
 //
-// Creates jobs to apply an image effect to a complete frame.
+// Creates jobs to apply an image effect to a complete image.
 //
 
 class ImageEffectJobFactory
@@ -79,9 +79,9 @@ class ImageEffectJobFactory
   public:
     typedef std::vector<ImageEffectJob*> EffectJobVector;
 
-    // Create effect jobs for a given frame.
+    // Create effect jobs for a given image.
     EffectJobVector create(
-        const Frame&                frame,
+        foundation::Image&          image,
         const ImageEffectApplier&   effect_applier) const;
 };
 

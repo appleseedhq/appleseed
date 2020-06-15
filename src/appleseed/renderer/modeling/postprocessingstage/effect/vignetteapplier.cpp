@@ -29,9 +29,6 @@
 // Interface header.
 #include "vignetteapplier.h"
 
-// appleseed.renderer headers.
-#include "renderer/modeling/frame/frame.h"
-
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
@@ -72,12 +69,10 @@ void VignetteApplier::release()
 }
 
 void VignetteApplier::apply(
-    const Frame&        frame,
+    Image&              image,
     const std::size_t   tile_x,
     const std::size_t   tile_y) const
 {
-    Image& image = frame.image();
-
     assert(tile_x < image.properties().m_tile_count_x);
     assert(tile_y < image.properties().m_tile_count_y);
 
