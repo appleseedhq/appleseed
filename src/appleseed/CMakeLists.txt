@@ -2006,6 +2006,8 @@ set (renderer_modeling_postprocessingstage_sources
     renderer/modeling/postprocessingstage/tonemappostprocessingstage.h
     renderer/modeling/postprocessingstage/vignettepostprocessingstage.cpp
     renderer/modeling/postprocessingstage/vignettepostprocessingstage.h
+    renderer/modeling/postprocessingstage/effect/additiveblendapplier.cpp
+    renderer/modeling/postprocessingstage/effect/additiveblendapplier.h
     renderer/modeling/postprocessingstage/effect/clampcolorsapplier.cpp
     renderer/modeling/postprocessingstage/effect/clampcolorsapplier.h
     renderer/modeling/postprocessingstage/effect/chromaticaberrationapplier.cpp

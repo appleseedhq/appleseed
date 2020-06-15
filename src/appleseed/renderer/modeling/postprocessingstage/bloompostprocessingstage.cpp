@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/modeling/frame/frame.h"
+#include "renderer/modeling/postprocessingstage/effect/additiveblendapplier.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
 #include "renderer/utility/rgbcolorsampling.h"
 
@@ -305,6 +306,7 @@ namespace
 
                 upscale_in_place(blur_pyramid_up[level + 1], blur_pyramid_up[level]);
 
+#if 0
                 // Blend each upsampled buffer with the downsample buffer in the same level.
                 const CanvasProperties& level_props = blur_pyramid_up[level].properties();
 
@@ -321,6 +323,10 @@ namespace
                         blur_pyramid_up[level].set_pixel(x, y, color_up);
                     }
                 }
+#else
+                AdditiveBlendApplier blend_applier({ blur_pyramid_down[level] });
+                blend_applier.apply_on_tiles(blur_pyramid_up[level]);
+#endif
             }
 
             //
@@ -330,6 +336,7 @@ namespace
             Image bloom_target(prefiltered_image.properties());
             upscale_in_place(blur_pyramid_up[0], bloom_target); // TODO optimize away
 
+#if 0
             for (std::size_t y = 0; y < props.m_canvas_height; ++y)
             {
                 for (std::size_t x = 0; x < props.m_canvas_width; ++x)
@@ -347,6 +354,15 @@ namespace
                     image.set_pixel(x, y, color);
                 }
             }
+#else
+            AdditiveBlendApplier blend_applier(
+                {
+                    bloom_target,
+                    m_debug_blur ? 1.0f : m_intensity,
+                    m_debug_blur ? 0.0f : 1.0f
+                });
+            blend_applier.apply_on_tiles(image);
+#endif
         }
 
       private:
