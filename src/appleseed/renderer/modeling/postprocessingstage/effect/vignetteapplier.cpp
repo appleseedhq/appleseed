@@ -37,10 +37,6 @@
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
 #include "foundation/math/scalar.h"
-#include "foundation/math/vector.h"
-
-// Standard headers.
-#include <cstddef>
 
 using namespace foundation;
 

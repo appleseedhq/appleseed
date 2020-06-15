@@ -26,8 +26,6 @@
 // THE SOFTWARE.
 //
 
-#pragma once
-
 // Interface header.
 #include "imageeffectapplier.h"
 
@@ -41,9 +39,6 @@
 #include "foundation/utility/job/ijob.h"
 #include "foundation/utility/job/jobmanager.h"
 #include "foundation/utility/job/jobqueue.h"
-
-// Standard headers.
-#include <cstddef>
 
 using namespace foundation;
 
