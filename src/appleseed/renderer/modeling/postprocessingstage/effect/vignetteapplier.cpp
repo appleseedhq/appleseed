@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "vignettepostprocessingeffect.h"
+#include "vignetteapplier.h"
 
 // appleseed.renderer headers.
 #include "renderer/modeling/frame/frame.h"

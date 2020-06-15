@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "postprocessingeffectjob.h"
+#include "imageeffectjob.h"
 
 // appleseed.renderer headers.
 #include "renderer/modeling/frame/frame.h"
@@ -51,10 +51,10 @@ namespace renderer
 //
 
 ImageEffectJob::ImageEffectJob(
-    const IImageEffectApplier&      effect_applier,
-    const Frame&                    frame,
-    const std::size_t               tile_x,
-    const std::size_t               tile_y)
+    const ImageEffectApplier&   effect_applier,
+    const Frame&                frame,
+    const std::size_t           tile_x,
+    const std::size_t           tile_y)
   : m_effect_applier(effect_applier)
   , m_frame(frame)
   , m_tile_x(tile_x)
@@ -64,7 +64,7 @@ ImageEffectJob::ImageEffectJob(
 
 void ImageEffectJob::execute(const std::size_t thread_index)
 {
-    // Apply the post-processing effect to the tile.
+    // Apply the image effect to a single tile.
     m_effect_applier.apply(
         m_frame,
         m_tile_x,
@@ -77,13 +77,13 @@ void ImageEffectJob::execute(const std::size_t thread_index)
 //
 
 ImageEffectJobFactory::EffectJobVector ImageEffectJobFactory::create(
-    const Frame&                    frame,
-    const IImageEffectApplier&      effect_applier) const
+    const Frame&                frame,
+    const ImageEffectApplier&   effect_applier) const
 {
     // Retrieve frame properties.
     const CanvasProperties& props = frame.image().properties();
 
-    // Generate tiles in linear order.
+    // Generate tiles.
     std::vector<std::size_t> tiles;
     hilbert_ordering(tiles, props.m_tile_count_x, props.m_tile_count_y);
 

@@ -31,8 +31,8 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/frame/frame.h"
-#include "renderer/modeling/postprocessingstage/multithreadpostprocessingstage.h"
-#include "renderer/modeling/postprocessingstage/effect/vignettepostprocessingeffect.h"
+#include "renderer/modeling/postprocessingstage/effect/vignetteapplier.h"
+#include "renderer/modeling/postprocessingstage/postprocessingstage.h"
 
 // appleseed.foundation headers.
 #include "foundation/containers/dictionary.h"
@@ -64,13 +64,13 @@ namespace
     static constexpr float DefaultAnisotropy = 0.0f;
 
     class VignettePostProcessingStage
-      : public MultithreadPostProcessingStage
+      : public PostProcessingStage
     {
       public:
         VignettePostProcessingStage(
             const char*             name,
             const ParamArray&       params)
-          : MultithreadPostProcessingStage(name, params)
+          : PostProcessingStage(name, params)
         {
         }
 
@@ -115,14 +115,10 @@ namespace
                 static_cast<float>(props.m_canvas_height)
             };
 
-            // Instantiate an effect applier.
+            // Apply the effect onto each image tile, in parallel.
             const VignetteApplier effect_applier(effect_params);
 
-            // Apply the effect onto each image tile.
-            MultithreadPostProcessingStage::execute_on_tiles(
-                frame,
-                effect_applier,
-                thread_count);
+            effect_applier.apply_on_tiles(frame, thread_count);
         }
 
       private:

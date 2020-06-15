@@ -26,14 +26,15 @@
 // THE SOFTWARE.
 //
 
+#pragma once
+
 // Interface header.
-#include "multithreadpostprocessingstage.h"
+#include "imageeffectapplier.h"
 
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/modeling/frame/frame.h"
-#include "renderer/modeling/postprocessingstage/effect/postprocessingeffectjob.h"
-#include "renderer/modeling/postprocessingstage/effect/ipostprocessingeffect.h"
+#include "renderer/modeling/postprocessingstage/effect/imageeffectjob.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -41,33 +42,28 @@
 #include "foundation/utility/job/jobmanager.h"
 #include "foundation/utility/job/jobqueue.h"
 
+// Standard headers.
+#include <cstddef>
+
 using namespace foundation;
 
 namespace renderer
 {
 
 //
-// MultithreadPostProcessingStage class implementation.
+// ImageEffectApplier abstract class implementation.
 //
 
-MultithreadPostProcessingStage::MultithreadPostProcessingStage(
-    const char*         name,
-    const ParamArray&   params)
-  : PostProcessingStage(name, params)
-{
-}
-
-void MultithreadPostProcessingStage::execute_on_tiles(
-    Frame&                          frame,
-    const IImageEffectApplier&      effect_applier,
-    const std::size_t               thread_count) const
+void ImageEffectApplier::apply_on_tiles(
+    Frame&              frame,
+    const std::size_t   thread_count) const
 {
     // Create effect applier jobs.
     const ImageEffectJobFactory effect_job_factory;
     const ImageEffectJobFactory::EffectJobVector effect_jobs =
         effect_job_factory.create(
             frame,
-            effect_applier);
+            *this);
 
     // Schedule effect applier jobs.
     JobQueue job_queue;

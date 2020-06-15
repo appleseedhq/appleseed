@@ -28,35 +28,36 @@
 
 #pragma once
 
-// appleseed.renderer headers.
-#include "renderer/modeling/postprocessingstage/postprocessingstage.h"
-#include "renderer/modeling/postprocessingstage/effect/ipostprocessingeffect.h"
+// appleseed.foundation headers.
+#include "foundation/core/concepts/iunknown.h"
 
 // Standard headers.
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class Frame; }
-namespace renderer  { class ParamArray; }
+namespace renderer      { class Frame; }
 
 namespace renderer
 {
 
-class MultithreadPostProcessingStage
-  : public PostProcessingStage
+//
+// Image effect algorithm applier.
+//
+
+class ImageEffectApplier
+  : public foundation::IUnknown
 {
   public:
-    // Constructor.
-    MultithreadPostProcessingStage(
-        const char*             name,
-        const ParamArray&       params);
+    // Apply the image effect to a given tile.
+    virtual void apply(
+        const Frame&        frame,
+        const std::size_t   tile_x,
+        const std::size_t   tile_y) const = 0;
 
-    // Execute this post-processing stage on a given frame
-    // by scheduling a job for each tile to apply the image effect.
-    virtual void execute_on_tiles(
-        Frame&                          frame,
-        const IImageEffectApplier&      effect_applier,
-        const std::size_t               thread_count = 1) const;
+    // Apply this effect on a given frame in parallel, by scheduling a job for each tile.
+    void apply_on_tiles(
+        Frame&              frame,
+        const std::size_t   thread_count = 1) const;
 };
 
 }   // namespace renderer

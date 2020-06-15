@@ -28,11 +28,15 @@
 
 #pragma once
 
+// appleseed.renderer headers.
+#include "renderer/modeling/postprocessingstage/effect/imageeffectapplier.h"
+
 // appleseed.foundation headers.
-#include "foundation/core/concepts/iunknown.h"
+#include "foundation/utility/job.h"
 
 // Standard headers.
 #include <cstddef>
+#include <vector>
 
 // Forward declarations.
 namespace renderer      { class Frame; }
@@ -41,18 +45,44 @@ namespace renderer
 {
 
 //
-// Interface of a post-processing effect algorithm applier.
+// Image effect applier job.
 //
 
-class IImageEffectApplier
-  : public foundation::IUnknown
+class ImageEffectJob
+  : public foundation::IJob
 {
   public:
-    // Apply the post-processing effect to a given tile.
-    virtual void apply(
-        const Frame&        frame,
-        const std::size_t   tile_x,
-        const std::size_t   tile_y) const = 0;
+    // Constructor.
+    ImageEffectJob(
+        const ImageEffectApplier&   effect_applier,
+        const Frame&                frame,
+        const std::size_t           tile_x,
+        const std::size_t           tile_y);
+
+    // Execute the job.
+    void execute(const std::size_t thread_index);
+
+  private:
+    const ImageEffectApplier&   m_effect_applier;
+    const Frame&                m_frame;
+    const std::size_t           m_tile_x;
+    const std::size_t           m_tile_y;
+};
+
+
+//
+// Creates jobs to apply an image effect to a complete frame.
+//
+
+class ImageEffectJobFactory
+{
+  public:
+    typedef std::vector<ImageEffectJob*> EffectJobVector;
+
+    // Create effect jobs for a given frame.
+    EffectJobVector create(
+        const Frame&                frame,
+        const ImageEffectApplier&   effect_applier) const;
 };
 
 }   // namespace renderer

@@ -1990,8 +1990,6 @@ set (renderer_modeling_postprocessingstage_sources
     renderer/modeling/postprocessingstage/colormappostprocessingstage.h
     renderer/modeling/postprocessingstage/ipostprocessingstagefactory.cpp
     renderer/modeling/postprocessingstage/ipostprocessingstagefactory.h
-    renderer/modeling/postprocessingstage/multithreadpostprocessingstage.cpp
-    renderer/modeling/postprocessingstage/multithreadpostprocessingstage.h
     renderer/modeling/postprocessingstage/postprocessingstage.cpp
     renderer/modeling/postprocessingstage/postprocessingstage.h
     renderer/modeling/postprocessingstage/postprocessingstagecontainer.h
@@ -2002,11 +2000,12 @@ set (renderer_modeling_postprocessingstage_sources
     renderer/modeling/postprocessingstage/renderstamppostprocessingstage.h
     renderer/modeling/postprocessingstage/vignettepostprocessingstage.cpp
     renderer/modeling/postprocessingstage/vignettepostprocessingstage.h
-    renderer/modeling/postprocessingstage/effect/ipostprocessingeffect.h
-    renderer/modeling/postprocessingstage/effect/postprocessingeffectjob.cpp
-    renderer/modeling/postprocessingstage/effect/postprocessingeffectjob.h
-    renderer/modeling/postprocessingstage/effect/vignettepostprocessingeffect.cpp
-    renderer/modeling/postprocessingstage/effect/vignettepostprocessingeffect.h
+    renderer/modeling/postprocessingstage/effect/imageeffectapplier.cpp
+    renderer/modeling/postprocessingstage/effect/imageeffectapplier.h
+    renderer/modeling/postprocessingstage/effect/imageeffectjob.cpp
+    renderer/modeling/postprocessingstage/effect/imageeffectjob.h
+    renderer/modeling/postprocessingstage/effect/vignetteapplier.cpp
+    renderer/modeling/postprocessingstage/effect/vignetteapplier.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_postprocessingstage_sources}

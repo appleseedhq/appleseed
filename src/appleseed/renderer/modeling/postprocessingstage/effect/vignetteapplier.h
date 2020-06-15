@@ -29,60 +29,58 @@
 #pragma once
 
 // appleseed.renderer headers.
-#include "renderer/modeling/postprocessingstage/effect/ipostprocessingeffect.h"
+#include "renderer/modeling/postprocessingstage/effect/imageeffectapplier.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/job.h"
-
-// Standard headers.
-#include <cstddef>
-#include <vector>
+#include "foundation/math/vector.h"
 
 // Forward declarations.
-namespace renderer      { class Frame; }
+namespace renderer  { class Frame; }
 
 namespace renderer
 {
 
 //
-// Post-processing effect applier job.
+// Vignette-specific parameters.
 //
 
-class ImageEffectJob
-  : public foundation::IJob
+struct VignetteParams
 {
-  public:
-    // Constructor.
-    ImageEffectJob(
-        const IImageEffectApplier&  effect_applier,
-        const Frame&                frame,
-        const std::size_t           tile_x,
-        const std::size_t           tile_y);
+    // Settings.
+    float       intensity;
+    float       anisotropy; // 0 = no anisotropy (i.e. perfectly rounded)
+                            // 1 = full anisotropy (i.e. respect the frame's aspect ratio)
 
-    // Execute the job.
-    void execute(const std::size_t thread_index);
-
-  private:
-    const IImageEffectApplier&  m_effect_applier;
-    const Frame&                m_frame;
-    const std::size_t           m_tile_x;
-    const std::size_t           m_tile_y;
+    // Context.
+    float       frame_width;
+    float       frame_height;
 };
 
 
 //
-// Creates jobs to apply a post-processing effect to a complete frame.
+// Vignette post-processing effect applier.
 //
 
-class ImageEffectJobFactory
+class VignetteApplier
+  : public ImageEffectApplier
 {
   public:
-    typedef std::vector<ImageEffectJob*> EffectJobVector;
+    // Constructor.
+    explicit VignetteApplier(const VignetteParams& params);
 
-    // Create effect jobs for a given frame.
-    EffectJobVector create(
-        const Frame&                frame,
-        const IImageEffectApplier&  effect_applier) const;
+    // Delete this instance.
+    void release() override;
+
+    // Apply the vignette effect to a given tile.
+    void apply(
+        const Frame&        frame,
+        const std::size_t   tile_x,
+        const std::size_t   tile_y) const override;
+
+  private:
+    const float                     m_intensity;
+    const foundation::Vector2f      m_resolution;
+    const foundation::Vector2f      m_vignette_resolution;
 };
 
 }   // namespace renderer
