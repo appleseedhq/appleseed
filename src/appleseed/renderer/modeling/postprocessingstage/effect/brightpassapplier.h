@@ -45,45 +45,40 @@ namespace renderer
 
 
 //
-// Image color blending parameters.
+// Bright-pass parameters.
 //
 
-struct AdditiveBlendParams
+struct BrightPassParams
 {
-    // Context
-    const foundation::Image&    src_image;
-
     // Settings.
-    float                       src_factor = 1.0f;
-    float                       dst_factor = 1.0f;
+    float   threshold;
+    float   soft_threshold;
 };
 
 
 //
-// Additive image color blending applier.
+// Bright-pass applier.
 //
 
-class AdditiveBlendApplier
+class BrightPassApplier
   : public ImageEffectApplier
 {
   public:
     // Constructor.
-    explicit AdditiveBlendApplier(const AdditiveBlendParams& params);
+    explicit BrightPassApplier(const BrightPassParams& params);
 
     // Delete this instance.
     void release() override;
 
-    // Additively blend colors of the given tile with the corresponding tile of src_image.
-    // (i.e. "image.tile(x, y) = dst_factor * image.tile(x, y) + src_factor * src_image.tile(x, y)")
+    // Filter out dark pixels on a given tile.
     void apply(
         foundation::Image&      image,
         const std::size_t       tile_x,
         const std::size_t       tile_y) const override;
 
   private:
-    const float                     m_src_factor;
-    const float                     m_dst_factor;
-    const foundation::Image&        m_src_image;
+    const float     m_threshold;
+    const float     m_knee;
 };
 
 }   // namespace renderer

@@ -33,6 +33,7 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/postprocessingstage/effect/additiveblendapplier.h"
+#include "renderer/modeling/postprocessingstage/effect/brightpassapplier.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
 #include "renderer/utility/rgbcolorsampling.h"
 
@@ -283,7 +284,17 @@ namespace
             // Prefilter pass.
             //
 
+#if 0
             Image prefiltered_image = prefiltered(image, m_threshold, m_soft_threshold);
+#else
+            // Copy the image but ignore its alpha channel.
+            const std::size_t shuffle_table[4] = { 0, 1, 2, Pixel::SkipChannel };
+            Image prefiltered_image(image, props.m_pixel_format, shuffle_table);
+
+            // Filter out dark pixels.
+            BrightPassApplier bright_pass({ m_threshold, m_soft_threshold });
+            bright_pass.apply_on_tiles(prefiltered_image);
+#endif
 
             //
             // Downsample pass.
@@ -324,8 +335,8 @@ namespace
                     }
                 }
 #else
-                AdditiveBlendApplier blend_applier({ blur_pyramid_down[level] });
-                blend_applier.apply_on_tiles(blur_pyramid_up[level]);
+                AdditiveBlendApplier additive_blend({ blur_pyramid_down[level] });
+                additive_blend.apply_on_tiles(blur_pyramid_up[level]);
 #endif
             }
 
@@ -355,13 +366,13 @@ namespace
                 }
             }
 #else
-            AdditiveBlendApplier blend_applier(
+            AdditiveBlendApplier additive_blend(
                 {
                     bloom_target,
                     m_debug_blur ? 1.0f : m_intensity,
                     m_debug_blur ? 0.0f : 1.0f
                 });
-            blend_applier.apply_on_tiles(image);
+            additive_blend.apply_on_tiles(image);
 #endif
         }
 

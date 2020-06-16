@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "additiveblendapplier.h"
+#include "brightpassapplier.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -41,23 +41,22 @@ namespace renderer
 {
 
 //
-// AdditiveBlendApplier class implementation.
+// BrightPassApplier class implementation.
 //
 
-AdditiveBlendApplier::AdditiveBlendApplier(
-    const AdditiveBlendParams& params)
-  : m_src_factor(params.src_factor)
-  , m_dst_factor(params.dst_factor)
-  , m_src_image(params.src_image)
+BrightPassApplier::BrightPassApplier(
+    const BrightPassParams& params)
+  : m_threshold(params.threshold)
+  , m_knee(params.threshold * params.soft_threshold)
 {
 }
 
-void AdditiveBlendApplier::release()
+void BrightPassApplier::release()
 {
     delete this;
 }
 
-void AdditiveBlendApplier::apply(
+void BrightPassApplier::apply(
     Image&              image,
     const std::size_t   tile_x,
     const std::size_t   tile_y) const
@@ -68,26 +67,44 @@ void AdditiveBlendApplier::apply(
     Tile& tile = image.tile(tile_x, tile_y);
     const std::size_t tile_width = tile.get_width();
     const std::size_t tile_height = tile.get_height();
-    const Vector2u tile_offset(
-        tile_x * image.properties().m_tile_width,
-        tile_y * image.properties().m_tile_height);
 
-    const std::size_t dst_pixel_count = image.properties().m_pixel_count;
-    const std::size_t src_pixel_count = m_src_image.properties().m_pixel_count;
+    //
+    // References:
+    //
+    //   3.2. Bloom Threshold.
+    //   https://catlikecoding.com/unity/tutorials/advanced-rendering/bloom/
+    //
+    //   Bloom effect for Unity.
+    //   https://github.com/keijiro/KinoBloom/
+    //
+
+    const float eps = default_eps<float>(); // used to avoid divisions by zero
 
     for (std::size_t y = 0; y < tile_height; ++y)
     {
         for (std::size_t x = 0; x < tile_width; ++x)
         {
-            Color3f src_color;
-            m_src_image.get_pixel(x + tile_offset.x, y + tile_offset.y, src_color);
+            Color3f color;
+            tile.get_pixel(x, y, color);
 
-            Color3f dst_color;
-            tile.get_pixel(x, y, dst_color);
+            const float brightness = max_value(color);
+            float contribution = brightness - m_threshold;
 
-            // Weighted additive blend.
-            dst_color = m_dst_factor * dst_color + m_src_factor * src_color;
-            tile.set_pixel(x, y, dst_color);
+            if (m_knee > 0.0f)
+            {
+                float soft = contribution + m_knee;
+                soft = clamp(soft, 0.0f, 2.0f * m_knee);
+                soft = soft * soft * safe_rcp<float>(4.0f * m_knee, eps);
+                contribution = std::max(soft, contribution);
+            }
+
+            // Filter out dark pixels.
+            if (contribution <= 0.0f)
+                color *= 0.0f;
+            else
+                color *= contribution * safe_rcp<float>(brightness, eps);
+
+            tile.set_pixel(x, y, color);
         }
     }
 }
