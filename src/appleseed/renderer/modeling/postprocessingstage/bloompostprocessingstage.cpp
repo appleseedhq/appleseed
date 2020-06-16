@@ -34,6 +34,8 @@
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/postprocessingstage/effect/additiveblendapplier.h"
 #include "renderer/modeling/postprocessingstage/effect/brightpassapplier.h"
+#include "renderer/modeling/postprocessingstage/effect/downsampleapplier.h"
+#include "renderer/modeling/postprocessingstage/effect/upsampleapplier.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
 #include "renderer/utility/rgbcolorsampling.h"
 
@@ -117,6 +119,7 @@ namespace
             return true;
         }
 
+#if 0
         //
         // Image scaling.
         //
@@ -166,7 +169,9 @@ namespace
                 }
             }
         }
+#endif
 
+#if 0
         //
         // Image bright pass prefiltering.
         //
@@ -220,6 +225,7 @@ namespace
 
             return prefiltered_image;
         }
+#endif
 
         //
         // Bloom post-processing effect execution.
@@ -300,10 +306,21 @@ namespace
             // Downsample pass.
             //
 
+#if 0
             downscale_in_place(prefiltered_image, blur_pyramid_down[0]); // TODO optimize away
 
             for (std::size_t level = 1; level < iterations; ++level)
                 downscale_in_place(blur_pyramid_down[level - 1], blur_pyramid_down[level]);
+#else
+            DownsampleApplier downsample({ prefiltered_image });
+            downsample.apply_on_tiles(blur_pyramid_down[0], thread_count);
+
+            for (std::size_t level = 1; level < iterations; ++level)
+            {
+                DownsampleApplier downsample({ blur_pyramid_down[level - 1] });
+                downsample.apply_on_tiles(blur_pyramid_down[level], thread_count);
+            }
+#endif
 
             //
             // Upsample and blend pass.
@@ -315,9 +332,9 @@ namespace
             {
                 const std::size_t level = level_plus_one - 1;
 
+#if 0
                 upscale_in_place(blur_pyramid_up[level + 1], blur_pyramid_up[level]);
 
-#if 0
                 // Blend each upsampled buffer with the downsample buffer in the same level.
                 const CanvasProperties& level_props = blur_pyramid_up[level].properties();
 
@@ -335,6 +352,10 @@ namespace
                     }
                 }
 #else
+                UpsampleApplier upsample({ blur_pyramid_up[level + 1] });
+                upsample.apply_on_tiles(blur_pyramid_up[level], thread_count);
+
+                // Blend each upsampled buffer with the downsample buffer of the same level.
                 AdditiveBlendApplier additive_blend({ blur_pyramid_down[level] });
                 additive_blend.apply_on_tiles(blur_pyramid_up[level], thread_count);
 #endif
@@ -345,9 +366,9 @@ namespace
             //
 
             Image bloom_target(prefiltered_image.properties());
+#if 0
             upscale_in_place(blur_pyramid_up[0], bloom_target); // TODO optimize away
 
-#if 0
             for (std::size_t y = 0; y < props.m_canvas_height; ++y)
             {
                 for (std::size_t x = 0; x < props.m_canvas_width; ++x)
@@ -366,6 +387,9 @@ namespace
                 }
             }
 #else
+            UpsampleApplier upsample({ blur_pyramid_up[0] });
+            upsample.apply_on_tiles(bloom_target, thread_count);
+
             AdditiveBlendApplier additive_blend(
                 {
                     bloom_target,

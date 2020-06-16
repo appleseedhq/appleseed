@@ -28,8 +28,11 @@
 
 #pragma once
 
+// appleseed.renderer headers.
+#include "renderer/modeling/postprocessingstage/effect/imageeffectapplier.h"
+
 // appleseed.foundation headers.
-#include "foundation/core/concepts/iunknown.h"
+#include "foundation/math/vector.h"
 
 // Standard headers.
 #include <cstddef>
@@ -41,23 +44,40 @@ namespace renderer
 {
 
 //
-// Image effect algorithm applier.
+// Image downsampling parameters.
 //
 
-class ImageEffectApplier
-  : public foundation::IUnknown
+struct DownsampleParams
+{
+    // Context
+    const foundation::Image&    src_image;
+};
+
+
+//
+// Image downsampling applier.
+//
+
+class DownsampleApplier
+  : public ImageEffectApplier
 {
   public:
-    // Apply the image effect to a given tile.
-    virtual void apply(
+    // Constructor.
+    explicit DownsampleApplier(const DownsampleParams& params);
+
+    // Delete this instance.
+    void release() override;
+
+    // Fill the given tile by downsampling src_image pixels with dual-filtering.
+    void apply(
         foundation::Image&      image,
         const std::size_t       tile_x,
-        const std::size_t       tile_y) const = 0;
+        const std::size_t       tile_y) const override;
 
-    // Apply this effect on a given image, in parallel, by scheduling a job for each tile.
-    void apply_on_tiles(
-        foundation::Image&      image,
-        const std::size_t       thread_count) const;
+  private:
+    const foundation::Image&        m_src_image;
+    const std::size_t               m_src_width;
+    const std::size_t               m_src_height;
 };
 
 }   // namespace renderer

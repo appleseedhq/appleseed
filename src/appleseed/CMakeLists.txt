@@ -2010,16 +2010,20 @@ set (renderer_modeling_postprocessingstage_sources
     renderer/modeling/postprocessingstage/effect/additiveblendapplier.h
     renderer/modeling/postprocessingstage/effect/brightpassapplier.cpp
     renderer/modeling/postprocessingstage/effect/brightpassapplier.h
-    renderer/modeling/postprocessingstage/effect/clampcolorsapplier.cpp
-    renderer/modeling/postprocessingstage/effect/clampcolorsapplier.h
     renderer/modeling/postprocessingstage/effect/chromaticaberrationapplier.cpp
     renderer/modeling/postprocessingstage/effect/chromaticaberrationapplier.h
+    renderer/modeling/postprocessingstage/effect/clampcolorsapplier.cpp
+    renderer/modeling/postprocessingstage/effect/clampcolorsapplier.h
+    renderer/modeling/postprocessingstage/effect/downsampleapplier.cpp
+    renderer/modeling/postprocessingstage/effect/downsampleapplier.h
     renderer/modeling/postprocessingstage/effect/imageeffectapplier.cpp
     renderer/modeling/postprocessingstage/effect/imageeffectapplier.h
     renderer/modeling/postprocessingstage/effect/imageeffectjob.cpp
     renderer/modeling/postprocessingstage/effect/imageeffectjob.h
     renderer/modeling/postprocessingstage/effect/tonemapapplier.cpp
     renderer/modeling/postprocessingstage/effect/tonemapapplier.h
+    renderer/modeling/postprocessingstage/effect/upsampleapplier.cpp
+    renderer/modeling/postprocessingstage/effect/upsampleapplier.h
     renderer/modeling/postprocessingstage/effect/vignetteapplier.cpp
     renderer/modeling/postprocessingstage/effect/vignetteapplier.h
 )
