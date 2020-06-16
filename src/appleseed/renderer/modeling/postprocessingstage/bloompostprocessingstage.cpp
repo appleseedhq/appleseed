@@ -293,7 +293,7 @@ namespace
 
             // Filter out dark pixels.
             BrightPassApplier bright_pass({ m_threshold, m_soft_threshold });
-            bright_pass.apply_on_tiles(prefiltered_image);
+            bright_pass.apply_on_tiles(prefiltered_image, thread_count);
 #endif
 
             //
@@ -336,7 +336,7 @@ namespace
                 }
 #else
                 AdditiveBlendApplier additive_blend({ blur_pyramid_down[level] });
-                additive_blend.apply_on_tiles(blur_pyramid_up[level]);
+                additive_blend.apply_on_tiles(blur_pyramid_up[level], thread_count);
 #endif
             }
 
@@ -372,7 +372,7 @@ namespace
                     m_debug_blur ? 1.0f : m_intensity,
                     m_debug_blur ? 0.0f : 1.0f
                 });
-            additive_blend.apply_on_tiles(image);
+            additive_blend.apply_on_tiles(image, thread_count);
 #endif
         }
 

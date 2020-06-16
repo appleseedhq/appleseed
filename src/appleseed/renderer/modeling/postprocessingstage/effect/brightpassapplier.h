@@ -79,6 +79,7 @@ class BrightPassApplier
   private:
     const float     m_threshold;
     const float     m_knee;
+    const float     m_eps;
 };
 
 }   // namespace renderer

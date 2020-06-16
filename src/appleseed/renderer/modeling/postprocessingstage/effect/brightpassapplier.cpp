@@ -48,6 +48,7 @@ BrightPassApplier::BrightPassApplier(
     const BrightPassParams& params)
   : m_threshold(params.threshold)
   , m_knee(params.threshold * params.soft_threshold)
+  , m_eps(default_eps<float>()) // used to avoid divisions by zero
 {
 }
 
@@ -71,14 +72,9 @@ void BrightPassApplier::apply(
     //
     // References:
     //
-    //   3.2. Bloom Threshold.
+    //   https://github.com/keijiro/KinoBloom/
     //   https://catlikecoding.com/unity/tutorials/advanced-rendering/bloom/
     //
-    //   Bloom effect for Unity.
-    //   https://github.com/keijiro/KinoBloom/
-    //
-
-    const float eps = default_eps<float>(); // used to avoid divisions by zero
 
     for (std::size_t y = 0; y < tile_height; ++y)
     {
@@ -94,7 +90,7 @@ void BrightPassApplier::apply(
             {
                 float soft = contribution + m_knee;
                 soft = clamp(soft, 0.0f, 2.0f * m_knee);
-                soft = soft * soft * safe_rcp<float>(4.0f * m_knee, eps);
+                soft = soft * soft * safe_rcp<float>(4.0f * m_knee, m_eps);
                 contribution = std::max(soft, contribution);
             }
 
@@ -102,7 +98,7 @@ void BrightPassApplier::apply(
             if (contribution <= 0.0f)
                 color *= 0.0f;
             else
-                color *= contribution * safe_rcp<float>(brightness, eps);
+                color *= contribution * safe_rcp<float>(brightness, m_eps);
 
             tile.set_pixel(x, y, color);
         }
