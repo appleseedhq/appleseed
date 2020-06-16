@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "downsampleapplier.h"
+#include "resampleapplier.h"
 
 // appleseed.renderer headers.
 #include "renderer/utility/rgbcolorsampling.h"
@@ -44,23 +44,24 @@ namespace renderer
 {
 
 //
-// DownsampleApplier class implementation.
+// ResampleApplier class implementation.
 //
 
-DownsampleApplier::DownsampleApplier(
-    const DownsampleParams& params)
+ResampleApplier::ResampleApplier(
+    const ResampleParams& params)
   : m_src_image(params.src_image)
   , m_src_width(params.src_image.properties().m_canvas_width)
   , m_src_height(params.src_image.properties().m_canvas_height)
+  , m_sampling_func(params.sampling_func)
 {
 }
 
-void DownsampleApplier::release()
+void ResampleApplier::release()
 {
     delete this;
 }
 
-void DownsampleApplier::apply(
+void ResampleApplier::apply(
     Image&              image,
     const std::size_t   tile_x,
     const std::size_t   tile_y) const
@@ -86,7 +87,7 @@ void DownsampleApplier::apply(
             const float fx = static_cast<float>(x + tile_offset.x) / (dst_width - 1) * (m_src_width - 1);
             const float fy = static_cast<float>(y + tile_offset.y) / (dst_height - 1) * (m_src_height - 1);
 
-            tile.set_pixel(x, y, dual_filter_downsample(m_src_image, fx, fy));
+            tile.set_pixel(x, y, m_sampling_func(m_src_image, fx, fy));
         }
     }
 }

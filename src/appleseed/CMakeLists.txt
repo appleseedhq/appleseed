@@ -2020,6 +2020,8 @@ set (renderer_modeling_postprocessingstage_sources
     renderer/modeling/postprocessingstage/effect/imageeffectapplier.h
     renderer/modeling/postprocessingstage/effect/imageeffectjob.cpp
     renderer/modeling/postprocessingstage/effect/imageeffectjob.h
+    renderer/modeling/postprocessingstage/effect/resampleapplier.cpp
+    renderer/modeling/postprocessingstage/effect/resampleapplier.h
     renderer/modeling/postprocessingstage/effect/tonemapapplier.cpp
     renderer/modeling/postprocessingstage/effect/tonemapapplier.h
     renderer/modeling/postprocessingstage/effect/upsampleapplier.cpp

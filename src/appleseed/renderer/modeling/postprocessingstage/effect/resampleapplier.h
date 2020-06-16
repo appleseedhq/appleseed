@@ -33,6 +33,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
+#include "foundation/image/color.h"
 
 // Standard headers.
 #include <cstddef>
@@ -44,31 +45,37 @@ namespace renderer
 {
 
 //
-// Image upsampling parameters.
+// Image resampling parameters.
 //
 
-struct UpsampleParams
+struct ResampleParams
 {
     // Context
     const foundation::Image&    src_image;
+
+    // Settings
+    foundation::Color3f         (*sampling_func)(
+                                    const foundation::Image&,
+                                    const float,
+                                    const float);
 };
 
 
 //
-// Image upsampling applier.
+// Image resampling applier.
 //
 
-class UpsampleApplier
+class ResampleApplier
   : public ImageEffectApplier
 {
   public:
     // Constructor.
-    explicit UpsampleApplier(const UpsampleParams& params);
+    explicit ResampleApplier(const ResampleParams& params);
 
     // Delete this instance.
     void release() override;
 
-    // Fill the given tile by upsampling src_image pixels with dual-filtering.
+    // Fill the given image tile by sampling from src_image pixels.
     void apply(
         foundation::Image&      image,
         const std::size_t       tile_x,
@@ -78,6 +85,10 @@ class UpsampleApplier
     const foundation::Image&        m_src_image;
     const std::size_t               m_src_width;
     const std::size_t               m_src_height;
+    foundation::Color3f             (*m_sampling_func)(
+                                        const foundation::Image&,
+                                        const float,
+                                        const float);
 };
 
 }   // namespace renderer

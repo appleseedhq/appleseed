@@ -34,8 +34,7 @@
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/postprocessingstage/effect/additiveblendapplier.h"
 #include "renderer/modeling/postprocessingstage/effect/brightpassapplier.h"
-#include "renderer/modeling/postprocessingstage/effect/downsampleapplier.h"
-#include "renderer/modeling/postprocessingstage/effect/upsampleapplier.h"
+#include "renderer/modeling/postprocessingstage/effect/resampleapplier.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
 #include "renderer/utility/rgbcolorsampling.h"
 
@@ -312,12 +311,12 @@ namespace
             for (std::size_t level = 1; level < iterations; ++level)
                 downscale_in_place(blur_pyramid_down[level - 1], blur_pyramid_down[level]);
 #else
-            DownsampleApplier downsample({ prefiltered_image });
+            ResampleApplier downsample({ prefiltered_image, &dual_filter_downsample });
             downsample.apply_on_tiles(blur_pyramid_down[0], thread_count);
 
             for (std::size_t level = 1; level < iterations; ++level)
             {
-                DownsampleApplier downsample({ blur_pyramid_down[level - 1] });
+                ResampleApplier downsample({ blur_pyramid_down[level - 1], &dual_filter_downsample });
                 downsample.apply_on_tiles(blur_pyramid_down[level], thread_count);
             }
 #endif
@@ -352,7 +351,7 @@ namespace
                     }
                 }
 #else
-                UpsampleApplier upsample({ blur_pyramid_up[level + 1] });
+                ResampleApplier upsample({ blur_pyramid_up[level + 1], &dual_filter_upsample });
                 upsample.apply_on_tiles(blur_pyramid_up[level], thread_count);
 
                 // Blend each upsampled buffer with the downsample buffer of the same level.
@@ -387,7 +386,7 @@ namespace
                 }
             }
 #else
-            UpsampleApplier upsample({ blur_pyramid_up[0] });
+            ResampleApplier upsample({ blur_pyramid_up[0], &dual_filter_upsample });
             upsample.apply_on_tiles(bloom_target, thread_count);
 
             AdditiveBlendApplier additive_blend(
