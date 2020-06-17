@@ -35,6 +35,7 @@
 #include "renderer/modeling/postprocessingstage/effect/additiveblendapplier.h"
 #include "renderer/modeling/postprocessingstage/effect/brightpassapplier.h"
 #include "renderer/modeling/postprocessingstage/effect/resampleapplier.h"
+#include "renderer/modeling/postprocessingstage/effect/upsampleandblendapplier.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
 #include "renderer/utility/rgbcolorsampling.h"
 
@@ -118,114 +119,6 @@ namespace
             return true;
         }
 
-#if 0
-        //
-        // Image scaling.
-        //
-
-        // Fill dst_image pixels by downsampling src_image with dual-filtering.
-        static void downscale_in_place(const Image& src_image, Image& dst_image)
-        {
-            const CanvasProperties& src_props = src_image.properties();
-            const std::size_t src_width = src_props.m_canvas_width;
-            const std::size_t src_height = src_props.m_canvas_height;
-
-            const CanvasProperties& dst_props = dst_image.properties();
-            const std::size_t dst_width = dst_props.m_canvas_width;
-            const std::size_t dst_height = dst_props.m_canvas_height;
-
-            for (std::size_t y = 0; y < dst_height; ++y)
-            {
-                for (std::size_t x = 0; x < dst_width; ++x)
-                {
-                    const float fx = static_cast<float>(x) / (dst_width - 1) * (src_width - 1);
-                    const float fy = static_cast<float>(y) / (dst_height - 1) * (src_height - 1);
-
-                    dst_image.set_pixel(x, y, dual_filter_downsample(src_image, fx, fy));
-                }
-            }
-        }
-
-        // Fill dst_image pixels by upsampling src_image with dual-filtering.
-        static void upscale_in_place(const Image& src_image, Image& dst_image)
-        {
-            const CanvasProperties& src_props = src_image.properties();
-            const std::size_t src_width = src_props.m_canvas_width;
-            const std::size_t src_height = src_props.m_canvas_height;
-
-            const CanvasProperties& dst_props = dst_image.properties();
-            const std::size_t dst_width = dst_props.m_canvas_width;
-            const std::size_t dst_height = dst_props.m_canvas_height;
-
-            for (std::size_t y = 0; y < dst_height; ++y)
-            {
-                for (std::size_t x = 0; x < dst_width; ++x)
-                {
-                    const float fx = static_cast<float>(x) / (dst_width - 1) * (src_width - 1);
-                    const float fy = static_cast<float>(y) / (dst_height - 1) * (src_height - 1);
-
-                    dst_image.set_pixel(x, y, dual_filter_upsample(src_image, fx, fy));
-                }
-            }
-        }
-#endif
-
-#if 0
-        //
-        // Image bright pass prefiltering.
-        //
-
-        static Image prefiltered(
-            const Image& image,
-            const float threshold,
-            const float soft_threshold)
-        {
-            // Create an empty image with the same props, but ignore the alpha channel.
-            const CanvasProperties& props = image.properties();
-            assert(props.m_channel_count == 4);
-            Image prefiltered_image(
-                props.m_canvas_width,
-                props.m_canvas_height,
-                props.m_tile_width,
-                props.m_tile_height,
-                3,
-                props.m_pixel_format);
-
-            const float eps = default_eps<float>(); // used to avoid divisions by zero
-            const float knee = threshold * soft_threshold;
-
-            for (std::size_t y = 0; y < props.m_canvas_height; ++y)
-            {
-                for (std::size_t x = 0; x < props.m_canvas_width; ++x)
-                {
-                    Color4f color;
-                    image.get_pixel(x, y, color);
-
-                    const float brightness = max_value(color.rgb());
-                    float contribution = brightness - threshold;
-
-                    if (knee > 0.0f)
-                    {
-                        float soft = contribution + knee;
-                        soft = clamp(soft, 0.0f, 2.0f * knee);
-                        soft = soft * soft * safe_rcp<float>(4.0f * knee, eps);
-                        contribution = std::max(soft, contribution);
-                    }
-
-                    // Filter out dark pixels.
-                    if (contribution <= 0.0f)
-                        color.rgb() *= 0.0f;
-                    else
-                        color.rgb() *= contribution * safe_rcp<float>(brightness, eps);
-
-                    prefiltered_image.set_pixel(x, y, color.rgb());
-                }
-            }
-
-            return prefiltered_image;
-        }
-#endif
-
         //
         // Bloom post-processing effect execution.
         //
@@ -289,9 +182,6 @@ namespace
             // Prefilter pass.
             //
 
-#if 0
-            Image prefiltered_image = prefiltered(image, m_threshold, m_soft_threshold);
-#else
             // Copy the image but ignore its alpha channel.
             const std::size_t shuffle_table[4] = { 0, 1, 2, Pixel::SkipChannel };
             Image prefiltered_image(image, props.m_pixel_format, shuffle_table);
@@ -299,18 +189,11 @@ namespace
             // Filter out dark pixels.
             BrightPassApplier bright_pass({ m_threshold, m_soft_threshold });
             bright_pass.apply_on_tiles(prefiltered_image, thread_count);
-#endif
 
             //
             // Downsample pass.
             //
 
-#if 0
-            downscale_in_place(prefiltered_image, blur_pyramid_down[0]); // TODO optimize away
-
-            for (std::size_t level = 1; level < iterations; ++level)
-                downscale_in_place(blur_pyramid_down[level - 1], blur_pyramid_down[level]);
-#else
             ResampleApplier downsample({ prefiltered_image, &dual_filter_downsample });
             downsample.apply_on_tiles(blur_pyramid_down[0], thread_count);
 
@@ -319,7 +202,6 @@ namespace
                 ResampleApplier downsample({ blur_pyramid_down[level - 1], &dual_filter_downsample });
                 downsample.apply_on_tiles(blur_pyramid_down[level], thread_count);
             }
-#endif
 
             //
             // Upsample and blend pass.
@@ -331,32 +213,21 @@ namespace
             {
                 const std::size_t level = level_plus_one - 1;
 
-#if 0
-                upscale_in_place(blur_pyramid_up[level + 1], blur_pyramid_up[level]);
-
-                // Blend each upsampled buffer with the downsample buffer in the same level.
-                const CanvasProperties& level_props = blur_pyramid_up[level].properties();
-
-                for (std::size_t y = 0; y < level_props.m_canvas_height; ++y)
-                {
-                    for (std::size_t x = 0; x < level_props.m_canvas_width; ++x)
-                    {
-                        Color3f color_up, color_down;
-                        blur_pyramid_up[level].get_pixel(x, y, color_up);
-                        blur_pyramid_down[level].get_pixel(x, y, color_down);
-
-                        color_up += color_down; // additive blend
-
-                        blur_pyramid_up[level].set_pixel(x, y, color_up);
-                    }
-                }
-#else
+#if 1
                 ResampleApplier upsample({ blur_pyramid_up[level + 1], &dual_filter_upsample });
                 upsample.apply_on_tiles(blur_pyramid_up[level], thread_count);
 
                 // Blend each upsampled buffer with the downsample buffer of the same level.
                 AdditiveBlendApplier additive_blend({ blur_pyramid_down[level] });
                 additive_blend.apply_on_tiles(blur_pyramid_up[level], thread_count);
+#else
+                UpsampleAndBlendApplier upsample_and_blend(
+                    {
+                        blur_pyramid_up[level + 1],
+                        blur_pyramid_down[level],
+                        &dual_filter_upsample
+                    });
+                upsample_and_blend.apply_on_tiles(blur_pyramid_up[level], thread_count);
 #endif
             }
 
@@ -365,27 +236,7 @@ namespace
             //
 
             Image bloom_target(prefiltered_image.properties());
-#if 0
-            upscale_in_place(blur_pyramid_up[0], bloom_target); // TODO optimize away
 
-            for (std::size_t y = 0; y < props.m_canvas_height; ++y)
-            {
-                for (std::size_t x = 0; x < props.m_canvas_width; ++x)
-                {
-                    Color4f color;
-                    image.get_pixel(x, y, color);
-
-                    Color3f bloom_color;
-                    bloom_target.get_pixel(x, y, bloom_color);
-
-                    if (m_debug_blur)
-                        color.rgb() = bloom_color;
-                    else
-                        color.rgb() += m_intensity * bloom_color; // additive blend (weighted by intensity)
-                    image.set_pixel(x, y, color);
-                }
-            }
-#else
             ResampleApplier upsample({ blur_pyramid_up[0], &dual_filter_upsample });
             upsample.apply_on_tiles(bloom_target, thread_count);
 
@@ -396,7 +247,6 @@ namespace
                     m_debug_blur ? 0.0f : 1.0f
                 });
             additive_blend.apply_on_tiles(image, thread_count);
-#endif
         }
 
       private:

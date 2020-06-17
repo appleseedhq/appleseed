@@ -93,14 +93,12 @@ foundation::Color3f kawase_sample(
 foundation::Color3f dual_filter_downsample(
     const foundation::Image&    image,
     const float                 fx,
-    const float                 fy,
-    const std::size_t           offset = 1);
+    const float                 fy);
 
 foundation::Color3f dual_filter_upsample(
     const foundation::Image&    image,
     const float                 fx,
-    const float                 fy,
-    const std::size_t           offset = 1);
+    const float                 fy);
 
 //
 // Sampling filters from Jorge Jimenez's SIGGRAPH2014 Presentation:

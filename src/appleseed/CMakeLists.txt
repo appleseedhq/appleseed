@@ -2016,6 +2016,10 @@ set (renderer_modeling_postprocessingstage_sources
     renderer/modeling/postprocessingstage/effect/clampcolorsapplier.h
     renderer/modeling/postprocessingstage/effect/downsampleapplier.cpp
     renderer/modeling/postprocessingstage/effect/downsampleapplier.h
+    renderer/modeling/postprocessingstage/effect/resampleapplier.cpp
+    renderer/modeling/postprocessingstage/effect/resampleapplier.h
+    renderer/modeling/postprocessingstage/effect/upsampleandblendapplier.cpp
+    renderer/modeling/postprocessingstage/effect/upsampleandblendapplier.h
     renderer/modeling/postprocessingstage/effect/imageeffectapplier.cpp
     renderer/modeling/postprocessingstage/effect/imageeffectapplier.h
     renderer/modeling/postprocessingstage/effect/imageeffectjob.cpp

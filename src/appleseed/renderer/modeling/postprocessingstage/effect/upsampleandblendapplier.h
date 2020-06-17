@@ -45,16 +45,17 @@ namespace renderer
 {
 
 //
-// Image resampling parameters.
+// Image upsampling and blending parameters.
 //
 
-struct ResampleParams
+struct UpsampleAndBlendParams
 {
     // Context
-    const foundation::Image&    src_image;
+    const foundation::Image&    src_image_sample;
+    const foundation::Image&    src_image_blend;
 
     // Settings
-    foundation::Color3f (*const sampling_func)(
+    foundation::Color3f (*const upsampling_func)(
                                     const foundation::Image&,
                                     const float,
                                     const float);
@@ -62,30 +63,29 @@ struct ResampleParams
 
 
 //
-// Image resampling applier.
+// Image upsampling followed by blending.
 //
 
-class ResampleApplier
+class UpsampleAndBlendApplier
   : public ImageEffectApplier
 {
   public:
     // Constructor.
-    explicit ResampleApplier(const ResampleParams& params);
+    explicit UpsampleAndBlendApplier(const UpsampleAndBlendParams& params);
 
     // Delete this instance.
     void release() override;
 
-    // Fill the given image tile by sampling from src_image pixels.
+    // FIXME
     void apply(
         foundation::Image&      image,
         const std::size_t       tile_x,
         const std::size_t       tile_y) const override;
 
   private:
-    const foundation::Image&        m_src_image;
-    const std::size_t               m_src_width;
-    const std::size_t               m_src_height;
-    foundation::Color3f     (*const m_sampling_func)(
+    const foundation::Image&        m_src_image_sample;
+    const foundation::Image&        m_src_image_blend;
+    foundation::Color3f     (*const m_upsampling_func)(
                                         const foundation::Image&,
                                         const float,
                                         const float);

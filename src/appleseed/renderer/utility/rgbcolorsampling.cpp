@@ -162,10 +162,9 @@ Color3f kawase_sample(
 Color3f dual_filter_downsample(
     const Image&        image,
     const float         fx,
-    const float         fy,
-    const std::size_t   offset)
+    const float         fy)
 {
-    const float off = static_cast<float>(offset);
+    const float off = 1.0f;
 
     Color3f center = clamped_box_sample(image, fx, fy);
     Color3f top_left = clamped_box_sample(image, fx - off, fy + off);
@@ -182,11 +181,10 @@ Color3f dual_filter_downsample(
 Color3f dual_filter_upsample(
     const Image&        image,
     const float         fx,
-    const float         fy,
-    const std::size_t   offset)
+    const float         fy)
 {
-    const float off = static_cast<float>(offset);
-    const float half_off = 0.5f * off;
+    const float off = 1.0f;
+    const float half_off = 0.5f;
 
     Color3f top = clamped_box_sample(image, fx, fy + off);
     Color3f left = clamped_box_sample(image, fx - off, fy);

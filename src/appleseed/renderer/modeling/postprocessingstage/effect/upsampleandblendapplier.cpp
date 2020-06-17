@@ -27,7 +27,10 @@
 //
 
 // Interface header.
-#include "additiveblendapplier.h"
+#include "upsampleandblendapplier.h"
+
+// appleseed.renderer headers.
+#include "renderer/utility/rgbcolorsampling.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -41,23 +44,23 @@ namespace renderer
 {
 
 //
-// AdditiveBlendApplier class implementation.
+// UpsampleAndBlendApplier class implementation.
 //
 
-AdditiveBlendApplier::AdditiveBlendApplier(
-    const AdditiveBlendParams& params)
-  : m_src_factor(params.src_factor)
-  , m_dst_factor(params.dst_factor)
-  , m_src_image(params.src_image)
+UpsampleAndBlendApplier::UpsampleAndBlendApplier(
+    const UpsampleAndBlendParams& params)
+  : m_src_image_sample(params.src_image_sample)
+  , m_src_image_blend(params.src_image_blend)
+  , m_upsampling_func(params.upsampling_func)
 {
 }
 
-void AdditiveBlendApplier::release()
+void UpsampleAndBlendApplier::release()
 {
     delete this;
 }
 
-void AdditiveBlendApplier::apply(
+void UpsampleAndBlendApplier::apply(
     Image&              image,
     const std::size_t   tile_x,
     const std::size_t   tile_y) const
@@ -72,19 +75,26 @@ void AdditiveBlendApplier::apply(
         tile_x * image.properties().m_tile_width,
         tile_y * image.properties().m_tile_height);
 
+    const std::size_t dst_width = image.properties().m_canvas_width;
+    const std::size_t dst_height = image.properties().m_canvas_height;
+
+    const std::size_t src_sample_width = m_src_image_sample.properties().m_canvas_width;
+    const std::size_t src_sample_height = m_src_image_sample.properties().m_canvas_height;
+
     for (std::size_t y = 0; y < tile_height; ++y)
     {
         for (std::size_t x = 0; x < tile_width; ++x)
         {
-            Color3f src_color;
-            m_src_image.get_pixel(x + tile_offset.x, y + tile_offset.y, src_color);
+            // Map the pixel coordinate from image to src_image.
+            const float fx = static_cast<float>(x + tile_offset.x) / (dst_width - 1) * (src_sample_width - 1);
+            const float fy = static_cast<float>(y + tile_offset.y) / (dst_height - 1) * (src_sample_height - 1);
 
-            Color3f dst_color;
-            tile.get_pixel(x, y, dst_color);
+            Color3f sample_color = m_upsampling_func(m_src_image_sample, fx, fy);
 
-            // Weighted additive blend.
-            dst_color = m_dst_factor * dst_color + m_src_factor * src_color;
-            tile.set_pixel(x, y, dst_color);
+            Color3f blend_color;
+            m_src_image_blend.get_pixel(x + tile_offset.x, y + tile_offset.y, blend_color);
+
+            tile.set_pixel(x, y, sample_color + blend_color);
         }
     }
 }
