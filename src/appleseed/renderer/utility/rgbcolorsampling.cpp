@@ -40,6 +40,39 @@ namespace renderer
 
 Color3f blerp(
     const Image&        image,
+    const Color3f&      c00,
+    const Color3f&      c10,
+    const Color3f&      c01,
+    const Color3f&      c11,
+    const float         fx,
+    const float         fy)
+{
+#if 0
+    const std::size_t x0 = truncate<std::size_t>(fx);
+    const std::size_t y0 = truncate<std::size_t>(fy);
+#else
+    const std::size_t x0 = static_cast<std::size_t>(std::floor(fx));
+    const std::size_t y0 = static_cast<std::size_t>(std::floor(fy));
+#endif
+
+    // Compute weights.
+    const float wx1 = fx - x0;
+    const float wy1 = fy - y0;
+    const float wx0 = 1.0f - wx1;
+    const float wy0 = 1.0f - wy1;
+
+    // Return the weighted sum.
+    const Color3f result =
+        c00 * wx0 * wy0 +
+        c10 * wx1 * wy0 +
+        c01 * wx0 * wy1 +
+        c11 * wx1 * wy1;
+
+    return result;
+}
+
+Color3f blerp(
+    const Image&        image,
     const std::size_t   x0,
     const std::size_t   y0,
     const std::size_t   x1,

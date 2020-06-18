@@ -48,6 +48,7 @@
 #include "renderer/modeling/project/renderingtimer.h"
 #include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/settingsparsing.h"
+#include "renderer/modeling/postprocessingstage/Instrumentor.h" // FIXME remove
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -236,6 +237,7 @@ struct MasterRenderer::Impl
 
             // Insert post-processing time into frame's render info.
             render_info.insert("post_processing_time", stopwatch.get_seconds());
+            RENDERER_LOG_INFO("post-processing time: %s.", pretty_time(stopwatch.get_seconds()).c_str());
         }
         catch (const std::bad_alloc&)
         {
@@ -527,6 +529,7 @@ struct MasterRenderer::Impl
         }
 
         // Execute post-processing stages.
+        Instrumentor::Get().BeginSession("Execute post-processing stages"); // FIXME remove
         const size_t thread_count = get_rendering_thread_count(m_params);
         for (PostProcessingStage* stage : ordered_stages)
         {
@@ -535,6 +538,7 @@ struct MasterRenderer::Impl
             stage->execute(*frame, thread_count);
             invoke_tile_callbacks(*frame);
         }
+        Instrumentor::Get().EndSession(); // FIXME remove
     }
 
     void invoke_tile_callbacks(const Frame& frame)

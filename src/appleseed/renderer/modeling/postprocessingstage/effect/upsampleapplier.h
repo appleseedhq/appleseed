@@ -34,6 +34,7 @@
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
 #include "foundation/image/color.h"
+#include "foundation/image/image.h"
 
 // Standard headers.
 #include <cstddef>
@@ -45,50 +46,41 @@ namespace renderer
 {
 
 //
-// Image upsampling and blending parameters.
+// Image upsampling parameters.
 //
 
-struct UpsampleAndBlendParams
+struct UpsampleParams
 {
     // Context
-    const foundation::Image&    src_image_sample;
-    const foundation::Image&    src_image_blend;
-
-    // Settings
-    foundation::Color3f (*const upsampling_func)(
-                                    const foundation::Image&,
-                                    const float,
-                                    const float);
+    const foundation::Image&    src_image;
 };
 
 
 //
-// Image upsampling followed by blending.
+// Image upsampling applier.
 //
 
-class UpsampleAndBlendApplier
+class UpsampleApplier
   : public ImageEffectApplier
 {
   public:
     // Constructor.
-    explicit UpsampleAndBlendApplier(const UpsampleAndBlendParams& params);
+    explicit UpsampleApplier(const UpsampleParams& params);
 
     // Delete this instance.
     void release() override;
 
-    // FIXME
+    // Fill the given image tile by upsampling from src_image pixels.
     void apply(
         foundation::Image&      image,
         const std::size_t       tile_x,
         const std::size_t       tile_y) const override;
 
   private:
-    const foundation::Image&        m_src_image_sample;
-    const foundation::Image&        m_src_image_blend;
-    foundation::Color3f     (*const m_upsampling_func)(
-                                        const foundation::Image&,
-                                        const float,
-                                        const float);
+    const std::size_t               m_src_width;
+    const std::size_t               m_src_height;
+    const std::size_t               m_border_size;
+    foundation::Image               m_src_image_with_border;
 };
 
 }   // namespace renderer
