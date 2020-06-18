@@ -227,8 +227,8 @@ PROFILE_SCOPE(_scope_name.c_str());
 const std::string _scope_name = "Level #" + std::to_string(level);
 PROFILE_SCOPE(_scope_name.c_str());
 
-                // UpsampleApplier upsample({ blur_pyramid_up[level + 1] });
-                ResampleApplier upsample({ blur_pyramid_up[level + 1], &dual_filter_upsample });
+                UpsampleApplier upsample({ blur_pyramid_up[level + 1] });
+                // ResampleApplier upsample({ blur_pyramid_up[level + 1], &dual_filter_upsample });
                 upsample.apply_on_tiles(blur_pyramid_up[level], thread_count_);
 
 { PROFILE_SCOPE("Blending");
@@ -246,7 +246,8 @@ PROFILE_SCOPE(_scope_name.c_str());
 { PROFILE_SCOPE("Resolve pass");
             Image bloom_target(prefiltered_image.properties());
 
-            ResampleApplier upsample({ blur_pyramid_up[0], &dual_filter_upsample });
+            UpsampleApplier upsample({ blur_pyramid_up[0] });
+            // ResampleApplier upsample({ blur_pyramid_up[0], &dual_filter_upsample });
             upsample.apply_on_tiles(bloom_target, thread_count_);
 
 { PROFILE_SCOPE("Blending (final)");

@@ -68,8 +68,6 @@ UpsampleApplier::UpsampleApplier(
     const std::size_t src_width_with_border = m_src_width + 2 * m_border_size;
     const std::size_t src_height_with_border = m_src_height + 2 * m_border_size;
 
-    // FIXME using Color3f, but Color4f may also be needed
-
     // Copy src_image pixels into the center of m_src_image_with_border.
     for (std::size_t y = 0; y < m_src_height; ++y)
     {
@@ -86,6 +84,22 @@ UpsampleApplier::UpsampleApplier(
     }
 
     // Fill in the borders by copying the color of the closest pixel (i.e. texture clamping).
+
+    // Copy corners.
+    {
+        Color3f top_left, top_right, bottom_left, bottom_right;
+        src_image.get_pixel(0, m_src_height - 1, top_left);
+        src_image.get_pixel(m_src_width - 1, m_src_height - 1, top_right);
+        src_image.get_pixel(0, 0, bottom_left);
+        src_image.get_pixel(m_src_width - 1, 0, bottom_right);
+
+        m_src_image_with_border.set_pixel(0, src_height_with_border - 1, top_left);
+        m_src_image_with_border.set_pixel(src_width_with_border - 1, src_height_with_border - 1, top_right);
+        m_src_image_with_border.set_pixel(0, 0, bottom_left);
+        m_src_image_with_border.set_pixel(src_width_with_border - 1, 0, bottom_right);
+    }
+
+    // Copy vertical borders.
     for (std::size_t y = 0; y < m_src_height; ++y)
     {
         Color3f left, right;
@@ -96,6 +110,7 @@ UpsampleApplier::UpsampleApplier(
         m_src_image_with_border.set_pixel(src_width_with_border - 1, y, right);
     }
 
+    // Copy horizontal borders.
     for (std::size_t x = 0; x < m_src_width; ++x)
     {
         Color3f top, bottom;
@@ -105,17 +120,6 @@ UpsampleApplier::UpsampleApplier(
         m_src_image_with_border.set_pixel(x, 0, bottom);
         m_src_image_with_border.set_pixel(x, src_height_with_border - 1, top);
     }
-
-    Color3f top_left, top_right, bottom_left, bottom_right;
-    src_image.get_pixel(0, m_src_height - 1, top_left);
-    src_image.get_pixel(m_src_width - 1, m_src_height - 1, top_right);
-    src_image.get_pixel(0, 0, bottom_left);
-    src_image.get_pixel(m_src_width - 1, 0, bottom_right);
-
-    m_src_image_with_border.set_pixel(0, src_height_with_border - 1, top_left);
-    m_src_image_with_border.set_pixel(src_width_with_border - 1, src_height_with_border - 1, top_right);
-    m_src_image_with_border.set_pixel(0, 0, bottom_left);
-    m_src_image_with_border.set_pixel(src_width_with_border - 1, 0, bottom_right);
 }
 
 void UpsampleApplier::release()
@@ -146,64 +150,59 @@ void UpsampleApplier::apply(
         for (std::size_t x = 0; x < tile_width; ++x)
         {
             // Map the pixel coordinate from image to src_image, then shift it by m_border_size.
-            const float fx = static_cast<float>(x + tile_offset.x) / (dst_width - 1) * (m_src_width - 1)
+            const float fx =
+                static_cast<float>(x + tile_offset.x) / (dst_width - 1) * (m_src_width - 1)
                 + m_border_size;
-            const float fy = static_cast<float>(y + tile_offset.y) / (dst_height - 1) * (m_src_height - 1)
+            const float fy =
+                static_cast<float>(y + tile_offset.y) / (dst_height - 1) * (m_src_height - 1)
                 + m_border_size;
-
-#if 1
-            // Get the corresponding integer coordinates on src_image_with_borders.
-            const std::size_t cx = static_cast<std::size_t>(std::floor(fx));
-            const std::size_t cy = static_cast<std::size_t>(std::floor(fy));
-            const std::size_t lx = cx - 1;
-            const std::size_t rx = cx + 1;
-            const std::size_t by = cy - 1;
-            const std::size_t ty = cy + 1;
 
             // Dual-filtering upsample.
-            Color3f result;
+#if 1
+            const std::size_t cx = static_cast<std::size_t>(std::round(fx));
+            const std::size_t cy = static_cast<std::size_t>(std::round(fy));
 
-            Color3f c, l, r, b, t, lb, lt, rb, rt;
-            m_src_image_with_border.get_pixel(cx, cy, c);
-            m_src_image_with_border.get_pixel(lx, cy, l);
-            m_src_image_with_border.get_pixel(rx, cy, r);
-            m_src_image_with_border.get_pixel(cx, by, b);
-            m_src_image_with_border.get_pixel(cx, ty, t);
-            m_src_image_with_border.get_pixel(lx, by, lb);
-            m_src_image_with_border.get_pixel(lx, ty, lt);
-            m_src_image_with_border.get_pixel(rx, by, rb);
-            m_src_image_with_border.get_pixel(rx, ty, rt);
+            Color3f l, r, b, t;
+            m_src_image_with_border.get_pixel(cx - 1, cy, l);
+            m_src_image_with_border.get_pixel(cx + 1, cy, r);
+            m_src_image_with_border.get_pixel(cx, cy - 1, b);
+            m_src_image_with_border.get_pixel(cx, cy + 1, t);
 
-            result = (
+            // Color3f c, lb, lt, rb, rt;
+            // m_src_image_with_border.get_pixel(cx, cy, c);
+            // m_src_image_with_border.get_pixel(cx - 1, cy - 1, lb);
+            // m_src_image_with_border.get_pixel(cx - 1, cy + 1, lt);
+            // m_src_image_with_border.get_pixel(cx + 1, cy - 1, rb);
+            // m_src_image_with_border.get_pixel(cx + 1, cy + 1, rt);
+
+            const Color3f result = (
                 l + r + b + t
-                + 2.0f * blerp(m_src_image_with_border, lb, b, l, c, fx - 1.0f, fy - 1.0f) 
-                + 2.0f * blerp(m_src_image_with_border, l, c, lt, t, fx - 1.0f, fy) 
-                + 2.0f * blerp(m_src_image_with_border, b, rb, c, r, fx, fy - 1.0f) 
-                + 2.0f * blerp(m_src_image_with_border, c, r, t, rt, fx, fy))
+                // blerp(m_src_image_with_border, fx - 1.0f, fy) +
+                // blerp(m_src_image_with_border, fx + 1.0f, fy) +
+                // blerp(m_src_image_with_border, fx, fy - 1.0f) +
+                // blerp(m_src_image_with_border, fx, fy + 1.0f)
+                + 2.0f * blerp(m_src_image_with_border, fx - 0.5f, fy - 0.5f)
+                + 2.0f * blerp(m_src_image_with_border, fx - 0.5f, fy + 0.5f)
+                + 2.0f * blerp(m_src_image_with_border, fx + 0.5f, fy - 0.5f)
+                + 2.0f * blerp(m_src_image_with_border, fx + 0.5f, fy + 0.5f))
                 / 12.0f;
-
-            tile.set_pixel(x, y, result);
 #else
-            const float off = 1.0f;
-            const float half_off = 0.5f;
+            Color3f top = box_sample(m_src_image_with_border, fx, fy + 1.0f);
+            Color3f left = box_sample(m_src_image_with_border, fx - 1.0f, fy);
+            Color3f right = box_sample(m_src_image_with_border, fx + 1.0f, fy);
+            Color3f bottom = box_sample(m_src_image_with_border, fx, fy - 1.0f);
 
-            Color3f top = box_sample(m_src_image_with_border, fx, fy + off);
-            Color3f left = box_sample(m_src_image_with_border, fx - off, fy);
-            Color3f right = box_sample(m_src_image_with_border, fx + off, fy);
-            Color3f bottom = box_sample(m_src_image_with_border, fx, fy - off);
+            Color3f top_left = box_sample(m_src_image_with_border, fx - 0.5f, fy + 0.5f);
+            Color3f top_right = box_sample(m_src_image_with_border, fx + 0.5f, fy + 0.5f);
+            Color3f bottom_left = box_sample(m_src_image_with_border, fx - 0.5f, fy - 0.5f);
+            Color3f bottom_right = box_sample(m_src_image_with_border, fx + 0.5f, fy - 0.5f);
 
-            Color3f top_left = box_sample(m_src_image_with_border, fx - half_off, fy + half_off);
-            Color3f top_right = box_sample(m_src_image_with_border, fx + half_off, fy + half_off);
-            Color3f bottom_left = box_sample(m_src_image_with_border, fx - half_off, fy - half_off);
-            Color3f bottom_right = box_sample(m_src_image_with_border, fx + half_off, fy - half_off);
-
-            Color3f result = (
+            const Color3f result = (
                 top + left + right + bottom
                 + 2.0f * (top_left + top_right + bottom_left + bottom_right))
                 / 12.0f;
-
-            tile.set_pixel(x, y, result);
 #endif
+            tile.set_pixel(x, y, result);
         }
     }
 }

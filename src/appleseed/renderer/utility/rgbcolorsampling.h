@@ -42,20 +42,16 @@ namespace renderer
 
 // Bilinear interpolation of RGB colors.
 foundation::Color3f blerp(
-    const foundation::Image&        image,
-    const foundation::Color3f&      c00,
-    const foundation::Color3f&      c10,
-    const foundation::Color3f&      c01,
-    const foundation::Color3f&      c11,
-    const float                     fx,
-    const float                     fy);
-
-foundation::Color3f blerp(
     const foundation::Image&    image,
     const std::size_t           x0,
     const std::size_t           y0,
     const std::size_t           x1,
     const std::size_t           y1,
+    const float                 fx,
+    const float                 fy);
+
+foundation::Color3f blerp(
+    const foundation::Image&    image,
     const float                 fx,
     const float                 fy);
 
