@@ -46,7 +46,7 @@ namespace renderer
 {
 
 //
-// ImageEffectApplier abstract class implementation.
+// ImageEffectApplier class implementation.
 //
 
 void ImageEffectApplier::apply_on_tiles(
