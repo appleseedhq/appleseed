@@ -128,7 +128,7 @@ namespace
 
         void execute(Frame& frame, const std::size_t thread_count) const override
         {
-const std::size_t thread_count_ = 4;
+const std::size_t thread_count_ = thread_count; // 1;
 PROFILE_FUNCTION();
             if (m_intensity == 0.0f && !m_debug_blur)
                 return;
@@ -163,14 +163,15 @@ PROFILE_SCOPE("Create blur buffer pyramids");
 
                 std::size_t level_width = width;
                 std::size_t level_height = height;
+                const std::size_t max_tile_size = 32; // NOTE empirical value (similar to 64; consistently better than: 2, 8, 16, 128, and using the level size)
 
                 for (std::size_t level = 0; level < iterations; ++level)
                 {
                     const CanvasProperties level_props(
                         level_width,
                         level_height,
-                        level_width,
-                        level_height,
+                        std::min(level_width, max_tile_size),
+                        std::min(level_height, max_tile_size),
                         channel_count,
                         pixel_format);
 
