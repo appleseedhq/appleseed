@@ -34,9 +34,10 @@
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/postprocessingstage/effect/additiveblendapplier.h"
 #include "renderer/modeling/postprocessingstage/effect/brightpassapplier.h"
-#include "renderer/modeling/postprocessingstage/effect/resampleapplier.h"
 #include "renderer/modeling/postprocessingstage/effect/downsampleapplier.h"
 #include "renderer/modeling/postprocessingstage/effect/upsampleapplier.h"
+#include "renderer/modeling/postprocessingstage/effect/downsamplex2applier.h"
+#include "renderer/modeling/postprocessingstage/effect/upsamplex2applier.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
 #include "renderer/utility/rgbcolorsampling.h"
 
@@ -128,7 +129,7 @@ namespace
 
         void execute(Frame& frame, const std::size_t thread_count) const override
         {
-const std::size_t thread_count_ = thread_count; // 1;
+const std::size_t thread_count_ = 1; // thread_count;
 PROFILE_FUNCTION();
             if (m_intensity == 0.0f && !m_debug_blur)
                 return;
@@ -137,11 +138,12 @@ PROFILE_FUNCTION();
             const CanvasProperties& props = image.properties();
 
             // Determine the dimensions of the largest temporary buffer used for blurring.
-            const std::size_t width = props.m_canvas_width;
-            const std::size_t height = props.m_canvas_height;
+            #define FAST_MODE true
+            const std::size_t width = props.m_canvas_width / (FAST_MODE ? 2 : 1);
+            const std::size_t height = props.m_canvas_height / (FAST_MODE ? 2 : 1);
 
             // Compute how many downsampling iterations we can do before a buffer has a side smaller than 2 pixels.
-            const float max_iterations = std::log2(std::min(width, height) / 2.0f);
+            const float max_iterations = std::log2(std::min(width, height) / 2.0f) + (FAST_MODE ? - 1.0f : 0.0f);
             const std::size_t iterations = clamp<std::size_t>(m_iterations, 0, static_cast<int>(max_iterations));
 
             if (iterations == 0)
@@ -163,7 +165,9 @@ PROFILE_SCOPE("Create blur buffer pyramids");
 
                 std::size_t level_width = width;
                 std::size_t level_height = height;
-                const std::size_t max_tile_size = 32; // NOTE empirical value (similar to 64; consistently better than: 2, 8, 16, 128, and using the level size)
+
+                // NOTE empirical value (similar to 16 and 64; better than other powers of 2)
+                const std::size_t max_tile_size = 32;
 
                 for (std::size_t level = 0; level < iterations; ++level)
                 {
@@ -204,8 +208,11 @@ PROFILE_SCOPE("Create blur buffer pyramids");
             //
 
 { PROFILE_SCOPE("Downsample pass");
+#if FAST_MODE
+            DownsampleX2Applier downsample({ prefiltered_image });
+#else
             DownsampleApplier downsample({ prefiltered_image });
-            // ResampleApplier downsample({ prefiltered_image, &dual_filter_downsample });
+#endif
             downsample.apply_on_tiles(blur_pyramid_down[0], thread_count_);
 
             for (std::size_t level = 1; level < iterations; ++level)
@@ -213,7 +220,6 @@ PROFILE_SCOPE("Create blur buffer pyramids");
 const std::string _scope_name = "Level #" + std::to_string(level);
 PROFILE_SCOPE(_scope_name.c_str());
                 DownsampleApplier downsample({ blur_pyramid_down[level - 1] });
-                // ResampleApplier downsample({ blur_pyramid_down[level - 1], &dual_filter_downsample });
                 downsample.apply_on_tiles(blur_pyramid_down[level], thread_count_);
             }
 }
@@ -232,7 +238,6 @@ const std::string _scope_name = "Level #" + std::to_string(level);
 PROFILE_SCOPE(_scope_name.c_str());
 
                 UpsampleApplier upsample({ blur_pyramid_up[level + 1] });
-                // ResampleApplier upsample({ blur_pyramid_up[level + 1], &dual_filter_upsample });
                 upsample.apply_on_tiles(blur_pyramid_up[level], thread_count_);
 
 { PROFILE_SCOPE("Blending");
@@ -250,8 +255,11 @@ PROFILE_SCOPE(_scope_name.c_str());
 { PROFILE_SCOPE("Resolve pass");
             Image bloom_target(prefiltered_image.properties());
 
+#if FAST_MODE
+            UpsampleX2Applier upsample({ blur_pyramid_up[0] });
+#else
             UpsampleApplier upsample({ blur_pyramid_up[0] });
-            // ResampleApplier upsample({ blur_pyramid_up[0], &dual_filter_upsample });
+#endif
             upsample.apply_on_tiles(bloom_target, thread_count_);
 
 { PROFILE_SCOPE("Blending (final)");
