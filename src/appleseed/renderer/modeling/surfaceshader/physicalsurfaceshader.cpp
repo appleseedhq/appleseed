@@ -116,7 +116,7 @@ namespace
             // OSL shaders can modify the shading basis in the shading point when using bump,
             // normal maps or anisotropy. When using more than 1 lighting sample, we need to
             // save and restore the basis for each sample.
-            const Basis3d basis = shading_point.get_shading_basis();
+            const Basis3d shading_basis = shading_point.get_shading_basis();
             shading_context.get_lighting_engine()->compute_lighting(
                 sampling_context,
                 pixel_context,
@@ -129,7 +129,7 @@ namespace
             {
                 for (size_t i = 1, e = m_lighting_samples; i < e; ++i)
                 {
-                    shading_point.set_shading_basis(basis);
+                    shading_point.set_shading_basis(shading_basis);
                     shading_context.get_lighting_engine()->compute_lighting(
                         sampling_context,
                         pixel_context,

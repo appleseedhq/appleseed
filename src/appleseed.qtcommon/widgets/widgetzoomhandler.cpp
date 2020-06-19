@@ -139,12 +139,12 @@ bool WidgetZoomHandler::handle_key_press_event(QKeyEvent* event)
 
 bool WidgetZoomHandler::handle_wheel_event(QWheelEvent* event)
 {
-    if (event->delta() > 0)
+    if (event->angleDelta().y() > 0)
     {
         zoom_in();
         return true;
     }
-    else if (event->delta() < 0)
+    else if (event->angleDelta().y() < 0)
     {
         zoom_out();
         return true;

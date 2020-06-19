@@ -93,7 +93,7 @@ QString get_open_filename(
     const QString&          filter,
     renderer::ParamArray&   settings,
     const QString&          settings_key,
-    QFileDialog::Options    options = 0);
+    QFileDialog::Options    options = {});
 
 QStringList get_open_filenames(
     QWidget*                parent,
@@ -101,7 +101,7 @@ QStringList get_open_filenames(
     const QString&          filter,
     renderer::ParamArray&   settings,
     const QString&          settings_key,
-    QFileDialog::Options    options = 0);
+    QFileDialog::Options    options = {});
 
 QString get_save_filename(
     QWidget*                parent,
@@ -109,7 +109,7 @@ QString get_save_filename(
     const QString&          filter,
     renderer::ParamArray&   settings,
     const QString&          settings_key,
-    QFileDialog::Options    options = 0);
+    QFileDialog::Options    options = {});
 
 // Disable the blue focus rectangle of certain widgets. macOS only.
 void disable_osx_focus_rect(QWidget* widget);

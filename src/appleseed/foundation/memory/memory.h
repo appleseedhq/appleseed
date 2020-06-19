@@ -148,8 +148,8 @@ inline T align(const T ptr, const size_t alignment)
     assert(alignment > 0);
     assert(is_pow2(alignment));
 
-    const size_t a = alignment - 1;
-    const uintptr_t aligned = ((uintptr_t)ptr + a) & ~a;
+    const std::size_t a = alignment - 1;
+    const std::uintptr_t aligned = ((std::uintptr_t)ptr + a) & ~a;
 
     return (T)aligned;
 }
