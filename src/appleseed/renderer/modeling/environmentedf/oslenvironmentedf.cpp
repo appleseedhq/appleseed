@@ -127,9 +127,7 @@ namespace
                 Vector3f::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
 
             // OSL exectute system.
-            payload = m_osl_shadergroup_exec.execute_background(
-                *m_shader_group,
-                local_outgoing);
+            payload = m_osl_shadergroup_exec.execute_background(*m_shader_group, local_outgoing);
 
             importance = luminance(payload);
         }
@@ -153,8 +151,8 @@ namespace
     {
       public:
         OSLEnvironmentEDF(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : EnvironmentEDF(name, params)
           , m_importance_map_size(0)
           , m_probability_scale(0.0f)

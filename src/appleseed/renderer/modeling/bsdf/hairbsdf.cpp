@@ -187,26 +187,36 @@ namespace
         std::array<Spectrum, 4>&    ret)
     {
 
-        // R(Primary Specular).
-        const float cosGammaO = std::sqrt(std::max(0.0f, 1.0f - h * h));
-        const float cosTheta = cosGammaO * cos_theta_o;
+        // R (Primary Specular).
+        const float cos_gamma_o = std::sqrt(std::max(0.0f, 1.0f - h * h));
+        const float cos_theta = cos_gamma_o * cos_theta_o;
         float f;
-        fresnel_reflectance_dielectric(f, 1.0f / eta, cosTheta);
-        ret[0] = Spectrum(f);
+        fresnel_reflectance_dielectric(f, 1.0f / eta, cos_theta);
+        ret[0].set(f);
 
-        // TT(Transmitted component).
-        ret[1] = (1.0f - f) * (1.0f - f) * T;
+        Spectrum Tf = T;
+        Tf *= f;
 
-        // TRT(Total internally reflected component).
-        ret[2] = ret[1] * T * f;
+        Spectrum one_minus_Tf(1.0f);
+        one_minus_Tf -= Tf;
+
+        // TT (Transmitted component).
+        ret[1] = T;
+        ret[1] *= square(1.0f - f);
+
+        // TRT (Total internally reflected component).
+        ret[2] = ret[1];
+        ret[2] *= Tf;
 
         // Higher orders of scattering.
-        ret[3] = ret[2] * f * T / (Spectrum(1.0f) - T * f);
+        ret[3] = ret[2];
+        ret[3] *= Tf;
+        ret[3] /= one_minus_Tf;
 
     }
 
     //
-    // Method to compute a discrete pdf based on the attenuation function.
+    // Method to compute a discrete PDF based on the attenuation function.
     //
 
     void attenuation_pdf(
@@ -216,7 +226,6 @@ namespace
         const Spectrum&         T,
         std::array<float, 4>&   ret)
     {
-
         std::array<Spectrum, 4> retAp;
         attenuation(cos_theta_o, eta, h, T, retAp);
 

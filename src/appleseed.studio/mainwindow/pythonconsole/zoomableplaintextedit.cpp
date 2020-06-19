@@ -53,7 +53,7 @@ void ZoomablePlainTextEdit::keyPressEvent(QKeyEvent* event)
 void ZoomablePlainTextEdit::wheelEvent(QWheelEvent* event)
 {
     if (event->modifiers() & Qt::ControlModifier)
-        change_font_size(event->delta() / 120);
+        change_font_size(event->angleDelta().y() / 120);
     else
         QPlainTextEdit::wheelEvent(event);
 }
