@@ -146,8 +146,8 @@ void UpsampleX2Applier::apply(
     const std::size_t dst_height = image.properties().m_canvas_height;
 
     // Scale x2 through bilinear filtering.
-    assert(dst_width == 2 * m_src_width); // !!
-    assert(dst_height == 2 * m_src_height); // !!
+    assert(dst_width / 2 == m_src_width); // !!
+    assert(dst_height / 2 == m_src_height); // !!
 
     for (std::size_t y = 0; y < tile_height; ++y)
     {

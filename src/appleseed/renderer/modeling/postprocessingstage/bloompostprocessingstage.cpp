@@ -34,6 +34,7 @@
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/postprocessingstage/effect/additiveblendapplier.h"
 #include "renderer/modeling/postprocessingstage/effect/brightpassapplier.h"
+#include "renderer/modeling/postprocessingstage/effect/resampleapplier.h"
 #include "renderer/modeling/postprocessingstage/effect/downsampleapplier.h"
 #include "renderer/modeling/postprocessingstage/effect/upsampleapplier.h"
 #include "renderer/modeling/postprocessingstage/effect/downsamplex2applier.h"
@@ -129,9 +130,9 @@ namespace
 
         void execute(Frame& frame, const std::size_t thread_count) const override
         {
-const std::size_t thread_count_ = 1; // thread_count;
+const std::size_t thread_count_ = thread_count; // 1;
 PROFILE_FUNCTION();
-            if (m_intensity == 0.0f && !m_debug_blur)
+            if (m_iterations == 0 || m_intensity == 0.0f && !m_debug_blur)
                 return;
 
             Image& image = frame.image();
@@ -141,13 +142,14 @@ PROFILE_FUNCTION();
             #define FAST_MODE true
             const std::size_t width = props.m_canvas_width / (FAST_MODE ? 2 : 1);
             const std::size_t height = props.m_canvas_height / (FAST_MODE ? 2 : 1);
+            const std::size_t min_dimension = std::min(width, height);
+
+            if (min_dimension < 4)
+                return;
 
             // Compute how many downsampling iterations we can do before a buffer has a side smaller than 2 pixels.
-            const float max_iterations = std::log2(std::min(width, height) / 2.0f) + (FAST_MODE ? - 1.0f : 0.0f);
-            const std::size_t iterations = clamp<std::size_t>(m_iterations, 0, static_cast<int>(max_iterations));
-
-            if (iterations == 0)
-                return;
+            const float max_iterations = std::log2(min_dimension / 2.0f) + (FAST_MODE ? - 1.0f : 0.0f);
+            const std::size_t iterations = clamp<std::size_t>(m_iterations, 1, static_cast<int>(max_iterations));
 
             // Create blur buffer pyramids (note that lower levels have larger images).
             std::vector<Image> blur_pyramid_down;
@@ -213,7 +215,7 @@ PROFILE_SCOPE("Create blur buffer pyramids");
 #else
             DownsampleApplier downsample({ prefiltered_image });
 #endif
-            downsample.apply_on_tiles(blur_pyramid_down[0], thread_count_);
+            downsample.apply_on_tiles(blur_pyramid_down[0], thread_count_); // TODO optimize away (iff not FAST_MODE)
 
             for (std::size_t level = 1; level < iterations; ++level)
             {
@@ -260,7 +262,7 @@ PROFILE_SCOPE(_scope_name.c_str());
 #else
             UpsampleApplier upsample({ blur_pyramid_up[0] });
 #endif
-            upsample.apply_on_tiles(bloom_target, thread_count_);
+            upsample.apply_on_tiles(bloom_target, thread_count_); // TODO optimize away (iff not FAST_MODE)
 
 { PROFILE_SCOPE("Blending (final)");
             AdditiveBlendApplier additive_blend(
