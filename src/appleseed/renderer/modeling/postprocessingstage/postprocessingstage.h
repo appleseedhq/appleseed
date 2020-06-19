@@ -37,6 +37,9 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+// Standard headers.
+#include <cstddef>
+
 // Forward declarations.
 namespace renderer  { class Frame; }
 namespace renderer  { class ParamArray; }
