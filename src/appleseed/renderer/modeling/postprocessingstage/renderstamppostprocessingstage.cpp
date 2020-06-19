@@ -58,6 +58,7 @@
 #include "foundation/platform/_endoiioheaders.h"
 
 // Standard headers.
+#include <cstddef>
 #include <memory>
 #include <string>
 
