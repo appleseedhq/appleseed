@@ -71,22 +71,14 @@ Color3f blerp(
 }
 
 Color3f blerp(
-    const Image&        image,
-    const float         fx,
-    const float         fy)
+    const Image&    image,
+    const float     fx,
+    const float     fy)
 {
-#define UNSAFE 0
-#if UNSAFE
-    const std::size_t x0 = static_cast<std::size_t>(std::floor(fx));
-    const std::size_t y0 = static_cast<std::size_t>(std::floor(fy));
-    const std::size_t x1 = x0 + 1;
-    const std::size_t y1 = y0 + 1;
-#else
     const std::size_t x0 = truncate<std::size_t>(fx);
     const std::size_t y0 = truncate<std::size_t>(fy);
-    const std::size_t x1 = std::min(x0 + 1, image.properties().m_canvas_width);
-    const std::size_t y1 = std::min(y0 + 1, image.properties().m_canvas_height);
-#endif
+    const std::size_t x1 = std::min(x0 + 1, image.properties().m_canvas_width - 1);
+    const std::size_t y1 = std::min(y0 + 1, image.properties().m_canvas_height - 1);
 
     return blerp(image, x0, y0, x1, y1, fx, fy);
 }

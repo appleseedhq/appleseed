@@ -82,7 +82,7 @@ void UpsampleX2Applier::apply(
     const std::size_t dst_width = image.properties().m_canvas_width;
     const std::size_t dst_height = image.properties().m_canvas_height;
 
-    // Scale x2 through bilinear filtering.
+    // Scale x2 with bilinear filtering.
     assert(dst_width / 2 == m_src_width);
     assert(dst_height / 2 == m_src_height);
 

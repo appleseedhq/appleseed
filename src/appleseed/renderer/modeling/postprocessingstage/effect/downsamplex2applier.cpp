@@ -81,7 +81,7 @@ void DownsampleX2Applier::apply(
     const std::size_t dst_width = image.properties().m_canvas_width;
     const std::size_t dst_height = image.properties().m_canvas_height;
 
-    // Scale x1/2 through box filtering.
+    // Scale x1/2 with box filtering.
     assert(dst_width == m_src_width / 2);
     assert(dst_height == m_src_height / 2);
 

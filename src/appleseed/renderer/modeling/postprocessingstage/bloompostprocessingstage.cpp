@@ -240,7 +240,7 @@ PROFILE_FUNCTION();
 
 { PROFILE_SCOPE("Downsample pass");
             DownsampleX2Applier downsample({ prefiltered_image });
-            downsample.apply_on_tiles(blur_pyramid_down[0], thread_count); // TODO optimize away (iff not FAST_MODE)
+            downsample.apply_on_tiles(blur_pyramid_down[0], thread_count);
 
             for (std::size_t level = 1; level < iterations; ++level)
             {
@@ -283,7 +283,7 @@ PROFILE_SCOPE(_scope_name.c_str());
             Image bloom_target(prefiltered_image.properties());
 
             UpsampleX2Applier upsample({ blur_pyramid_up[0] });
-            upsample.apply_on_tiles(bloom_target, thread_count); // TODO optimize away (iff not FAST_MODE)
+            upsample.apply_on_tiles(bloom_target, thread_count);
 
 { PROFILE_SCOPE("Blending (final)");
             AdditiveBlendApplier additive_blend(
