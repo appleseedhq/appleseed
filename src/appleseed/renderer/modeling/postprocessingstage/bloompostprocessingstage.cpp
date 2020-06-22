@@ -128,6 +128,40 @@ namespace
         // Bloom post-processing effect execution.
         //
 
+        static void init_blur_pyramids(
+            std::vector<Image>&         blur_pyramid_down,
+            std::vector<Image>&         blur_pyramid_up,
+            const std::size_t           level_count,
+            const CanvasProperties&     max_level_props,
+            const std::size_t           max_tile_size)
+        {
+PROFILE_FUNCTION();
+            blur_pyramid_down.reserve(level_count);
+            blur_pyramid_up.reserve(level_count);
+
+            std::size_t level_width = max_level_props.m_canvas_width;
+            std::size_t level_height = max_level_props.m_canvas_height;
+
+            for (std::size_t level = 0; level < level_count; ++level)
+            {
+                const CanvasProperties level_props(
+                    level_width,
+                    level_height,
+                    std::min(level_width, max_tile_size),
+                    std::min(level_height, max_tile_size),
+                    max_level_props.m_channel_count,
+                    max_level_props.m_pixel_format);
+
+                blur_pyramid_down.push_back(Image(level_props));
+                blur_pyramid_up.push_back(Image(level_props));
+
+                // Halve dimensions for the next buffer level.
+                assert(level_width >= 4 && level_height >= 4);
+                level_width /= 2;
+                level_height /= 2;
+            }
+        }
+
         void execute(Frame& frame, const std::size_t thread_count) const override
         {
 const std::size_t thread_count_ = thread_count; // 1;
@@ -139,57 +173,27 @@ PROFILE_FUNCTION();
             const CanvasProperties& props = image.properties();
 
             // Determine the dimensions of the largest temporary buffer used for blurring.
-            #define FAST_MODE true
-            const std::size_t width = props.m_canvas_width / (FAST_MODE ? 2 : 1);
-            const std::size_t height = props.m_canvas_height / (FAST_MODE ? 2 : 1);
-            const std::size_t min_dimension = std::min(width, height);
+            const std::size_t max_pyramid_width = props.m_canvas_width / 2;
+            const std::size_t max_pyramid_height = props.m_canvas_height / 2;
+            const std::size_t min_pyramid_dimension = std::min(max_pyramid_width, max_pyramid_height);
 
-            if (min_dimension < 4)
+            if (min_pyramid_dimension < 4)
                 return;
 
+            // Copy the pixel format, but ignore the alpha channel.
+            assert(props.m_channel_count == 4);
+            const std::size_t max_tile_size = 32; // NOTE empirical value (similar to 16 and 64)
+            const CanvasProperties blur_props(
+                max_pyramid_width,
+                max_pyramid_height,
+                std::min(max_pyramid_width, max_tile_size),
+                std::min(max_pyramid_height, max_tile_size),
+                3,
+                props.m_pixel_format);
+
             // Compute how many downsampling iterations we can do before a buffer has a side smaller than 2 pixels.
-            const float max_iterations = std::log2(min_dimension / 2.0f) + (FAST_MODE ? - 1.0f : 0.0f);
+            const float max_iterations = std::log2(min_pyramid_dimension / 2.0f);
             const std::size_t iterations = clamp<std::size_t>(m_iterations, 1, static_cast<int>(max_iterations));
-
-            // Create blur buffer pyramids (note that lower levels have larger images).
-            std::vector<Image> blur_pyramid_down;
-            std::vector<Image> blur_pyramid_up;
-
-            blur_pyramid_down.reserve(iterations);
-            blur_pyramid_up.reserve(iterations);
-
-            {
-PROFILE_SCOPE("Create blur buffer pyramids");
-                // Copy the pixel format, but ignore the alpha channel for bloom.
-                assert(props.m_channel_count == 4);
-                const std::size_t channel_count = 3;
-                const PixelFormat pixel_format = props.m_pixel_format;
-
-                std::size_t level_width = width;
-                std::size_t level_height = height;
-
-                // NOTE empirical value (similar to 16 and 64; better than other powers of 2)
-                const std::size_t max_tile_size = 32;
-
-                for (std::size_t level = 0; level < iterations; ++level)
-                {
-                    const CanvasProperties level_props(
-                        level_width,
-                        level_height,
-                        std::min(level_width, max_tile_size),
-                        std::min(level_height, max_tile_size),
-                        channel_count,
-                        pixel_format);
-
-                    blur_pyramid_down.push_back(Image(level_props));
-                    blur_pyramid_up.push_back(Image(level_props));
-
-                    // Halve dimensions for the next buffer level.
-                    assert(level_width >= 4 && level_height >= 4);
-                    level_width /= 2;
-                    level_height /= 2;
-                }
-            }
 
             //
             // Prefilter pass.
@@ -206,15 +210,37 @@ PROFILE_SCOPE("Create blur buffer pyramids");
 }
 
             //
+            // Initialize the blurring pyramids.
+            //
+
+            if (iterations == 1)
+            {
+                // If we have more than one scaling iteration, we can get away with
+                // a quicker resampling method for the largest blur_pyramid_down and
+                // blur_pyramid_up images (which greatly reduces the bloom stage time).
+                //
+                // However, with a single iteration this leads to blocky artifacts,
+                // so we use the more computationally intensive resampling method here.
+                execute_single_iteration(image, prefiltered_image, blur_props, thread_count);
+                return;
+            }
+
+            // Create blur buffer pyramids (note that lower levels have larger images).
+            std::vector<Image> blur_pyramid_down;
+            std::vector<Image> blur_pyramid_up;
+            init_blur_pyramids(
+                blur_pyramid_down,
+                blur_pyramid_up,
+                iterations,
+                blur_props,
+                max_tile_size);
+
+            //
             // Downsample pass.
             //
 
 { PROFILE_SCOPE("Downsample pass");
-#if FAST_MODE
             DownsampleX2Applier downsample({ prefiltered_image });
-#else
-            DownsampleApplier downsample({ prefiltered_image });
-#endif
             downsample.apply_on_tiles(blur_pyramid_down[0], thread_count_); // TODO optimize away (iff not FAST_MODE)
 
             for (std::size_t level = 1; level < iterations; ++level)
@@ -257,11 +283,7 @@ PROFILE_SCOPE(_scope_name.c_str());
 { PROFILE_SCOPE("Resolve pass");
             Image bloom_target(prefiltered_image.properties());
 
-#if FAST_MODE
             UpsampleX2Applier upsample({ blur_pyramid_up[0] });
-#else
-            UpsampleApplier upsample({ blur_pyramid_up[0] });
-#endif
             upsample.apply_on_tiles(bloom_target, thread_count_); // TODO optimize away (iff not FAST_MODE)
 
 { PROFILE_SCOPE("Blending (final)");
@@ -282,6 +304,32 @@ PROFILE_SCOPE(_scope_name.c_str());
         float           m_threshold;
         float           m_soft_threshold;
         bool            m_debug_blur;
+
+        void execute_single_iteration(
+            Image&                      image,
+            const Image&                prefiltered_image,
+            const CanvasProperties&     blur_target_props,
+            const std::size_t           thread_count) const
+        {
+PROFILE_FUNCTION();
+            // Downsample the prefiltered image.
+            Image blur_target(blur_target_props);
+            DownsampleApplier downsample({ prefiltered_image });
+            downsample.apply_on_tiles(blur_target, thread_count);
+
+            // Upsample and blend it with the original image.
+            Image bloom_target(prefiltered_image.properties());
+            UpsampleApplier upsample({ blur_target });
+            upsample.apply_on_tiles(bloom_target, thread_count);
+
+            AdditiveBlendApplier additive_blend(
+                {
+                    bloom_target,
+                    m_debug_blur ? 1.0f : m_intensity,
+                    m_debug_blur ? 0.0f : 1.0f
+                });
+            additive_blend.apply_on_tiles(image, thread_count);
+        }
     };
 }
 

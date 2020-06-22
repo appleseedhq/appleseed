@@ -260,7 +260,7 @@
             <post_processing_stages>
                 <post_processing_stage name="bloom_stage" model="bloom_post_processing_stage">
                     <parameter name="order" value="0" />
-                    <parameter name="iterations" value="5" />
+                    <parameter name="iterations" value="4" />
                     <parameter name="intensity" value="1.0" />
                     <parameter name="threshold" value="0.0" />
                     <parameter name="soft_threshold" value="0.5" />
