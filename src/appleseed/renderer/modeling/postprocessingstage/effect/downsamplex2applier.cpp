@@ -82,16 +82,15 @@ void DownsampleX2Applier::apply(
     const std::size_t dst_height = image.properties().m_canvas_height;
 
     // Scale x1/2 through box filtering.
-    assert(dst_width == m_src_width / 2); // !!
-    assert(dst_height == m_src_height / 2); // !!
+    assert(dst_width == m_src_width / 2);
+    assert(dst_height == m_src_height / 2);
 
     for (std::size_t y = 0; y < tile_height; ++y)
     {
-        const std::size_t y0 = 2 * (y + tile_offset.y);
-        const std::size_t y1 = y0 + 1;
-
         for (std::size_t x = 0; x < tile_width; ++x)
         {
+            const std::size_t y0 = 2 * (y + tile_offset.y);
+            const std::size_t y1 = y0 + 1;
             const std::size_t x0 = 2 * (x + tile_offset.x);
             const std::size_t x1 = x0 + 1;
 

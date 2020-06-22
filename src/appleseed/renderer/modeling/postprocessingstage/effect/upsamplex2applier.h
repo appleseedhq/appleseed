@@ -79,8 +79,7 @@ class UpsampleX2Applier
   private:
     const std::size_t               m_src_width;
     const std::size_t               m_src_height;
-    const std::size_t               m_border_size;
-    foundation::Image               m_src_image_with_border;
+    const foundation::Image&        m_src_image;
 };
 
 }   // namespace renderer

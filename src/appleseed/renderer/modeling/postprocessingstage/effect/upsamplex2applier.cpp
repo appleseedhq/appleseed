@@ -55,73 +55,8 @@ UpsampleX2Applier::UpsampleX2Applier(
     const UpsampleX2Params& params)
   : m_src_width(params.src_image.properties().m_canvas_width)
   , m_src_height(params.src_image.properties().m_canvas_height)
-  , m_border_size(2)
-  , m_src_image_with_border(
-      Image(
-          m_src_width + 2 * m_border_size,
-          m_src_height + 2 * m_border_size,
-          m_src_width + 2 * m_border_size,
-          m_src_height + 2 * m_border_size,
-          params.src_image.properties().m_channel_count,
-          params.src_image.properties().m_pixel_format))
+  , m_src_image(params.src_image)
 {
-PROFILE_FUNCTION();
-    const foundation::Image& src_image = params.src_image;
-    const std::size_t src_width_with_border = m_src_width + 2 * m_border_size;
-    const std::size_t src_height_with_border = m_src_height + 2 * m_border_size;
-
-    // Copy src_image pixels into the center of m_src_image_with_border.
-    for (std::size_t y = 0; y < m_src_height; ++y)
-    {
-        for (std::size_t x = 0; x < m_src_width; ++x)
-        {
-            Color3f color;
-            src_image.get_pixel(x, y, color);
-
-            m_src_image_with_border.set_pixel(
-                x + m_border_size,
-                y + m_border_size,
-                color);
-        }
-    }
-
-    // Fill in the borders by copying the color of the closest pixel (i.e. texture clamping).
-
-    // Copy corners.
-    {
-        Color3f top_left, top_right, bottom_left, bottom_right;
-        src_image.get_pixel(0, m_src_height - 1, top_left);
-        src_image.get_pixel(m_src_width - 1, m_src_height - 1, top_right);
-        src_image.get_pixel(0, 0, bottom_left);
-        src_image.get_pixel(m_src_width - 1, 0, bottom_right);
-
-        m_src_image_with_border.set_pixel(0, src_height_with_border - 1, top_left);
-        m_src_image_with_border.set_pixel(src_width_with_border - 1, src_height_with_border - 1, top_right);
-        m_src_image_with_border.set_pixel(0, 0, bottom_left);
-        m_src_image_with_border.set_pixel(src_width_with_border - 1, 0, bottom_right);
-    }
-
-    // Copy vertical borders.
-    for (std::size_t y = 0; y < m_src_height; ++y)
-    {
-        Color3f left, right;
-        src_image.get_pixel(0, y, left);
-        src_image.get_pixel(m_src_width - 1, y, right);
-
-        m_src_image_with_border.set_pixel(0, y, left);
-        m_src_image_with_border.set_pixel(src_width_with_border - 1, y, right);
-    }
-
-    // Copy horizontal borders.
-    for (std::size_t x = 0; x < m_src_width; ++x)
-    {
-        Color3f top, bottom;
-        src_image.get_pixel(x, 0, bottom);
-        src_image.get_pixel(x, m_src_height - 1, top);
-
-        m_src_image_with_border.set_pixel(x, 0, bottom);
-        m_src_image_with_border.set_pixel(x, src_height_with_border - 1, top);
-    }
 }
 
 void UpsampleX2Applier::release()
@@ -148,22 +83,18 @@ void UpsampleX2Applier::apply(
     const std::size_t dst_height = image.properties().m_canvas_height;
 
     // Scale x2 through bilinear filtering.
-    assert(dst_width / 2 == m_src_width); // !!
-    assert(dst_height / 2 == m_src_height); // !!
+    assert(dst_width / 2 == m_src_width);
+    assert(dst_height / 2 == m_src_height);
 
     for (std::size_t y = 0; y < tile_height; ++y)
     {
         for (std::size_t x = 0; x < tile_width; ++x)
         {
-            // Map the pixel coordinate from image to src_image, then shift it by m_border_size.
-            const float fx =
-                static_cast<float>(x + tile_offset.x) / (dst_width - 1) * (m_src_width - 1)
-                + m_border_size;
-            const float fy =
-                static_cast<float>(y + tile_offset.y) / (dst_height - 1) * (m_src_height - 1)
-                + m_border_size;
+            // Map the pixel coordinate from image to src_image.
+            const float fy = static_cast<float>(y + tile_offset.y) / (dst_height - 1) * (m_src_height - 1);
+            const float fx = static_cast<float>(x + tile_offset.x) / (dst_width - 1) * (m_src_width - 1);
 
-            const Color3f result = blerp(m_src_image_with_border, fx, fy);
+            const Color3f result = blerp(m_src_image, fx, fy);
             tile.set_pixel(x, y, result);
         }
     }

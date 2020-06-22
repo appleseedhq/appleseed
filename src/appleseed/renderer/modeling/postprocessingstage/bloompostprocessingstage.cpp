@@ -181,6 +181,7 @@ PROFILE_FUNCTION();
             // Copy the pixel format, but ignore the alpha channel.
             assert(props.m_channel_count == 4);
             const std::size_t max_tile_size = 32; // NOTE empirical value (similar to 16 and 64)
+
             const CanvasProperties blur_props(
                 max_pyramid_width,
                 max_pyramid_height,
