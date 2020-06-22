@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/utility/rgbcolorsampling.h"
+#include "renderer/modeling/postprocessingstage/Instrumentor.h" // FIXME remove
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -64,6 +65,7 @@ UpsampleX2Applier::UpsampleX2Applier(
           params.src_image.properties().m_channel_count,
           params.src_image.properties().m_pixel_format))
 {
+PROFILE_FUNCTION();
     const foundation::Image& src_image = params.src_image;
     const std::size_t src_width_with_border = m_src_width + 2 * m_border_size;
     const std::size_t src_height_with_border = m_src_height + 2 * m_border_size;

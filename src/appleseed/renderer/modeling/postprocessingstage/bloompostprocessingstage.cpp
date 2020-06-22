@@ -40,6 +40,7 @@
 #include "renderer/modeling/postprocessingstage/effect/downsamplex2applier.h"
 #include "renderer/modeling/postprocessingstage/effect/upsamplex2applier.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
+#include "renderer/modeling/postprocessingstage/Instrumentor.h" // FIXME remove
 #include "renderer/utility/rgbcolorsampling.h"
 
 // appleseed.foundation headers.
@@ -56,8 +57,6 @@
 #include <cmath>
 #include <memory>
 #include <vector>
-
-#include "Instrumentor.h"
 
 using namespace foundation;
 
@@ -164,7 +163,6 @@ PROFILE_FUNCTION();
 
         void execute(Frame& frame, const std::size_t thread_count) const override
         {
-const std::size_t thread_count_ = thread_count; // 1;
 PROFILE_FUNCTION();
             if (m_iterations == 0 || m_intensity == 0.0f && !m_debug_blur)
                 return;
@@ -206,7 +204,7 @@ PROFILE_FUNCTION();
 { PROFILE_SCOPE("Prefilter pass");
             // Filter out dark pixels.
             BrightPassApplier bright_pass({ m_threshold, m_soft_threshold });
-            bright_pass.apply_on_tiles(prefiltered_image, thread_count_);
+            bright_pass.apply_on_tiles(prefiltered_image, thread_count);
 }
 
             //
@@ -241,14 +239,14 @@ PROFILE_FUNCTION();
 
 { PROFILE_SCOPE("Downsample pass");
             DownsampleX2Applier downsample({ prefiltered_image });
-            downsample.apply_on_tiles(blur_pyramid_down[0], thread_count_); // TODO optimize away (iff not FAST_MODE)
+            downsample.apply_on_tiles(blur_pyramid_down[0], thread_count); // TODO optimize away (iff not FAST_MODE)
 
             for (std::size_t level = 1; level < iterations; ++level)
             {
 const std::string _scope_name = "Level #" + std::to_string(level);
 PROFILE_SCOPE(_scope_name.c_str());
                 DownsampleApplier downsample({ blur_pyramid_down[level - 1] });
-                downsample.apply_on_tiles(blur_pyramid_down[level], thread_count_);
+                downsample.apply_on_tiles(blur_pyramid_down[level], thread_count);
             }
 }
 
@@ -266,12 +264,12 @@ const std::string _scope_name = "Level #" + std::to_string(level);
 PROFILE_SCOPE(_scope_name.c_str());
 
                 UpsampleApplier upsample({ blur_pyramid_up[level + 1] });
-                upsample.apply_on_tiles(blur_pyramid_up[level], thread_count_);
+                upsample.apply_on_tiles(blur_pyramid_up[level], thread_count);
 
 { PROFILE_SCOPE("Blending");
                 // Blend each upsampled buffer with the downsample buffer of the same level.
                 AdditiveBlendApplier additive_blend({ blur_pyramid_down[level] });
-                additive_blend.apply_on_tiles(blur_pyramid_up[level], thread_count_);
+                additive_blend.apply_on_tiles(blur_pyramid_up[level], thread_count);
 }
             }
 }
@@ -284,7 +282,7 @@ PROFILE_SCOPE(_scope_name.c_str());
             Image bloom_target(prefiltered_image.properties());
 
             UpsampleX2Applier upsample({ blur_pyramid_up[0] });
-            upsample.apply_on_tiles(bloom_target, thread_count_); // TODO optimize away (iff not FAST_MODE)
+            upsample.apply_on_tiles(bloom_target, thread_count); // TODO optimize away (iff not FAST_MODE)
 
 { PROFILE_SCOPE("Blending (final)");
             AdditiveBlendApplier additive_blend(
@@ -293,7 +291,7 @@ PROFILE_SCOPE(_scope_name.c_str());
                     m_debug_blur ? 1.0f : m_intensity,
                     m_debug_blur ? 0.0f : 1.0f
                 });
-            additive_blend.apply_on_tiles(image, thread_count_);
+            additive_blend.apply_on_tiles(image, thread_count);
 }
 }
         }

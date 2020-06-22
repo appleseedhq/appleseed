@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/utility/rgbcolorsampling.h"
+#include "renderer/modeling/postprocessingstage/Instrumentor.h" // FIXME remove
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -64,6 +65,7 @@ UpsampleApplier::UpsampleApplier(
           params.src_image.properties().m_channel_count,
           params.src_image.properties().m_pixel_format))
 {
+PROFILE_FUNCTION();
     const foundation::Image& src_image = params.src_image;
     const std::size_t src_width_with_border = m_src_width + 2 * m_border_size;
     const std::size_t src_height_with_border = m_src_height + 2 * m_border_size;
@@ -84,7 +86,7 @@ UpsampleApplier::UpsampleApplier(
     }
 
     // Fill in the borders by copying the color of the closest pixel (i.e. texture clamping).
-
+{ PROFILE_SCOPE("Fill borders");
     // Copy corners.
     {
         Color3f top_left, top_right, bottom_left, bottom_right;
@@ -120,6 +122,7 @@ UpsampleApplier::UpsampleApplier(
         m_src_image_with_border.set_pixel(x, 0, bottom);
         m_src_image_with_border.set_pixel(x, src_height_with_border - 1, top);
     }
+}
 }
 
 void UpsampleApplier::release()
@@ -157,46 +160,18 @@ void UpsampleApplier::apply(
                 static_cast<float>(y + tile_offset.y) / (dst_height - 1) * (m_src_height - 1)
                 + m_border_size;
 
-            // Dual-filtering upsample.
-            const float off = 1.0f;
-            const float half_off = 0.5f;
-#if 1
-            // NOTE "correct" way, but leads to artifacts
-            // const std::size_t cx = static_cast<std::size_t>(std::round(fx));
-            // const std::size_t cy = static_cast<std::size_t>(std::round(fy));
-            // Color3f l, r, b, t;
-            // m_src_image_with_border.get_pixel(cx - 1, cy, l);
-            // m_src_image_with_border.get_pixel(cx + 1, cy, r);
-            // m_src_image_with_border.get_pixel(cx, cy - 1, b);
-            // m_src_image_with_border.get_pixel(cx, cy + 1, t);
-
+            // Dual-filtering based upsample.
             const Color3f result = (
-                // l + r + b + t
-                blerp(m_src_image_with_border, fx - off, fy) +
-                blerp(m_src_image_with_border, fx + off, fy) +
-                blerp(m_src_image_with_border, fx, fy - off) +
-                blerp(m_src_image_with_border, fx, fy + off)
-                + 2.0f * blerp(m_src_image_with_border, fx - half_off, fy - half_off)
-                + 2.0f * blerp(m_src_image_with_border, fx - half_off, fy + half_off)
-                + 2.0f * blerp(m_src_image_with_border, fx + half_off, fy - half_off)
-                + 2.0f * blerp(m_src_image_with_border, fx + half_off, fy + half_off))
+                blerp(m_src_image_with_border, fx - 1.0f, fy) +
+                blerp(m_src_image_with_border, fx + 1.0f, fy) +
+                blerp(m_src_image_with_border, fx, fy - 1.0f) +
+                blerp(m_src_image_with_border, fx, fy + 1.0f)
+                + 2.0f * blerp(m_src_image_with_border, fx - 0.5f, fy - 0.5f)
+                + 2.0f * blerp(m_src_image_with_border, fx - 0.5f, fy + 0.5f)
+                + 2.0f * blerp(m_src_image_with_border, fx + 0.5f, fy - 0.5f)
+                + 2.0f * blerp(m_src_image_with_border, fx + 0.5f, fy + 0.5f))
                 / 12.0f;
-#else
-            Color3f top = box_sample(m_src_image_with_border, fx, fy + off);
-            Color3f left = box_sample(m_src_image_with_border, fx - off, fy);
-            Color3f right = box_sample(m_src_image_with_border, fx + off, fy);
-            Color3f bottom = box_sample(m_src_image_with_border, fx, fy - off);
 
-            Color3f top_left = box_sample(m_src_image_with_border, fx - half_off, fy + half_off);
-            Color3f top_right = box_sample(m_src_image_with_border, fx + half_off, fy + half_off);
-            Color3f bottom_left = box_sample(m_src_image_with_border, fx - half_off, fy - half_off);
-            Color3f bottom_right = box_sample(m_src_image_with_border, fx + half_off, fy - half_off);
-
-            const Color3f result = (
-                top + left + right + bottom
-                + 2.0f * (top_left + top_right + bottom_left + bottom_right))
-                / 12.0f;
-#endif
             tile.set_pixel(x, y, result);
         }
     }
