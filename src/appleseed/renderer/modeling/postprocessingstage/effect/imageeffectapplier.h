@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2020 Tiago Chaves, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -28,60 +28,36 @@
 
 #pragma once
 
-// appleseed.renderer headers.
-#include "renderer/modeling/entity/connectableentity.h"
-
 // appleseed.foundation headers.
-#include "foundation/utility/uid.h"
-
-// appleseed.main headers.
-#include "main/dllsymbol.h"
+#include "foundation/core/concepts/iunknown.h"
 
 // Standard headers.
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class Frame; }
-namespace renderer  { class ParamArray; }
+namespace foundation    { class Image; }
 
 namespace renderer
 {
 
-class APPLESEED_DLLSYMBOL PostProcessingStage
-  : public ConnectableEntity
+//
+// Image effect algorithm applier.
+//
+
+class ImageEffectApplier
+  : public foundation::IUnknown
 {
   public:
-    // Return the unique ID of this class of entities.
-    static foundation::UniqueID get_class_uid();
+    // Apply the image effect to a given tile.
+    virtual void apply(
+        foundation::Image&      image,
+        const std::size_t       tile_x,
+        const std::size_t       tile_y) const = 0;
 
-    // Constructor.
-    PostProcessingStage(
-        const char*             name,
-        const ParamArray&       params);
-
-    // Return a string identifying the model of this entity.
-    virtual const char* get_model() const = 0;
-
-    // Return the order number of this stage. Stages are executed in increasing order.
-    int get_order() const;
-
-    // Execute this post-processing stage on a given frame.
-    virtual void execute(
-        Frame&                  frame,
-        const std::size_t       thread_count = 1) const = 0;
-
-  private:
-    int m_order;
+    // Apply this effect on a given image, in parallel, by scheduling a job for each tile.
+    void apply_on_tiles(
+        foundation::Image&      image,
+        const std::size_t       thread_count = 1) const;
 };
-
-
-//
-// PostProcessingStage class implementation.
-//
-
-inline int PostProcessingStage::get_order() const
-{
-    return m_order;
-}
 
 }   // namespace renderer

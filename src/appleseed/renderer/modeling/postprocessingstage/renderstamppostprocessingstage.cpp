@@ -58,6 +58,7 @@
 #include "foundation/platform/_endoiioheaders.h"
 
 // Standard headers.
+#include <cstddef>
 #include <memory>
 #include <string>
 
@@ -113,7 +114,7 @@ namespace
             return true;
         }
 
-        void execute(Frame& frame) const override
+        void execute(Frame& frame, const std::size_t thread_count) const override
         {
             // Render stamp settings.
             const auto Font = TextRenderer::Font::UbuntuL;

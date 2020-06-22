@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2020 Tiago Chaves, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -26,62 +26,53 @@
 // THE SOFTWARE.
 //
 
-#pragma once
+// Interface header.
+#include "imageeffectapplier.h"
 
 // appleseed.renderer headers.
-#include "renderer/modeling/entity/connectableentity.h"
+#include "renderer/global/globallogger.h"
+#include "renderer/modeling/postprocessingstage/effect/imageeffectjob.h"
+#include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/uid.h"
+#include "foundation/image/image.h"
+#include "foundation/utility/job/ijob.h"
+#include "foundation/utility/job/jobmanager.h"
+#include "foundation/utility/job/jobqueue.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
-
-// Standard headers.
-#include <cstddef>
-
-// Forward declarations.
-namespace renderer  { class Frame; }
-namespace renderer  { class ParamArray; }
+using namespace foundation;
 
 namespace renderer
 {
 
-class APPLESEED_DLLSYMBOL PostProcessingStage
-  : public ConnectableEntity
-{
-  public:
-    // Return the unique ID of this class of entities.
-    static foundation::UniqueID get_class_uid();
-
-    // Constructor.
-    PostProcessingStage(
-        const char*             name,
-        const ParamArray&       params);
-
-    // Return a string identifying the model of this entity.
-    virtual const char* get_model() const = 0;
-
-    // Return the order number of this stage. Stages are executed in increasing order.
-    int get_order() const;
-
-    // Execute this post-processing stage on a given frame.
-    virtual void execute(
-        Frame&                  frame,
-        const std::size_t       thread_count = 1) const = 0;
-
-  private:
-    int m_order;
-};
-
-
 //
-// PostProcessingStage class implementation.
+// ImageEffectApplier class implementation.
 //
 
-inline int PostProcessingStage::get_order() const
+void ImageEffectApplier::apply_on_tiles(
+    Image&              image,
+    const std::size_t   thread_count) const
 {
-    return m_order;
+    // Create effect applier jobs.
+    const ImageEffectJobFactory effect_job_factory;
+    const ImageEffectJobFactory::EffectJobVector effect_jobs =
+        effect_job_factory.create(
+            image,
+            *this);
+
+    // Schedule effect applier jobs.
+    JobQueue job_queue;
+    for (ImageEffectJob* const effect_job : effect_jobs)
+        job_queue.schedule(effect_job);
+
+    // Create a job manager and wait until jobs have effectively stopped.
+    JobManager job_manager(
+        global_logger(),
+        job_queue,
+        thread_count);
+
+    job_manager.start();
+    job_queue.wait_until_completion();
 }
 
 }   // namespace renderer

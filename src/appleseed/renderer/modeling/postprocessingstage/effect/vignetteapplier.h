@@ -5,7 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2020 Tiago Chaves, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,59 +29,61 @@
 #pragma once
 
 // appleseed.renderer headers.
-#include "renderer/modeling/entity/connectableentity.h"
+#include "renderer/modeling/postprocessingstage/effect/imageeffectapplier.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/uid.h"
-
-// appleseed.main headers.
-#include "main/dllsymbol.h"
+#include "foundation/math/vector.h"
 
 // Standard headers.
 #include <cstddef>
 
 // Forward declarations.
-namespace renderer  { class Frame; }
-namespace renderer  { class ParamArray; }
+namespace foundation    { class Image; }
 
 namespace renderer
 {
 
-class APPLESEED_DLLSYMBOL PostProcessingStage
-  : public ConnectableEntity
+//
+// Vignette-specific parameters.
+//
+
+struct VignetteParams
 {
-  public:
-    // Return the unique ID of this class of entities.
-    static foundation::UniqueID get_class_uid();
+    // Context.
+    float       frame_width;
+    float       frame_height;
 
-    // Constructor.
-    PostProcessingStage(
-        const char*             name,
-        const ParamArray&       params);
-
-    // Return a string identifying the model of this entity.
-    virtual const char* get_model() const = 0;
-
-    // Return the order number of this stage. Stages are executed in increasing order.
-    int get_order() const;
-
-    // Execute this post-processing stage on a given frame.
-    virtual void execute(
-        Frame&                  frame,
-        const std::size_t       thread_count = 1) const = 0;
-
-  private:
-    int m_order;
+    // Settings.
+    float       intensity;
+    float       anisotropy; // 0 = no anisotropy (i.e. perfectly rounded)
+                            // 1 = full anisotropy (i.e. respect the frame's aspect ratio)
 };
 
 
 //
-// PostProcessingStage class implementation.
+// Vignette post-processing effect applier.
 //
 
-inline int PostProcessingStage::get_order() const
+class VignetteApplier
+  : public ImageEffectApplier
 {
-    return m_order;
-}
+  public:
+    // Constructor.
+    explicit VignetteApplier(const VignetteParams& params);
+
+    // Delete this instance.
+    void release() override;
+
+    // Apply the vignette effect to a given tile.
+    void apply(
+        foundation::Image&      image,
+        const std::size_t       tile_x,
+        const std::size_t       tile_y) const override;
+
+  private:
+    const float                     m_intensity;
+    const foundation::Vector2f      m_resolution;
+    const foundation::Vector2f      m_vignette_resolution;
+};
 
 }   // namespace renderer
