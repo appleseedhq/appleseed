@@ -34,9 +34,8 @@
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/postprocessingstage/effect/additiveblendapplier.h"
 #include "renderer/modeling/postprocessingstage/effect/brightpassapplier.h"
-#include "renderer/modeling/postprocessingstage/effect/downsampleapplier.h"
+#include "renderer/modeling/postprocessingstage/effect/resampleapplier.h"
 #include "renderer/modeling/postprocessingstage/effect/downsamplex2applier.h"
-#include "renderer/modeling/postprocessingstage/effect/upsampleapplier.h"
 #include "renderer/modeling/postprocessingstage/effect/upsamplex2applier.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
 #include "renderer/utility/rgbcolorsampling.h"
@@ -236,7 +235,7 @@ namespace
 
             for (std::size_t level = 1; level < iterations; ++level)
             {
-                DownsampleApplier downsample({ blur_pyramid_down[level - 1] });
+                ResampleApplier downsample({ blur_pyramid_down[level - 1], SamplingMode::DOWN });
                 downsample.apply_on_tiles(blur_pyramid_down[level], thread_count);
             }
 
@@ -248,7 +247,7 @@ namespace
 
             for (std::size_t level_plus_one = iterations - 1; level_plus_one > 0; --level_plus_one)
             {
-                UpsampleApplier upsample({ blur_pyramid_up[level_plus_one] });
+                ResampleApplier upsample({ blur_pyramid_up[level_plus_one], SamplingMode::UP });
                 upsample.apply_on_tiles(blur_pyramid_up[level_plus_one - 1], thread_count);
 
                 // Blend each upsampled buffer with the downsample buffer of the same level.
@@ -289,12 +288,12 @@ namespace
         {
             // Downsample the prefiltered image.
             Image blur_target(blur_target_props);
-            DownsampleApplier downsample({ prefiltered_image });
+            ResampleApplier downsample({ prefiltered_image, SamplingMode::DOWN });
             downsample.apply_on_tiles(blur_target, thread_count);
 
             // Upsample and blend it with the original image.
             Image bloom_target(prefiltered_image.properties());
-            UpsampleApplier upsample({ blur_target });
+            ResampleApplier upsample({ blur_target, SamplingMode::UP });
             upsample.apply_on_tiles(bloom_target, thread_count);
 
             AdditiveBlendApplier additive_blend(
