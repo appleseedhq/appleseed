@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/utility/rgbcolorsampling.h"
-#include "renderer/modeling/postprocessingstage/Instrumentor.h" // FIXME remove
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"

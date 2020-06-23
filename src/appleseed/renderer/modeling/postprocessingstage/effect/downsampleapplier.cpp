@@ -31,7 +31,6 @@
 
 // appleseed.renderer headers.
 #include "renderer/utility/rgbcolorsampling.h"
-#include "renderer/modeling/postprocessingstage/Instrumentor.h" // FIXME remove
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
@@ -65,7 +64,6 @@ DownsampleApplier::DownsampleApplier(
           params.src_image.properties().m_channel_count,
           params.src_image.properties().m_pixel_format))
 {
-PROFILE_FUNCTION();
     const foundation::Image& src_image = params.src_image;
     const std::size_t src_width_with_border = m_src_width + 2 * m_border_size;
     const std::size_t src_height_with_border = m_src_height + 2 * m_border_size;
@@ -86,9 +84,8 @@ PROFILE_FUNCTION();
     }
 
     // Fill in the borders by copying the color of the closest pixel (i.e. texture clamping).
-{ PROFILE_SCOPE("Fill borders");
-    // Copy corners.
     {
+        // Copy corners.
         Color3f top_left, top_right, bottom_left, bottom_right;
         src_image.get_pixel(0, m_src_height - 1, top_left);
         src_image.get_pixel(m_src_width - 1, m_src_height - 1, top_right);
@@ -122,7 +119,6 @@ PROFILE_FUNCTION();
         m_src_image_with_border.set_pixel(x, 0, bottom);
         m_src_image_with_border.set_pixel(x, src_height_with_border - 1, top);
     }
-}
 }
 
 void DownsampleApplier::release()
@@ -160,7 +156,16 @@ void DownsampleApplier::apply(
             const float fy = (y + tile_offset.y) * scaling_factor.y + m_border_size;
             const float fx = (x + tile_offset.x) * scaling_factor.x + m_border_size;
 
-            // Dual-filtering based downsample.
+            //
+            // Downsampling filter based on Marius Bjørge's "Dual filtering" method.
+            //
+            // Reference:
+            //
+            //   SIGGRAPH2015 Presentation "Bandwidth-Efficient Rendering"
+            //   https://community.arm.com/cfs-file/__key/communityserver-blogs-components-weblogfiles/00-00-00-20-66/siggraph2015_2D00_mmg_2D00_marius_2D00_notes.pdf
+            //
+            //
+
             const Color3f result = (
                 4.0f * blerp(m_src_image_with_border, fx, fy)
                 + blerp(m_src_image_with_border, fx - 1.0f, fy + 1.0f)

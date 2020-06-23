@@ -39,7 +39,6 @@
 #include "renderer/modeling/postprocessingstage/effect/upsampleapplier.h"
 #include "renderer/modeling/postprocessingstage/effect/upsamplex2applier.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
-#include "renderer/modeling/postprocessingstage/Instrumentor.h" // FIXME remove
 #include "renderer/utility/rgbcolorsampling.h"
 
 // appleseed.foundation headers.
@@ -133,10 +132,10 @@ namespace
             const CanvasProperties&     max_level_props,
             const std::size_t           max_tile_size)
         {
-PROFILE_FUNCTION();
             blur_pyramid_down.reserve(level_count);
             blur_pyramid_up.reserve(level_count);
 
+            // Note that lower levels have larger images.
             std::size_t level_width = max_level_props.m_canvas_width;
             std::size_t level_height = max_level_props.m_canvas_height;
 
@@ -162,7 +161,6 @@ PROFILE_FUNCTION();
 
         void execute(Frame& frame, const std::size_t thread_count) const override
         {
-PROFILE_FUNCTION();
             if (m_iterations == 0 || m_intensity == 0.0f && !m_debug_blur)
                 return;
 
@@ -179,8 +177,7 @@ PROFILE_FUNCTION();
 
             // Copy the pixel format, but ignore the alpha channel.
             assert(props.m_channel_count == 4);
-            const std::size_t max_tile_size = 32; // NOTE empirical value (similar to 16 and 64)
-
+            const std::size_t max_tile_size = 32;
             const CanvasProperties blur_props(
                 max_pyramid_width,
                 max_pyramid_height,
@@ -191,24 +188,22 @@ PROFILE_FUNCTION();
 
             // Compute how many downsampling iterations we can do before a buffer has a side smaller than 2 pixels.
             const float max_iterations = std::log2(min_pyramid_dimension / 2.0f);
-            const std::size_t iterations = clamp<std::size_t>(m_iterations, 1, static_cast<int>(max_iterations));
+            const std::size_t iterations = clamp<std::size_t>(m_iterations, 1, static_cast<std::size_t>(max_iterations));
 
             //
             // Prefilter pass.
             //
 
-            // Copy the image but ignore its alpha channel.
+            // Copy the original image but ignore its alpha channel.
             const std::size_t shuffle_table[4] = { 0, 1, 2, Pixel::SkipChannel };
             Image prefiltered_image(image, props.m_pixel_format, shuffle_table);
 
-{ PROFILE_SCOPE("Prefilter pass");
             // Filter out dark pixels.
             BrightPassApplier bright_pass({ m_threshold, m_soft_threshold });
             bright_pass.apply_on_tiles(prefiltered_image, thread_count);
-}
 
             //
-            // Initialize the blurring pyramids.
+            // Create and initialize the blur buffer pyramids.
             //
 
             if (iterations == 1)
@@ -218,12 +213,11 @@ PROFILE_FUNCTION();
                 // blur_pyramid_up images (which greatly reduces the bloom stage time).
                 //
                 // However, with a single iteration this leads to blocky artifacts,
-                // so we use the more computationally intensive resampling method here.
+                // so we use the more computationally expensive resampling method here.
                 execute_single_iteration(image, prefiltered_image, blur_props, thread_count);
                 return;
             }
 
-            // Create blur buffer pyramids (note that lower levels have larger images).
             std::vector<Image> blur_pyramid_down;
             std::vector<Image> blur_pyramid_up;
             init_blur_pyramids(
@@ -237,54 +231,40 @@ PROFILE_FUNCTION();
             // Downsample pass.
             //
 
-{ PROFILE_SCOPE("Downsample pass");
             DownsampleX2Applier downsample({ prefiltered_image });
             downsample.apply_on_tiles(blur_pyramid_down[0], thread_count);
 
             for (std::size_t level = 1; level < iterations; ++level)
             {
-const std::string _scope_name = "Level #" + std::to_string(level);
-PROFILE_SCOPE(_scope_name.c_str());
                 DownsampleApplier downsample({ blur_pyramid_down[level - 1] });
                 downsample.apply_on_tiles(blur_pyramid_down[level], thread_count);
             }
-}
 
             //
             // Upsample and blend pass.
             //
 
-{ PROFILE_SCOPE("Upsample and blend pass");
-            blur_pyramid_up[iterations - 1].copy_from(blur_pyramid_down[iterations - 1]); // TODO optimize away
+            blur_pyramid_up[iterations - 1].copy_from(blur_pyramid_down[iterations - 1]);
 
             for (std::size_t level_plus_one = iterations - 1; level_plus_one > 0; --level_plus_one)
             {
-                const std::size_t level = level_plus_one - 1;
-const std::string _scope_name = "Level #" + std::to_string(level);
-PROFILE_SCOPE(_scope_name.c_str());
+                UpsampleApplier upsample({ blur_pyramid_up[level_plus_one] });
+                upsample.apply_on_tiles(blur_pyramid_up[level_plus_one - 1], thread_count);
 
-                UpsampleApplier upsample({ blur_pyramid_up[level + 1] });
-                upsample.apply_on_tiles(blur_pyramid_up[level], thread_count);
-
-{ PROFILE_SCOPE("Blending");
                 // Blend each upsampled buffer with the downsample buffer of the same level.
-                AdditiveBlendApplier additive_blend({ blur_pyramid_down[level] });
-                additive_blend.apply_on_tiles(blur_pyramid_up[level], thread_count);
-}
+                AdditiveBlendApplier additive_blend({ blur_pyramid_down[level_plus_one - 1] });
+                additive_blend.apply_on_tiles(blur_pyramid_up[level_plus_one - 1], thread_count);
             }
-}
 
             //
             // Resolve pass.
             //
 
-{ PROFILE_SCOPE("Resolve pass");
             Image bloom_target(prefiltered_image.properties());
 
             UpsampleX2Applier upsample({ blur_pyramid_up[0] });
             upsample.apply_on_tiles(bloom_target, thread_count);
 
-{ PROFILE_SCOPE("Blending (final)");
             AdditiveBlendApplier additive_blend(
                 {
                     bloom_target,
@@ -292,8 +272,6 @@ PROFILE_SCOPE(_scope_name.c_str());
                     m_debug_blur ? 0.0f : 1.0f
                 });
             additive_blend.apply_on_tiles(image, thread_count);
-}
-}
         }
 
       private:
@@ -309,7 +287,6 @@ PROFILE_SCOPE(_scope_name.c_str());
             const CanvasProperties&     blur_target_props,
             const std::size_t           thread_count) const
         {
-PROFILE_FUNCTION();
             // Downsample the prefiltered image.
             Image blur_target(blur_target_props);
             DownsampleApplier downsample({ prefiltered_image });

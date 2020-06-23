@@ -45,7 +45,7 @@ namespace renderer
 
 
 //
-// Image color blending parameters.
+// Weighted additive color blending parameters.
 //
 
 struct AdditiveBlendParams
@@ -60,7 +60,7 @@ struct AdditiveBlendParams
 
 
 //
-// Additive image color blending applier.
+// Image color blending applier.
 //
 
 class AdditiveBlendApplier
