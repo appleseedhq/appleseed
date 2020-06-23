@@ -34,10 +34,9 @@
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/postprocessingstage/effect/additiveblendapplier.h"
 #include "renderer/modeling/postprocessingstage/effect/brightpassapplier.h"
-#include "renderer/modeling/postprocessingstage/effect/resampleapplier.h"
 #include "renderer/modeling/postprocessingstage/effect/downsampleapplier.h"
-#include "renderer/modeling/postprocessingstage/effect/upsampleapplier.h"
 #include "renderer/modeling/postprocessingstage/effect/downsamplex2applier.h"
+#include "renderer/modeling/postprocessingstage/effect/upsampleapplier.h"
 #include "renderer/modeling/postprocessingstage/effect/upsamplex2applier.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
 #include "renderer/modeling/postprocessingstage/Instrumentor.h" // FIXME remove
