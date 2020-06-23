@@ -37,7 +37,6 @@
 #include "renderer/modeling/postprocessingstage/effect/resampleapplier.h"
 #include "renderer/modeling/postprocessingstage/effect/resamplex2applier.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
-#include "renderer/utility/rgbcolorsampling.h"
 
 // appleseed.foundation headers.
 #include "foundation/containers/dictionary.h"

@@ -29,9 +29,6 @@
 // Interface header.
 #include "resamplex2applier.h"
 
-// appleseed.renderer headers.
-#include "renderer/utility/rgbcolorsampling.h"
-
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
@@ -82,49 +79,60 @@ void ResampleX2Applier::apply(
     const std::size_t dst_width = image.properties().m_canvas_width;
     const std::size_t dst_height = image.properties().m_canvas_height;
 
-    if (m_mode == SamplingX2Mode::DOUBLE)
+    const Vector2f scaling_factor(
+        static_cast<float>(m_src_width - 1) / (dst_width - 1),
+        static_cast<float>(m_src_height - 1) / (dst_height - 1));
+
+    assert(
+        m_mode == SamplingX2Mode::DOUBLE
+        ? dst_width / 2 == m_src_width && dst_height / 2 == m_src_height    // scale x2 with bilinear filtering
+        : dst_width == m_src_width / 2 && dst_height == m_src_height / 2);  // scale x1/2 with box filtering
+
+    for (std::size_t y = 0; y < tile_height; ++y)
     {
-        assert(dst_width / 2 == m_src_width);
-        assert(dst_height / 2 == m_src_height);
-
-        // Scale x2 with bilinear filtering.
-        for (std::size_t y = 0; y < tile_height; ++y)
+        for (std::size_t x = 0; x < tile_width; ++x)
         {
-            for (std::size_t x = 0; x < tile_width; ++x)
-            {
-                // Map the pixel coordinate from image to src_image.
-                const float fy = static_cast<float>(y + tile_offset.y) / (dst_height - 1) * (m_src_height - 1);
-                const float fx = static_cast<float>(x + tile_offset.x) / (dst_width - 1) * (m_src_width - 1);
+            // Map the pixel coordinate from image to src_image.
+            const float fy = (y + tile_offset.y) * scaling_factor.y;
+            const float fx = (x + tile_offset.x) * scaling_factor.x;
 
-                const Color3f result = blerp(m_src_image, fx, fy);
-                tile.set_pixel(x, y, result);
-            }
-        }
-    }
-    else // SamplingX2Mode::HALVE
-    {
-        assert(dst_width == m_src_width / 2);
-        assert(dst_height == m_src_height / 2);
+            const std::size_t x0 = truncate<std::size_t>(fx);
+            const std::size_t y0 = truncate<std::size_t>(fy);
+            const std::size_t x1 = std::min(x0 + 1, m_src_width - 1);
+            const std::size_t y1 = std::min(y0 + 1, m_src_height - 1);
 
-        // Scale x1/2 with box filtering.
-        for (std::size_t y = 0; y < tile_height; ++y)
-        {
-            for (std::size_t x = 0; x < tile_width; ++x)
-            {
-                const std::size_t y0 = 2 * (y + tile_offset.y);
-                const std::size_t y1 = y0 + 1;
-                const std::size_t x0 = 2 * (x + tile_offset.x);
-                const std::size_t x1 = x0 + 1;
+            // Retrieve the four surrounding pixels.
+            Color3f c00, c10, c01, c11;
+            m_src_image.get_pixel(x0, y0, c00);
+            m_src_image.get_pixel(x1, y0, c10);
+            m_src_image.get_pixel(x0, y1, c01);
+            m_src_image.get_pixel(x1, y1, c11);
 
-                Color3f c00, c01, c10, c11;
-                m_src_image.get_pixel(x0, y0, c00);
-                m_src_image.get_pixel(x1, y0, c10);
-                m_src_image.get_pixel(x0, y1, c01);
-                m_src_image.get_pixel(x1, y1, c11);
+            const Color3f result = (
+                [&]() -> const Color3f {
+                    if (m_mode == SamplingX2Mode::DOUBLE)
+                    {
+                        // Compute bilinear interpolation weights.
+                        const float wx1 = fx - x0;
+                        const float wy1 = fy - y0;
+                        const float wx0 = 1.0f - wx1;
+                        const float wy0 = 1.0f - wy1;
 
-                const Color3f result = 0.25f * (c00 + c01 + c10 + c11);
-                tile.set_pixel(x, y, result);
-            }
+                        // Return the weighted sum.
+                        return
+                            c00 * wx0 * wy0 +
+                            c10 * wx1 * wy0 +
+                            c01 * wx0 * wy1 +
+                            c11 * wx1 * wy1;
+                    }
+                    else // m_mode == SamplingX2Mode::HALVE
+                    {
+                        // Return the average sum.
+                        return 0.25f * (c00 + c10 + c01 + c11);
+                    }
+                })();
+
+            tile.set_pixel(x, y, result);
         }
     }
 }

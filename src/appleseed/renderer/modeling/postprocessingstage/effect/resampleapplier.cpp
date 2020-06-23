@@ -29,9 +29,6 @@
 // Interface header.
 #include "resampleapplier.h"
 
-// appleseed.renderer headers.
-#include "renderer/utility/rgbcolorsampling.h"
-
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/color.h"
@@ -132,6 +129,39 @@ void ResampleApplier::release()
     delete this;
 }
 
+static const Color3f blerp(
+    const Image&    image,
+    const float     fx,
+    const float     fy)
+{
+    const std::size_t x0 = truncate<std::size_t>(fx);
+    const std::size_t y0 = truncate<std::size_t>(fy);
+    const std::size_t x1 = std::min(x0 + 1, image.properties().m_canvas_width - 1);
+    const std::size_t y1 = std::min(y0 + 1, image.properties().m_canvas_height - 1);
+
+    // Retrieve the four surrounding pixels.
+    Color3f c00, c10, c01, c11;
+    image.get_pixel(x0, y0, c00);
+    image.get_pixel(x1, y0, c10);
+    image.get_pixel(x0, y1, c01);
+    image.get_pixel(x1, y1, c11);
+
+    // Compute weights.
+    const float wx1 = fx - x0;
+    const float wy1 = fy - y0;
+    const float wx0 = 1.0f - wx1;
+    const float wy0 = 1.0f - wy1;
+
+    // Return the bilinear interpolation of colors.
+    const Color3f result =
+        c00 * wx0 * wy0 +
+        c10 * wx1 * wy0 +
+        c01 * wx0 * wy1 +
+        c11 * wx1 * wy1;
+
+    return result;
+}
+
 void ResampleApplier::apply(
     Image&              image,
     const std::size_t   tile_x,
@@ -185,7 +215,7 @@ void ResampleApplier::apply(
                                 blerp(m_src_image_with_border, fx - 0.5f, fy + 0.5f) +
                                 blerp(m_src_image_with_border, fx + 0.5f, fy - 0.5f) +
                                 blerp(m_src_image_with_border, fx + 0.5f, fy + 0.5f))) / 12.0f;
-                    else // SamplingMode::DOWN
+                    else // m_mode == SamplingMode::DOWN
                         return (
                             4.0f * blerp(m_src_image_with_border, fx, fy) +
                             blerp(m_src_image_with_border, fx - 1.0f, fy + 1.0f) +
