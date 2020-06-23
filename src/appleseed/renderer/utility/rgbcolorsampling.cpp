@@ -83,6 +83,35 @@ Color3f blerp(
     return blerp(image, x0, y0, x1, y1, fx, fy);
 }
 
+Color3f blerp_safe(
+    const Image&    image,
+    const float     fx,
+    const float     fy)
+{
+    const std::size_t width = image.properties().m_canvas_width;
+    const std::size_t height = image.properties().m_canvas_height;
+
+    const std::size_t x0 = truncate<std::size_t>(clamp(fx, 0.0f, width - 1.0f));
+    const std::size_t y0 = truncate<std::size_t>(clamp(fy, 0.0f, height - 1.0f));
+    const std::size_t x1 = truncate<std::size_t>(clamp(fx + 1, 0.0f, width - 1.0f));
+    const std::size_t y1 = truncate<std::size_t>(clamp(fy + 1, 0.0f, height - 1.0f));
+
+    return blerp(image, x0, y0, x1, y1, fx, fy);
+}
+
+Color3f blerp_unsafe(
+    const Image&    image,
+    const float     fx,
+    const float     fy)
+{
+    const std::size_t x0 = truncate<std::size_t>(fx);
+    const std::size_t y0 = truncate<std::size_t>(fy);
+    const std::size_t x1 = x0 + 1;
+    const std::size_t y1 = y0 + 1;
+
+    return blerp(image, x0, y0, x1, y1, fx, fy);
+}
+
 Color3f box_sample(const Image& image, const float fx, const float fy)
 {
     const std::size_t width = image.properties().m_canvas_width;

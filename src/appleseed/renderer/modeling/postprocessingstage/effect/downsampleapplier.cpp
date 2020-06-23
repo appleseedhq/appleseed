@@ -148,17 +148,17 @@ void DownsampleApplier::apply(
     const std::size_t dst_width = image.properties().m_canvas_width;
     const std::size_t dst_height = image.properties().m_canvas_height;
 
+    const Vector2f scaling_factor(
+        static_cast<float>(m_src_width - 1) / (dst_width - 1),
+        static_cast<float>(m_src_height - 1) / (dst_height - 1));
+
     for (std::size_t y = 0; y < tile_height; ++y)
     {
         for (std::size_t x = 0; x < tile_width; ++x)
         {
             // Map the pixel coordinate from image to src_image, then shift it by m_border_size.
-            const float fx =
-                static_cast<float>(x + tile_offset.x) / (dst_width - 1) * (m_src_width - 1)
-                + m_border_size;
-            const float fy =
-                static_cast<float>(y + tile_offset.y) / (dst_height - 1) * (m_src_height - 1)
-                + m_border_size;
+            const float fy = (y + tile_offset.y) * scaling_factor.y + m_border_size;
+            const float fx = (x + tile_offset.x) * scaling_factor.x + m_border_size;
 
             // Dual-filtering based downsample.
             const Color3f result = (

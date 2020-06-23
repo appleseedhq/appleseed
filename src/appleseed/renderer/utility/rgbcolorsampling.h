@@ -55,6 +55,16 @@ foundation::Color3f blerp(
     const float                 fx,
     const float                 fy);
 
+foundation::Color3f blerp_safe(
+    const foundation::Image&    image,
+    const float                 fx,
+    const float                 fy);
+
+foundation::Color3f blerp_unsafe(
+    const foundation::Image&    image,
+    const float                 fx,
+    const float                 fy);
+
 // Returns the weighted average of the four pixels closest to the image coordinate (fx, fy).
 // Note: assumes fx and fy are valid coordinates (i.e. they are inside the image boundaries).
 foundation::Color3f box_sample(
