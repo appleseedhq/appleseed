@@ -27,7 +27,7 @@
 //
 
 // Interface header.
-#include "upsamplex2applier.h"
+#include "resamplex2applier.h"
 
 // appleseed.renderer headers.
 #include "renderer/utility/rgbcolorsampling.h"
@@ -47,23 +47,24 @@ namespace renderer
 {
 
 //
-// UpsampleX2Applier class implementation.
+// ResampleX2Applier class implementation.
 //
 
-UpsampleX2Applier::UpsampleX2Applier(
-    const UpsampleX2Params& params)
-  : m_src_width(params.src_image.properties().m_canvas_width)
+ResampleX2Applier::ResampleX2Applier(
+    const ResampleX2Params& params)
+  : m_mode(params.mode)
+  , m_src_width(params.src_image.properties().m_canvas_width)
   , m_src_height(params.src_image.properties().m_canvas_height)
   , m_src_image(params.src_image)
 {
 }
 
-void UpsampleX2Applier::release()
+void ResampleX2Applier::release()
 {
     delete this;
 }
 
-void UpsampleX2Applier::apply(
+void ResampleX2Applier::apply(
     Image&              image,
     const std::size_t   tile_x,
     const std::size_t   tile_y) const
@@ -81,20 +82,49 @@ void UpsampleX2Applier::apply(
     const std::size_t dst_width = image.properties().m_canvas_width;
     const std::size_t dst_height = image.properties().m_canvas_height;
 
-    // Scale x2 with bilinear filtering.
-    assert(dst_width / 2 == m_src_width);
-    assert(dst_height / 2 == m_src_height);
-
-    for (std::size_t y = 0; y < tile_height; ++y)
+    if (m_mode == SamplingX2Mode::DOUBLE)
     {
-        for (std::size_t x = 0; x < tile_width; ++x)
-        {
-            // Map the pixel coordinate from image to src_image.
-            const float fy = static_cast<float>(y + tile_offset.y) / (dst_height - 1) * (m_src_height - 1);
-            const float fx = static_cast<float>(x + tile_offset.x) / (dst_width - 1) * (m_src_width - 1);
+        assert(dst_width / 2 == m_src_width);
+        assert(dst_height / 2 == m_src_height);
 
-            const Color3f result = blerp(m_src_image, fx, fy);
-            tile.set_pixel(x, y, result);
+        // Scale x2 with bilinear filtering.
+        for (std::size_t y = 0; y < tile_height; ++y)
+        {
+            for (std::size_t x = 0; x < tile_width; ++x)
+            {
+                // Map the pixel coordinate from image to src_image.
+                const float fy = static_cast<float>(y + tile_offset.y) / (dst_height - 1) * (m_src_height - 1);
+                const float fx = static_cast<float>(x + tile_offset.x) / (dst_width - 1) * (m_src_width - 1);
+
+                const Color3f result = blerp(m_src_image, fx, fy);
+                tile.set_pixel(x, y, result);
+            }
+        }
+    }
+    else // SamplingX2Mode::HALVE
+    {
+        assert(dst_width == m_src_width / 2);
+        assert(dst_height == m_src_height / 2);
+
+        // Scale x1/2 with box filtering.
+        for (std::size_t y = 0; y < tile_height; ++y)
+        {
+            for (std::size_t x = 0; x < tile_width; ++x)
+            {
+                const std::size_t y0 = 2 * (y + tile_offset.y);
+                const std::size_t y1 = y0 + 1;
+                const std::size_t x0 = 2 * (x + tile_offset.x);
+                const std::size_t x1 = x0 + 1;
+
+                Color3f c00, c01, c10, c11;
+                m_src_image.get_pixel(x0, y0, c00);
+                m_src_image.get_pixel(x1, y0, c10);
+                m_src_image.get_pixel(x0, y1, c01);
+                m_src_image.get_pixel(x1, y1, c11);
+
+                const Color3f result = 0.25f * (c00 + c01 + c10 + c11);
+                tile.set_pixel(x, y, result);
+            }
         }
     }
 }

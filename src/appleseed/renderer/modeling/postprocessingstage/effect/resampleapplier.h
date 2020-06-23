@@ -82,11 +82,11 @@ class ResampleApplier
         const std::size_t       tile_y) const override;
 
   private:
-    const SamplingMode      m_mode;
-    const std::size_t       m_src_width;
-    const std::size_t       m_src_height;
-    const std::size_t       m_border_size;
-    foundation::Image       m_src_image_with_border;
+    const SamplingMode          m_mode;
+    const std::size_t           m_src_width;
+    const std::size_t           m_src_height;
+    const std::size_t           m_border_size;
+    foundation::Image           m_src_image_with_border;
 };
 
 }   // namespace renderer

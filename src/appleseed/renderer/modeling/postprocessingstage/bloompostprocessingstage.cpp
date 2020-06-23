@@ -35,8 +35,7 @@
 #include "renderer/modeling/postprocessingstage/effect/additiveblendapplier.h"
 #include "renderer/modeling/postprocessingstage/effect/brightpassapplier.h"
 #include "renderer/modeling/postprocessingstage/effect/resampleapplier.h"
-#include "renderer/modeling/postprocessingstage/effect/downsamplex2applier.h"
-#include "renderer/modeling/postprocessingstage/effect/upsamplex2applier.h"
+#include "renderer/modeling/postprocessingstage/effect/resamplex2applier.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
 #include "renderer/utility/rgbcolorsampling.h"
 
@@ -230,7 +229,7 @@ namespace
             // Downsample pass.
             //
 
-            DownsampleX2Applier downsample({ prefiltered_image });
+            ResampleX2Applier downsample({ prefiltered_image, SamplingX2Mode::HALVE });
             downsample.apply_on_tiles(blur_pyramid_down[0], thread_count);
 
             for (std::size_t level = 1; level < iterations; ++level)
@@ -261,7 +260,7 @@ namespace
 
             Image bloom_target(prefiltered_image.properties());
 
-            UpsampleX2Applier upsample({ blur_pyramid_up[0] });
+            ResampleX2Applier upsample({ blur_pyramid_up[0], SamplingX2Mode::DOUBLE });
             upsample.apply_on_tiles(bloom_target, thread_count);
 
             AdditiveBlendApplier additive_blend(

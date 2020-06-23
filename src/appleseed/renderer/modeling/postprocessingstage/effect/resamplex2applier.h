@@ -46,40 +46,47 @@ namespace renderer
 {
 
 //
-// Image downsampling parameters.
+// Image resampling x2 parameters.
 //
 
-struct DownsampleX2Params
+typedef enum { HALVE, DOUBLE } SamplingX2Mode;
+
+struct ResampleX2Params
 {
-    // Context
+    // Context.
     const foundation::Image&    src_image;
+
+    // Settings.
+    SamplingX2Mode              mode;
 };
 
 
 //
-// Image downsampling applier.
+// Image resampling x2 applier.
 //
 
-class DownsampleX2Applier
+class ResampleX2Applier
   : public ImageEffectApplier
 {
   public:
     // Constructor.
-    explicit DownsampleX2Applier(const DownsampleX2Params& params);
+    explicit ResampleX2Applier(const ResampleX2Params& params);
 
     // Delete this instance.
     void release() override;
 
-    // Fill the given image tile by downsampling from src_image pixels.
+    // Fill the given image tile by sampling from src_image pixels.
+    // Note: its dimensions should be either half or double the size of src_image's.
     void apply(
         foundation::Image&      image,
         const std::size_t       tile_x,
         const std::size_t       tile_y) const override;
 
   private:
-    const std::size_t               m_src_width;
-    const std::size_t               m_src_height;
-    const foundation::Image&        m_src_image;
+    const SamplingX2Mode        m_mode;
+    const std::size_t           m_src_width;
+    const std::size_t           m_src_height;
+    const foundation::Image&    m_src_image;
 };
 
 }   // namespace renderer

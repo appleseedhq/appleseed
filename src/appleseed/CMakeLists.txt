@@ -2036,6 +2036,8 @@ set (renderer_modeling_postprocessingstage_sources
     renderer/modeling/postprocessingstage/effect/upsampleapplier.h
     renderer/modeling/postprocessingstage/effect/upsamplex2applier.cpp
     renderer/modeling/postprocessingstage/effect/upsamplex2applier.h
+    renderer/modeling/postprocessingstage/effect/resamplex2applier.cpp
+    renderer/modeling/postprocessingstage/effect/resamplex2applier.h
     renderer/modeling/postprocessingstage/effect/vignetteapplier.cpp
     renderer/modeling/postprocessingstage/effect/vignetteapplier.h
 )
