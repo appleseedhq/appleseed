@@ -172,8 +172,10 @@ void ResampleApplier::apply(
             //
 
             const Color3f result = (
-                [&]() -> const Color3f {
+                [&]() -> const Color3f
+                {
                     if (m_mode == SamplingMode::UP)
+                    {
                         return (
                             blerp(m_src_image_with_border, fx - 1.0f, fy) +
                             blerp(m_src_image_with_border, fx + 1.0f, fy) +
@@ -183,14 +185,19 @@ void ResampleApplier::apply(
                                 blerp(m_src_image_with_border, fx - 0.5f, fy - 0.5f) +
                                 blerp(m_src_image_with_border, fx - 0.5f, fy + 0.5f) +
                                 blerp(m_src_image_with_border, fx + 0.5f, fy - 0.5f) +
-                                blerp(m_src_image_with_border, fx + 0.5f, fy + 0.5f))) / 12.0f;
+                                blerp(m_src_image_with_border, fx + 0.5f, fy + 0.5f)))
+                            / 12.0f;
+                    }
                     else // m_mode == SamplingMode::DOWN
+                    {
                         return (
                             4.0f * blerp(m_src_image_with_border, fx, fy) +
                             blerp(m_src_image_with_border, fx - 1.0f, fy + 1.0f) +
                             blerp(m_src_image_with_border, fx + 1.0f, fy + 1.0f) +
                             blerp(m_src_image_with_border, fx - 1.0f, fy - 1.0f) +
-                            blerp(m_src_image_with_border, fx + 1.0f, fy - 1.0f)) / 8.0f;
+                            blerp(m_src_image_with_border, fx + 1.0f, fy - 1.0f))
+                            / 8.0f;
+                    }
                 })();
 
             tile.set_pixel(x, y, result);

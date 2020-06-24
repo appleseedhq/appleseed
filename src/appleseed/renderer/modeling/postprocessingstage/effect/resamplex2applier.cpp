@@ -49,7 +49,7 @@ namespace renderer
 
 ResampleX2Applier::ResampleX2Applier(
     const Image&            src_image,
-    const SamplingX2Mode    mode)
+    const SamplingMode      mode)
   : m_mode(mode)
   , m_src_width(src_image.properties().m_canvas_width)
   , m_src_height(src_image.properties().m_canvas_height)
@@ -85,7 +85,7 @@ void ResampleX2Applier::apply(
         static_cast<float>(m_src_height - 1) / (dst_height - 1));
 
     assert(
-        m_mode == SamplingX2Mode::DOUBLE
+        m_mode == SamplingMode::DOUBLE
         ? dst_width / 2 == m_src_width && dst_height / 2 == m_src_height    // scale x2 with bilinear filtering
         : dst_width == m_src_width / 2 && dst_height == m_src_height / 2);  // scale x1/2 with box filtering
 
@@ -110,8 +110,9 @@ void ResampleX2Applier::apply(
             m_src_image.get_pixel(x1, y1, c11);
 
             const Color3f result = (
-                [&]() -> const Color3f {
-                    if (m_mode == SamplingX2Mode::DOUBLE)
+                [&]() -> const Color3f
+                {
+                    if (m_mode == SamplingMode::DOUBLE)
                     {
                         // Compute bilinear interpolation weights.
                         const float wx1 = fx - x0;
@@ -126,7 +127,7 @@ void ResampleX2Applier::apply(
                             c01 * wx0 * wy1 +
                             c11 * wx1 * wy1;
                     }
-                    else // m_mode == SamplingX2Mode::HALVE
+                    else // m_mode == SamplingMode::HALVE
                     {
                         // Return the average sum.
                         return 0.25f * (c00 + c10 + c01 + c11);

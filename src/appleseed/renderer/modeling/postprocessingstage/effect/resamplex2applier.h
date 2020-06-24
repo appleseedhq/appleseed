@@ -50,16 +50,16 @@ namespace renderer
 // Image resampling x2 applier.
 //
 
-typedef enum { HALVE, DOUBLE } SamplingX2Mode;
-
 class ResampleX2Applier
   : public ImageEffectApplier
 {
   public:
+    typedef enum { HALVE, DOUBLE }  SamplingMode;
+
     // Constructor.
     explicit ResampleX2Applier(
         const foundation::Image&    src_image,
-        const SamplingX2Mode        mode);
+        const SamplingMode          mode);
 
     // Delete this instance.
     void release() override;
@@ -73,7 +73,7 @@ class ResampleX2Applier
 
   private:
     // Settings.
-    const SamplingX2Mode            m_mode;
+    const SamplingMode              m_mode;
 
     // Context.
     const std::size_t               m_src_width;

@@ -50,12 +50,12 @@ namespace renderer
 // Image resampling applier.
 //
 
-typedef enum { DOWN, UP } SamplingMode;
-
 class ResampleApplier
   : public ImageEffectApplier
 {
   public:
+    typedef enum { DOWN, UP }       SamplingMode;
+
     // Constructor.
     explicit ResampleApplier(
         const foundation::Image&    src_image,

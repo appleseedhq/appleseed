@@ -228,12 +228,12 @@ namespace
             // Downsample pass.
             //
 
-            ResampleX2Applier downsample(prefiltered_image, SamplingX2Mode::HALVE);
+            ResampleX2Applier downsample(prefiltered_image, ResampleX2Applier::SamplingMode::HALVE);
             downsample.apply_on_tiles(blur_pyramid_down[0], thread_count);
 
             for (std::size_t level = 1; level < iterations; ++level)
             {
-                ResampleApplier downsample(blur_pyramid_down[level - 1], SamplingMode::DOWN);
+                ResampleApplier downsample(blur_pyramid_down[level - 1], ResampleApplier::SamplingMode::DOWN);
                 downsample.apply_on_tiles(blur_pyramid_down[level], thread_count);
             }
 
@@ -245,7 +245,7 @@ namespace
 
             for (std::size_t level_plus_one = iterations - 1; level_plus_one > 0; --level_plus_one)
             {
-                ResampleApplier upsample(blur_pyramid_up[level_plus_one], SamplingMode::UP);
+                ResampleApplier upsample(blur_pyramid_up[level_plus_one], ResampleApplier::SamplingMode::UP);
                 upsample.apply_on_tiles(blur_pyramid_up[level_plus_one - 1], thread_count);
 
                 // Blend each upsampled buffer with the downsample buffer of the same level.
@@ -259,7 +259,7 @@ namespace
 
             Image bloom_target(prefiltered_image.properties());
 
-            ResampleX2Applier upsample(blur_pyramid_up[0], SamplingX2Mode::DOUBLE);
+            ResampleX2Applier upsample(blur_pyramid_up[0], ResampleX2Applier::SamplingMode::DOUBLE);
             upsample.apply_on_tiles(bloom_target, thread_count);
 
             AdditiveBlendApplier additive_blend(
@@ -284,12 +284,12 @@ namespace
         {
             // Downsample the prefiltered image.
             Image blur_target(blur_target_props);
-            ResampleApplier downsample(prefiltered_image, SamplingMode::DOWN);
+            ResampleApplier downsample(prefiltered_image, ResampleApplier::SamplingMode::DOWN);
             downsample.apply_on_tiles(blur_target, thread_count);
 
             // Upsample and blend it with the original image.
             Image bloom_target(prefiltered_image.properties());
-            ResampleApplier upsample(blur_target, SamplingMode::UP);
+            ResampleApplier upsample(blur_target, ResampleApplier::SamplingMode::UP);
             upsample.apply_on_tiles(bloom_target, thread_count);
 
             AdditiveBlendApplier additive_blend(
