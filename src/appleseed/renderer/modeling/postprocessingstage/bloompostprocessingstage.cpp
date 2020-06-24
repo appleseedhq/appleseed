@@ -45,6 +45,7 @@
 #include "foundation/image/image.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 
@@ -192,8 +193,8 @@ namespace
             {
                 RENDERER_LOG_INFO(
                     "post-processing stage \"%s\":\n"
-                    "  the frame is too small for %d iterations\n"
-                    "  using %d iterations instead",
+                    "  the frame is too small for " FMT_SIZE_T " iterations\n"
+                    "  using " FMT_SIZE_T " iterations instead",
                     get_path().c_str(),
                     m_iterations,
                     iterations);
