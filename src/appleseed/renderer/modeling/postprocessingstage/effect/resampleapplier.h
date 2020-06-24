@@ -78,7 +78,7 @@ class ResampleApplier
     const std::size_t               m_src_width;
     const std::size_t               m_src_height;
     const std::size_t               m_border_size;
-    foundation::Image               m_src_image_with_border; // FIXME make const
+    const foundation::Image         m_src_image_with_border;
 };
 
 }   // namespace renderer

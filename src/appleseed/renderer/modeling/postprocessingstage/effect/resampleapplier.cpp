@@ -55,72 +55,42 @@ ResampleApplier::ResampleApplier(
   , m_src_height(src_image.properties().m_canvas_height)
   , m_border_size(2)
   , m_src_image_with_border(
-      Image(
-          m_src_width + 2 * m_border_size,
-          m_src_height + 2 * m_border_size,
-          m_src_width + 2 * m_border_size,
-          m_src_height + 2 * m_border_size,
-          src_image.properties().m_channel_count,
-          src_image.properties().m_pixel_format))
+      [&]() -> const Image
+      {
+          Image src_image_with_border(
+              m_src_width + 2 * m_border_size,
+              m_src_height + 2 * m_border_size,
+              m_src_width + 2 * m_border_size,
+              m_src_height + 2 * m_border_size,
+              src_image.properties().m_channel_count,
+              src_image.properties().m_pixel_format);
+
+          // Copy src_image pixels into the center of src_image_with_border.
+          for (std::size_t y = 0; y < m_src_height; ++y)
+          {
+              for (std::size_t x = 0; x < m_src_width; ++x)
+              {
+                  Color3f color;
+                  src_image.get_pixel(x, y, color);
+
+                  src_image_with_border.set_pixel(
+                      x + m_border_size,
+                      y + m_border_size,
+                      color);
+              }
+          }
+
+          return src_image_with_border;
+      }())
 {
+    //
     // To avoid boundary checks when sampling, we make a copy of src_image
-    // with 2 pixels of padding on each side, filling this border by copying
-    // the color of the closest pixel to it (i.e. texture clamping).
-
-    // Copy src_image pixels into the center of m_src_image_with_border.
-    for (std::size_t y = 0; y < m_src_height; ++y)
-    {
-        for (std::size_t x = 0; x < m_src_width; ++x)
-        {
-            Color3f color;
-            src_image.get_pixel(x, y, color);
-
-            m_src_image_with_border.set_pixel(
-                x + m_border_size,
-                y + m_border_size,
-                color);
-        }
-    }
-
-    const std::size_t src_width_with_border = m_src_width + 2 * m_border_size;
-    const std::size_t src_height_with_border = m_src_height + 2 * m_border_size;
-    // FIXME missing one colum / row.
-
-    {
-        // Copy corners.
-        Color3f top_left, top_right, bottom_left, bottom_right;
-        src_image.get_pixel(0, m_src_height - 1, top_left);
-        src_image.get_pixel(m_src_width - 1, m_src_height - 1, top_right);
-        src_image.get_pixel(0, 0, bottom_left);
-        src_image.get_pixel(m_src_width - 1, 0, bottom_right);
-
-        m_src_image_with_border.set_pixel(0, src_height_with_border - 1, top_left);
-        m_src_image_with_border.set_pixel(src_width_with_border - 1, src_height_with_border - 1, top_right);
-        m_src_image_with_border.set_pixel(0, 0, bottom_left);
-        m_src_image_with_border.set_pixel(src_width_with_border - 1, 0, bottom_right);
-    }
-
-    // Copy vertical borders.
-    for (std::size_t y = 0; y < m_src_height; ++y)
-    {
-        Color3f left, right;
-        src_image.get_pixel(0, y, left);
-        src_image.get_pixel(m_src_width - 1, y, right);
-
-        m_src_image_with_border.set_pixel(0, y, left);
-        m_src_image_with_border.set_pixel(src_width_with_border - 1, y, right);
-    }
-
-    // Copy horizontal borders.
-    for (std::size_t x = 0; x < m_src_width; ++x)
-    {
-        Color3f top, bottom;
-        src_image.get_pixel(x, 0, bottom);
-        src_image.get_pixel(x, m_src_height - 1, top);
-
-        m_src_image_with_border.set_pixel(x, 0, bottom);
-        m_src_image_with_border.set_pixel(x, src_height_with_border - 1, top);
-    }
+    // with 2 pixels of padding on each side.
+    //
+    // Note: filling the border by copying the color of the closest pixel
+    // (i.e. texture clamping) leads to an unnatural light spreading effect
+    // close to the edges of the image on bloom, so we simply keep it black.
+    //
 }
 
 void ResampleApplier::release()
