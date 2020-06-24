@@ -45,48 +45,40 @@ namespace foundation    { class Image; }
 namespace renderer
 {
 
-//
-// Image resampling parameters.
-//
-
-typedef enum { DOWN, UP } SamplingMode;
-
-struct ResampleParams
-{
-    // Context.
-    const foundation::Image&    src_image;
-
-    // Settings.
-    SamplingMode                mode;
-};
-
 
 //
 // Image resampling applier.
 //
+
+typedef enum { DOWN, UP } SamplingMode;
 
 class ResampleApplier
   : public ImageEffectApplier
 {
   public:
     // Constructor.
-    explicit ResampleApplier(const ResampleParams& params);
+    explicit ResampleApplier(
+        const foundation::Image&    src_image,
+        const SamplingMode          mode);
 
     // Delete this instance.
     void release() override;
 
     // Fill the given image tile by sampling from src_image pixels.
     void apply(
-        foundation::Image&      image,
-        const std::size_t       tile_x,
-        const std::size_t       tile_y) const override;
+        foundation::Image&          image,
+        const std::size_t           tile_x,
+        const std::size_t           tile_y) const override;
 
   private:
-    const SamplingMode          m_mode;
-    const std::size_t           m_src_width;
-    const std::size_t           m_src_height;
-    const std::size_t           m_border_size;
-    foundation::Image           m_src_image_with_border;
+    // Settings.
+    const SamplingMode              m_mode;
+
+    // Context.
+    const std::size_t               m_src_width;
+    const std::size_t               m_src_height;
+    const std::size_t               m_border_size;
+    foundation::Image               m_src_image_with_border; // FIXME make const
 };
 
 }   // namespace renderer

@@ -60,13 +60,13 @@ class ImageEffectJob
         const std::size_t           tile_y);
 
     // Execute the job.
-    void execute(const std::size_t thread_index);
+    void execute(const std::size_t  thread_index);
 
   private:
-    const ImageEffectApplier&   m_effect_applier;
-    foundation::Image&          m_image;
-    const std::size_t           m_tile_x;
-    const std::size_t           m_tile_y;
+    const ImageEffectApplier&       m_effect_applier;
+    foundation::Image&              m_image;
+    const std::size_t               m_tile_x;
+    const std::size_t               m_tile_y;
 };
 
 

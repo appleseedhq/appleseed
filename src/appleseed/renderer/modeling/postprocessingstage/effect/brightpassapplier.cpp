@@ -45,10 +45,10 @@ namespace renderer
 //
 
 BrightPassApplier::BrightPassApplier(
-    const BrightPassParams& params)
-  : m_threshold(params.threshold)
-  , m_knee(params.threshold * params.soft_threshold)
-  , m_eps(default_eps<float>()) // used to avoid divisions by zero
+    const float     threshold,
+    const float     soft_threshold)
+  : m_threshold(threshold)
+  , m_knee(threshold * soft_threshold)
 {
 }
 
@@ -76,6 +76,8 @@ void BrightPassApplier::apply(
     //   https://catlikecoding.com/unity/tutorials/advanced-rendering/bloom/
     //
 
+    const float eps = default_eps<float>(); // used to avoid divisions by zero
+
     for (std::size_t y = 0; y < tile_height; ++y)
     {
         for (std::size_t x = 0; x < tile_width; ++x)
@@ -90,7 +92,7 @@ void BrightPassApplier::apply(
             {
                 float soft = contribution + m_knee;
                 soft = clamp(soft, 0.0f, 2.0f * m_knee);
-                soft = soft * soft * safe_rcp<float>(4.0f * m_knee, m_eps);
+                soft = soft * soft * safe_rcp<float>(4.0f * m_knee, eps);
                 contribution = std::max(soft, contribution);
             }
 
@@ -98,7 +100,7 @@ void BrightPassApplier::apply(
             if (contribution <= 0.0f)
                 color *= 0.0f;
             else
-                color *= contribution * safe_rcp<float>(brightness, m_eps);
+                color *= contribution * safe_rcp<float>(brightness, eps);
 
             tile.set_pixel(x, y, color);
         }

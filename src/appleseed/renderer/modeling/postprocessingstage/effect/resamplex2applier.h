@@ -45,32 +45,21 @@ namespace foundation    { class Image; }
 namespace renderer
 {
 
-//
-// Image resampling x2 parameters.
-//
-
-typedef enum { HALVE, DOUBLE } SamplingX2Mode;
-
-struct ResampleX2Params
-{
-    // Context.
-    const foundation::Image&    src_image;
-
-    // Settings.
-    SamplingX2Mode              mode;
-};
-
 
 //
 // Image resampling x2 applier.
 //
+
+typedef enum { HALVE, DOUBLE } SamplingX2Mode;
 
 class ResampleX2Applier
   : public ImageEffectApplier
 {
   public:
     // Constructor.
-    explicit ResampleX2Applier(const ResampleX2Params& params);
+    explicit ResampleX2Applier(
+        const foundation::Image&    src_image,
+        const SamplingX2Mode        mode);
 
     // Delete this instance.
     void release() override;
@@ -78,15 +67,18 @@ class ResampleX2Applier
     // Fill the given image tile by sampling from src_image pixels.
     // Note: its dimensions should be either half or double the size of src_image's.
     void apply(
-        foundation::Image&      image,
-        const std::size_t       tile_x,
-        const std::size_t       tile_y) const override;
+        foundation::Image&          image,
+        const std::size_t           tile_x,
+        const std::size_t           tile_y) const override;
 
   private:
-    const SamplingX2Mode        m_mode;
-    const std::size_t           m_src_width;
-    const std::size_t           m_src_height;
-    const foundation::Image&    m_src_image;
+    // Settings.
+    const SamplingX2Mode            m_mode;
+
+    // Context.
+    const std::size_t               m_src_width;
+    const std::size_t               m_src_height;
+    const foundation::Image&        m_src_image;
 };
 
 }   // namespace renderer

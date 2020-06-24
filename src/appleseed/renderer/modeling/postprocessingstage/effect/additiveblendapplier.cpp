@@ -45,10 +45,12 @@ namespace renderer
 //
 
 AdditiveBlendApplier::AdditiveBlendApplier(
-    const AdditiveBlendParams& params)
-  : m_src_factor(params.src_factor)
-  , m_dst_factor(params.dst_factor)
-  , m_src_image(params.src_image)
+    const Image&    src_image,
+    const float     src_weight,
+    const float     dst_weight)
+  : m_src_weight(src_weight)
+  , m_dst_weight(dst_weight)
+  , m_src_image(src_image)
 {
 }
 
@@ -83,7 +85,7 @@ void AdditiveBlendApplier::apply(
             tile.get_pixel(x, y, dst_color);
 
             // Weighted additive blend.
-            dst_color = m_dst_factor * dst_color + m_src_factor * src_color;
+            dst_color = m_dst_weight * dst_color + m_src_weight * src_color;
             tile.set_pixel(x, y, dst_color);
         }
     }

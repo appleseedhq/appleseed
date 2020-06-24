@@ -48,10 +48,11 @@ namespace renderer
 //
 
 ResampleApplier::ResampleApplier(
-    const ResampleParams& params)
-  : m_mode(params.mode)
-  , m_src_width(params.src_image.properties().m_canvas_width)
-  , m_src_height(params.src_image.properties().m_canvas_height)
+    const Image&        src_image,
+    const SamplingMode  mode)
+  : m_mode(mode)
+  , m_src_width(src_image.properties().m_canvas_width)
+  , m_src_height(src_image.properties().m_canvas_height)
   , m_border_size(2)
   , m_src_image_with_border(
       Image(
@@ -59,14 +60,12 @@ ResampleApplier::ResampleApplier(
           m_src_height + 2 * m_border_size,
           m_src_width + 2 * m_border_size,
           m_src_height + 2 * m_border_size,
-          params.src_image.properties().m_channel_count,
-          params.src_image.properties().m_pixel_format))
+          src_image.properties().m_channel_count,
+          src_image.properties().m_pixel_format))
 {
     // To avoid boundary checks when sampling, we make a copy of src_image
     // with 2 pixels of padding on each side, filling this border by copying
     // the color of the closest pixel to it (i.e. texture clamping).
-
-    const foundation::Image& src_image = params.src_image;
 
     // Copy src_image pixels into the center of m_src_image_with_border.
     for (std::size_t y = 0; y < m_src_height; ++y)

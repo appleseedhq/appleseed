@@ -48,11 +48,12 @@ namespace renderer
 //
 
 ResampleX2Applier::ResampleX2Applier(
-    const ResampleX2Params& params)
-  : m_mode(params.mode)
-  , m_src_width(params.src_image.properties().m_canvas_width)
-  , m_src_height(params.src_image.properties().m_canvas_height)
-  , m_src_image(params.src_image)
+    const Image&            src_image,
+    const SamplingX2Mode    mode)
+  : m_mode(mode)
+  , m_src_width(src_image.properties().m_canvas_width)
+  , m_src_height(src_image.properties().m_canvas_height)
+  , m_src_image(src_image)
 {
 }
 

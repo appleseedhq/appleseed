@@ -158,7 +158,7 @@ namespace
 
         void execute(Frame& frame, const std::size_t thread_count) const override
         {
-            if (m_iterations == 0 || m_intensity == 0.0f && !m_debug_blur)
+            if (m_iterations == 0 || (m_intensity == 0.0f && !m_debug_blur))
                 return;
 
             Image& image = frame.image();
@@ -196,7 +196,7 @@ namespace
             Image prefiltered_image(image, props.m_pixel_format, shuffle_table);
 
             // Filter out dark pixels.
-            BrightPassApplier bright_pass({ m_threshold, m_soft_threshold });
+            BrightPassApplier bright_pass(m_threshold, m_soft_threshold);
             bright_pass.apply_on_tiles(prefiltered_image, thread_count);
 
             //
@@ -228,12 +228,12 @@ namespace
             // Downsample pass.
             //
 
-            ResampleX2Applier downsample({ prefiltered_image, SamplingX2Mode::HALVE });
+            ResampleX2Applier downsample(prefiltered_image, SamplingX2Mode::HALVE);
             downsample.apply_on_tiles(blur_pyramid_down[0], thread_count);
 
             for (std::size_t level = 1; level < iterations; ++level)
             {
-                ResampleApplier downsample({ blur_pyramid_down[level - 1], SamplingMode::DOWN });
+                ResampleApplier downsample(blur_pyramid_down[level - 1], SamplingMode::DOWN);
                 downsample.apply_on_tiles(blur_pyramid_down[level], thread_count);
             }
 
@@ -245,11 +245,11 @@ namespace
 
             for (std::size_t level_plus_one = iterations - 1; level_plus_one > 0; --level_plus_one)
             {
-                ResampleApplier upsample({ blur_pyramid_up[level_plus_one], SamplingMode::UP });
+                ResampleApplier upsample(blur_pyramid_up[level_plus_one], SamplingMode::UP);
                 upsample.apply_on_tiles(blur_pyramid_up[level_plus_one - 1], thread_count);
 
                 // Blend each upsampled buffer with the downsample buffer of the same level.
-                AdditiveBlendApplier additive_blend({ blur_pyramid_down[level_plus_one - 1] });
+                AdditiveBlendApplier additive_blend(blur_pyramid_down[level_plus_one - 1]);
                 additive_blend.apply_on_tiles(blur_pyramid_up[level_plus_one - 1], thread_count);
             }
 
@@ -259,15 +259,13 @@ namespace
 
             Image bloom_target(prefiltered_image.properties());
 
-            ResampleX2Applier upsample({ blur_pyramid_up[0], SamplingX2Mode::DOUBLE });
+            ResampleX2Applier upsample(blur_pyramid_up[0], SamplingX2Mode::DOUBLE);
             upsample.apply_on_tiles(bloom_target, thread_count);
 
             AdditiveBlendApplier additive_blend(
-                {
-                    bloom_target,
-                    m_debug_blur ? 1.0f : m_intensity,
-                    m_debug_blur ? 0.0f : 1.0f
-                });
+                bloom_target,
+                m_debug_blur ? 1.0f : m_intensity,
+                m_debug_blur ? 0.0f : 1.0f);
             additive_blend.apply_on_tiles(image, thread_count);
         }
 
@@ -286,20 +284,18 @@ namespace
         {
             // Downsample the prefiltered image.
             Image blur_target(blur_target_props);
-            ResampleApplier downsample({ prefiltered_image, SamplingMode::DOWN });
+            ResampleApplier downsample(prefiltered_image, SamplingMode::DOWN);
             downsample.apply_on_tiles(blur_target, thread_count);
 
             // Upsample and blend it with the original image.
             Image bloom_target(prefiltered_image.properties());
-            ResampleApplier upsample({ blur_target, SamplingMode::UP });
+            ResampleApplier upsample(blur_target, SamplingMode::UP);
             upsample.apply_on_tiles(bloom_target, thread_count);
 
             AdditiveBlendApplier additive_blend(
-                {
-                    bloom_target,
-                    m_debug_blur ? 1.0f : m_intensity,
-                    m_debug_blur ? 0.0f : 1.0f
-                });
+                bloom_target,
+                m_debug_blur ? 1.0f : m_intensity,
+                m_debug_blur ? 0.0f : 1.0f);
             additive_blend.apply_on_tiles(image, thread_count);
         }
     };

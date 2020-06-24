@@ -45,21 +45,6 @@ namespace renderer
 
 
 //
-// Weighted additive color blending parameters.
-//
-
-struct AdditiveBlendParams
-{
-    // Context
-    const foundation::Image&    src_image;
-
-    // Settings.
-    float                       src_factor = 1.0f;
-    float                       dst_factor = 1.0f;
-};
-
-
-//
 // Image color blending applier.
 //
 
@@ -68,21 +53,27 @@ class AdditiveBlendApplier
 {
   public:
     // Constructor.
-    explicit AdditiveBlendApplier(const AdditiveBlendParams& params);
+    explicit AdditiveBlendApplier(
+        const foundation::Image&    src_image,
+        const float                 src_weight = 1.0f,
+        const float                 dst_weight = 1.0f);
 
     // Delete this instance.
     void release() override;
 
-    // Additively blend colors of the given tile with the corresponding tile of src_image.
-    // (i.e. "image.tile(x, y) = dst_factor * image.tile(x, y) + src_factor * src_image.tile(x, y)")
+    // Blend colors of the given tile with the corresponding tile of src_image, i.e.:
+    // "image.tile(x, y) = dst_weight * image.tile(x, y) + src_weight * src_image.tile(x, y)".
     void apply(
-        foundation::Image&      image,
-        const std::size_t       tile_x,
-        const std::size_t       tile_y) const override;
+        foundation::Image&          image,
+        const std::size_t           tile_x,
+        const std::size_t           tile_y) const override;
 
   private:
-    const float                     m_src_factor;
-    const float                     m_dst_factor;
+    // Settings.
+    const float                     m_src_weight;
+    const float                     m_dst_weight;
+
+    // Context.
     const foundation::Image&        m_src_image;
 };
 

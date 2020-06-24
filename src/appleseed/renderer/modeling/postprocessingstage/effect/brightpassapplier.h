@@ -45,18 +45,6 @@ namespace renderer
 
 
 //
-// Bright-pass parameters.
-//
-
-struct BrightPassParams
-{
-    // Settings.
-    float   threshold;
-    float   soft_threshold;
-};
-
-
-//
 // Bright-pass applier.
 //
 
@@ -65,21 +53,23 @@ class BrightPassApplier
 {
   public:
     // Constructor.
-    explicit BrightPassApplier(const BrightPassParams& params);
+    explicit BrightPassApplier(
+        const float         threshold,
+        const float         soft_threshold);
 
     // Delete this instance.
     void release() override;
 
     // Filter out dark pixels on a given tile.
     void apply(
-        foundation::Image&      image,
-        const std::size_t       tile_x,
-        const std::size_t       tile_y) const override;
+        foundation::Image&  image,
+        const std::size_t   tile_x,
+        const std::size_t   tile_y) const override;
 
   private:
-    const float     m_threshold;
-    const float     m_knee;
-    const float     m_eps;
+    // Settings.
+    const float             m_threshold;
+    const float             m_knee;
 };
 
 }   // namespace renderer
