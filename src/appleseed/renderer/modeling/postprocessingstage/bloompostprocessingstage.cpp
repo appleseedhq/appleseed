@@ -45,6 +45,7 @@
 #include "foundation/image/image.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/api/apistring.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 
 // Standard headers.
@@ -68,9 +69,9 @@ namespace
 
     static constexpr std::size_t DefaultIterations = 4;
 
-    static constexpr float DefaultIntensity = 0.5f;
+    static constexpr float DefaultIntensity = 0.1f;
 
-    static constexpr float DefaultThreshold = 0.8f;
+    static constexpr float DefaultThreshold = 1.0f;
 
     static constexpr float DefaultSoftThreshold = 0.5f;
 
@@ -186,6 +187,17 @@ namespace
             // Compute how many downsampling iterations we can do before a buffer has a side smaller than 2 pixels.
             const float max_iterations = std::log2(min_pyramid_dimension / 2.0f);
             const std::size_t iterations = clamp<std::size_t>(m_iterations, 1, static_cast<std::size_t>(max_iterations));
+
+            if (iterations < m_iterations)
+            {
+                RENDERER_LOG_INFO(
+                    "post-processing stage \"%s\":\n"
+                    "  the frame is too small for %d iterations\n"
+                    "  using %d iterations instead",
+                    get_path().c_str(),
+                    m_iterations,
+                    iterations);
+            }
 
             //
             // Prefilter pass.
@@ -334,7 +346,7 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
         Dictionary()
             .insert("name", "iterations")
             .insert("label", "Iterations")
-            .insert("type", "int")
+            .insert("type", "integer")
             .insert("min",
                     Dictionary()
                         .insert("value", "1")
@@ -342,7 +354,7 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
             .insert("max",
                     Dictionary()
                         .insert("value", "5")
-                        .insert("type", "hard"))
+                        .insert("type", "soft"))
             .insert("use", "optional")
             .insert("default", "4"));
 
@@ -358,9 +370,9 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
             .insert("max",
                     Dictionary()
                         .insert("value", "1.0")
-                        .insert("type", "hard"))
+                        .insert("type", "soft"))
             .insert("use", "optional")
-            .insert("default", "0.5"));
+            .insert("default", "0.1"));
 
     metadata.push_back(
         Dictionary()
@@ -374,9 +386,9 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
             .insert("max",
                     Dictionary()
                         .insert("value", "10.0")
-                        .insert("type", "hard"))
+                        .insert("type", "soft"))
             .insert("use", "optional")
-            .insert("default", "0.8"));
+            .insert("default", "1.0"));
 
     metadata.push_back(
         Dictionary()
@@ -398,7 +410,7 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
         Dictionary()
             .insert("name", "debug_blur")
             .insert("label", "Debug Blur")
-            .insert("type", "bool")
+            .insert("type", "boolean")
             .insert("use", "optional")
             .insert("default", "false"));
 
