@@ -32,12 +32,18 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/shading/shadingcontext.h"
+#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
 
 // appleseed.foundation headers.
 #include "foundation/containers/dictionary.h"
+#include "foundation/image/color.h"
+#include "foundation/image/colorspace.h"
+#include "foundation/image/regularspectrum.h"
+#include "foundation/math/fastmath.h"
 #include "foundation/math/sampling/mappings.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -61,6 +67,14 @@ namespace renderer
         //
         // Nishita93 environment EDF.
         //
+        // Conventions:
+        //
+        //   * All direction vectors are expressed in world space.
+        //
+        //   * All direction vectors are unit-length and pointing toward the environment.
+        //
+        //   * All probability densities are measured with respect to solid angle.
+        //
 
         const char* Model = "nishita93_environment_edf";
 
@@ -68,12 +82,21 @@ namespace renderer
             : public EnvironmentEDF
         {
         public:
+
+            // Constructor.
             Nishita93EnvironmentEDF(
                 const char*             name,
                 const ParamArray&       params)
                 : EnvironmentEDF(name, params)
             {
-                m_inputs.declare("radiance", InputFormatSpectralIlluminance);
+                m_inputs.declare("sun_theta", InputFormatFloat);
+                m_inputs.declare("sun_phi", InputFormatFloat);
+                m_inputs.declare("turbidity", InputFormatFloat);
+                m_inputs.declare("turbidity_multiplier", InputFormatFloat, "2.0");
+                m_inputs.declare("luminance_multiplier", InputFormatFloat, "1.0");
+                m_inputs.declare("luminance_gamma", InputFormatFloat, "1.0");
+                m_inputs.declare("saturation_multiplier", InputFormatFloat, "1.0");
+                m_inputs.declare("horizon_shift", InputFormatFloat, "0.0");
             }
 
             void release() override
@@ -92,66 +115,151 @@ namespace renderer
                 OnFrameBeginRecorder&   recorder,
                 IAbortSwitch*           abort_switch) override
             {
+
+                // Check validity of user input parameters, return false if not correct
                 if (!EnvironmentEDF::on_frame_begin(project, parent, recorder, abort_switch))
                     return false;
 
-                if (!check_uniform("radiance"))
-                    return false;
+                // Evaluate uniform values.
+                m_inputs.evaluate_uniforms(&m_uniform_values);
 
-                check_non_zero_emission("radiance");
+                // Compute the sun direction.
+                m_sun_theta = deg_to_rad(m_uniform_values.m_sun_theta);
+                m_sun_phi = deg_to_rad(m_uniform_values.m_sun_phi);
+                m_sun_dir = Vector3f::make_unit_vector(m_sun_theta, m_sun_phi);
+                m_cos_sun_theta = std::cos(m_sun_theta);
 
-                m_inputs.evaluate_uniforms(&m_values);
+                // Do any precomputations that are needed for all evaluations
 
                 return true;
             }
 
+            // Sample the EDF and compute the emission direction, its probability
+            // density and the value of the EDF for this direction.
             void sample(
                 const ShadingContext&   shading_context,
-                const Vector2f&         s,
-                Vector3f&               outgoing,
-                Spectrum&               value,
-                float&                  probability) const override
+                const Vector2f&         s,                                  // sample in [0,1)^2
+                Vector3f&               outgoing,                           // world space emission direction, unit-length
+                Spectrum&               value,                              // EDF value for this direction
+                float&                  probability) const override         // PDF value
             {
-                outgoing = sample_sphere_uniform(s);
-                value = m_values.m_radiance;
-                probability = RcpFourPi<float>();
+                const Vector3f local_outgoing = sample_hemisphere_cosine(s);
+
+                Transformd scratch;
+                const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+                outgoing = transform.vector_to_parent(local_outgoing);
+                const Vector3f shifted_outgoing = shift(local_outgoing);
+
+                RegularSpectrum31f radiance;
+                if (shifted_outgoing.y > 0.0f)
+                    compute_sky_radiance(shading_context, shifted_outgoing, radiance);
+                else radiance.set(0.0f);
+
+                value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
+                probability = shifted_outgoing.y > 0.0f ? shifted_outgoing.y * RcpPi<float>() : 0.0f;
+                assert(probability >= 0.0f);
+            }
+
+            // Evaluate the EDF for a given emission direction.
+            void evaluate(
+                const ShadingContext&   shading_context,
+                const Vector3f&         outgoing,                           // world space emission direction, unit-length
+                Spectrum&               value) const override               // EDF value for this direction
+            {
+                assert(is_normalized(outgoing));
+
+                Transformd scratch;
+                const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+                const Vector3f local_outgoing = transform.vector_to_local(outgoing);
+                const Vector3f shifted_outgoing = shift(local_outgoing);
+
+                RegularSpectrum31f radiance;
+                if (shifted_outgoing.y > 0.0f)
+                    compute_sky_radiance(shading_context, shifted_outgoing, radiance);
+                else radiance.set(0.0f);
+
+                value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
             }
 
             void evaluate(
                 const ShadingContext&   shading_context,
-                const Vector3f&         outgoing,
-                Spectrum&               value) const override
+                const Vector3f&         outgoing,                           // world space emission direction, unit-length
+                Spectrum&               value,                              // EDF value for this direction
+                float&                  probability) const override         // PDF value
             {
                 assert(is_normalized(outgoing));
-                value = m_values.m_radiance;
+
+                Transformd scratch;
+                const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+                const Vector3f local_outgoing = transform.vector_to_local(outgoing);
+                const Vector3f shifted_outgoing = shift(local_outgoing);
+
+                RegularSpectrum31f radiance;
+                if (shifted_outgoing.y > 0.0f)
+                    compute_sky_radiance(shading_context, shifted_outgoing, radiance);
+                else radiance.set(0.0f);
+
+                value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
+                probability = shifted_outgoing.y > 0.0f ? shifted_outgoing.y * RcpPi<float>() : 0.0f;
+                assert(probability >= 0.0f);
             }
 
-            void evaluate(
-                const ShadingContext&   shading_context,
-                const Vector3f&         outgoing,
-                Spectrum&               value,
-                float&                  probability) const override
-            {
-                assert(is_normalized(outgoing));
-                value = m_values.m_radiance;
-                probability = RcpFourPi<float>();
-            }
-
+            // Evaluate the PDF for a given emission direction.
             float evaluate_pdf(
-                const Vector3f&         outgoing) const override
+                const Vector3f&         outgoing) const override            // world space emission direction, unit-length
             {
                 assert(is_normalized(outgoing));
-                return RcpFourPi<float>();
+
+                Transformd scratch;
+                const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
+                const Vector3f local_outgoing = transform.vector_to_local(outgoing);
+                const Vector3f shifted_outgoing = shift(local_outgoing);
+
+                const float probability = shifted_outgoing.y > 0.0f ? shifted_outgoing.y * RcpPi<float>() : 0.0f;
+                assert(probability >= 0.0f);
+
+                return probability;
             }
 
         private:
             APPLESEED_DECLARE_INPUT_VALUES(InputValues)
             {
-                Spectrum    m_radiance;             // emitted radiance in W.m^-2.sr^-1
+                float   m_sun_theta;                    // sun zenith angle in degrees, 0=zenith
+                float   m_sun_phi;                      // degrees
+                float   m_turbidity;                    // atmosphere turbidity
+                float   m_turbidity_multiplier;
+                float   m_luminance_multiplier;
+                float   m_luminance_gamma;
+                float   m_saturation_multiplier;
+                float   m_horizon_shift;
             };
 
-            InputValues     m_values;
+            InputValues                 m_uniform_values;
+
+            float                       m_sun_theta;    // sun zenith angle in radians, 0=zenith
+            float                       m_sun_phi;      // radians
+            Vector3f                    m_sun_dir;
+            float                       m_cos_sun_theta;
+
+            // Compute the sky radiance along a given direction.
+            void compute_sky_radiance(
+                const ShadingContext&   shading_context,
+                const Vector3f&         outgoing,
+                RegularSpectrum31f&     radiance) const
+            {
+                radiance.set(0.5f);
+                return;
+            }
+
+            Vector3f shift(Vector3f v) const
+            {
+                v.y -= m_uniform_values.m_horizon_shift;
+                return normalize(v);
+            }
+
         };
+
+
     }
 
 
@@ -175,23 +283,14 @@ namespace renderer
             Dictionary()
             .insert("name", Model)
             .insert("label", "Nishita93 Environment EDF")
-            .insert("help", "Nishita93 environment");
+            .insert("help", "Physical sky with single scattering environment");
     }
 
     DictionaryArray Nishita93EnvironmentEDFFactory::get_input_metadata() const
     {
         DictionaryArray metadata;
 
-        metadata.push_back(
-            Dictionary()
-            .insert("name", "radiance")
-            .insert("label", "Radiance")
-            .insert("type", "colormap")
-            .insert("entity_types",
-                Dictionary().insert("color", "Colors"))
-            .insert("use", "required")
-            .insert("default", "1.0")
-            .insert("help", "Environment radiance"));
+        add_common_sky_input_metadata(metadata);
 
         add_common_input_metadata(metadata);
 
