@@ -1829,6 +1829,8 @@ set (renderer_modeling_environmentedf_sources
     renderer/modeling/environmentedf/oslenvironmentedf.h
     renderer/modeling/environmentedf/preethamenvironmentedf.cpp
     renderer/modeling/environmentedf/preethamenvironmentedf.h
+    renderer/modeling/environmentedf/nishita93environmentedf.cpp
+    renderer/modeling/environmentedf/nishita93environmentedf.h
     renderer/modeling/environmentedf/sphericalcoordinates.h
 )
 list (APPEND appleseed_sources
