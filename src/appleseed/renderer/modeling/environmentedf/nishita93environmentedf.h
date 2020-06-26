@@ -39,6 +39,14 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
+
+// BEGIN-COPY-PASTA -->
+#include "b_atmosphere.h"
+#include "b_angle.h"
+#include "b_binary_function.h"
+#include "b_units.h"
+// <-- END-COPY-PASTA
+
 // Forward declarations.
 namespace foundation { class Dictionary; }
 namespace foundation { class DictionaryArray; }
@@ -53,7 +61,7 @@ namespace renderer
     //
 
     class APPLESEED_DLLSYMBOL Nishita93EnvironmentEDFFactory
-        : public IEnvironmentEDFFactory
+        : public IEnvironmentEDFFactory, public Atmosphere
     {
     public:
         // Delete this instance.
@@ -72,6 +80,7 @@ namespace renderer
         foundation::auto_release_ptr<EnvironmentEDF> create(
             const char*         name,
             const ParamArray&   params) const override;
+
     };
 
-}   // namespace renderer
+};   // namespace renderer
