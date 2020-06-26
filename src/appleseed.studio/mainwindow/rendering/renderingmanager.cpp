@@ -239,10 +239,6 @@ void RenderingManager::start_rendering(
         this, &RenderingManager::slot_rendering_failed);
 
     connect(
-        static_cast<MasterRendererThread*>(m_master_renderer_thread.get()), &MasterRendererThread::signal_rendering_failed,
-        this, &RenderingManager::signal_rendering_end);
-
-    connect(
         static_cast<MasterRendererThread*>(m_master_renderer_thread.get()), &MasterRendererThread::finished,
         this, &RenderingManager::slot_master_renderer_thread_finished);
 
