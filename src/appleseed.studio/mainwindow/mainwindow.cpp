@@ -417,6 +417,8 @@ void MainWindow::build_menus()
 
     connect(m_ui->action_diagnostics_false_colors, SIGNAL(triggered()), SLOT(slot_show_false_colors_window()));
 
+    // TODO add a post_processing_preview_window
+
     //
     // Debug menu.
     //
@@ -1267,16 +1269,16 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
 void MainWindow::apply_post_processing_preview_settings()
 {
     const ParamArray& post_processing_preview_params =
-        m_application_settings.child("post_processing_preview");
+        m_application_settings.child("post_processing_preview"); // TODO add this
     const bool post_processing_preview_enabled =
         post_processing_preview_params.get_optional<bool>("enabled", false);
 
     blit_frame_diagnostics(
         post_processing_preview_enabled,
-        [this](renderer::Frame& frame_copy)
+        [&](const renderer::Frame& frame, renderer::Frame& frame_copy)
         {
             // Apply post-processing stages.
-            for (PostProcessingStage& stage : frame_copy.post_processing_stages())
+            for (PostProcessingStage& stage : frame.post_processing_stages())
             {
                 RENDERER_LOG_INFO("previewing post-processing stage \"%s\"", stage.get_path().c_str());
                 apply_post_processing_stage(stage, frame_copy);
@@ -1291,7 +1293,7 @@ void MainWindow::apply_false_colors_settings()
 
     blit_frame_diagnostics(
         false_colors_enabled,
-        [this, &false_colors_params](renderer::Frame& frame_copy)
+        [&](const renderer::Frame& frame, renderer::Frame& frame_copy)
         {
             // Create post-processing stage.
             auto_release_ptr<PostProcessingStage> stage(
@@ -1302,42 +1304,6 @@ void MainWindow::apply_false_colors_settings()
             // Apply post-processing stage.
             apply_post_processing_stage(stage.ref(), frame_copy);
         });
-}
-
-void MainWindow::blit_frame_diagnostics(
-    const bool                                      blit_on_frame_copy,
-    const std::function<void(renderer::Frame&)>     apply_on_frame_copy_func)
-{
-    Project* project = m_project_manager.get_project();
-    assert(project != nullptr);
-
-    Frame* frame = project->get_frame();
-    assert(frame != nullptr);
-
-    if (blit_on_frame_copy)
-    {
-        // Make a temporary copy of the frame.
-        // Render info, AOVs and other data are not copied.
-        // todo: creating a frame with denoising enabled is very expensive, see benchmark_frame.cpp.
-        auto_release_ptr<Frame> working_frame =
-            FrameFactory::create(
-                (std::string(frame->get_name()) + "_copy").c_str(),
-                frame->get_parameters()
-                    .remove_path("denoiser"));
-        working_frame->image().copy_from(frame->image());
-
-        // Apply changes to the generated copy.
-        apply_on_frame_copy_func(working_frame.ref());
-    }
-    else
-    {
-        // Blit the regular frame into the render widget.
-        for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
-        {
-            i->second->get_render_widget()->blit_frame(*frame);
-            i->second->get_render_widget()->update();
-        }
-    }
 }
 
 void MainWindow::apply_post_processing_stage(
@@ -1358,6 +1324,42 @@ void MainWindow::apply_post_processing_stage(
         for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
         {
             i->second->get_render_widget()->blit_frame(working_frame);
+            i->second->get_render_widget()->update();
+        }
+    }
+}
+
+void MainWindow::blit_frame_diagnostics(
+    const bool                          blit_on_frame_copy,
+    const ApplyOnFrameCopyFunction      apply_on_frame_copy)
+{
+    Project* project = m_project_manager.get_project();
+    assert(project != nullptr);
+
+    Frame* frame = project->get_frame();
+    assert(frame != nullptr);
+
+    if (blit_on_frame_copy)
+    {
+        // Make a temporary copy of the frame.
+        // Render info, AOVs and other data are not copied.
+        // todo: creating a frame with denoising enabled is very expensive, see benchmark_frame.cpp.
+        auto_release_ptr<Frame> working_frame =
+            FrameFactory::create(
+                (std::string(frame->get_name()) + "_copy").c_str(),
+                frame->get_parameters()
+                    .remove_path("denoiser"));
+        working_frame->image().copy_from(frame->image());
+
+        // Apply changes to the generated copy.
+        apply_on_frame_copy(*frame, working_frame.ref());
+    }
+    else
+    {
+        // Blit the regular frame into the render widget.
+        for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+        {
+            i->second->get_render_widget()->blit_frame(*frame);
             i->second->get_render_widget()->update();
         }
     }
@@ -1753,6 +1755,8 @@ void MainWindow::slot_pause_or_resume_rendering(const bool checked)
 void MainWindow::slot_rendering_end()
 {
     apply_false_colors_settings();
+    // apply_post_processing_preview_settings(); // FIXME should this be applied if False Colors is enabled?
+    //                                           // TODO don't call on a final render (i.e. only apply "on abort")
 
     update_workspace();
 
