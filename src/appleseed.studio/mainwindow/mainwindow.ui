@@ -112,6 +112,7 @@
     </widget>
     <addaction name="menu_diagnostics_override_shading"/>
     <addaction name="action_diagnostics_false_colors"/>
+    <addaction name="action_diagnostics_post_processing_preview"/>
    </widget>
    <widget class="QMenu" name="menu_debug">
     <property name="title">
@@ -474,6 +475,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+F</string>
+   </property>
+  </action>
+  <action name="action_diagnostics_post_processing_preview">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Post-Processing Preview...</string>
    </property>
   </action>
  </widget>
