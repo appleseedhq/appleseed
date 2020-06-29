@@ -417,7 +417,7 @@ void MainWindow::build_menus()
 
     connect(m_ui->action_diagnostics_false_colors, SIGNAL(triggered()), SLOT(slot_show_false_colors_window()));
 
-    // TODO add a post_processing_preview_window
+    build_post_processing_preview_menu_item();
 
     //
     // Debug menu.
@@ -502,6 +502,25 @@ void MainWindow::update_override_shading_menu_item()
     {
         m_ui->action_diagnostics_override_shading_no_override->activate(QAction::Trigger);
     }
+}
+
+void MainWindow::build_post_processing_preview_menu_item()
+{
+    // FIXME is a QActionGroup needed? See build_override_shading_menu_item() above
+
+    QAction* action = new QAction(this);
+    action->setObjectName(
+        QString("action_diagnostics_post_processing_preview"));
+    action->setCheckable(true);
+    action->setText("Post-Processing Preview...");
+
+    connect(
+        action, SIGNAL(triggered(bool)),
+        SLOT(slot_toggle_post_processing_preview(const bool)));
+
+    m_ui->menu_diagnostics->addAction(action);
+
+    // TODO add one toggle per stage
 }
 
 void MainWindow::build_recent_files_menu()
@@ -915,6 +934,7 @@ void MainWindow::set_diagnostics_widgets_enabled(const bool is_enabled, const Re
 
     m_ui->menu_diagnostics_override_shading->setEnabled(is_enabled && is_project_open);
     m_ui->action_diagnostics_false_colors->setEnabled(is_enabled && is_project_open && rendering_mode == RenderingMode::NotRendering);
+    // TODO copy false_colors' enabling values to post_processing_preview
 }
 
 void MainWindow::save_state_before_project_open()
@@ -1268,10 +1288,14 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
 
 void MainWindow::apply_post_processing_preview_settings()
 {
+#if 0
     const ParamArray& post_processing_preview_params =
         m_application_settings.child("post_processing_preview"); // TODO add this
     const bool post_processing_preview_enabled =
         post_processing_preview_params.get_optional<bool>("enabled", false);
+#else
+    const bool post_processing_preview_enabled = true; // FIXME
+#endif
 
     blit_frame_diagnostics(
         post_processing_preview_enabled,
@@ -1755,8 +1779,8 @@ void MainWindow::slot_pause_or_resume_rendering(const bool checked)
 void MainWindow::slot_rendering_end()
 {
     apply_false_colors_settings();
-    // apply_post_processing_preview_settings(); // FIXME should this be applied if False Colors is enabled?
-    //                                           // TODO don't call on a final render (i.e. only apply "on abort")
+    apply_post_processing_preview_settings(); // FIXME should this be applied if False Colors is enabled?
+                                              // TODO don't call on a final render (i.e. only apply "on abort")
 
     update_workspace();
 
@@ -1869,6 +1893,11 @@ void MainWindow::slot_apply_false_colors_settings_changes(Dictionary values)
 {
     m_application_settings.push("false_colors").merge(values);
     apply_false_colors_settings();
+}
+
+void MainWindow::slot_toggle_post_processing_preview(const bool checked)
+{
+    // TODO save checked value to use it on apply_post_processing_preview_settings()
 }
 
 namespace

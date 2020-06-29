@@ -185,6 +185,7 @@ class MainWindow
     void build_menus();
     void build_override_shading_menu_item();
     void update_override_shading_menu_item();
+    void build_post_processing_preview_menu_item();
     void build_recent_files_menu();
     void update_recent_files_menu(const QString& filepath);
     void update_recent_files_menu(const QStringList& files);
@@ -289,6 +290,7 @@ class MainWindow
     void slot_set_shading_override();
     void slot_show_false_colors_window();
     void slot_apply_false_colors_settings_changes(foundation::Dictionary values);
+    void slot_toggle_post_processing_preview(const bool checked);
 
     // Render region.
     void slot_clear_render_region();
