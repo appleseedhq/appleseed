@@ -55,6 +55,7 @@
 namespace OCIO = OCIO_NAMESPACE;
 
 // Standard headers.
+#include <functional>
 #include <map>
 #include <memory>
 #include <string>
@@ -232,10 +233,14 @@ class MainWindow
     void start_rendering(const RenderingMode rendering_mode);
 
     // Diagnostics.
+    void apply_post_processing_preview_settings();
     void apply_false_colors_settings();
+    void blit_frame_diagnostics(
+        const bool                                      blit_on_frame_copy,
+        const std::function<void(renderer::Frame&)>     apply_on_frame_copy_func);
     void apply_post_processing_stage(
-        renderer::PostProcessingStage&  stage,
-        renderer::Frame&                working_frame);
+        renderer::PostProcessingStage&                  stage,
+        renderer::Frame&                                working_frame);
 
     // Miscellaneous.
     void initialize_ocio();

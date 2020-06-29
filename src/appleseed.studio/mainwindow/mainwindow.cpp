@@ -1264,7 +1264,49 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
         m_render_tabs["RGB"]);
 }
 
+void MainWindow::apply_post_processing_preview_settings()
+{
+    const ParamArray& post_processing_preview_params =
+        m_application_settings.child("post_processing_preview");
+    const bool post_processing_preview_enabled =
+        post_processing_preview_params.get_optional<bool>("enabled", false);
+
+    blit_frame_diagnostics(
+        post_processing_preview_enabled,
+        [this](renderer::Frame& frame_copy)
+        {
+            // Apply post-processing stages.
+            for (PostProcessingStage& stage : frame_copy.post_processing_stages())
+            {
+                RENDERER_LOG_INFO("previewing post-processing stage \"%s\"", stage.get_path().c_str());
+                apply_post_processing_stage(stage, frame_copy);
+            }
+        });
+}
+
 void MainWindow::apply_false_colors_settings()
+{
+    const ParamArray& false_colors_params = m_application_settings.child("false_colors");
+    const bool false_colors_enabled = false_colors_params.get_optional<bool>("enabled", false);
+
+    blit_frame_diagnostics(
+        false_colors_enabled,
+        [this, &false_colors_params](renderer::Frame& frame_copy)
+        {
+            // Create post-processing stage.
+            auto_release_ptr<PostProcessingStage> stage(
+                ColorMapPostProcessingStageFactory().create(
+                    "__false_colors_post_processing_stage",
+                    false_colors_params));
+
+            // Apply post-processing stage.
+            apply_post_processing_stage(stage.ref(), frame_copy);
+        });
+}
+
+void MainWindow::blit_frame_diagnostics(
+    const bool                                      blit_on_frame_copy,
+    const std::function<void(renderer::Frame&)>     apply_on_frame_copy_func)
 {
     Project* project = m_project_manager.get_project();
     assert(project != nullptr);
@@ -1272,10 +1314,7 @@ void MainWindow::apply_false_colors_settings()
     Frame* frame = project->get_frame();
     assert(frame != nullptr);
 
-    const ParamArray& false_colors_params = m_application_settings.child("false_colors");
-    const bool false_colors_enabled = false_colors_params.get_optional<bool>("enabled", false);
-
-    if (false_colors_enabled)
+    if (blit_on_frame_copy)
     {
         // Make a temporary copy of the frame.
         // Render info, AOVs and other data are not copied.
@@ -1287,14 +1326,8 @@ void MainWindow::apply_false_colors_settings()
                     .remove_path("denoiser"));
         working_frame->image().copy_from(frame->image());
 
-        // Create post-processing stage.
-        auto_release_ptr<PostProcessingStage> stage(
-            ColorMapPostProcessingStageFactory().create(
-                "__false_colors_post_processing_stage",
-                false_colors_params));
-
-        // Apply post-processing stage.
-        apply_post_processing_stage(stage.ref(), working_frame.ref());
+        // Apply changes to the generated copy.
+        apply_on_frame_copy_func(working_frame.ref());
     }
     else
     {
