@@ -725,8 +725,8 @@ void MainWindow::build_connections()
         SLOT(slot_open_project_complete(const QString&, const bool)));
 
     connect(
-        &m_rendering_manager, SIGNAL(signal_rendering_end()),
-        SLOT(slot_rendering_end()));
+        &m_rendering_manager, SIGNAL(signal_rendering_end(const bool)),
+        SLOT(slot_rendering_end(const bool)));
 }
 
 void MainWindow::update_workspace()
@@ -1717,9 +1717,10 @@ void MainWindow::slot_pause_or_resume_rendering(const bool checked)
     update_pause_resume_checkbox(checked);
 }
 
-void MainWindow::slot_rendering_end()
+void MainWindow::slot_rendering_end(const bool failed)
 {
-    apply_false_colors_settings();
+    if (!failed)
+        apply_false_colors_settings();
 
     update_workspace();
 

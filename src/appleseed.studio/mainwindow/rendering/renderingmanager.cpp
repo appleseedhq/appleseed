@@ -178,11 +178,11 @@ RenderingManager::RenderingManager(StatusBar& status_bar)
 
     connect(
         &m_renderer_controller, &QtRendererController::signal_rendering_success,
-        this, &RenderingManager::signal_rendering_end);
+        this, [this] { this->signal_rendering_end(false); });
 
     connect(
         &m_renderer_controller, &QtRendererController::signal_rendering_abort,
-        this, &RenderingManager::signal_rendering_end);
+        this, [this] { this->signal_rendering_end(false); });
 }
 
 RenderingManager::~RenderingManager()
@@ -237,6 +237,10 @@ void RenderingManager::start_rendering(
     connect(
         static_cast<MasterRendererThread*>(m_master_renderer_thread.get()), &MasterRendererThread::signal_rendering_failed,
         this, &RenderingManager::slot_rendering_failed);
+
+    connect(
+        static_cast<MasterRendererThread*>(m_master_renderer_thread.get()), &MasterRendererThread::signal_rendering_failed,
+        this, [this] { this->signal_rendering_end(true); });
 
     connect(
         static_cast<MasterRendererThread*>(m_master_renderer_thread.get()), &MasterRendererThread::finished,
