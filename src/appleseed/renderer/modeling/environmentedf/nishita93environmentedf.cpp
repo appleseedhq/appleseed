@@ -53,6 +53,8 @@
 // Standard headers.
 #include <cassert>
 
+#include "b_units.h"
+#include "b_binary_function.h"
 #include "skyconstants.h"
 
 // Forward declarations.
@@ -232,6 +234,12 @@ namespace renderer
 
         protected:
 
+            Vector3f shift(Vector3f v) const
+            {
+                v.y -= m_uniform_values.m_horizon_shift;
+                return normalize(v);
+            }
+
             // BEGIN-COPY-PASTA -->
             // Number of virtual spheres and cylinders for the optical length lookup table
             // described in Section 4.3.4 and Fig. 4 of Nishita93.
@@ -244,21 +252,16 @@ namespace renderer
 
             double GetViewSunAngle(double sun_zenith, double view_zenith,
                 double view_sun_azimuth) {
-                return acos(cos(view_sun_azimuth) * sin(view_zenith) * sin(sun_zenith) +
-                    cos(view_zenith) * cos(sun_zenith));
+                return acos(cos(view_sun_azimuth) * sin(view_zenith) * sin(sun_zenith) + cos(view_zenith) * cos(sun_zenith));
             }
 
             // Optical lengths between a point of the intersection circle between a sphere
             // and a cylinder, and the Sun. The cylinder axis being the Sun direction.
-            dimensional::BinaryFunction<kNumSphere, kNumCylinder, Length>
-                rayleigh_optical_length_;
-            dimensional::BinaryFunction<kNumSphere, kNumCylinder, Length>
-                mie_optical_length_;
+            dimensional::BinaryFunction<kNumSphere, kNumCylinder, Length> rayleigh_optical_length_;
+            dimensional::BinaryFunction<kNumSphere, kNumCylinder, Length> mie_optical_length_;
             // Same, with the Sun in the opposite direction of the cylinder axis.
-            dimensional::BinaryFunction<kNumSphere, kNumCylinder, Length>
-                rayleigh_opposite_optical_length_;
-            dimensional::BinaryFunction<kNumSphere, kNumCylinder, Length>
-                mie_opposite_optical_length_;
+            dimensional::BinaryFunction<kNumSphere, kNumCylinder, Length> rayleigh_opposite_optical_length_;
+            dimensional::BinaryFunction<kNumSphere, kNumCylinder, Length> mie_opposite_optical_length_;
             // <-- END-COPY-PASTA
 
             void precompute_optical_lengths() {
@@ -280,10 +283,8 @@ namespace renderer
                             Length distance_to_sphere = DistanceToSphere(r, rmu, r_k);
                             Number rayleigh_density = exp(-h_k / RayleighScaleHeight);
                             Number mie_density = exp(-h_k / MieScaleHeight);
-                            Length segment_length =
-                                distance_to_sphere - distance_to_previous_sphere;
-                            rayleigh_length += (rayleigh_density + previous_rayleigh_density) / 2 *
-                                segment_length;
+                            Length segment_length = distance_to_sphere - distance_to_previous_sphere;
+                            rayleigh_length += (rayleigh_density + previous_rayleigh_density) / 2 * segment_length;
                             mie_length += (mie_density + previous_mie_density) / 2 * segment_length;
                             previous_rayleigh_density = rayleigh_density;
                             previous_mie_density = mie_density;
@@ -307,10 +308,8 @@ namespace renderer
                             }
                             Number rayleigh_density = exp(-h_k / RayleighScaleHeight);
                             Number mie_density = exp(-h_k / MieScaleHeight);
-                            Length segment_length =
-                                distance_to_sphere - distance_to_previous_sphere;
-                            rayleigh_length += (rayleigh_density + previous_rayleigh_density) / 2 *
-                                segment_length;
+                            Length segment_length = distance_to_sphere - distance_to_previous_sphere;
+                            rayleigh_length += (rayleigh_density + previous_rayleigh_density) / 2 * segment_length;
                             mie_length += (mie_density + previous_mie_density) / 2 * segment_length;
                             previous_rayleigh_density = rayleigh_density;
                             previous_mie_density = mie_density;
@@ -322,25 +321,20 @@ namespace renderer
                 }
             }
 
-            IrradianceSpectrum GetSunIrradiance(Length altitude,
-                double sun_zenith) const {
+            IrradianceSpectrum GetSunIrradiance(Length altitude, double sun_zenith) const {
                 Length rayleigh_length;
                 Length mie_length;
-                GetOpticalLengths(EarthRadius + altitude, cos(sun_zenith), &rayleigh_length,
-                    &mie_length);
-                DimensionlessSpectrum optical_depth = RayleighScattering() * rayleigh_length +
-                    MieExtinction() * mie_length;
+                GetOpticalLengths(EarthRadius + altitude, cos(sun_zenith), &rayleigh_length, &mie_length);
+                DimensionlessSpectrum optical_depth = RayleighScattering() * rayleigh_length + MieExtinction() * mie_length;
                 DimensionlessSpectrum transmittance(exp(-optical_depth));
                 return transmittance * SolarSpectrum();
             }
 
-            RadianceSpectrum GetSkyRadiance(Length altitude, double sun_zenith,
-                double view_zenith, double view_sun_azimuth) const {
+            RadianceSpectrum GetSkyRadiance(Length altitude, double sun_zenith, double view_zenith, double view_sun_azimuth) const {
                 Length r = EarthRadius + altitude;
                 Number mu_s = cos(sun_zenith);
                 Number mu = cos(view_zenith);
-                Number nu =
-                    cos(view_sun_azimuth) * sin(view_zenith) * sin(sun_zenith) + mu * mu_s;
+                Number nu = cos(view_sun_azimuth) * sin(view_zenith) * sin(sun_zenith) + mu * mu_s;
                 Length rmu = r * mu;
                 Length rmu_s = r * mu_s;
 
@@ -362,10 +356,8 @@ namespace renderer
                     Number rayleigh_density = exp(-h_i / RayleighScaleHeight);
                     Number mie_density = exp(-h_i / MieScaleHeight);
                     Length distance_to_sphere = DistanceToSphere(r, rmu, r_i);
-                    Length half_segment_length =
-                        (distance_to_sphere - distance_to_previous_sphere) * 0.5;
-                    rayleigh_length +=
-                        (rayleigh_density + previous_rayleigh_density) * half_segment_length;
+                    Length half_segment_length = (distance_to_sphere - distance_to_previous_sphere) * 0.5;
+                    rayleigh_length += (rayleigh_density + previous_rayleigh_density) * half_segment_length;
                     mie_length += (mie_density + previous_mie_density) * half_segment_length;
 
                     Length rayleigh_sun_length;
@@ -373,14 +365,11 @@ namespace renderer
                     Number mu_s_i = (rmu_s + distance_to_sphere * nu) / r_i;
                     GetOpticalLengths(r_i, mu_s_i, &rayleigh_sun_length, &mie_sun_length);
 
-                    DimensionlessSpectrum optical_depth =
-                        RayleighScattering() * (rayleigh_length + rayleigh_sun_length) +
-                        MieExtinction() * (mie_length + mie_sun_length);
+                    DimensionlessSpectrum optical_depth = RayleighScattering() * (rayleigh_length + rayleigh_sun_length) + MieExtinction() * (mie_length + mie_sun_length);
                     DimensionlessSpectrum transmittance(exp(-optical_depth));
                     DimensionlessSpectrum rayleigh_sample(transmittance * rayleigh_density);
                     DimensionlessSpectrum mie_sample(transmittance * mie_density);
-                    rayleigh_integral +=
-                        (rayleigh_sample + previous_rayleigh_sample) * half_segment_length;
+                    rayleigh_integral += (rayleigh_sample + previous_rayleigh_sample) * half_segment_length;
                     mie_integral += (mie_sample + previous_mie_sample) * half_segment_length;
 
                     previous_rayleigh_density = rayleigh_density;
@@ -400,8 +389,7 @@ namespace renderer
             // at radius r and the top of the atmosphere in a direction whose angle with
             // the local vertical is acos(mu). This is done by using the precomputed
             // optical length lookup tables.
-            void GetOpticalLengths(Length r, Number mu, Length* rayleigh_length,
-                Length* mie_length) const {
+            void GetOpticalLengths(Length r, Number mu, Length* rayleigh_length, Length* mie_length) const {
                 const Number a = exp(-(AtmosphereRadius - EarthRadius) / RayleighScaleHeight) - 1.0;
                 Number x = (exp(-(r - EarthRadius) / RayleighScaleHeight) - 1.0) / a;
                 Number y = r * sqrt(1.0 - mu * mu) / AtmosphereRadius;
@@ -417,8 +405,6 @@ namespace renderer
                 }
             }
 
-
-            // COPY_PASTA_START -->
             // Computes the sphere radius noted r_i in Nishita93.
             Length GetSphereRadius(int sphere_index) const {
                 const Number a = exp(-(AtmosphereRadius - EarthRadius) / RayleighScaleHeight) - 1.0;
@@ -441,8 +427,7 @@ namespace renderer
             // acos(rmu / r), or 0 if there is no intersection.
             Length DistanceToSphere(Length r, Length rmu, Length sphere_radius) const {
                 Area delta_sq = sphere_radius * sphere_radius - r * r + rmu * rmu;
-                return delta_sq < 0.0 * m2 ? 0.0 * m :
-                    (r < sphere_radius ? -rmu + sqrt(delta_sq) : -rmu - sqrt(delta_sq));
+                return delta_sq < 0.0 * m2 ? 0.0 * m : (r < sphere_radius ? -rmu + sqrt(delta_sq) : -rmu - sqrt(delta_sq));
             }
 
         private:
@@ -500,18 +485,6 @@ namespace renderer
                 radiance = test_radiance;
 
                 return;
-            }
-
-  
-
-        protected:
-
-          
-
-            Vector3f shift(Vector3f v) const
-            {
-                v.y -= m_uniform_values.m_horizon_shift;
-                return normalize(v);
             }
 
         };

@@ -39,11 +39,6 @@
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
-// BEGIN-COPY-PASTA -->
-#include "b_binary_function.h"
-#include "b_units.h"
-// <-- END-COPY-PASTA
-
 // Forward declarations.
 namespace foundation { class Dictionary; }
 namespace foundation { class DictionaryArray; }

@@ -1,36 +1,42 @@
+/**
+ * Copyright (c) 2016 Eric Bruneton
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the copyright holders nor the names of its
+ *    contributors may be used to endorse or promote products derived from
+ *    this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ * THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
-//
-// This source file is part of appleseed.
-// Visit https://appleseedhq.net/ for additional information and resources.
-//
-// This software is released under the MIT license.
-//
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
-//#pragma once
+#pragma once
+
+// appleseed.foundation headers.
+#include "foundation/math/scalar.h"
 
 #include "b_binary_function.h"
 #include "b_units.h"
 
-constexpr float PI = 3.14159265358979323846;
+using namespace foundation;
+
 
 constexpr Length EarthRadius = 6360.0 * km;
 constexpr Length AtmosphereRadius = 6420.0 * km;
@@ -82,8 +88,6 @@ InverseSolidAngle MiePhaseFunction(double scattering_angle);
 InverseSolidAngle MiePhaseFunction(Number scattering_angle_cosine);
 InverseSolidAngle MiePhaseFunction(double g, Number scattering_angle_cosine);
 
-const DimensionlessSpectrum& GroundAlbedo();
-
 namespace {
 
     IrradianceSpectrum NewSolarSpectrum() {
@@ -129,8 +133,7 @@ namespace {
         return ScatteringSpectrum(360.0 * nm, 830.0 * nm, penndorf_samples);
     }
 
-    ScatteringSpectrum NewMieExtinction(double angstrom_alpha,
-        double angstrom_beta) {
+    ScatteringSpectrum NewMieExtinction(double angstrom_alpha, double angstrom_beta) {
         ScatteringSpectrum mie;
         for (unsigned int i = 0; i < mie.size(); ++i) {
             double lambda = mie.GetSample(i).to(1000.0 * nm);
@@ -139,38 +142,15 @@ namespace {
         return mie;
     }
 
-    ScatteringSpectrum NewMieScattering(double angstrom_alpha,
-        double angstrom_beta) {
+    ScatteringSpectrum NewMieScattering(double angstrom_alpha, double angstrom_beta) {
         const double kSingleScatteringAlbedo = 0.8;
-        return
-            NewMieExtinction(angstrom_alpha, angstrom_beta) * kSingleScatteringAlbedo;
-    }
-
-    DimensionlessSpectrum NewGroundAlbedo() {
-        // Grass spectral albedo from Uwe Feister and Rolf Grewe, "Spectral albedo
-        // measurements in the UV and visible region over different types of
-        // surfaces", Photochemistry and Photobiology, 62, 736-744, 1995.
-        static const float kGrassAlbedo[45] = {
-          0.018, 0.019, 0.019, 0.020, 0.022, 0.024, 0.027, 0.029, 0.030, 0.031, 0.032,
-          0.032, 0.032, 0.033, 0.035, 0.040, 0.055, 0.073, 0.084, 0.089, 0.089, 0.079,
-          0.069, 0.063, 0.061, 0.057, 0.052, 0.051, 0.048, 0.042, 0.039, 0.035, 0.035,
-          0.043, 0.087, 0.156, 0.234, 0.334, 0.437, 0.513, 0.553, 0.571, 0.579, 0.581,
-          0.587
-        };
-        std::vector<Number> grass_albedo_samples;
-        for (int i = 0; i < 45; ++i) {
-            grass_albedo_samples.push_back(kGrassAlbedo[i]);
-        }
-        return DimensionlessSpectrum(360.0 * nm, 800.0 * nm, grass_albedo_samples);
+        return NewMieExtinction(angstrom_alpha, angstrom_beta) * kSingleScatteringAlbedo;
     }
 
     const IrradianceSpectrum solar_spectrum = NewSolarSpectrum();
     const ScatteringSpectrum rayleigh_scattering = NewRayleighScattering();
-    const ScatteringSpectrum mie_extinction =
-        NewMieExtinction(MieAngstromAlpha, MieAngstromBeta);
-    const ScatteringSpectrum mie_scattering =
-        NewMieScattering(MieAngstromAlpha, MieAngstromBeta);
-    const DimensionlessSpectrum ground_albedo = NewGroundAlbedo();
+    const ScatteringSpectrum mie_extinction = NewMieExtinction(MieAngstromAlpha, MieAngstromBeta);
+    const ScatteringSpectrum mie_scattering = NewMieScattering(MieAngstromAlpha, MieAngstromBeta);
 
 }  // anonymous namespace
 
@@ -192,8 +172,7 @@ InverseSolidAngle RayleighPhaseFunction(double scattering_angle) {
 }
 
 InverseSolidAngle RayleighPhaseFunction(Number scattering_angle_cosine) {
-    constexpr InverseSolidAngle kRayleigh =
-        3.0 / (16.0 * PI) * InverseSolidAngle::Unit();
+    const InverseSolidAngle kRayleigh = 3.0 / (16.0 * Pi<float>()) * InverseSolidAngle::Unit();
     return kRayleigh * (1.0 + scattering_angle_cosine * scattering_angle_cosine);
 }
 
@@ -203,17 +182,12 @@ InverseSolidAngle MiePhaseFunction(double scattering_angle) {
 
 InverseSolidAngle MiePhaseFunction(Number scattering_angle_cosine) {
     constexpr double g = MiePhaseFunctionG;
-    constexpr InverseSolidAngle kMie = 3.0 / (8.0 * PI) *
-        (1.0 - g * g) / (2.0 + g * g) * InverseSolidAngle::Unit();
-    return kMie * (1.0 + scattering_angle_cosine * scattering_angle_cosine) /
-        pow(1.0 + g * g - 2.0 * g * scattering_angle_cosine, 1.5);
+    const InverseSolidAngle kMie = 3.0 / (8.0 * Pi<float>()) * (1.0 - g * g) / (2.0 + g * g) * InverseSolidAngle::Unit();
+    return kMie * (1.0 + scattering_angle_cosine * scattering_angle_cosine) / pow(1.0 + g * g - 2.0 * g * scattering_angle_cosine, 1.5);
 }
 
 InverseSolidAngle MiePhaseFunction(double g, Number scattering_angle_cosine) {
-    const InverseSolidAngle kMie = 3.0 / (8.0 * PI) *
-        (1.0 - g * g) / (2.0 + g * g) * InverseSolidAngle::Unit();
-    return kMie * (1.0 + scattering_angle_cosine * scattering_angle_cosine) /
-        pow(1.0 + g * g - 2.0 * g * scattering_angle_cosine, 1.5);
+    const InverseSolidAngle kMie = 3.0 / (8.0 * Pi<float>()) * (1.0 - g * g) / (2.0 + g * g) * InverseSolidAngle::Unit();
+    return kMie * (1.0 + scattering_angle_cosine * scattering_angle_cosine) / pow(1.0 + g * g - 2.0 * g * scattering_angle_cosine, 1.5);
 }
 
-const DimensionlessSpectrum& GroundAlbedo() { return ground_albedo; }
