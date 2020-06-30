@@ -311,7 +311,7 @@ namespace renderer
             }
 
             IrradianceSpectrum GetSunIrradiance(Length altitude,
-                Angle sun_zenith) const {
+                double sun_zenith) const {
                 Length rayleigh_length;
                 Length mie_length;
                 GetOpticalLengths(EarthRadius + altitude, cos(sun_zenith), &rayleigh_length,
@@ -322,8 +322,8 @@ namespace renderer
                 return transmittance * SolarSpectrum();
             }
 
-            RadianceSpectrum GetSkyRadiance(Length altitude, Angle sun_zenith,
-                Angle view_zenith, Angle view_sun_azimuth) const {
+            RadianceSpectrum GetSkyRadiance(Length altitude, double sun_zenith,
+                double view_zenith, double view_sun_azimuth) const {
                 Length r = EarthRadius + altitude;
                 Number mu_s = cos(sun_zenith);
                 Number mu = cos(view_zenith);
@@ -461,9 +461,9 @@ namespace renderer
             {
                 
                 Length altitude = 1 * m;     // Must be parametrizable
-                Angle sun_zenith = 80 * deg; // Must be parametrizable
+                double sun_zenith = 1.39626; // Must be parametrizable
                 Vector3f *w_zenith = new Vector3f(0.0f, 1.0f, 0.0f);
-                Angle view_zenith = acos(dot(outgoing, *w_zenith)) * rad;
+                double view_zenith = acos(dot(outgoing, *w_zenith));
                 delete w_zenith;
 
                 Vector3f *outgoing_flat = new Vector3f(outgoing.x, 0.0f, outgoing.z);
@@ -471,7 +471,7 @@ namespace renderer
                 outgoing_flat->x = outgoing.x / mag;
                 outgoing_flat->z = outgoing.z / mag;
                 Vector3f *sun_flat = new Vector3f(0.0f, 0.0f, -1.0f);
-                Angle view_sun_azimuth = acos(dot(*outgoing_flat, *sun_flat)) * rad;
+                double view_sun_azimuth = acos(dot(*outgoing_flat, *sun_flat));
 
 
                 RadianceSpectrum sky_radiance = GetSkyRadiance(altitude, sun_zenith, view_zenith, view_sun_azimuth);

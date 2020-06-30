@@ -22,9 +22,18 @@
  OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+
+// Interface header.
 #include "b_atmosphere.h"
 
+// appleseed.foundation headers.
+#include "foundation/math/scalar.h"
+
+// Standard headers.
 #include <vector>
+
+constexpr float PI = 3.14159265358979323846;
+
 
 namespace {
 
@@ -129,7 +138,7 @@ ScatteringSpectrum MieScattering(double angstrom_alpha, double angstrom_beta) {
     return NewMieScattering(angstrom_alpha, angstrom_beta);
 }
 
-InverseSolidAngle RayleighPhaseFunction(Angle scattering_angle) {
+InverseSolidAngle RayleighPhaseFunction(double scattering_angle) {
     return RayleighPhaseFunction(cos(scattering_angle));
 }
 
@@ -139,7 +148,7 @@ InverseSolidAngle RayleighPhaseFunction(Number scattering_angle_cosine) {
     return kRayleigh * (1.0 + scattering_angle_cosine * scattering_angle_cosine);
 }
 
-InverseSolidAngle MiePhaseFunction(Angle scattering_angle) {
+InverseSolidAngle MiePhaseFunction(double scattering_angle) {
     return MiePhaseFunction(cos(scattering_angle));
 }
 
@@ -165,8 +174,8 @@ int Atmosphere::GetOriginalNumberOfWavelengths() const {
 }
 
 
-Angle Atmosphere::GetViewSunAngle(Angle sun_zenith, Angle view_zenith,
-    Angle view_sun_azimuth) {
+double Atmosphere::GetViewSunAngle(double sun_zenith, double view_zenith,
+    double view_sun_azimuth) {
     return acos(cos(view_sun_azimuth) * sin(view_zenith) * sin(sun_zenith) +
         cos(view_zenith) * cos(sun_zenith));
 }

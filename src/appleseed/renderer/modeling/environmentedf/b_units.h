@@ -25,7 +25,6 @@
 #ifndef PHYSICS_UNITS_H_
 #define PHYSICS_UNITS_H_
 
-#include "b_angle.h"
 #include "b_scalar.h"
 #include "b_scalar_function.h"
 
@@ -101,15 +100,5 @@ constexpr LuminousIntensity cd = lm / sr;
 constexpr LuminousIntensity kcd = 1000.0 * cd;
 constexpr Luminance cd_per_square_meter = cd / m2;
 constexpr Luminance kcd_per_square_meter = kcd / m2;
-
-// Provides aliases for angle types and constants in the dimensional package, to
-// avoid having to use qualified type names and / or "using" directives in files
-// using this header.
-
-typedef dimensional::Angle Angle;
-constexpr Angle rad = dimensional::rad;
-constexpr Angle deg = dimensional::deg;
-constexpr double PI = dimensional::PI;
-constexpr Angle pi = dimensional::pi;
 
 #endif  // PHYSICS_UNITS_H_

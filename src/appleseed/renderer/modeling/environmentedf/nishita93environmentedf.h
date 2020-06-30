@@ -42,7 +42,6 @@
 
 // BEGIN-COPY-PASTA -->
 #include "b_atmosphere.h"
-#include "b_angle.h"
 #include "b_binary_function.h"
 #include "b_units.h"
 // <-- END-COPY-PASTA

@@ -25,7 +25,6 @@
 #ifndef ATMOSPHERE_ATMOSPHERE_H_
 #define ATMOSPHERE_ATMOSPHERE_H_
 
-#include "b_angle.h"
 #include "b_units.h"
 
 constexpr Length EarthRadius = 6360.0 * km;
@@ -68,13 +67,13 @@ ScatteringSpectrum MieScattering(double angstrom_alpha, double angstrom_beta);
 
 // Computes the Rayleigh phase function for the given scattering angle.
 // The integral of this function over all solid angles is 1.
-InverseSolidAngle RayleighPhaseFunction(Angle scattering_angle);
+InverseSolidAngle RayleighPhaseFunction(double scattering_angle);
 InverseSolidAngle RayleighPhaseFunction(Number scattering_angle_cosine);
 
 // Computes the Mie phase function for the given scattering angle (using
 // the Cornette-Shanks approximation).
 // The integral of this function over all solid angles is 1.
-InverseSolidAngle MiePhaseFunction(Angle scattering_angle);
+InverseSolidAngle MiePhaseFunction(double scattering_angle);
 InverseSolidAngle MiePhaseFunction(Number scattering_angle_cosine);
 InverseSolidAngle MiePhaseFunction(double g, Number scattering_angle_cosine);
 
@@ -91,8 +90,8 @@ protected:
     // The default implementation returns spectrum::NUM_WAVELENGTH.
     virtual int GetOriginalNumberOfWavelengths() const;
 
-    static Angle GetViewSunAngle(Angle sun_zenith, Angle view_zenith,
-        Angle view_sun_azimuth);
+    static double GetViewSunAngle(double sun_zenith, double view_zenith,
+        double view_sun_azimuth);
 };
 
 #endif  // ATMOSPHERE_ATMOSPHERE_H_
