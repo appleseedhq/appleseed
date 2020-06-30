@@ -41,7 +41,6 @@
 
 
 // BEGIN-COPY-PASTA -->
-#include "b_atmosphere.h"
 #include "b_binary_function.h"
 #include "b_units.h"
 // <-- END-COPY-PASTA
@@ -52,6 +51,59 @@ namespace foundation { class DictionaryArray; }
 namespace renderer { class EnvironmentEDF; }
 namespace renderer { class ParamArray; }
 
+constexpr Length EarthRadius = 6360.0 * km;
+constexpr Length AtmosphereRadius = 6420.0 * km;
+
+// The height of the atmosphere if its density was uniform.
+constexpr Length RayleighScaleHeight = 8000.0 * m;
+
+// The height of the Mie particle layer if its density was uniform.
+constexpr Length MieScaleHeight = 1200.0 * m;
+
+// The Angstrom alpha coefficient for the Mie optical depth.
+constexpr double MieAngstromAlpha = 0.8;
+
+// The Angstrom beta coefficient for the Mie optical depth.
+constexpr double MieAngstromBeta = 0.04;
+
+// The g parameter of the Cornette-Shanks phase function used for Mie particles.
+constexpr double MiePhaseFunctionG = 0.7;
+
+// The Linke turbidity value, for the Preetham and Hosek models.
+constexpr double Turbidity = 2.53;
+
+// Returns the spectral irradiance of the Sun at the top of the atmosphere.
+const IrradianceSpectrum& SolarSpectrum();
+
+// Returns the Rayleigh scattering coefficient at sea level.
+const ScatteringSpectrum& RayleighScattering();
+
+// Returns the Mie extinction coefficient at sea level.
+const ScatteringSpectrum& MieExtinction();
+
+// Returns the Mie scattering coefficient at sea level.
+const ScatteringSpectrum& MieScattering();
+
+// Returns the Mie extinction and scattering coefficients at sea level for
+// the given Angstrom parameters.
+ScatteringSpectrum MieExtinction(double angstrom_alpha, double angstrom_beta);
+ScatteringSpectrum MieScattering(double angstrom_alpha, double angstrom_beta);
+
+// Computes the Rayleigh phase function for the given scattering angle.
+// The integral of this function over all solid angles is 1.
+InverseSolidAngle RayleighPhaseFunction(double scattering_angle);
+InverseSolidAngle RayleighPhaseFunction(Number scattering_angle_cosine);
+
+// Computes the Mie phase function for the given scattering angle (using
+// the Cornette-Shanks approximation).
+// The integral of this function over all solid angles is 1.
+InverseSolidAngle MiePhaseFunction(double scattering_angle);
+InverseSolidAngle MiePhaseFunction(Number scattering_angle_cosine);
+InverseSolidAngle MiePhaseFunction(double g, Number scattering_angle_cosine);
+
+const DimensionlessSpectrum& GroundAlbedo();
+
+
 namespace renderer
 {
 
@@ -60,7 +112,7 @@ namespace renderer
     //
 
     class APPLESEED_DLLSYMBOL Nishita93EnvironmentEDFFactory
-        : public IEnvironmentEDFFactory, public Atmosphere
+        : public IEnvironmentEDFFactory
     {
     public:
         // Delete this instance.
