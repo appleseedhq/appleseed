@@ -417,10 +417,7 @@ void MainWindow::build_menus()
 
     connect(m_ui->action_diagnostics_false_colors, SIGNAL(triggered()), SLOT(slot_show_false_colors_window()));
 
-    connect( // TODO add one toggle per stage
-        m_ui->action_diagnostics_post_processing_preview,
-        SIGNAL(triggered(bool)),
-        SLOT(slot_toggle_post_processing_preview(const bool)));
+    connect(m_ui->action_diagnostics_post_processing_preview, SIGNAL(toggled(bool)), SLOT(slot_toggle_post_processing_preview(const bool)));
 
     //
     // Debug menu.
@@ -446,7 +443,7 @@ void MainWindow::build_menus()
 
 void MainWindow::build_override_shading_menu_item()
 {
-    QActionGroup* action_group = new QActionGroup(this); // FIXME is this used?
+    QActionGroup* action_group = new QActionGroup(this);
 
     // No Override.
     connect(
@@ -730,8 +727,8 @@ void MainWindow::build_connections()
         SLOT(slot_open_project_complete(const QString&, const bool)));
 
     connect(
-        &m_rendering_manager, SIGNAL(signal_rendering_end()),
-        SLOT(slot_rendering_end()));
+        &m_rendering_manager, SIGNAL(signal_rendering_end(renderer::MasterRenderer::RenderingResult::Status)),
+        SLOT(slot_rendering_end(renderer::MasterRenderer::RenderingResult::Status)));
 }
 
 void MainWindow::update_workspace()
@@ -1284,6 +1281,7 @@ void MainWindow::apply_post_processing_preview_settings()
             if (frame.post_processing_stages().size() > 0)
             {
                 RENDERER_LOG_INFO("previewing post-processing stage:");
+                // FIXME follow stage ordering
                 // Apply post-processing stages.
                 for (PostProcessingStage& stage : frame.post_processing_stages())
                 {
@@ -1760,11 +1758,24 @@ void MainWindow::slot_pause_or_resume_rendering(const bool checked)
     update_pause_resume_checkbox(checked);
 }
 
-void MainWindow::slot_rendering_end()
+void MainWindow::slot_rendering_end(MasterRenderer::RenderingResult::Status status)
 {
-    apply_false_colors_settings();
-    apply_post_processing_preview_settings(); // FIXME should this be applied if False Colors is enabled?
-                                              // TODO don't call on a final render (i.e. only apply "on abort")
+    // NOTE don't preview stages on a final render (i.e. only apply "on abort")
+    // FIXME should they be applied if False Colors is enabled?
+    switch (status)
+    {
+      case MasterRenderer::RenderingResult::Status::Aborted:
+        apply_false_colors_settings();
+        apply_post_processing_preview_settings();
+        break;
+
+      case MasterRenderer::RenderingResult::Status::Succeeded:
+        apply_false_colors_settings();
+        break;
+
+      default:
+        break;
+    }
 
     update_workspace();
 

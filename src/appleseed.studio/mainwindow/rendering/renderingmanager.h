@@ -150,7 +150,7 @@ class RenderingManager
     void clear_sticky_actions();
 
   signals:
-    void signal_rendering_end();
+    void signal_rendering_end(renderer::MasterRenderer::RenderingResult::Status status);
 
   public slots:
     void slot_abort_rendering();

@@ -44,6 +44,7 @@
 #include "widgets/qtlogtarget.h"
 
 // appleseed.renderer headers.
+#include "renderer/api/rendering.h"
 #include "renderer/api/utility.h"
 
 // Qt headers.
@@ -282,7 +283,8 @@ class MainWindow
         const bool      successful);
     void slot_pause_or_resume_rendering(
         const bool      checked);
-    void slot_rendering_end();
+    void slot_rendering_end(
+        renderer::MasterRenderer::RenderingResult::Status status);
     void slot_camera_changed();
 
     // Diagnostics.
