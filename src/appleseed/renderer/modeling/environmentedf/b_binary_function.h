@@ -38,8 +38,6 @@
 #include <memory>
 #include <string>
 
-#include "b_vector.h"
-
 namespace dimensional {
 
     // A function from [0:1]x[0:1] to values of type T represented by its values at
@@ -134,10 +132,6 @@ namespace dimensional {
         std::unique_ptr<T[]> value_;
     };
 
-    template<unsigned int NX, unsigned int NY, typename T>
-    T texture(const BinaryFunction<NX, NY, T>& table, const vec2& uv) {
-        return table(uv.x(), uv.y());
-    }
 
 }  // namespace dimensional
 
