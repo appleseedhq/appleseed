@@ -482,7 +482,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Post-Processing Preview...</string>
+    <string>&amp;Post-Processing Preview</string>
    </property>
   </action>
  </widget>

@@ -1278,17 +1278,18 @@ void MainWindow::apply_post_processing_preview_settings()
         post_processing_preview_enabled,
         [&](const renderer::Frame& frame, renderer::Frame& frame_copy)
         {
-            if (frame.post_processing_stages().size() > 0)
+            if (!frame.post_processing_stages().empty())
             {
                 RENDERER_LOG_INFO("previewing post-processing stage:");
-                // FIXME follow stage ordering
+
                 // Apply post-processing stages.
+                // FIXME follow stage ordering, like in MasterRenderer::postprocess()
                 for (PostProcessingStage& stage : frame.post_processing_stages())
                 {
                     RENDERER_LOG_INFO("  \"%s\"", stage.get_path().c_str());
                     apply_post_processing_stage(stage, frame_copy);
                 }
-            } else RENDERER_LOG_INFO("no post-processing stage to preview:");
+            }
         });
 }
 
@@ -1325,13 +1326,6 @@ void MainWindow::apply_post_processing_stage(
     {
         // Execute the post-processing stage.
         stage.execute(working_frame);
-
-        // Blit the frame copy into the render widget.
-        for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
-        {
-            i->second->get_render_widget()->blit_frame(working_frame);
-            i->second->get_render_widget()->update();
-        }
     }
 }
 
@@ -1359,6 +1353,13 @@ void MainWindow::blit_frame_diagnostics(
 
         // Apply changes to the generated copy.
         apply_on_frame_copy(*frame, working_frame.ref());
+
+        // Blit the frame copy into the render widget.
+        for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
+        {
+            i->second->get_render_widget()->blit_frame(working_frame.ref());
+            i->second->get_render_widget()->update();
+        }
     }
     else
     {
@@ -1760,15 +1761,12 @@ void MainWindow::slot_pause_or_resume_rendering(const bool checked)
 
 void MainWindow::slot_rendering_end(MasterRenderer::RenderingResult::Status status)
 {
-    // NOTE don't preview stages on a final render (i.e. only apply "on abort")
-    // FIXME should they be applied if False Colors is enabled?
+    // FIXME apply_false_colors_settings() creates a new copy of the frame and blits it,
+    // thus, the post processing preview is overriden and doesn't show up
     switch (status)
     {
       case MasterRenderer::RenderingResult::Status::Aborted:
-        apply_false_colors_settings();
         apply_post_processing_preview_settings();
-        break;
-
       case MasterRenderer::RenderingResult::Status::Succeeded:
         apply_false_colors_settings();
         break;
