@@ -1266,52 +1266,52 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
             : RenderingManager::RenderingMode::FinalRendering,
         m_render_tabs["RGB"]);
 }
-
-void MainWindow::apply_post_processing_preview_settings()
-{
-    const ParamArray& post_processing_preview_params =
-        m_application_settings.child("post_processing_preview");
-    const bool post_processing_preview_enabled =
-        post_processing_preview_params.get_optional<bool>("enabled", false);
-
-    blit_frame_diagnostics(
-        post_processing_preview_enabled,
-        [&](const renderer::Frame& frame, renderer::Frame& frame_copy)
-        {
-            if (!frame.post_processing_stages().empty())
-            {
-                RENDERER_LOG_INFO("previewing post-processing stage:");
-
-                // Apply post-processing stages.
-                // FIXME follow stage ordering, like in MasterRenderer::postprocess()
-                for (PostProcessingStage& stage : frame.post_processing_stages())
-                {
-                    RENDERER_LOG_INFO("  \"%s\"", stage.get_path().c_str());
-                    apply_post_processing_stage(stage, frame_copy);
-                }
-            }
-        });
-}
-
-void MainWindow::apply_false_colors_settings()
-{
-    const ParamArray& false_colors_params = m_application_settings.child("false_colors");
-    const bool false_colors_enabled = false_colors_params.get_optional<bool>("enabled", false);
-
-    blit_frame_diagnostics(
-        false_colors_enabled,
-        [&](const renderer::Frame& frame, renderer::Frame& frame_copy)
-        {
-            // Create post-processing stage.
-            auto_release_ptr<PostProcessingStage> stage(
-                ColorMapPostProcessingStageFactory().create(
-                    "__false_colors_post_processing_stage",
-                    false_colors_params));
-
-            // Apply post-processing stage.
-            apply_post_processing_stage(stage.ref(), frame_copy);
-        });
-}
+//
+//void MainWindow::apply_post_processing_preview_settings()
+//{
+//    const ParamArray& post_processing_preview_params =
+//        m_application_settings.child("post_processing_preview");
+//    const bool post_processing_preview_enabled =
+//        post_processing_preview_params.get_optional<bool>("enabled", false);
+//
+//    blit_frame_diagnostics(
+//        post_processing_preview_enabled,
+//        [&](const renderer::Frame& frame, renderer::Frame& frame_copy)
+//        {
+//            if (!frame.post_processing_stages().empty())
+//            {
+//                RENDERER_LOG_INFO("previewing post-processing stage:");
+//
+//                // Apply post-processing stages.
+//                // FIXME follow stage ordering, like in MasterRenderer::postprocess()
+//                for (PostProcessingStage& stage : frame.post_processing_stages())
+//                {
+//                    RENDERER_LOG_INFO("  \"%s\"", stage.get_path().c_str());
+//                    apply_post_processing_stage(stage, frame_copy);
+//                }
+//            }
+//        });
+//}
+//
+//void MainWindow::apply_false_colors_settings()
+//{
+//    const ParamArray& false_colors_params = m_application_settings.child("false_colors");
+//    const bool false_colors_enabled = false_colors_params.get_optional<bool>("enabled", false);
+//
+//    blit_frame_diagnostics(
+//        false_colors_enabled,
+//        [&](const renderer::Frame& frame, renderer::Frame& frame_copy)
+//        {
+//            // Create post-processing stage.
+//            auto_release_ptr<PostProcessingStage> stage(
+//                ColorMapPostProcessingStageFactory().create(
+//                    "__false_colors_post_processing_stage",
+//                    false_colors_params));
+//
+//            // Apply post-processing stage.
+//            apply_post_processing_stage(stage.ref(), frame_copy);
+//        });
+//}
 
 void MainWindow::apply_post_processing_stage(
     PostProcessingStage&        stage,
@@ -1766,9 +1766,69 @@ void MainWindow::slot_rendering_end(MasterRenderer::RenderingResult::Status stat
     switch (status)
     {
       case MasterRenderer::RenderingResult::Status::Aborted:
-        apply_post_processing_preview_settings();
+        {
+            const ParamArray& post_processing_preview_params =
+                m_application_settings.child("post_processing_preview");
+            const bool post_processing_preview_enabled =
+                post_processing_preview_params.get_optional<bool>("enabled", false);
+
+            const ParamArray& false_colors_params = m_application_settings.child("false_colors");
+            const bool false_colors_enabled = false_colors_params.get_optional<bool>("enabled", false);
+
+            blit_frame_diagnostics(
+                post_processing_preview_enabled || false_colors_enabled,
+                [&](const renderer::Frame& frame, renderer::Frame& frame_copy)
+                {
+                    if (post_processing_preview_enabled)
+                    {
+                        if (!frame.post_processing_stages().empty())
+                        {
+                            RENDERER_LOG_INFO("previewing post-processing stage:");
+
+                            // Apply post-processing stages.
+                            // FIXME follow stage ordering, like in MasterRenderer::postprocess()
+                            for (PostProcessingStage& stage : frame.post_processing_stages())
+                            {
+                                RENDERER_LOG_INFO("  \"%s\"", stage.get_path().c_str());
+                                apply_post_processing_stage(stage, frame_copy);
+                            }
+                        }
+                    }
+
+                    if (false_colors_enabled)
+                    {
+                        // Create post-processing stage.
+                        auto_release_ptr<PostProcessingStage> stage(
+                            ColorMapPostProcessingStageFactory().create(
+                                "__false_colors_post_processing_stage",
+                                false_colors_params));
+
+                        // Apply post-processing stage.
+                        apply_post_processing_stage(stage.ref(), frame_copy);
+                    }
+                });
+            }
+        break;
+
       case MasterRenderer::RenderingResult::Status::Succeeded:
-        apply_false_colors_settings();
+        {
+            const ParamArray& false_colors_params = m_application_settings.child("false_colors");
+            const bool false_colors_enabled = false_colors_params.get_optional<bool>("enabled", false);
+
+            blit_frame_diagnostics(
+                false_colors_enabled,
+                [&](const renderer::Frame& frame, renderer::Frame& frame_copy)
+                {
+                    // Create post-processing stage.
+                    auto_release_ptr<PostProcessingStage> stage(
+                        ColorMapPostProcessingStageFactory().create(
+                            "__false_colors_post_processing_stage",
+                            false_colors_params));
+
+                    // Apply post-processing stage.
+                    apply_post_processing_stage(stage.ref(), frame_copy);
+                });
+        }
         break;
 
       default:
@@ -1885,7 +1945,23 @@ void MainWindow::slot_show_false_colors_window()
 void MainWindow::slot_apply_false_colors_settings_changes(Dictionary values)
 {
     m_application_settings.push("false_colors").merge(values);
-    apply_false_colors_settings();
+
+    const ParamArray& false_colors_params = m_application_settings.child("false_colors");
+    const bool false_colors_enabled = false_colors_params.get_optional<bool>("enabled", false);
+
+    blit_frame_diagnostics(
+        false_colors_enabled,
+        [&](const renderer::Frame& frame, renderer::Frame& frame_copy)
+        {
+            // Create post-processing stage.
+            auto_release_ptr<PostProcessingStage> stage(
+                ColorMapPostProcessingStageFactory().create(
+                    "__false_colors_post_processing_stage",
+                    false_colors_params));
+
+            // Apply post-processing stage.
+            apply_post_processing_stage(stage.ref(), frame_copy);
+        });
 }
 
 void MainWindow::slot_toggle_post_processing_preview(const bool checked)
@@ -1894,7 +1970,28 @@ void MainWindow::slot_toggle_post_processing_preview(const bool checked)
         .push("post_processing_preview")
         .merge(Dictionary().insert("enabled", checked));
 
-    apply_post_processing_preview_settings();
+    const ParamArray& post_processing_preview_params =
+        m_application_settings.child("post_processing_preview");
+    const bool post_processing_preview_enabled =
+        post_processing_preview_params.get_optional<bool>("enabled", false);
+
+    blit_frame_diagnostics(
+        post_processing_preview_enabled,
+        [&](const renderer::Frame& frame, renderer::Frame& frame_copy)
+        {
+            if (!frame.post_processing_stages().empty())
+            {
+                RENDERER_LOG_INFO("previewing post-processing stage:");
+
+                // Apply post-processing stages.
+                // FIXME follow stage ordering, like in MasterRenderer::postprocess()
+                for (PostProcessingStage& stage : frame.post_processing_stages())
+                {
+                    RENDERER_LOG_INFO("  \"%s\"", stage.get_path().c_str());
+                    apply_post_processing_stage(stage, frame_copy);
+                }
+            }
+        });
 }
 
 namespace
