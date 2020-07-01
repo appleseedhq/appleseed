@@ -236,14 +236,17 @@ class MainWindow
     void start_rendering(const RenderingMode rendering_mode);
 
     // Diagnostics.
-    void apply_post_processing_preview_settings();
-    void apply_false_colors_settings();
+    void apply_diagnostics_settings(
+        const bool                      apply_post_processing_preview_settings = true,
+        const bool                      apply_false_colors_settings = true);
+    void apply_post_processing_preview(
+        const renderer::Frame&          frame,
+        renderer::Frame&                working_frame);
+    void apply_false_colors(
+        renderer::Frame&                working_frame);
     void apply_post_processing_stage(
         renderer::PostProcessingStage&  stage,
         renderer::Frame&                working_frame);
-    void blit_frame_diagnostics(
-        const bool                      blit_on_frame_copy,
-        const ApplyOnFrameFunction      apply_on_frame);
 
     // Miscellaneous.
     void initialize_ocio();

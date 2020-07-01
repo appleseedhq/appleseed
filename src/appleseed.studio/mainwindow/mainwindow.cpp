@@ -1267,55 +1267,36 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
         m_render_tabs["RGB"]);
 }
 
-void MainWindow::apply_post_processing_preview_settings()
+void MainWindow::apply_post_processing_preview(
+    const Frame&    frame,
+    Frame&          working_frame)
 {
-    const ParamArray& post_processing_preview_params =
-        m_application_settings.child("post_processing_preview");
-    const bool post_processing_preview_enabled =
-        post_processing_preview_params.get_optional<bool>("enabled", false);
+    if (!frame.post_processing_stages().empty())
+    {
+        RENDERER_LOG_INFO("previewing post-processing stage:");
 
-    // FIXME apply_false_colors_settings() either blits project->get_frame() or creates a new copy from it,
-    // thus, the post processing preview is overriden and doesn't show up if we also create a copy to apply
-    blit_frame_diagnostics(
-        false,
-        [&](renderer::Frame& frame)
+        // Apply post-processing stages.
+        // FIXME follow stage ordering, like in MasterRenderer::postprocess()
+        for (PostProcessingStage& stage : frame.post_processing_stages())
         {
-            if (post_processing_preview_enabled && !frame.post_processing_stages().empty())
-            {
-                RENDERER_LOG_INFO("previewing post-processing stage:");
-
-                // Apply post-processing stages.
-                // FIXME follow stage ordering, like in MasterRenderer::postprocess()
-                for (PostProcessingStage& stage : frame.post_processing_stages())
-                {
-                    RENDERER_LOG_INFO("  \"%s\"", stage.get_path().c_str());
-                    apply_post_processing_stage(stage, frame);
-                }
-            }
-        });
+            RENDERER_LOG_INFO("  \"%s\"", stage.get_path().c_str());
+            apply_post_processing_stage(stage, working_frame);
+        }
+    }
 }
 
-void MainWindow::apply_false_colors_settings()
+void MainWindow::apply_false_colors(Frame& working_frame)
 {
     const ParamArray& false_colors_params = m_application_settings.child("false_colors");
-    const bool false_colors_enabled = false_colors_params.get_optional<bool>("enabled", false);
 
-    blit_frame_diagnostics(
-        true,
-        [&](renderer::Frame& frame_copy)
-        {
-            if (false_colors_enabled)
-            {
-                // Create post-processing stage.
-                auto_release_ptr<PostProcessingStage> stage(
-                    ColorMapPostProcessingStageFactory().create(
-                        "__false_colors_post_processing_stage",
-                        false_colors_params));
+    // Create post-processing stage.
+    auto_release_ptr<PostProcessingStage> stage(
+        ColorMapPostProcessingStageFactory().create(
+            "__false_colors_post_processing_stage",
+            false_colors_params));
 
-                // Apply post-processing stage.
-                apply_post_processing_stage(stage.ref(), frame_copy);
-            }
-        });
+    // Apply post-processing stage.
+    apply_post_processing_stage(stage.ref(), working_frame);
 }
 
 void MainWindow::apply_post_processing_stage(
@@ -1334,9 +1315,9 @@ void MainWindow::apply_post_processing_stage(
     }
 }
 
-void MainWindow::blit_frame_diagnostics(
-    const bool                  blit_on_frame_copy,
-    const ApplyOnFrameFunction  apply_on_frame)
+void MainWindow::apply_diagnostics_settings(
+    const bool      apply_post_processing_preview_settings,
+    const bool      apply_false_colors_settings)
 {
     Project* project = m_project_manager.get_project();
     assert(project != nullptr);
@@ -1344,7 +1325,15 @@ void MainWindow::blit_frame_diagnostics(
     Frame* frame = project->get_frame();
     assert(frame != nullptr);
 
-    if (blit_on_frame_copy)
+    const bool post_processing_preview_enabled =
+        apply_post_processing_preview_settings &&
+        m_application_settings.child("post_processing_preview").get_optional<bool>("enabled", false);
+
+    const bool false_colors_enabled =
+        apply_false_colors_settings &&
+        m_application_settings.child("false_colors").get_optional<bool>("enabled", false);
+
+    if (post_processing_preview_enabled || false_colors_enabled)
     {
         // Make a temporary copy of the frame.
         // Render info, AOVs and other data are not copied.
@@ -1356,8 +1345,14 @@ void MainWindow::blit_frame_diagnostics(
                     .remove_path("denoiser"));
         working_frame->image().copy_from(frame->image());
 
-        // Apply changes to the generated copy.
-        apply_on_frame(working_frame.ref());
+        // Apply diagnostics to the generated copy.
+        if (post_processing_preview_enabled)
+            apply_post_processing_preview(
+                *frame,                  // FIXME there doesn't seem to be a way
+                working_frame.ref());    // to copy stages from another frame (?)
+
+        if (false_colors_enabled)
+            apply_false_colors(working_frame.ref());
 
         // Blit the frame copy into the render widget.
         for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
@@ -1368,9 +1363,6 @@ void MainWindow::blit_frame_diagnostics(
     }
     else
     {
-        // Apply changes to the regular frame.
-        apply_on_frame(*frame);
-
         // Blit the regular frame into the render widget.
         for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
         {
@@ -1772,9 +1764,12 @@ void MainWindow::slot_rendering_end(MasterRenderer::RenderingResult::Status stat
     switch (status)
     {
       case MasterRenderer::RenderingResult::Status::Aborted:
-        apply_post_processing_preview_settings();
+        apply_diagnostics_settings();
+        break;
+
       case MasterRenderer::RenderingResult::Status::Succeeded:
-        apply_false_colors_settings();
+        // Post-processing stages are already applied if rendering has succeeded.
+        apply_diagnostics_settings(false);
         break;
 
       default:
@@ -1891,16 +1886,13 @@ void MainWindow::slot_show_false_colors_window()
 void MainWindow::slot_apply_false_colors_settings_changes(Dictionary values)
 {
     m_application_settings.push("false_colors").merge(values);
-    apply_false_colors_settings();
+    apply_diagnostics_settings();
 }
 
 void MainWindow::slot_toggle_post_processing_preview(const bool checked)
 {
-    m_application_settings
-        .push("post_processing_preview")
-        .merge(Dictionary().insert("enabled", checked));
-
-    apply_post_processing_preview_settings();
+    m_application_settings.push("post_processing_preview").merge(Dictionary().insert("enabled", checked));
+    apply_diagnostics_settings();
 }
 
 namespace
