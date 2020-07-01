@@ -1274,11 +1274,13 @@ void MainWindow::apply_post_processing_preview_settings()
     const bool post_processing_preview_enabled =
         post_processing_preview_params.get_optional<bool>("enabled", false);
 
+    // FIXME apply_false_colors_settings() either blits project->get_frame() or creates a new copy from it,
+    // thus, the post processing preview is overriden and doesn't show up if we also create a copy to apply
     blit_frame_diagnostics(
-        post_processing_preview_enabled,
-        [&](const renderer::Frame& frame, renderer::Frame& frame_copy)
+        false,
+        [&](renderer::Frame& frame)
         {
-            if (!frame.post_processing_stages().empty())
+            if (post_processing_preview_enabled && !frame.post_processing_stages().empty())
             {
                 RENDERER_LOG_INFO("previewing post-processing stage:");
 
@@ -1287,7 +1289,7 @@ void MainWindow::apply_post_processing_preview_settings()
                 for (PostProcessingStage& stage : frame.post_processing_stages())
                 {
                     RENDERER_LOG_INFO("  \"%s\"", stage.get_path().c_str());
-                    apply_post_processing_stage(stage, frame_copy);
+                    apply_post_processing_stage(stage, frame);
                 }
             }
         });
@@ -1299,17 +1301,20 @@ void MainWindow::apply_false_colors_settings()
     const bool false_colors_enabled = false_colors_params.get_optional<bool>("enabled", false);
 
     blit_frame_diagnostics(
-        false_colors_enabled,
-        [&](const renderer::Frame& frame, renderer::Frame& frame_copy)
+        true,
+        [&](renderer::Frame& frame_copy)
         {
-            // Create post-processing stage.
-            auto_release_ptr<PostProcessingStage> stage(
-                ColorMapPostProcessingStageFactory().create(
-                    "__false_colors_post_processing_stage",
-                    false_colors_params));
+            if (false_colors_enabled)
+            {
+                // Create post-processing stage.
+                auto_release_ptr<PostProcessingStage> stage(
+                    ColorMapPostProcessingStageFactory().create(
+                        "__false_colors_post_processing_stage",
+                        false_colors_params));
 
-            // Apply post-processing stage.
-            apply_post_processing_stage(stage.ref(), frame_copy);
+                // Apply post-processing stage.
+                apply_post_processing_stage(stage.ref(), frame_copy);
+            }
         });
 }
 
@@ -1330,8 +1335,8 @@ void MainWindow::apply_post_processing_stage(
 }
 
 void MainWindow::blit_frame_diagnostics(
-    const bool                          blit_on_frame_copy,
-    const ApplyOnFrameCopyFunction      apply_on_frame_copy)
+    const bool                  blit_on_frame_copy,
+    const ApplyOnFrameFunction  apply_on_frame)
 {
     Project* project = m_project_manager.get_project();
     assert(project != nullptr);
@@ -1352,7 +1357,7 @@ void MainWindow::blit_frame_diagnostics(
         working_frame->image().copy_from(frame->image());
 
         // Apply changes to the generated copy.
-        apply_on_frame_copy(*frame, working_frame.ref());
+        apply_on_frame(working_frame.ref());
 
         // Blit the frame copy into the render widget.
         for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
@@ -1363,6 +1368,9 @@ void MainWindow::blit_frame_diagnostics(
     }
     else
     {
+        // Apply changes to the regular frame.
+        apply_on_frame(*frame);
+
         // Blit the regular frame into the render widget.
         for (const_each<RenderTabCollection> i = m_render_tabs; i; ++i)
         {
@@ -1761,8 +1769,6 @@ void MainWindow::slot_pause_or_resume_rendering(const bool checked)
 
 void MainWindow::slot_rendering_end(MasterRenderer::RenderingResult::Status status)
 {
-    // FIXME apply_false_colors_settings() creates a new copy of the frame and blits it,
-    // thus, the post processing preview is overriden and doesn't show up
     switch (status)
     {
       case MasterRenderer::RenderingResult::Status::Aborted:

@@ -165,7 +165,7 @@ class MainWindow
 
     typedef std::map<std::string, RenderTab*> RenderTabCollection;
     typedef std::map<std::string, RenderTab::State> RenderTabStateCollection;
-    typedef std::function<void(const renderer::Frame& frame, renderer::Frame&)> ApplyOnFrameCopyFunction;
+    typedef std::function<void(renderer::Frame&)> ApplyOnFrameFunction;
 
     RenderTabCollection                         m_render_tabs;
     std::map<int, RenderTab*>                   m_tab_index_to_render_tab;
@@ -239,11 +239,11 @@ class MainWindow
     void apply_post_processing_preview_settings();
     void apply_false_colors_settings();
     void apply_post_processing_stage(
-        renderer::PostProcessingStage&      stage,
-        renderer::Frame&                    working_frame);
+        renderer::PostProcessingStage&  stage,
+        renderer::Frame&                working_frame);
     void blit_frame_diagnostics(
-        const bool                          blit_on_frame_copy,
-        const ApplyOnFrameCopyFunction      apply_on_frame_copy);
+        const bool                      blit_on_frame_copy,
+        const ApplyOnFrameFunction      apply_on_frame);
 
     // Miscellaneous.
     void initialize_ocio();
