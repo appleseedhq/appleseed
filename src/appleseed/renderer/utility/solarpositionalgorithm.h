@@ -54,10 +54,9 @@ namespace renderer
 {
 
 class APPLESEED_DLLSYMBOL SunPositioner
-    :public Entity
+  :public Entity
 {
   public:
-
     // Constructor
     SunPositioner(
         const char* name,
@@ -72,7 +71,7 @@ class APPLESEED_DLLSYMBOL SunPositioner
     float get_sunrise() const;
     float get_sunset() const;
 
-    void SunPositioner::release();
+    void SunPositioner::release() override;
 
   private:
     struct Impl;
@@ -88,9 +87,7 @@ class APPLESEED_DLLSYMBOL SunPositioner
     double apparent_longitude_of_sun(const double jc, const double mean_long_sun, const double mean_sun_ano) const;
 
     double sun_declination(const double obj_cor, const double app_lon_sun) const;
-
     double equation_of_time(const double jc, const double obl_cor, const double mean_long_sun, const double mean_sun_ano) const;
-
 };
 
 class APPLESEED_DLLSYMBOL SunPositionerFactory
