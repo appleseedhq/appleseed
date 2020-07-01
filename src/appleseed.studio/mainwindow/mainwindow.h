@@ -56,7 +56,6 @@
 namespace OCIO = OCIO_NAMESPACE;
 
 // Standard headers.
-#include <functional>
 #include <map>
 #include <memory>
 #include <string>
@@ -165,7 +164,6 @@ class MainWindow
 
     typedef std::map<std::string, RenderTab*> RenderTabCollection;
     typedef std::map<std::string, RenderTab::State> RenderTabStateCollection;
-    typedef std::function<void(renderer::Frame&)> ApplyOnFrameFunction;
 
     RenderTabCollection                         m_render_tabs;
     std::map<int, RenderTab*>                   m_tab_index_to_render_tab;
