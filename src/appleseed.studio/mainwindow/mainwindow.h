@@ -236,8 +236,8 @@ class MainWindow
     void start_rendering(const RenderingMode rendering_mode);
 
     // Diagnostics.
-    // void apply_post_processing_preview_settings();
-    // void apply_false_colors_settings();
+    void apply_post_processing_preview_settings();
+    void apply_false_colors_settings();
     void apply_post_processing_stage(
         renderer::PostProcessingStage&      stage,
         renderer::Frame&                    working_frame);
