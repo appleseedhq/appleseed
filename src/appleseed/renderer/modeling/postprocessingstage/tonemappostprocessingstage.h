@@ -46,6 +46,12 @@ namespace renderer
 // A post-processing stage that adds tone mapping to the frame.
 //
 
+enum ToneMapOperator // TODO convert to an interface
+{
+    ACES_UNREAL,
+    FILMIC,
+};
+
 class APPLESEED_DLLSYMBOL ToneMapPostProcessingStageFactory
   : public IPostProcessingStageFactory
 {

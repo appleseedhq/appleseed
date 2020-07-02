@@ -40,6 +40,7 @@
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
+#include "foundation/utility/makevector.h"
 
 // Standard headers.
 #include <cstddef>
@@ -59,6 +60,7 @@ namespace
     const char* Model = "tone_map_post_processing_stage";
 
     // TODO add default param values
+    static constexpr ToneMapOperator DeafutToneMapOperator = ToneMapOperator::FILMIC;
 
     class ToneMapPostProcessingStage
       : public PostProcessingStage
@@ -90,7 +92,22 @@ namespace
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
             // TODO retrive params
-            
+            const std::string tone_map_operator =
+                m_params.get_optional<std::string>(
+                    "tone_map_operator",
+                    "filmic",
+                    make_vector("aces_unreal", "filmic"),
+                    context);
+
+            if (tone_map_operator == "aces_unreal")
+                m_operator = ToneMapOperator::ACES_UNREAL;
+            else
+            {
+                assert(tone_map_operator == "filmic");
+
+                m_operator = ToneMapOperator::FILMIC;
+            }
+
             return true;
         }
 
@@ -98,11 +115,38 @@ namespace
         {
             const CanvasProperties& props = frame.image().properties();
 
-            // TODO tonemap :)
+            Image& image = frame.image();
+
+            // FIXME abstract to effect appliers
+            for (std::size_t y = 0; y < props.m_canvas_height; ++y)
+            {
+                for (std::size_t x = 0; x < props.m_canvas_width; ++x)
+                {
+                    Color3f color; // NOTE ignoring alpha instead of using .rgb()
+                    image.get_pixel(x, y, color);
+
+                    switch (m_operator)
+                    {
+                      case ToneMapOperator::ACES_UNREAL:
+                        color = color / (color + Color3f(0.155f)) * 1.019f;
+                        break;
+
+                      case ToneMapOperator::FILMIC:
+                        color = component_wise_max(Color3f(0.0f), color - Color3f(0.004f));
+                        color = (color * (6.2f * color + Color3f(0.5f))) / (color * (6.2f * color + Color3f(1.7f)) + Color3f(0.06f));
+                        break;
+
+                      assert_otherwise;
+                    }
+
+                    image.set_pixel(x, y, clamp(color, 0.0f, 1.0f));
+                }
+            }
         }
 
       private:
         // TODO add params
+        ToneMapOperator m_operator;
     };
 }
 
@@ -134,6 +178,20 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
     DictionaryArray metadata;
 
     add_common_input_metadata(metadata);
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "tone_map_operator")
+            .insert("label", "Operator")
+            // FIXME
+            .insert("type", "enumeration")
+            .insert("items",
+                Dictionary()
+                    .insert("ACES (Unreal)", "aces_unreal")
+                    .insert("Filmic", "filmic"))
+            .insert("use", "required")
+            .insert("default", "filmic"));
+            // .insert("on_change", "rebuild_form"));
 
     return metadata;
 }
