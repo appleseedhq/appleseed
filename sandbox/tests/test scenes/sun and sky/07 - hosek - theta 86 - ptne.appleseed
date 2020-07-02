@@ -22,7 +22,14 @@
         </camera>
         <environment_edf name="environment_edf" model="nishita93_environment_edf">
             <parameter name="cast_shadows" value="true" />
-            <parameter name="radiance" value="1.0" />
+            <parameter name="horizon_shift" value="0.0" />
+            <parameter name="luminance_gamma" value="1.112" />
+            <parameter name="luminance_multiplier" value="0.562" />
+            <parameter name="saturation_multiplier" value="1.292" />
+            <parameter name="sun_phi" value="0.0" />
+            <parameter name="sun_theta" value="45.0" />
+            <parameter name="turbidity" value="1.0" />
+            <parameter name="turbidity_multiplier" value="2.337" />
         </environment_edf>
         <environment_shader name="environment_shader" model="edf_environment_shader">
             <parameter name="environment_edf" value="environment_edf" />

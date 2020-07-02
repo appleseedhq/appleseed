@@ -55,9 +55,6 @@ const float MieAngstromBeta = 0.04f;
 // The g parameter of the Cornette-Shanks phase function used for Mie particles.
 const float MiePhaseFunctionG = 0.7f;
 
-// The Linke turbidity value, for the Preetham and Hosek models.
-const float Turbidity = 2.53f;
-
 
 
 RegularSpectrum31f NewSolarSpectrum() {
@@ -65,43 +62,95 @@ RegularSpectrum31f NewSolarSpectrum() {
     // (see http://rredc.nrel.gov/solar/spectra/am1.5/ASTMG173/ASTMG173.html),
     // summed and averaged in each bin (e.g. the value for 360nm is the average of
     // the ASTM G-173 values for all wavelengths between 360 and 371.75nm).
-    static const float kSpectralIrradiance[40] = {
-        1.13419, 1.09801, 1.03541, 1.45086, 1.72453, 1.654, 1.70536, 1.97393,
-        2.03543, 2.00643, 1.95531, 1.95426, 1.92438, 1.82092, 1.88517, 1.85545,
-        1.85083, 1.82758, 1.84475, 1.78771, 1.76683, 1.70858, 1.68278, 1.63849,
-        1.59608, 1.52211, 1.52468, 1.47836, 1.4485, 1.40522, 1.35526, 1.32788,
-        1.28834, 1.26938, 1.23241, 1.20345, 1.17087, 1.1344, 1.11012, 1.07147
+    static const float kSpectralIrradiance[31] = {
+        1.561492553,    // 400 nm
+        1.70652234,	    // 410 nm
+        1.65946383,	    // 420 nm
+        1.703174468,	// 430 nm
+        1.922501702,	// 440 nm
+        2.01449383,	    // 450 nm
+        2.020621489,	// 460 nm
+        1.987939787,	// 470 nm
+        1.955086596,	// 480 nm
+        1.952352766,	// 490 nm
+        1.926922979,	// 500 nm
+        1.845134043,	// 510 nm
+        1.860563617,	// 520 nm
+        1.871258511,	// 530 nm
+        1.853975532,	// 540 nm
+        1.846872553,	// 550 nm
+        1.827945319,	// 560 nm
+        1.842558085,	// 570 nm
+        1.803487021,	// 580 nm
+        1.775715106,	// 590 nm
+        1.742042766,	// 600 nm
+        1.70144383,	    // 610 nm
+        1.677125957,	// 620 nm
+        1.63943234,	    // 630 nm
+        1.603298723,	// 640 nm
+        1.545717447,	// 650 nm
+        1.523477021,	// 660 nm
+        1.506940426,	// 670 nm
+        1.471371489,	// 680 nm
+        1.444816596,	// 690 nm
+        1.407982553,	// 700 nm
     };
-    return RegularSpectrum31f::from_array(kSpectralIrradiance); // TODO: Loss of all values with index > 31!
-}
+    return RegularSpectrum31f::from_array(kSpectralIrradiance);
+} // Checked
 
 RegularSpectrum31f NewRayleighScattering() {
     // Values from Table III in Penndorf 1957 "Tables of the Refractive Index for
     // Standard Air and the Rayleigh Scattering Coefficient for the Spectral
     // Region between 0.2 and 20.0 μ and Their Application to Atmospheric Optics".
-    float kPenndorf[48] = {
-        70.45E-6, 62.82E-6, 56.20E-6, 50.43E-6, 45.40E-6, 40.98E-6, 37.08E-6,
-        33.65E-6, 30.60E-6, 27.89E-6, 25.48E-6, 23.33E-6, 21.40E-6, 19.66E-6,
-        18.10E-6, 16.69E-6, 15.42E-6, 14.26E-6, 13.21E-6, 12.26E-6, 11.39E-6,
-        10.60E-6, 9.876E-6, 9.212E-6, 8.604E-6, 8.045E-6, 7.531E-6, 7.057E-6,
-        6.620E-6, 6.217E-6, 5.844E-6, 5.498E-6, 5.178E-6, 4.881E-6, 4.605E-6,
-        4.348E-6, 4.109E-6, 3.886E-6, 3.678E-6, 3.484E-6, 3.302E-6, 3.132E-6,
-        2.973E-6, 2.824E-6, 2.684E-6, 2.583E-6, 2.481E-6, 2.380E-6
+    float kPenndorf[31] = {
+        45.40E-6,   // 400nm
+        40.98E-6,   // 410nm
+        37.08E-6,   // 420nm
+        33.65E-6,   // 430nm   
+        30.60E-6,   // 440nm
+        27.89E-6,   // 450nm
+        25.48E-6,   // 460nm
+        23.33E-6,   // 470nm
+        21.40E-6,   // 480nm
+        19.66E-6,   // 490nm
+        18.10E-6,   // 500nm
+        16.69E-6,   // 510nm
+        15.42E-6,   // 520nm
+        14.26E-6,   // 530nm
+        13.21E-6,   // 540nm
+        12.26E-6,   // 550nm
+        11.39E-6,   // 560nm
+        10.60E-6,   // 570nm
+        9.876E-6,   // 580nm
+        9.212E-6,   // 590nm
+        8.604E-6,   // 600nm
+        8.045E-6,   // 610nm
+        7.531E-6,   // 620nm
+        7.057E-6,   // 630nm
+        6.620E-6,   // 640nm
+        6.217E-6,   // 650nm
+        5.844E-6,   // 660nm
+        5.498E-6,   // 670nm
+        5.178E-6,   // 680nm
+        4.881E-6,   // 690nm
+        4.605E-6,   // 700nm
     };
-    for (int i = 0; i < 48; ++i) { 
+    for (int i = 0; i < 31; ++i) { 
         // The above values are for T_0=0°C. For T=15°C, a correction factor
         // T_0 / T must be applied (Eq. (12) in Penndorf paper).
         constexpr double T_0 = 273.16;
         constexpr double T = T_0 + 15.0;
         kPenndorf[i] = kPenndorf[i] * (T_0 / T);
     }
-    return RegularSpectrum31f::from_array(kPenndorf); // TODO: Loss of all values with index > 31!
+    return RegularSpectrum31f::from_array(kPenndorf); 
 }
 
 RegularSpectrum31f NewMieExtinction(double angstrom_alpha, double angstrom_beta) {
     float mie[31];
     for (unsigned int i = 0; i < 31; ++i) {
-        mie[i] = angstrom_beta * pow(1000.0, -angstrom_alpha) / MieScaleHeight;
+        const double x = (i / 31.0);
+        double lambda = (400.0 * (1.0 - x) + 700.0 * x) / 1000.0;
+        mie[i] = angstrom_beta * pow(lambda, -angstrom_alpha) / MieScaleHeight;
     }
     return RegularSpectrum31f::from_array(mie);
 }
@@ -134,19 +183,16 @@ const RegularSpectrum31f& MieScattering() { return mie_scattering; }
 RegularSpectrum31f MieExtinction(double angstrom_alpha, double angstrom_beta) {
     return NewMieExtinction(angstrom_alpha, angstrom_beta);
 }
-RegularSpectrum31f MieScattering(double angstrom_alpha, double angstrom_beta) {
-    return NewMieScattering(angstrom_alpha, angstrom_beta);
-}
 
 // Computes the Rayleigh phase function for the given scattering angle.
 // The integral of this function over all solid angles is 1.
 double RayleighPhaseFunctionCos(double scattering_angle_cosine) {
     const double kRayleigh = 3.0 / (16.0 * Pi<float>());
     return kRayleigh * (1.0 + scattering_angle_cosine * scattering_angle_cosine);
-}
+} 
 double RayleighPhaseFunction(double scattering_angle) {
     return RayleighPhaseFunctionCos(cos(scattering_angle));
-}
+} 
 
 // Computes the Mie phase function for the given scattering angle (using
 // the Cornette-Shanks approximation).
@@ -155,12 +201,8 @@ double MiePhaseFunctionCos(double scattering_angle_cosine) {
     const double g = MiePhaseFunctionG;
     const double kMie = 3.0 / (8.0 * Pi<double>()) * (1.0 - g * g) / (2.0 + g * g);
     return kMie * (1.0 + scattering_angle_cosine * scattering_angle_cosine) / pow(1.0 + g * g - 2.0 * g * scattering_angle_cosine, 1.5);
-}
+} 
 double MiePhaseFunction(double scattering_angle) {
     return MiePhaseFunctionCos(cos(scattering_angle));
-}
-double MiePhaseFunction(double g, double scattering_angle_cosine) {
-    const double kMie = 3.0 / (8.0 * Pi<float>()) * (1.0 - g * g) / (2.0 + g * g);
-    return kMie * (1.0 + scattering_angle_cosine * scattering_angle_cosine) / pow(1.0 + g * g - 2.0 * g * scattering_angle_cosine, 1.5);
-}
+} 
 
