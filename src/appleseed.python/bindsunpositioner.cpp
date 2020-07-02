@@ -26,8 +26,6 @@
 // THE SOFTWARE.
 //
 
-#pragma once
-
 // appleseed.python headers.
 #include "bindentitycontainers.h"
 #include "dict2dict.h"
