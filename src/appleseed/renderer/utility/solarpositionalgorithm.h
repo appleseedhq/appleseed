@@ -71,7 +71,7 @@ class APPLESEED_DLLSYMBOL SunPositioner
     float get_sunrise() const;
     float get_sunset() const;
 
-    void SunPositioner::release() override;
+    void release() override;
 
   private:
     struct Impl;
