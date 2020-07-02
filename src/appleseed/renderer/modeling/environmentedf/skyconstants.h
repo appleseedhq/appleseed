@@ -32,36 +32,35 @@
 // appleseed.foundation headers.
 #include "foundation/math/scalar.h"
 
-#include "b_units.h"
 #include "b_binary_function.h"
 
 using namespace foundation;
 
 
-const double EarthRadius = 6360.0 * 1000;
-const double AtmosphereRadius = 6420.0 * 1000;
+const float EarthRadius = 6360000.0f;
+const float AtmosphereRadius = 6420000.0f;
 
 // The height of the atmosphere if its density was uniform.
-const double RayleighScaleHeight = 8000.0;
+const float RayleighScaleHeight = 8000.0f;
 
 // The height of the Mie particle layer if its density was uniform.
-const double MieScaleHeight = 1200.0;
+const float MieScaleHeight = 1200.0f;
 
 // The Angstrom alpha coefficient for the Mie optical depth.
-const double MieAngstromAlpha = 0.8;
+const float MieAngstromAlpha = 0.8f;
 
 // The Angstrom beta coefficient for the Mie optical depth.
-const double MieAngstromBeta = 0.04;
+const float MieAngstromBeta = 0.04f;
 
 // The g parameter of the Cornette-Shanks phase function used for Mie particles.
-const double MiePhaseFunctionG = 0.7;
+const float MiePhaseFunctionG = 0.7f;
 
 // The Linke turbidity value, for the Preetham and Hosek models.
-const double Turbidity = 2.53;
+const float Turbidity = 2.53f;
 
 
 
-bSpectrum31f NewSolarSpectrum() {
+RegularSpectrum31f NewSolarSpectrum() {
     // Values from "Reference Solar Spectral Irradiance: ASTM G-173", ETR column
     // (see http://rredc.nrel.gov/solar/spectra/am1.5/ASTMG173/ASTMG173.html),
     // summed and averaged in each bin (e.g. the value for 360nm is the average of
@@ -73,18 +72,14 @@ bSpectrum31f NewSolarSpectrum() {
         1.59608, 1.52211, 1.52468, 1.47836, 1.4485, 1.40522, 1.35526, 1.32788,
         1.28834, 1.26938, 1.23241, 1.20345, 1.17087, 1.1344, 1.11012, 1.07147
     };
-    bSpectrum31f result;
-    for (unsigned int i = 0; i < result.size(); ++i) {
-        result[i] = kSpectralIrradiance[i];
-    }
-    return result;
+    return RegularSpectrum31f::from_array(kSpectralIrradiance); // TODO: Loss of all values with index > 31!
 }
 
-bSpectrum31f NewRayleighScattering() {
+RegularSpectrum31f NewRayleighScattering() {
     // Values from Table III in Penndorf 1957 "Tables of the Refractive Index for
     // Standard Air and the Rayleigh Scattering Coefficient for the Spectral
     // Region between 0.2 and 20.0 μ and Their Application to Atmospheric Optics".
-    static const float kPenndorf[48] = {
+    float kPenndorf[48] = {
         70.45E-6, 62.82E-6, 56.20E-6, 50.43E-6, 45.40E-6, 40.98E-6, 37.08E-6,
         33.65E-6, 30.60E-6, 27.89E-6, 25.48E-6, 23.33E-6, 21.40E-6, 19.66E-6,
         18.10E-6, 16.69E-6, 15.42E-6, 14.26E-6, 13.21E-6, 12.26E-6, 11.39E-6,
@@ -93,56 +88,53 @@ bSpectrum31f NewRayleighScattering() {
         4.348E-6, 4.109E-6, 3.886E-6, 3.678E-6, 3.484E-6, 3.302E-6, 3.132E-6,
         2.973E-6, 2.824E-6, 2.684E-6, 2.583E-6, 2.481E-6, 2.380E-6
     };
-    std::vector<double> penndorf_samples;
-    for (int i = 0; i < 48; ++i) {
+    for (int i = 0; i < 48; ++i) { 
         // The above values are for T_0=0°C. For T=15°C, a correction factor
         // T_0 / T must be applied (Eq. (12) in Penndorf paper).
         constexpr double T_0 = 273.16;
         constexpr double T = T_0 + 15.0;
-        penndorf_samples.push_back(kPenndorf[i] * (T_0 / T));
+        kPenndorf[i] = kPenndorf[i] * (T_0 / T);
     }
-    return bSpectrum31f(400.0, 700.0, penndorf_samples);
+    return RegularSpectrum31f::from_array(kPenndorf); // TODO: Loss of all values with index > 31!
 }
 
-bSpectrum31f NewMieExtinction(double angstrom_alpha, double angstrom_beta) {
-    bSpectrum31f mie;
-    for (unsigned int i = 0; i < mie.size(); ++i) {
-        double lambda = mie.GetSample(i) * 1000;
-        mie[i] = angstrom_beta * pow(lambda, -angstrom_alpha) / MieScaleHeight;
+RegularSpectrum31f NewMieExtinction(double angstrom_alpha, double angstrom_beta) {
+    float mie[31];
+    for (unsigned int i = 0; i < 31; ++i) {
+        mie[i] = angstrom_beta * pow(1000.0, -angstrom_alpha) / MieScaleHeight;
     }
-    return mie;
+    return RegularSpectrum31f::from_array(mie);
 }
 
-bSpectrum31f NewMieScattering(double angstrom_alpha, double angstrom_beta) {
+RegularSpectrum31f NewMieScattering(double angstrom_alpha, double angstrom_beta) {
     const double kSingleScatteringAlbedo = 0.8;
-    return NewMieExtinction(angstrom_alpha, angstrom_beta) * kSingleScatteringAlbedo;
+    return NewMieExtinction(angstrom_alpha, angstrom_beta) * RegularSpectrum31f(kSingleScatteringAlbedo);
 }
 
-const bSpectrum31f solar_spectrum = NewSolarSpectrum();
-const bSpectrum31f rayleigh_scattering = NewRayleighScattering();
-const bSpectrum31f mie_extinction = NewMieExtinction(MieAngstromAlpha, MieAngstromBeta);
-const bSpectrum31f mie_scattering = NewMieScattering(MieAngstromAlpha, MieAngstromBeta);
+const RegularSpectrum31f solar_spectrum = NewSolarSpectrum();
+const RegularSpectrum31f rayleigh_scattering = NewRayleighScattering();
+const RegularSpectrum31f mie_extinction = NewMieExtinction(MieAngstromAlpha, MieAngstromBeta);
+const RegularSpectrum31f mie_scattering = NewMieScattering(MieAngstromAlpha, MieAngstromBeta);
 
 
 // Returns the spectral irradiance of the Sun at the top of the atmosphere.
-const bSpectrum31f& SolarSpectrum() { return solar_spectrum; }
+const RegularSpectrum31f& SolarSpectrum() { return solar_spectrum; }
 
 // Returns the Rayleigh scattering coefficient at sea level.
-const bSpectrum31f& RayleighScattering() { return rayleigh_scattering; }
+const RegularSpectrum31f& RayleighScattering() { return rayleigh_scattering; }
 
 // Returns the Mie extinction coefficient at sea level.
-const bSpectrum31f& MieExtinction() { return mie_extinction; }
+const RegularSpectrum31f& MieExtinction() { return mie_extinction; }
 
 // Returns the Mie extinction and scattering coefficients at sea level for
 // the given Angstrom parameters.
-const bSpectrum31f& MieScattering() { return mie_scattering; }
+const RegularSpectrum31f& MieScattering() { return mie_scattering; }
 
 // Returns the Mie scattering coefficient at sea level.
-
-bSpectrum31f MieExtinction(double angstrom_alpha, double angstrom_beta) {
+RegularSpectrum31f MieExtinction(double angstrom_alpha, double angstrom_beta) {
     return NewMieExtinction(angstrom_alpha, angstrom_beta);
 }
-bSpectrum31f MieScattering(double angstrom_alpha, double angstrom_beta) {
+RegularSpectrum31f MieScattering(double angstrom_alpha, double angstrom_beta) {
     return NewMieScattering(angstrom_alpha, angstrom_beta);
 }
 
@@ -161,7 +153,7 @@ double RayleighPhaseFunction(double scattering_angle) {
 // The integral of this function over all solid angles is 1.
 double MiePhaseFunctionCos(double scattering_angle_cosine) {
     const double g = MiePhaseFunctionG;
-    const double kMie = 3.0 / (8.0 * Pi<float>()) * (1.0 - g * g) / (2.0 + g * g);
+    const double kMie = 3.0 / (8.0 * Pi<double>()) * (1.0 - g * g) / (2.0 + g * g);
     return kMie * (1.0 + scattering_angle_cosine * scattering_angle_cosine) / pow(1.0 + g * g - 2.0 * g * scattering_angle_cosine, 1.5);
 }
 double MiePhaseFunction(double scattering_angle) {

@@ -53,7 +53,6 @@
 // Standard headers.
 #include <cassert>
 
-#include "b_units.h"
 #include "b_binary_function.h"
 #include "skyconstants.h"
 
@@ -246,23 +245,14 @@ namespace renderer
             static constexpr int kNumSphere = 64;
             static constexpr int kNumCylinder = 64;
 
-            int GetOriginalNumberOfWavelengths() const {
-                return bSpectrum31f::SIZE;
-            }
-
-            double GetViewSunAngle(double sun_zenith, double view_zenith,
-                double view_sun_azimuth) {
-                return acos(cos(view_sun_azimuth) * sin(view_zenith) * sin(sun_zenith) + cos(view_zenith) * cos(sun_zenith));
-            }
-
             // Optical lengths between a point of the intersection circle between a sphere
             // and a cylinder, and the Sun. The cylinder axis being the Sun direction.
             dimensional::BinaryFunction<kNumSphere, kNumCylinder, double> rayleigh_optical_length_;
             dimensional::BinaryFunction<kNumSphere, kNumCylinder, double> mie_optical_length_;
+
             // Same, with the Sun in the opposite direction of the cylinder axis.
             dimensional::BinaryFunction<kNumSphere, kNumCylinder, double> rayleigh_opposite_optical_length_;
             dimensional::BinaryFunction<kNumSphere, kNumCylinder, double> mie_opposite_optical_length_;
-            // <-- END-COPY-PASTA
 
             void precompute_optical_lengths() {
                 for (int i = 0; i < kNumSphere; ++i) {
@@ -321,16 +311,20 @@ namespace renderer
                 }
             }
 
-            bSpectrum31f GetSunIrradiance(double altitude, double sun_zenith) const {
+            RegularSpectrum31f GetSunIrradiance(double altitude, double sun_zenith) const {
                 double rayleigh_length;
                 double mie_length;
                 GetOpticalLengths(EarthRadius + altitude, cos(sun_zenith), &rayleigh_length, &mie_length);
-                bSpectrum31f optical_depth = RayleighScattering() * rayleigh_length + MieExtinction() * mie_length;
-                bSpectrum31f transmittance(exp(-optical_depth));
+                RegularSpectrum31f optical_depth = RayleighScattering() * RegularSpectrum31f(rayleigh_length) + MieExtinction() * RegularSpectrum31f(mie_length);
+                float depths[31];
+                for (int i = 0; i < 31; i++) {
+                    depths[i] = exp(-optical_depth[i]);
+                }
+                RegularSpectrum31f transmittance = RegularSpectrum31f::from_array(depths);
                 return transmittance * SolarSpectrum();
             }
 
-            bSpectrum31f GetSkyRadiance(double altitude, double sun_zenith, double view_zenith, double view_sun_azimuth) const {
+            RegularSpectrum31f GetSkyRadiance(double altitude, double sun_zenith, double view_zenith, double view_sun_azimuth) const {
                 double r = EarthRadius + altitude;
                 double mu_s = cos(sun_zenith);
                 double mu = cos(view_zenith);
@@ -338,15 +332,15 @@ namespace renderer
                 double rmu = r * mu;
                 double rmu_s = r * mu_s;
 
-                bSpectrum31f rayleigh_integral(0.0);
-                bSpectrum31f mie_integral(0.0);
+                RegularSpectrum31f rayleigh_integral(0.0);
+                RegularSpectrum31f mie_integral(0.0);
                 double rayleigh_length = 0.0;
                 double mie_length = 0.0 ;
                 double previous_rayleigh_density = exp(-altitude / RayleighScaleHeight);
                 double previous_mie_density = exp(-altitude / MieScaleHeight);
                 double distance_to_previous_sphere = 0.0;
-                bSpectrum31f previous_rayleigh_sample(0.0);
-                bSpectrum31f previous_mie_sample(0.0);
+                RegularSpectrum31f previous_rayleigh_sample(0.0);
+                RegularSpectrum31f previous_mie_sample(0.0);
                 for (int i = 0; i < kNumSphere; ++i) {
                     double r_i = GetSphereRadius(i);
                     if (r_i <= r) {
@@ -365,12 +359,16 @@ namespace renderer
                     double mu_s_i = (rmu_s + distance_to_sphere * nu) / r_i;
                     GetOpticalLengths(r_i, mu_s_i, &rayleigh_sun_length, &mie_sun_length);
 
-                    bSpectrum31f optical_depth = RayleighScattering() * (rayleigh_length + rayleigh_sun_length) + MieExtinction() * (mie_length + mie_sun_length);
-                    bSpectrum31f transmittance(exp(-optical_depth));
-                    bSpectrum31f rayleigh_sample(transmittance * rayleigh_density);
-                    bSpectrum31f mie_sample(transmittance * mie_density);
-                    rayleigh_integral += (rayleigh_sample + previous_rayleigh_sample) * half_segment_length;
-                    mie_integral += (mie_sample + previous_mie_sample) * half_segment_length;
+                    RegularSpectrum31f optical_depth = RayleighScattering() * RegularSpectrum31f(rayleigh_length + rayleigh_sun_length) + MieExtinction() * RegularSpectrum31f(mie_length + mie_sun_length);
+                    float depths[31];
+                    for (int i = 0; i < 31; i++) {
+                        depths[i] = exp(-optical_depth[i]);
+                    }
+                    RegularSpectrum31f transmittance = RegularSpectrum31f::from_array(depths);
+                    RegularSpectrum31f rayleigh_sample(transmittance * RegularSpectrum31f(rayleigh_density));
+                    RegularSpectrum31f mie_sample(transmittance * RegularSpectrum31f(mie_density));
+                    rayleigh_integral += (rayleigh_sample + previous_rayleigh_sample) * RegularSpectrum31f(half_segment_length);
+                    mie_integral += (mie_sample + previous_mie_sample) * RegularSpectrum31f(half_segment_length);
 
                     previous_rayleigh_density = rayleigh_density;
                     previous_mie_density = mie_density;
@@ -381,8 +379,8 @@ namespace renderer
 
                 double rayleigh_phase = RayleighPhaseFunction(nu);
                 double mie_phase = MiePhaseFunction(nu);
-                return (rayleigh_integral * RayleighScattering() * rayleigh_phase +
-                    mie_integral * MieScattering() * mie_phase) * SolarSpectrum();
+                return (rayleigh_integral * RayleighScattering() * RegularSpectrum31f(rayleigh_phase) +
+                    mie_integral * MieScattering() * RegularSpectrum31f(mie_phase)) * SolarSpectrum();
             }
 
             // Returns the optical lengths for rayleigh and mie particles between a point
@@ -411,17 +409,13 @@ namespace renderer
                 double x = sphere_index / static_cast<double>(kNumSphere - 1);
                 return EarthRadius - RayleighScaleHeight * log(a * x + 1.0);
             }
-            // <-- COPY_PASTA_END
 
-            // COPY_PASTA_START -->
             // Computes the cylinder radius noted C_j in Nishita93.
             double GetCylinderRadius(int cylinder_index) const {
                 double x = cylinder_index / static_cast<double>(kNumCylinder - 1);
                 return AtmosphereRadius * x;
             }
-            // <-- COPY_PASTA_END
 
-            // COPY_PASTA_START -->
             // Returns the distance from a point at radius r to the sphere of radius
             // sphere_radius in a direction whose angle with the local vertical is
             // acos(rmu / r), or 0 if there is no intersection.
@@ -470,19 +464,7 @@ namespace renderer
                 Vector3f *sun_flat = new Vector3f(0.0f, 0.0f, -1.0f);
                 double view_sun_azimuth = acos(dot(*outgoing_flat, *sun_flat));
 
-
-                bSpectrum31f sky_radiance = GetSkyRadiance(altitude, sun_zenith, view_zenith, view_sun_azimuth);
-                std::vector<double> vec = sky_radiance.to(1);
-                double* double_array = &vec[0];
-
-                float float_array[31];
-                for (int i = 0; i < 31; i++)
-                {
-                    float_array[i] = (float) double_array[i];
-                }
-
-                const RegularSpectrum31f test_radiance(RegularSpectrum31f::from_array(float_array));
-                radiance = test_radiance;
+                radiance = GetSkyRadiance(altitude, sun_zenith, view_zenith, view_sun_azimuth);
 
                 return;
             }

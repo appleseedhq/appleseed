@@ -54,7 +54,7 @@
 // typedef dimensional::Scalar<-2, 0, -1, 0, 1> Luminance;
 
 // A function from wavelength to values with some physical dimensions.
-using bSpectrum31f = dimensional::ScalarFunction<31, 400, 700>;
+// using bSpectrum31f = dimensional::ScalarFunction<31, 400, 700>;
 
 // A function from wavelength to dimensionless values.
 // typedef WavelengthFunction DimensionlessSpectrum;
