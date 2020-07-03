@@ -62,6 +62,8 @@ namespace
     // TODO add default param values
     static constexpr ToneMapOperator DeafutToneMapOperator = ToneMapOperator::FILMIC;
 
+    static constexpr bool DeafutClampValues = false;
+
     class ToneMapPostProcessingStage
       : public PostProcessingStage
     {
@@ -90,6 +92,8 @@ namespace
             IAbortSwitch*           abort_switch) override
         {
             const OnFrameBeginMessageContext context("post-processing stage", this);
+
+            m_clamp_values = m_params.get_optional("clamp_values", DeafutClampValues, context);
 
             // TODO retrive params
             const std::string tone_map_operator =
@@ -139,14 +143,18 @@ namespace
                       assert_otherwise;
                     }
 
-                    image.set_pixel(x, y, clamp(color, 0.0f, 1.0f));
+                    if (m_clamp_values)
+                        image.set_pixel(x, y, clamp(color, 0.0f, 1.0f));
+                    else
+                        image.set_pixel(x, y, color);
                 }
             }
         }
 
       private:
         // TODO add params
-        ToneMapOperator m_operator;
+        ToneMapOperator   m_operator;
+        bool              m_clamp_values;
     };
 }
 
@@ -192,6 +200,14 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
             .insert("use", "required")
             .insert("default", "filmic"));
             // .insert("on_change", "rebuild_form"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "clamp_values")
+            .insert("label", "Clamp Values")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "false"));
 
     return metadata;
 }
