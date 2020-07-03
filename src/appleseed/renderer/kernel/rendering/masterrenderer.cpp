@@ -224,6 +224,7 @@ struct MasterRenderer::Impl
             // Insert rendering time into frame's render info.
             render_info.insert("render_time", m_project.get_rendering_timer().get_seconds());
 
+#if 0
             // Don't proceed further if rendering failed.
             if (result.m_status != RenderingResult::Succeeded)
                 return result;
@@ -236,6 +237,47 @@ struct MasterRenderer::Impl
 
             // Insert post-processing time into frame's render info.
             render_info.insert("post_processing_time", stopwatch.get_seconds());
+#else
+            IRendererController& controller =
+                m_serial_renderer_controller != nullptr
+                    ? *m_serial_renderer_controller
+                    : renderer_controller;
+
+            RenderingTimer stopwatch;
+
+            switch (result.m_status)
+            {
+              case RenderingResult::Succeeded:
+                // Post-process.
+                stopwatch.start();
+                postprocess();
+                stopwatch.measure();
+
+                // Insert post-processing time into frame's render info.
+                render_info.insert("post_processing_time", stopwatch.get_seconds());
+
+                controller.on_rendering_success();
+                break;
+
+              case RenderingResult::Aborted:
+                // Post-process.
+                stopwatch.start();
+                postprocess();
+                stopwatch.measure();
+
+                // Insert post-processing time into frame's render info.
+                render_info.insert("post_processing_time", stopwatch.get_seconds());
+
+                controller.on_rendering_abort(); // NOTE could fall-through
+                return result;
+
+              case RenderingResult::Failed:
+                controller.on_rendering_abort();
+                return result;
+
+              assert_otherwise;
+            }
+#endif
         }
         catch (const std::bad_alloc&)
         {
@@ -298,14 +340,14 @@ struct MasterRenderer::Impl
             // Expand procedural assemblies before scene entities inputs are bound.
             if (!m_project.get_scene()->expand_procedural_assemblies(m_project, &abort_switch))
             {
-                renderer_controller.on_rendering_abort();
+                /// renderer_controller.on_rendering_abort();
                 return RenderingResult::Aborted;
             }
 
             // Bind scene entities inputs.
             if (!bind_scene_entities_inputs())
             {
-                renderer_controller.on_rendering_abort();
+                /// renderer_controller.on_rendering_abort();
                 return RenderingResult::Aborted;
             }
 
@@ -314,11 +356,11 @@ struct MasterRenderer::Impl
             switch (status)
             {
               case IRendererController::TerminateRendering:
-                renderer_controller.on_rendering_success();
+                /// renderer_controller.on_rendering_success();
                 return RenderingResult::Succeeded;
 
               case IRendererController::AbortRendering:
-                renderer_controller.on_rendering_abort();
+                /// renderer_controller.on_rendering_abort();
                 return RenderingResult::Aborted;
 
               case IRendererController::ReinitializeRendering:

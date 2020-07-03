@@ -133,7 +133,7 @@ RenderingManager::RenderingManager(StatusBar& status_bar)
     //
     // They are using a queued connection because the emitting thread is different from
     // the receiving thread (the emitting thread is the master renderer thread, and the
-    // receiving thread is the UI thread of the main window (presumably).
+    // receiving thread is the UI thread of the main window (presumably)).
     //
     // They are using a blocking queue connection because we need the receiving slot to
     // have returned in the receiving thread before the emitting thread can continue.
