@@ -108,13 +108,9 @@ namespace
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
             m_iterations = m_params.get_optional("iterations", DefaultIterations, context);
-
             m_intensity = m_params.get_optional("intensity", DefaultIntensity, context);
-
             m_threshold = m_params.get_optional("threshold", DefaultThreshold, context);
-
             m_soft_threshold = m_params.get_optional("soft_threshold", DefaultSoftThreshold, context);
-
             m_debug_blur = m_params.get_optional("debug_blur", DefaultDebugBlur, context);
 
             return true;
@@ -209,7 +205,7 @@ namespace
             Image prefiltered_image(image, props.m_pixel_format, shuffle_table);
 
             // Filter out dark pixels.
-            BrightPassApplier bright_pass(m_threshold, m_soft_threshold);
+            const BrightPassApplier bright_pass(m_threshold, m_soft_threshold);
             bright_pass.apply_on_tiles(prefiltered_image, thread_count);
 
             //
@@ -241,12 +237,12 @@ namespace
             // Downsample pass.
             //
 
-            ResampleX2Applier downsample(prefiltered_image, ResampleX2Applier::SamplingMode::HALVE);
+            const ResampleX2Applier downsample(prefiltered_image, ResampleX2Applier::SamplingMode::HALVE);
             downsample.apply_on_tiles(blur_pyramid_down[0], thread_count);
 
             for (std::size_t level = 1; level < iterations; ++level)
             {
-                ResampleApplier downsample(blur_pyramid_down[level - 1], ResampleApplier::SamplingMode::DOWN);
+                const ResampleApplier downsample(blur_pyramid_down[level - 1], ResampleApplier::SamplingMode::DOWN);
                 downsample.apply_on_tiles(blur_pyramid_down[level], thread_count);
             }
 
@@ -258,11 +254,11 @@ namespace
 
             for (std::size_t level_plus_one = iterations - 1; level_plus_one > 0; --level_plus_one)
             {
-                ResampleApplier upsample(blur_pyramid_up[level_plus_one], ResampleApplier::SamplingMode::UP);
+                const ResampleApplier upsample(blur_pyramid_up[level_plus_one], ResampleApplier::SamplingMode::UP);
                 upsample.apply_on_tiles(blur_pyramid_up[level_plus_one - 1], thread_count);
 
                 // Blend each upsampled buffer with the downsample buffer of the same level.
-                AdditiveBlendApplier additive_blend(blur_pyramid_down[level_plus_one - 1]);
+                const AdditiveBlendApplier additive_blend(blur_pyramid_down[level_plus_one - 1]);
                 additive_blend.apply_on_tiles(blur_pyramid_up[level_plus_one - 1], thread_count);
             }
 
@@ -272,10 +268,10 @@ namespace
 
             Image bloom_target(prefiltered_image.properties());
 
-            ResampleX2Applier upsample(blur_pyramid_up[0], ResampleX2Applier::SamplingMode::DOUBLE);
+            const ResampleX2Applier upsample(blur_pyramid_up[0], ResampleX2Applier::SamplingMode::DOUBLE);
             upsample.apply_on_tiles(bloom_target, thread_count);
 
-            AdditiveBlendApplier additive_blend(
+            const AdditiveBlendApplier additive_blend(
                 bloom_target,
                 m_debug_blur ? 1.0f : m_intensity,
                 m_debug_blur ? 0.0f : 1.0f);
@@ -297,15 +293,15 @@ namespace
         {
             // Downsample the prefiltered image.
             Image blur_target(blur_target_props);
-            ResampleApplier downsample(prefiltered_image, ResampleApplier::SamplingMode::DOWN);
+            const ResampleApplier downsample(prefiltered_image, ResampleApplier::SamplingMode::DOWN);
             downsample.apply_on_tiles(blur_target, thread_count);
 
             // Upsample and blend it with the original image.
             Image bloom_target(prefiltered_image.properties());
-            ResampleApplier upsample(blur_target, ResampleApplier::SamplingMode::UP);
+            const ResampleApplier upsample(blur_target, ResampleApplier::SamplingMode::UP);
             upsample.apply_on_tiles(bloom_target, thread_count);
 
-            AdditiveBlendApplier additive_blend(
+            const AdditiveBlendApplier additive_blend(
                 bloom_target,
                 m_debug_blur ? 1.0f : m_intensity,
                 m_debug_blur ? 0.0f : 1.0f);
