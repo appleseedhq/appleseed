@@ -54,7 +54,11 @@ class AdditiveBlendApplier
   public:
     // Constructor.
     explicit AdditiveBlendApplier(
+
+        // Context.
         const foundation::Image&    src_image,
+
+        // Settings.
         const float                 src_weight = 1.0f,
         const float                 dst_weight = 1.0f);
 
@@ -69,11 +73,8 @@ class AdditiveBlendApplier
         const std::size_t           tile_y) const override;
 
   private:
-    // Settings.
     const float                     m_src_weight;
     const float                     m_dst_weight;
-
-    // Context.
     const foundation::Image&        m_src_image;
 };
 

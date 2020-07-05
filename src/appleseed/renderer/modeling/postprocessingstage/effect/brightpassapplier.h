@@ -54,6 +54,8 @@ class BrightPassApplier
   public:
     // Constructor.
     explicit BrightPassApplier(
+
+        // Settings.
         const float         threshold,
         const float         soft_threshold);
 
@@ -67,7 +69,6 @@ class BrightPassApplier
         const std::size_t   tile_y) const override;
 
   private:
-    // Settings.
     const float             m_threshold;
     const float             m_knee;
 };

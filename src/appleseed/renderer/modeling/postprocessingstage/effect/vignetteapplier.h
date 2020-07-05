@@ -44,23 +44,6 @@ namespace renderer
 {
 
 //
-// Vignette-specific parameters.
-//
-
-struct VignetteParams
-{
-    // Context.
-    float       frame_width;
-    float       frame_height;
-
-    // Settings.
-    float       intensity;
-    float       anisotropy; // 0 = no anisotropy (i.e. perfectly rounded)
-                            // 1 = full anisotropy (i.e. respect the frame's aspect ratio)
-};
-
-
-//
 // Vignette post-processing effect applier.
 //
 
@@ -69,7 +52,16 @@ class VignetteApplier
 {
   public:
     // Constructor.
-    explicit VignetteApplier(const VignetteParams& params);
+    explicit VignetteApplier(
+
+        // Context.
+        const float             frame_width,
+        const float             frame_height,
+
+        // Settings.
+        const float             intensity,
+        const float             anisotropy);    // 0 = no anisotropy (i.e. perfectly rounded)
+                                                // 1 = full anisotropy (i.e. respect the frame's aspect ratio)
 
     // Delete this instance.
     void release() override;
@@ -81,9 +73,9 @@ class VignetteApplier
         const std::size_t       tile_y) const override;
 
   private:
-    const float                     m_intensity;
-    const foundation::Vector2f      m_resolution;
-    const foundation::Vector2f      m_vignette_resolution;
+    const float                 m_intensity;
+    const foundation::Vector2f  m_resolution;
+    const foundation::Vector2f  m_vignette_resolution;
 };
 
 }   // namespace renderer

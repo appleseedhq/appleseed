@@ -45,13 +45,16 @@ namespace renderer
 //
 
 VignetteApplier::VignetteApplier(
-    const VignetteParams& params)
-  : m_intensity(params.intensity)
-  , m_resolution(Vector2f(params.frame_width, params.frame_height))
+    const float frame_width,
+    const float frame_height,
+    const float intensity,
+    const float anisotropy)
+  : m_intensity(intensity)
+  , m_resolution(Vector2f(frame_width, frame_height))
   , m_vignette_resolution(
         Vector2f(
-            lerp(params.frame_height, params.frame_width, params.anisotropy),   // vignette_width
-            params.frame_height))                                               // vignette_height
+            lerp(frame_height, frame_width, anisotropy),    // vignette_width
+            frame_height))                                  // vignette_height
 {
     //
     // We normalize pixel coordinates when applying the effect so that they range from -1 to 1 vertically.

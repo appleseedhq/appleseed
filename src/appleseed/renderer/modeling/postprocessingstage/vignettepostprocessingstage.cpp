@@ -105,17 +105,12 @@ namespace
 
             const CanvasProperties& props = frame.image().properties();
 
-            // Initialize effect-specific context and settings.
-            const VignetteParams effect_params
-            {
+            // Apply the effect onto each image tile, in parallel.
+            const VignetteApplier effect_applier(
                 static_cast<float>(props.m_canvas_width),
                 static_cast<float>(props.m_canvas_height),
                 m_intensity,
-                m_anisotropy
-            };
-
-            // Apply the effect onto each image tile, in parallel.
-            const VignetteApplier effect_applier(effect_params);
+                m_anisotropy);
 
             effect_applier.apply_on_tiles(frame.image(), thread_count);
         }

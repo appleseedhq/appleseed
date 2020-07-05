@@ -58,7 +58,11 @@ class ResampleApplier
 
     // Constructor.
     explicit ResampleApplier(
+
+        // Context.
         const foundation::Image&    src_image,
+
+        // Settings.
         const SamplingMode          mode);
 
     // Delete this instance.
@@ -71,10 +75,7 @@ class ResampleApplier
         const std::size_t           tile_y) const override;
 
   private:
-    // Settings.
     const SamplingMode              m_mode;
-
-    // Context.
     const std::size_t               m_src_width;
     const std::size_t               m_src_height;
     const std::size_t               m_border_size;
