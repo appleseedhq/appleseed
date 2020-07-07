@@ -36,6 +36,7 @@
 // appleseed.foundation headers.
 #include "foundation/containers/dictionary.h"
 #include "foundation/image/canvasproperties.h"
+#include "foundation/image/conversion.h"
 #include "foundation/image/image.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
@@ -145,14 +146,16 @@ namespace
                       assert_otherwise;
                     }
 
-                    color = srgb_to_linear_rgb(color); // FIXME needed to match the output of tonemapper
-
                     if (m_clamp_values)
                         color = saturate(color);
 
                     image.set_pixel(x, y, pixel);
                 }
             }
+
+            // TODO figure out if this is actually correct (technically)
+            // NOTE conversion needed to match the output of tonemapper: https://github.com/tizian/tonemapper
+            convert_srgb_to_linear_rgb(image);
         }
 
       private:
