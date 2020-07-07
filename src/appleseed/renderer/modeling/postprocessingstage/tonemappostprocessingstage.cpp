@@ -126,8 +126,10 @@ namespace
             {
                 for (std::size_t x = 0; x < props.m_canvas_width; ++x)
                 {
-                    Color3f color; // NOTE ignoring alpha instead of using .rgb()
-                    image.get_pixel(x, y, color);
+                    Color4f pixel;
+                    image.get_pixel(x, y, pixel);
+
+                    Color3f& color = pixel.rgb();
 
                     switch (m_operator)
                     {
@@ -143,10 +145,12 @@ namespace
                       assert_otherwise;
                     }
 
+                    color = srgb_to_linear_rgb(color); // FIXME needed to match the output of tonemapper
+
                     if (m_clamp_values)
-                        image.set_pixel(x, y, clamp(color, 0.0f, 1.0f));
-                    else
-                        image.set_pixel(x, y, color);
+                        color = saturate(color);
+
+                    image.set_pixel(x, y, pixel);
                 }
             }
         }
