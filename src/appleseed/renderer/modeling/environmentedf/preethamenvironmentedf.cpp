@@ -39,6 +39,7 @@
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/sourceinputs.h"
+#include "renderer/modeling/light/sunlight.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
@@ -102,6 +103,7 @@ namespace
             m_inputs.declare("luminance_gamma", InputFormat::Float, "1.0");
             m_inputs.declare("saturation_multiplier", InputFormat::Float, "1.0");
             m_inputs.declare("horizon_shift", InputFormat::Float, "0.0");
+            m_inputs.declare("sun_light", InputFormat::Entity, "");
         }
 
         void release() override
@@ -125,6 +127,9 @@ namespace
 
             // Evaluate uniform values.
             m_inputs.evaluate_uniforms(&m_uniform_values);
+
+            // If there is a bound sun get it.
+            m_sun = dynamic_cast<SunLight*>(m_inputs.get_entity("sun_light"));
 
             // Compute the sun direction.
             m_sun_theta = deg_to_rad(m_uniform_values.m_sun_theta);
@@ -185,6 +190,10 @@ namespace
         {
             assert(is_normalized(outgoing));
 
+            Spectrum sun_value(0.0f);
+            if (m_sun)
+                m_sun->evaluate(Vector3d(outgoing.x, outgoing.y, outgoing.z), sun_value);
+
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             const Vector3f local_outgoing = transform.vector_to_local(outgoing);
@@ -196,6 +205,7 @@ namespace
             else radiance.set(0.0f);
 
             value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
+            value += sun_value;
         }
 
         void evaluate(
@@ -206,6 +216,10 @@ namespace
         {
             assert(is_normalized(outgoing));
 
+            Spectrum sun_value(0.0f);
+            if (m_sun)
+                m_sun->evaluate(Vector3d(outgoing.x, outgoing.y, outgoing.z), sun_value);
+
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             const Vector3f local_outgoing = transform.vector_to_local(outgoing);
@@ -217,6 +231,7 @@ namespace
             else radiance.set(0.0f);
 
             value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
+            value += sun_value;
             probability = shifted_outgoing.y > 0.0f ? shifted_outgoing.y * RcpPi<float>() : 0.0f;
             assert(probability >= 0.0f);
         }
@@ -264,6 +279,8 @@ namespace
         float                       m_uniform_x_zenith;
         float                       m_uniform_y_zenith;
         float                       m_uniform_Y_zenith;
+
+        SunLight*                   m_sun;
 
         // Compute the coefficients of the luminance distribution function.
         static void compute_Y_coefficients(

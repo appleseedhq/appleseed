@@ -135,7 +135,7 @@ namespace
             // Evaluate uniform values.
             m_inputs.evaluate_uniforms(&m_uniform_values);
 
-            // If there is a binded sun get it
+            // If there is a bound sun get it.
             m_sun = dynamic_cast<SunLight*>(m_inputs.get_entity("sun_light"));
 
             // Compute the sun direction.

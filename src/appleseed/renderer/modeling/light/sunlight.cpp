@@ -150,7 +150,6 @@ bool SunLight::on_frame_begin(
     // Reference: https://en.wikipedia.org/wiki/Solid_angle#Sun_and_Moon
     m_sun_solid_angle = TwoPi<float>() * (1.0f - std::cos(std::atan(SunRadius * m_values.m_size_multiplier / m_values.m_distance)));
 
-
     // If the Sun light is bound to an environment EDF, let it override the Sun's direction and turbidity.
     EnvironmentEDF* env_edf = dynamic_cast<EnvironmentEDF*>(m_inputs.get_entity("environment_edf"));
     if (env_edf != nullptr)
@@ -274,21 +273,17 @@ void SunLight::evaluate(
     }
 
     const Vector3d local_outgoing = normalize(get_transform().point_to_local(outgoing));
-    const double cos_theta = dot(local_outgoing, Vector3d(0.0, 0.0, 1.0));
-    const double sin_theta = std::sqrt(1.0 - cos_theta * cos_theta);
+    const double angle = std::acos(dot(local_outgoing, Vector3d(0.0, 0.0, 1.0)));
 
-    const double sin_theta_max = SunRadius * m_values.m_size_multiplier / m_values.m_distance;
-    const double cos_theta_max = std::sqrt(1.0 - sin_theta_max * sin_theta_max);
+    const double max_angle = SunRadius * m_values.m_size_multiplier / m_values.m_distance;
 
-
-    if (cos_theta < cos_theta_max)
+    if (angle > std::atan(max_angle))
     {
         value.set(0.0f);
         return;
     }
 
-    const double distance_to_center = SunRadius * m_values.m_size_multiplier *
-        ((sin_theta / cos_theta) / (sin_theta_max / cos_theta_max));
+    const double distance_to_center = std::tan(angle) * m_values.m_distance;
 
     RegularSpectrum31f radiance;
     compute_sun_radiance(
@@ -296,17 +291,18 @@ void SunLight::evaluate(
         m_values.m_turbidity,
         m_values.m_radiance_multiplier,
         radiance,
-        static_cast<float>(distance_to_center));
+        square(static_cast<float>(distance_to_center)));
 
     value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
+    value *= m_sun_solid_angle;
 }
 
 void SunLight::compute_sun_radiance(
-    const Vector3d& outgoing,
-    const float turbidity,
-    const float radiance_multiplier,
-    RegularSpectrum31f& radiance,
-    const float distance_to_center) const
+    const Vector3d&         outgoing,
+    const float             turbidity,
+    const float             radiance_multiplier,
+    RegularSpectrum31f&     radiance,
+    const float             squared_distance_to_center) const
 {
     // Compute the relative optical mass.
     const float cos_theta = -static_cast<float>(outgoing.y);
@@ -411,11 +407,11 @@ void SunLight::compute_sun_radiance(
 
     constexpr float LimbDarkeningCoeficent = 0.6f; // Limb darkening coefficient for the sun for visible sunlight.
     float limb_darkening = 1.0f;
-    if (distance_to_center > 0.0f)
+    if (squared_distance_to_center > 0.0f)
     {
         limb_darkening = (1.0f - LimbDarkeningCoeficent *
-            (1.0f - std::sqrt(1.0f - std::pow(distance_to_center, 2.0f) /
-                std::pow(SunRadius * m_values.m_size_multiplier, 2.0f))));
+            (1.0f - std::sqrt(1.0f - squared_distance_to_center
+            / square(SunRadius * m_values.m_size_multiplier))));
     }
 
     // Compute the attenuated radiance of the Sun.
@@ -570,7 +566,8 @@ void SunLight::sample_sun_surface(
         + sun_radius * p[1] * basis.get_tangent_v();
 
     outgoing = normalize(target_point - position);
-    float distance_to_center = SunRadius * m_values.m_size_multiplier * float(std::sqrt(p[0] * p[0] + p[1] * p[1]));
+    Vector2d disk_cord = static_cast<double>(SunRadius * m_values.m_size_multiplier) * p;
+    double squared_distance_to_center = disk_cord[0] * disk_cord[0] + disk_cord[1] * disk_cord[1];
 
 
     RegularSpectrum31f radiance;
@@ -579,7 +576,7 @@ void SunLight::sample_sun_surface(
         m_values.m_turbidity,
         m_values.m_radiance_multiplier,
         radiance,
-        distance_to_center);
+        static_cast<float>(squared_distance_to_center));
 
     value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
 
