@@ -47,6 +47,10 @@ namespace renderer
 //
 // Bright-pass applier.
 //
+// Filters out pixels with brightness lower than the given threshold.
+// Using soft_threshold values greater than 0 softens the transition
+// between regions that are converted to black and those that aren't.
+//
 
 class BrightPassApplier
   : public ImageEffectApplier
@@ -57,7 +61,8 @@ class BrightPassApplier
 
         // Settings.
         const float         threshold,
-        const float         soft_threshold);
+        const float         soft_threshold);    // 0 = hard threshold (i.e. abrupt split between bright/dark pixels)
+                                                // 1 = soft threshold (i.e. gradual boundary between bright/dark pixels)
 
     // Delete this instance.
     void release() override;

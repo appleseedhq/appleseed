@@ -49,6 +49,19 @@ namespace renderer
 //
 // Image resampling x2 applier.
 //
+// Fills an image's tiles given a source image as reference (src_image), similar to ResampleApplier.
+// However, it assumes that the source image's dimensions will either be halved or doubled, so that
+// smaller sampling filters are used, leading to not as good visual results, but faster processing.
+//
+// The SamplingMode values are:
+//   * HALVE: performs downsampling by box filtering
+//   * DOUBLE: performs upsampling by bilinear filtering
+//
+// References:
+//
+//   https://en.wikipedia.org/wiki/Image_scaling#Box_sampling
+//   https://en.wikipedia.org/wiki/Image_scaling#Bilinear_and_bicubic_algorithms
+//
 
 class ResampleX2Applier
   : public ImageEffectApplier

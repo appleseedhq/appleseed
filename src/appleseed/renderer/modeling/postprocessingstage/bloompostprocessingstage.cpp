@@ -120,6 +120,64 @@ namespace
         // Bloom post-processing effect execution.
         //
 
+        //
+        // Basically, bright pixels of the source image are extracted, blurred, then blended back into it. Thus,
+        // creating the effect of light extending from luminous areas. The algorithm consists of four main steps:
+        //
+        //   1. Prefiltering:
+        //       Filter out dark pixels from the image, so that only bright areas are blurred.
+        //   2. Downsampling:
+        //       Iteratively downsample the original image, leading to some blurring per step.
+        //   3. Upsampling and blending:
+        //       Iteratively upsample the last downsampling, thus increasing the resulting blur,
+        //       and blend the colors from previously downsampled images of the same size, so that
+        //       the intensity of bright areas stays high at their centers, and radially falls off.
+        //   4. Compositing:
+        //       Blend the final blurred image with the original one, weighted by an intensity value.
+        //
+        //                   "initial"                                                                      "final"
+        //                     image  ───────────────────────────────────────────────────────────────────> + image
+        //                       |                                                                 (blend) Λ
+        //                 (bright pass)                                                                   |
+        //                       v                                                                         |
+        //               prefiltered_image                                                                 |
+        //                       |                                                                         |
+        //                 (resample x2)                                                                   |
+        //                       v                                                                         |
+        //  blur_pyramid_down: @[0] ─(resample)─> @[1] ─(resample)─> ... ─(resample)─> @[iterations - 1]   |
+        //                       |                  |                 |                        |           |
+        //                    (blend)            (blend)           (blend)                  (copy)         |
+        //                       +                  +                 +                        =           |
+        //  blur_pyramid_up:   @[0] <─(resample)─ @[1] <─(resample)─ ... <─(resample)─ @[iterations - 1]   |
+        //                       |                                                                         |
+        //                 (resample x2)                                                                   |
+        //                       v                                                                         |
+        //                 bloom_target                                                                    |
+        //                       |                                                                         |
+        //                       └─────────────────────────────────────────────────────────────────────────┘
+        //
+        // References:
+        //
+        //   Real-Time 3D Scene Post-processing
+        //   http://developer.amd.com/wordpress/media/2012/10/Oat-ScenePostprocessing.pdf
+        //
+        //   Bloom Advanced Rendering Catlike Coding Tutorial
+        //   https://catlikecoding.com/unity/tutorials/advanced-rendering/bloom/
+        //
+        //   KinoBloom effect for Unity
+        //   https://github.com/keijiro/KinoBloom/
+        //
+        //   EEVEE Bloom
+        //   https://github.com/blender/blender/tree/master/source/blender/draw/engines/eevee
+        //   https://docs.blender.org/manual/en/latest/render/eevee/render_settings/bloom.html
+        //
+        //   An investigation of fast real-time GPU-based image blur algorithms
+        //   https://software.intel.com/content/www/us/en/develop/blogs/an-investigation-of-fast-real-time-gpu-based-image-blur-algorithms.html
+        //
+        //   Bandwidth-Efficient Rendering
+        //   https://community.arm.com/cfs-file/__key/communityserver-blogs-components-weblogfiles/00-00-00-20-66/siggraph2015_2D00_mmg_2D00_marius_2D00_notes.pdf
+        //
+
         static void init_blur_pyramids(
             std::vector<Image>&         blur_pyramid_down,
             std::vector<Image>&         blur_pyramid_up,
@@ -187,7 +245,7 @@ namespace
 
             if (iterations < m_iterations)
             {
-                RENDERER_LOG_INFO(
+                RENDERER_LOG_WARNING(
                     "post-processing stage \"%s\":\n"
                     "  the frame is too small for " FMT_SIZE_T " iterations\n"
                     "  using " FMT_SIZE_T " iterations instead",
@@ -263,7 +321,7 @@ namespace
             }
 
             //
-            // Resolve pass.
+            // Composite pass.
             //
 
             Image bloom_target(prefiltered_image.properties());

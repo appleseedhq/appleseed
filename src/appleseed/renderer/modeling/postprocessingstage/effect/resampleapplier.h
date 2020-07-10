@@ -49,6 +49,19 @@ namespace renderer
 //
 // Image resampling applier.
 //
+// Fills an image's tiles given a source image as reference (src_image).
+//
+// Two different sampling filters are used, depending on the specified SamplingMode:
+//   * DOWN: Assumes we want to shrink src_image into the given image
+//   * UP: Assumes we want to enlarge src_image onto the given image
+//
+// References on image resizing/rescaling and resampling:
+//
+//   http://www.imagemagick.org/Usage/resize/#resize
+//   http://www.imagemagick.org/Usage/filter/#filter
+//   http://www.imagemagick.org/Usage/filter/nicolas/#detailed
+//   https://en.wikipedia.org/wiki/Image_scaling#Mathematical
+//
 
 class ResampleApplier
   : public ImageEffectApplier

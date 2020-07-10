@@ -47,6 +47,13 @@ namespace renderer
 //
 // Image color blending applier.
 //
+// Blends the colors of a given image's tile with the matching tile of src_image,
+// using the specified weight factors to compute a weighted average between them, i.e.:
+//
+//   "image.tile(x, y) = dst_weight * image.tile(x, y) + src_weight * src_image.tile(x, y)"
+//
+// Note that, for this, both images must share the same layout.
+//
 
 class AdditiveBlendApplier
   : public ImageEffectApplier
@@ -65,8 +72,7 @@ class AdditiveBlendApplier
     // Delete this instance.
     void release() override;
 
-    // Blend colors of the given tile with the corresponding tile of src_image, i.e.:
-    // "image.tile(x, y) = dst_weight * image.tile(x, y) + src_weight * src_image.tile(x, y)".
+    // Blend colors of the given tile with the corresponding tile of src_image.
     void apply(
         foundation::Image&          image,
         const std::size_t           tile_x,
