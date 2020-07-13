@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
+#include "foundation/image/colorspace.h"
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
 #include "foundation/math/scalar.h"
@@ -76,9 +77,11 @@ void ToneMapApplier::apply(
             Color4f pixel;
             tile.get_pixel(x, y, pixel);
 
+            // FIXME unpremultiply, tonemap, saturate, then premultiply
+            //       as in conversion.cpp (also check if it is Color3f)
             tone_map(pixel.rgb());
 
-            tile.set_pixel(x, y, saturate(pixel)); // tile.set_pixel(x, y, pixel);
+            tile.set_pixel(x, y, saturate(pixel));
         }
     }
 }
@@ -90,7 +93,7 @@ void ToneMapApplier::apply(
 
 AcesUnrealApplier::AcesUnrealApplier()
   : ToneMapApplier(
-      [](Color3f color)
+      [](Color3f& color)
       {
           color = color / (color + Color3f(0.155f)) * 1.019f;
       })
@@ -99,17 +102,59 @@ AcesUnrealApplier::AcesUnrealApplier()
 
 
 //
-// FilmicApplier class implementation.
+// FilmicHejlApplier class implementation.
 //
 
-FilmicApplier::FilmicApplier()
+FilmicHejlApplier::FilmicHejlApplier()
   : ToneMapApplier(
-      [](Color3f color)
+      [](Color3f& color)
       {
+          //
+          // Apply a filmic tone mapper developed by Jim Hejl and Richard Burgess-Dawson at EA.
+          //
+          // References:
+          //
+          //   http://filmicworlds.com/blog/filmic-tonemapping-operators/
+          //   https://de.slideshare.net/hpduiker/filmic-tonemapping-for-realtime-rendering-siggraph-2010-color-course
+          //
+          
           color = component_wise_max(Color3f(0.0f), color - Color3f(0.004f));
           color =
             (color * (6.2f * color + Color3f(0.5f))) /
             (color * (6.2f * color + Color3f(1.7f)) + Color3f(0.06f));
+      })
+{
+}
+
+
+//
+// ReinhardApplier class implementation.
+//
+
+ReinhardApplier::ReinhardApplier(float gamma)
+  : m_gamma(gamma)
+  , ToneMapApplier(
+      [gamma](Color3f& color)
+      {
+          //
+          // Apply Reinhard's simple tone mapping operator (Eq. 3).
+          //
+          // Reference:
+          //
+          //   "Photographic Tone Reproduction for Digital Images", Reinhard et. al
+          //   http://www.cmap.polytechnique.fr/~peyre/cours/x2005signal/hdr_photographic.pdf
+          //
+
+          const float L = luminance(color);     // world luminance
+          const float Ld = L / (1.0f + L);      // display luminance
+          color = Ld * color / L;
+
+          // Gamma correct.
+          const float rcp_gamma = 1.0f / gamma;
+          color = Color3f(
+              pow(color[0], rcp_gamma),
+              pow(color[1], rcp_gamma),
+              pow(color[2], rcp_gamma));
       })
 {
 }

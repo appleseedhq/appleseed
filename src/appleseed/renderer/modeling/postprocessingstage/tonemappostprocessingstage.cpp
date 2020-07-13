@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
+#include "renderer/modeling/postprocessingstage/effect/tonemapapplier.h"
 
 // appleseed.foundation headers.
 #include "foundation/containers/dictionary.h"
@@ -60,10 +61,16 @@ namespace
 
     const char* Model = "tone_map_post_processing_stage";
 
-    // TODO add default param values
-    static constexpr ToneMapOperator DeafutToneMapOperator = ToneMapOperator::FILMIC;
+    // TODO improve this:
+    enum class ToneMapOperator
+    {
+        ACES_UNREAL,
+        FILMIC,
+        REINHARD,
+    };
 
-    static constexpr bool DeafutClampValues = false;
+    static constexpr ToneMapOperator DeafutToneMapOperator = ToneMapOperator::FILMIC;
+    static constexpr float DeafutGamma = 2.2f;
 
     class ToneMapPostProcessingStage
       : public PostProcessingStage
@@ -94,24 +101,26 @@ namespace
         {
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
-            m_clamp_values = m_params.get_optional("clamp_values", DeafutClampValues, context);
-
             // TODO retrive params
             const std::string tone_map_operator =
                 m_params.get_optional<std::string>(
                     "tone_map_operator",
                     "filmic",
-                    make_vector("aces_unreal", "filmic"),
+                    make_vector("aces_unreal", "filmic", "reinhard"),
                     context);
 
             if (tone_map_operator == "aces_unreal")
                 m_operator = ToneMapOperator::ACES_UNREAL;
+            else if (tone_map_operator == "reinhard")
+                m_operator = ToneMapOperator::REINHARD;
             else
             {
                 assert(tone_map_operator == "filmic");
 
                 m_operator = ToneMapOperator::FILMIC;
             }
+
+            m_gamma = m_params.get_optional<float>("gamma", DeafutGamma);
 
             return true;
         }
@@ -122,35 +131,27 @@ namespace
 
             Image& image = frame.image();
 
-            // FIXME abstract to effect appliers
-            for (std::size_t y = 0; y < props.m_canvas_height; ++y)
+            switch (m_operator)
             {
-                for (std::size_t x = 0; x < props.m_canvas_width; ++x)
-                {
-                    Color4f pixel;
-                    image.get_pixel(x, y, pixel);
+              case ToneMapOperator::ACES_UNREAL:
+              {
+                (const AcesUnrealApplier()).apply_on_tiles(image, thread_count);
+                break;
+              }
 
-                    Color3f& color = pixel.rgb();
+              case ToneMapOperator::FILMIC:
+              {
+                (const FilmicHejlApplier()).apply_on_tiles(image, thread_count);
+                break;
+              }
 
-                    switch (m_operator)
-                    {
-                      case ToneMapOperator::ACES_UNREAL:
-                        color = color / (color + Color3f(0.155f)) * 1.019f;
-                        break;
+              case ToneMapOperator::REINHARD:
+              {
+                (const ReinhardApplier(m_gamma)).apply_on_tiles(image, thread_count);
+                break;
+              }
 
-                      case ToneMapOperator::FILMIC:
-                        color = component_wise_max(Color3f(0.0f), color - Color3f(0.004f));
-                        color = (color * (6.2f * color + Color3f(0.5f))) / (color * (6.2f * color + Color3f(1.7f)) + Color3f(0.06f));
-                        break;
-
-                      assert_otherwise;
-                    }
-
-                    if (m_clamp_values)
-                        color = saturate(color);
-
-                    image.set_pixel(x, y, pixel);
-                }
+              assert_otherwise;
             }
 
             // TODO figure out if this is actually correct (technically)
@@ -160,8 +161,8 @@ namespace
 
       private:
         // TODO add params
-        ToneMapOperator   m_operator;
-        bool              m_clamp_values;
+        ToneMapOperator     m_operator;
+        float               m_gamma;
     };
 }
 
@@ -203,18 +204,32 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
             .insert("items",
                 Dictionary()
                     .insert("ACES (Unreal)", "aces_unreal")
-                    .insert("Filmic", "filmic"))
+                    .insert("Filmic", "filmic")
+                    .insert("Reinhard", "reinhard"))
             .insert("use", "required")
-            .insert("default", "filmic"));
-            // .insert("on_change", "rebuild_form"));
+            .insert("default", "filmic")
+            .insert("on_change", "rebuild_form"));
+
+    // TODO add operator params:
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "clamp_values")
-            .insert("label", "Clamp Values")
-            .insert("type", "boolean")
+            .insert("name", "gamma")
+            .insert("label", "Gamma")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "10.0")
+                    .insert("type", "soft"))
             .insert("use", "optional")
-            .insert("default", "false"));
+            .insert("default", "2.2")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("tone_map_operator", "reinhard")));
 
     return metadata;
 }

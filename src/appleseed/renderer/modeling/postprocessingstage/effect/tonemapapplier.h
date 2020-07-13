@@ -32,7 +32,9 @@
 #include "renderer/modeling/postprocessingstage/effect/imageeffectapplier.h"
 
 // appleseed.foundation headers.
+#include "foundation/image/color.h"
 #include "foundation/math/vector.h"
+#include "foundation/utility/registrar.h"
 
 // Standard headers.
 #include <cstddef>
@@ -50,6 +52,14 @@ namespace renderer
 //
 // Tone map post-processing effect appliers.
 //
+// References:
+//
+//   Tone Mapper, Tizian Zeltner
+//   https://github.com/tizian/tonemapper
+//
+//   Tone Mapping, Matt Taylor
+//   https://64.github.io/tonemapping/
+//
 
 class ToneMapApplier
   : public ImageEffectApplier
@@ -59,13 +69,13 @@ class ToneMapApplier
     void release() override;
 
     // Apply a tone mapping curve to a given tile.
-    void apply(
+    virtual void apply(
         foundation::Image&      image,
         const std::size_t       tile_x,
         const std::size_t       tile_y) const override;
 
   protected:
-    typedef std::function<void(Color3f)> ToneMapFunction;
+    typedef std::function<void(foundation::Color3f&)> ToneMapFunction;
 
     // Constructor.
     ToneMapApplier(
@@ -74,30 +84,51 @@ class ToneMapApplier
     const ToneMapFunction       tone_map;
 };
 
-
-//
-// TODO add reference
-//
+// TODO add references for each and note that
+//      they are only slightly modified from:
+//      https://github.com/tizian/tonemapper
 
 class AcesUnrealApplier
   : public ToneMapApplier
 {
   public:
-    // Constructor.
     explicit AcesUnrealApplier();
 };
 
-
-//
-// TODO add reference
-//
-
-class FilmicApplier
+class FilmicHejlApplier
   : public ToneMapApplier
 {
   public:
-    // Constructor.
-    explicit FilmicApplier();
+    explicit FilmicHejlApplier();
 };
+
+class ReinhardApplier
+  : public ToneMapApplier
+{
+  public:
+    explicit ReinhardApplier(
+        float   gamma);
+
+  private:
+    float       m_gamma;
+};
+
+// class ReinhardExtendedApplier
+//   : public ToneMapApplier
+// {
+//   public:
+//     explicit ReinhardExtendedApplier(
+//         float   gamma,
+//         float   max_white);
+
+//     void apply(
+//         foundation::Image&      image,
+//         const std::size_t       tile_x,
+//         const std::size_t       tile_y) const override;
+
+//   private:
+//     float       m_gamma;
+//     float       m_max_white; // smallest luminance that will be mapped to pure white
+// };
 
 }   // namespace renderer
