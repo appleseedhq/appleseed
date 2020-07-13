@@ -102,33 +102,55 @@ class FilmicHejlApplier
     explicit FilmicHejlApplier();
 };
 
+/*
+class FilmicUncharted2Applier
+  : public ToneMapApplier
+{
+  public:
+    explicit FilmicUncharted2Applier(
+        const float     A,
+        const float     B,
+        const float     C,
+        const float     D,
+        const float     E,
+        const float     F,
+        const float     W,
+        const float     exposure_bias);
+
+  private:
+    const float         A;              // shoulder_strength
+    const float         B;              // linear_strength
+    const float         C;              // linear_angle
+    const float         D;              // toe_strength
+    const float         E;              // toe_numerator
+    const float         F;              // toe_denominator
+    const float         W;              // linear_whitepoint
+    const float         exposure_bias;
+};
+*/
+
 class ReinhardApplier
   : public ToneMapApplier
 {
   public:
     explicit ReinhardApplier(
-        float   gamma);
+        const float     gamma);
 
   private:
-    float       m_gamma;
+    const float         m_gamma;
 };
 
-// class ReinhardExtendedApplier
-//   : public ToneMapApplier
-// {
-//   public:
-//     explicit ReinhardExtendedApplier(
-//         float   gamma,
-//         float   max_white);
+class ReinhardExtendedApplier
+  : public ToneMapApplier
+{
+  public:
+    explicit ReinhardExtendedApplier(
+        const float     gamma,
+        const float     max_white);
 
-//     void apply(
-//         foundation::Image&      image,
-//         const std::size_t       tile_x,
-//         const std::size_t       tile_y) const override;
-
-//   private:
-//     float       m_gamma;
-//     float       m_max_white; // smallest luminance that will be mapped to pure white
-// };
+  private:
+    const float         m_gamma;
+    const float         m_max_white;    // maximum luminance in the scene
+};
 
 }   // namespace renderer

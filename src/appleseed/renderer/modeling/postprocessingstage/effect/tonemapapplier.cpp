@@ -114,10 +114,13 @@ FilmicHejlApplier::FilmicHejlApplier()
           //
           // References:
           //
+          //   "Filmic Tonemapping Operators", John Hable
           //   http://filmicworlds.com/blog/filmic-tonemapping-operators/
+          //
+          //   "Filmic Tonemapping for Real-time Rendering", Haarm-Pieter Duiker
           //   https://de.slideshare.net/hpduiker/filmic-tonemapping-for-realtime-rendering-siggraph-2010-color-course
           //
-          
+
           color = component_wise_max(Color3f(0.0f), color - Color3f(0.004f));
           color =
             (color * (6.2f * color + Color3f(0.5f))) /
@@ -147,6 +150,44 @@ ReinhardApplier::ReinhardApplier(float gamma)
 
           const float L = luminance(color);     // world luminance
           const float Ld = L / (1.0f + L);      // display luminance
+          color = Ld * color / L;
+
+          // Gamma correct.
+          const float rcp_gamma = 1.0f / gamma;
+          color = Color3f(
+              pow(color[0], rcp_gamma),
+              pow(color[1], rcp_gamma),
+              pow(color[2], rcp_gamma));
+      })
+{
+}
+
+
+//
+// ReinhardExtendedApplier class implementation.
+//
+
+ReinhardExtendedApplier::ReinhardExtendedApplier(float gamma, float  max_white)
+  : m_gamma(gamma)
+  , m_max_white(max_white)
+  , ToneMapApplier(
+      [gamma, max_white](Color3f& color)
+      {
+          //
+          // Apply Reinhard's extended tone mapping operator (Eq. 4).
+          //
+          // Note that we use Lwhite = Lmax to avoid burn-out, where:
+          //   * Lwhite is the smallest luminance that will be mapped to pure white
+          //   * Lmax is the maximum luminance in the scene
+          //
+          // Reference:
+          //
+          //   "Photographic Tone Reproduction for Digital Images", Reinhard et. al
+          //   http://www.cmap.polytechnique.fr/~peyre/cours/x2005signal/hdr_photographic.pdf
+          //
+
+          const float L = luminance(color);
+          const float Ld = (L * (1.0f + L / (max_white * max_white))) / (1.0f + L);
           color = Ld * color / L;
 
           // Gamma correct.
