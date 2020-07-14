@@ -87,6 +87,7 @@ class ToneMapApplier
 // TODO add references for each and note that
 //      they are only slightly modified from:
 //      https://github.com/tizian/tonemapper
+//      (also, include the original license)
 
 class AcesUnrealApplier
   : public ToneMapApplier
@@ -95,39 +96,23 @@ class AcesUnrealApplier
     explicit AcesUnrealApplier();
 };
 
+class AcesNarkowiczApplier
+  : public ToneMapApplier
+{
+  public:
+    explicit AcesNarkowiczApplier(
+        const float     gamma);
+
+  private:
+    const float         m_gamma;
+};
+
 class FilmicHejlApplier
   : public ToneMapApplier
 {
   public:
     explicit FilmicHejlApplier();
 };
-
-/*
-class FilmicUncharted2Applier
-  : public ToneMapApplier
-{
-  public:
-    explicit FilmicUncharted2Applier(
-        const float     A,
-        const float     B,
-        const float     C,
-        const float     D,
-        const float     E,
-        const float     F,
-        const float     W,
-        const float     exposure_bias);
-
-  private:
-    const float         A;              // shoulder_strength
-    const float         B;              // linear_strength
-    const float         C;              // linear_angle
-    const float         D;              // toe_strength
-    const float         E;              // toe_numerator
-    const float         F;              // toe_denominator
-    const float         W;              // linear_whitepoint
-    const float         exposure_bias;
-};
-*/
 
 class ReinhardApplier
   : public ToneMapApplier

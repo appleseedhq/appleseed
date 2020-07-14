@@ -81,6 +81,8 @@ void ToneMapApplier::apply(
             //       as in conversion.cpp (also check if it is Color3f)
             tone_map(pixel.rgb());
 
+            // TODO move gamma correction out of the TMOs (?)
+
             tile.set_pixel(x, y, saturate(pixel));
         }
     }
@@ -95,7 +97,57 @@ AcesUnrealApplier::AcesUnrealApplier()
   : ToneMapApplier(
       [](Color3f& color)
       {
+          //
+          // Apply the color grading curve from Unreal 3,
+          // adapted by Romain Guy to be close to the ACES curve.
+          //
+          // Note: gamma 2.2 correction is baked in.
+          //
+          // Reference:
+          //
+          //   https://www.shadertoy.com/view/llXyWr
+          //
+
           color = color / (color + Color3f(0.155f)) * 1.019f;
+      })
+{
+}
+
+
+//
+// AcesNarkowiczApplier class implementation.
+//
+
+AcesNarkowiczApplier::AcesNarkowiczApplier(float gamma)
+  : m_gamma(gamma)
+  , ToneMapApplier(
+      [gamma](Color3f& color)
+      {
+          //
+          // Apply Krzysztof Narkowicz's fitting of the ACES curve.
+          //
+          // Note: for the original ACES curve, color should me multiplied by 0.6.
+          //
+          // Reference:
+          //
+          //   https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
+          //
+
+          const Color3f a(2.51f);
+          const Color3f b(0.03f);
+          const Color3f c(2.43f);
+          const Color3f d(0.59f);
+          const Color3f e(0.14f);
+          color =
+              (color * (a * color + b)) /
+              (color * (c * color + d) + e);
+
+          // Gamma correct.
+          const float rcp_gamma = 1.0f / gamma;
+          color = Color3f(
+              pow(color[0], rcp_gamma),
+              pow(color[1], rcp_gamma),
+              pow(color[2], rcp_gamma));
       })
 {
 }
@@ -114,17 +166,14 @@ FilmicHejlApplier::FilmicHejlApplier()
           //
           // References:
           //
-          //   "Filmic Tonemapping Operators", John Hable
           //   http://filmicworlds.com/blog/filmic-tonemapping-operators/
-          //
-          //   "Filmic Tonemapping for Real-time Rendering", Haarm-Pieter Duiker
           //   https://de.slideshare.net/hpduiker/filmic-tonemapping-for-realtime-rendering-siggraph-2010-color-course
           //
 
           color = component_wise_max(Color3f(0.0f), color - Color3f(0.004f));
           color =
-            (color * (6.2f * color + Color3f(0.5f))) /
-            (color * (6.2f * color + Color3f(1.7f)) + Color3f(0.06f));
+              (color * (6.2f * color + Color3f(0.5f))) /
+              (color * (6.2f * color + Color3f(1.7f)) + Color3f(0.06f));
       })
 {
 }
@@ -144,7 +193,6 @@ ReinhardApplier::ReinhardApplier(float gamma)
           //
           // Reference:
           //
-          //   "Photographic Tone Reproduction for Digital Images", Reinhard et. al
           //   http://www.cmap.polytechnique.fr/~peyre/cours/x2005signal/hdr_photographic.pdf
           //
 
@@ -182,7 +230,6 @@ ReinhardExtendedApplier::ReinhardExtendedApplier(float gamma, float  max_white)
           //
           // Reference:
           //
-          //   "Photographic Tone Reproduction for Digital Images", Reinhard et. al
           //   http://www.cmap.polytechnique.fr/~peyre/cours/x2005signal/hdr_photographic.pdf
           //
 
