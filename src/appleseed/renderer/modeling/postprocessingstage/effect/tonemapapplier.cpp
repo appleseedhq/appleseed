@@ -41,12 +41,70 @@ using namespace foundation;
 namespace renderer
 {
 
+namespace
+{
+    //
+    // Tone map operators.
+    //
+
+    struct AcesUnreal final
+      : public ToneMapOperator
+    {
+        AcesUnreal()
+          : ToneMapOperator(
+              "aces_unreal",
+              "ACES (Unreal)",
+              ParameterMap())
+        {
+        }
+
+        void tone_map(Color3f& color) const final
+        {
+            color = color / (color + Color3f(0.155f)) * 1.019f;
+        }
+    };
+
+    struct AcesNarkowicz final
+      : public ToneMapOperator
+    {
+        AcesNarkowicz(const float gamma)
+          : ToneMapOperator(
+              "aces_narkowicz",
+              "ACES (Narkowicz)",
+              ParameterMap({
+                  { "gamma", { gamma, 1.0f, 0.f, 10.f } }
+              }))
+        {
+        }
+
+        void tone_map(Color3f& color) const final
+        {
+            const Color3f a(2.51f);
+            const Color3f b(0.03f);
+            const Color3f c(2.43f);
+            const Color3f d(0.59f);
+            const Color3f e(0.14f);
+            color =
+                (color * (a * color + b)) /
+                (color * (c * color + d) + e);
+
+            // Gamma correct.
+            // FIXME this will access the map for every pixel..
+            const float rcp_gamma = 1.0f / parameters.at("gamma").value;
+            color = Color3f(
+                pow(color[0], rcp_gamma),
+                pow(color[1], rcp_gamma),
+                pow(color[2], rcp_gamma));
+        }
+    };
+}
+
 //
 // ToneMapApplier class implementation.
 //
 
-ToneMapApplier::ToneMapApplier(const ToneMapFunction tone_map)
-  : tone_map(tone_map)
+ToneMapApplier::ToneMapApplier(const ToneMapOperator tone_map_operator)
+  : m_operator(tone_map_operator)
 {
 }
 
@@ -74,21 +132,21 @@ void ToneMapApplier::apply(
     {
         for (std::size_t x = 0; x < tile_width; ++x)
         {
-            Color4f pixel;
-            tile.get_pixel(x, y, pixel);
+            // TODO move gamma correction out of the TMOs (?)
 
             // FIXME unpremultiply, tonemap, saturate, then premultiply
             //       as in conversion.cpp (also check if it is Color3f)
-            tone_map(pixel.rgb());
 
-            // TODO move gamma correction out of the TMOs (?)
-
+            Color4f pixel;
+            tile.get_pixel(x, y, pixel);
+            m_operator.tone_map(pixel.rgb());
             tile.set_pixel(x, y, saturate(pixel));
         }
     }
 }
 
 
+#if 0
 //
 // AcesUnrealApplier class implementation.
 //
@@ -246,5 +304,6 @@ ReinhardExtendedApplier::ReinhardExtendedApplier(float gamma, float  max_white)
       })
 {
 }
+#endif
 
 }   // namespace renderer

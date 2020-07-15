@@ -61,16 +61,16 @@ namespace
 
     const char* Model = "tone_map_post_processing_stage";
 
-    // TODO improve this:
-    enum class ToneMapOperator
+    // FIXME remove & improve
+    enum class _ToneMapOperator
     {
         ACES_UNREAL,
         FILMIC,
         REINHARD,
     };
 
-    static constexpr ToneMapOperator DeafutToneMapOperator = ToneMapOperator::FILMIC;
-    static constexpr float DeafutGamma = 2.2f;
+    static constexpr _ToneMapOperator DeafaultToneMapOperator = _ToneMapOperator::FILMIC;
+    static constexpr float DeafaultGamma = 2.2f;
 
     class ToneMapPostProcessingStage
       : public PostProcessingStage
@@ -110,17 +110,17 @@ namespace
                     context);
 
             if (tone_map_operator == "aces_unreal")
-                m_operator = ToneMapOperator::ACES_UNREAL;
+                m_operator = _ToneMapOperator::ACES_UNREAL;
             else if (tone_map_operator == "reinhard")
-                m_operator = ToneMapOperator::REINHARD;
+                m_operator = _ToneMapOperator::REINHARD;
             else
             {
                 assert(tone_map_operator == "filmic");
 
-                m_operator = ToneMapOperator::FILMIC;
+                m_operator = _ToneMapOperator::FILMIC;
             }
 
-            m_gamma = m_params.get_optional<float>("gamma", DeafutGamma);
+            m_gamma = m_params.get_optional<float>("gamma", DeafaultGamma);
 
             return true;
         }
@@ -133,19 +133,19 @@ namespace
 
             switch (m_operator)
             {
-              case ToneMapOperator::ACES_UNREAL:
+              case _ToneMapOperator::ACES_UNREAL:
               {
                 (const AcesUnrealApplier()).apply_on_tiles(image, thread_count);
                 break;
               }
 
-              case ToneMapOperator::FILMIC:
+              case _ToneMapOperator::FILMIC:
               {
                 (const FilmicHejlApplier()).apply_on_tiles(image, thread_count);
                 break;
               }
 
-              case ToneMapOperator::REINHARD:
+              case _ToneMapOperator::REINHARD:
               {
                 (const ReinhardApplier(m_gamma)).apply_on_tiles(image, thread_count);
                 break;
@@ -161,7 +161,7 @@ namespace
 
       private:
         // TODO add params
-        ToneMapOperator     m_operator;
+        _ToneMapOperator     m_operator;
         float               m_gamma;
     };
 }

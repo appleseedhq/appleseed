@@ -52,6 +52,8 @@ namespace renderer
 //
 // Tone map post-processing effect appliers.
 //
+
+//
 // References:
 //
 //   Tone Mapper, Tizian Zeltner
@@ -61,29 +63,68 @@ namespace renderer
 //   https://64.github.io/tonemapping/
 //
 
+
+struct ToneMapOperator
+{
+    struct Parameter
+    {
+        float           value;
+        const float     default_value;
+        const float     min_value;
+        const float     max_value;
+    };
+
+    typedef std::map<const std::string, Parameter> ParameterMap;
+
+    const std::string   id;
+    const std::string   name;
+    const ParameterMap  parameters;
+
+    // Constructor.
+    ToneMapOperator(
+        const std::string id,
+        const std::string name,
+        const ParameterMap parameters)
+      : id(id)
+      , name(name)
+      , parameters(parameters)
+    {
+    }
+
+    // FIXME ideally, this should be a pure virtual function..
+    //       is it better to store a ToneMapOperator* in the applier?
+
+    // Tone mapping curve.
+    virtual void tone_map(foundation::Color3f& color) const {};
+};
+
+
 class ToneMapApplier
   : public ImageEffectApplier
 {
   public:
+    // Constructor.
+    ToneMapApplier(
+        const ToneMapOperator   tone_map_operator);
+
     // Delete this instance.
     void release() override;
 
     // Apply a tone mapping curve to a given tile.
-    virtual void apply(
+    void apply(
         foundation::Image&      image,
         const std::size_t       tile_x,
         const std::size_t       tile_y) const override;
 
-  protected:
-    typedef std::function<void(foundation::Color3f&)> ToneMapFunction;
+    typedef std::map<const std::string, ToneMapOperator::ParameterMap> OperatorParameterMap;
 
-    // Constructor.
-    ToneMapApplier(
-        const ToneMapFunction   tone_map);
+    const OperatorParameterMap get_operator_parameters() const;
 
-    const ToneMapFunction       tone_map;
+  private:
+    const ToneMapOperator       m_operator;
 };
 
+#if 0
 // TODO add references for each and note that
 //      they are only slightly modified from:
 //      https://github.com/tizian/tonemapper
@@ -137,5 +178,6 @@ class ReinhardExtendedApplier
     const float         m_gamma;
     const float         m_max_white;    // maximum luminance in the scene
 };
+#endif
 
 }   // namespace renderer
