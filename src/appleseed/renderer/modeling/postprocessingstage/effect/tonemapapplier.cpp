@@ -43,6 +43,8 @@ namespace renderer
 
 namespace
 {
+
+#if 0
     //
     // Tone map operators.
     //
@@ -97,16 +99,17 @@ namespace
                 pow(color[2], rcp_gamma));
         }
     };
+#endif
 }
 
 //
 // ToneMapApplier class implementation.
 //
 
-ToneMapApplier::ToneMapApplier(const ToneMapOperator tone_map_operator)
-  : m_operator(tone_map_operator)
-{
-}
+// ToneMapApplier::ToneMapApplier(const ToneMapOperator tone_map_operator)
+//   : m_operator(tone_map_operator)
+// {
+// }
 
 void ToneMapApplier::release()
 {
@@ -139,10 +142,58 @@ void ToneMapApplier::apply(
 
             Color4f pixel;
             tile.get_pixel(x, y, pixel);
-            m_operator.tone_map(pixel.rgb());
+            tone_map(pixel.rgb());
             tile.set_pixel(x, y, saturate(pixel));
         }
     }
+}
+
+AcesNarkowiczApplier::AcesNarkowiczApplier(
+    const float gamma)
+  : m_gamma(gamma)
+{
+};
+
+void AcesNarkowiczApplier::tone_map(Color3f& color) const
+{
+    const Color3f a(2.51f);
+    const Color3f b(0.03f);
+    const Color3f c(2.43f);
+    const Color3f d(0.59f);
+    const Color3f e(0.14f);
+    color =
+        (color * (a * color + b)) /
+        (color * (c * color + d) + e);
+
+    // Gamma correct.
+    const float rcp_gamma = 1.0f / m_gamma;
+    color = Color3f(
+        pow(color[0], rcp_gamma),
+        pow(color[1], rcp_gamma),
+        pow(color[2], rcp_gamma));
+}
+
+
+ReinhardExtendedApplier::ReinhardExtendedApplier(
+    const float gamma,
+        const float     max_white)
+  : m_gamma(gamma)
+  , m_max_white(max_white)
+{
+};
+
+void ReinhardExtendedApplier::tone_map(Color3f& color) const
+{
+    const float L = luminance(color);
+    const float Ld = (L * (1.0f + L / (m_max_white * m_max_white))) / (1.0f + L);
+    color = Ld * color / L;
+
+    // Gamma correct.
+    const float rcp_gamma = 1.0f / m_gamma;
+    color = Color3f(
+        pow(color[0], rcp_gamma),
+        pow(color[1], rcp_gamma),
+        pow(color[2], rcp_gamma));
 }
 
 

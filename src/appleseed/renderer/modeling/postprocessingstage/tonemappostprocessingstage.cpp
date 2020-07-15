@@ -47,6 +47,7 @@
 // Standard headers.
 #include <cstddef>
 #include <memory>
+#include <vector>
 
 using namespace foundation;
 
@@ -62,15 +63,28 @@ namespace
     const char* Model = "tone_map_post_processing_stage";
 
     // FIXME remove & improve
-    enum class _ToneMapOperator
+    // enum class _ToneMapOperator
+    // {
+    //     ACES_UNREAL,
+    //     FILMIC,
+    //     REINHARD,
+    // };
+
+    struct ToneMapOperator_
     {
-        ACES_UNREAL,
-        FILMIC,
-        REINHARD,
+        const char* id;
+        const char* name;
     };
 
-    static constexpr _ToneMapOperator DeafaultToneMapOperator = _ToneMapOperator::FILMIC;
-    static constexpr float DeafaultGamma = 2.2f;
+    static constexpr size_t ToneMapOperatorsCount = 2;
+    static constexpr ToneMapOperator ToneMapOperators[ToneMapOperatorsCount] =
+    {
+        // TODO also store the id inside the applier
+        { "aces_narkowicz", AcesNarkowiczApplier::Name },
+        { "reinhard_extended", ReinhardExtendedApplier::Name },
+    };
+
+    static constexpr ToneMapOperator DeafaultToneMapOperator = ToneMapOperators[0];
 
     class ToneMapPostProcessingStage
       : public PostProcessingStage
@@ -85,6 +99,7 @@ namespace
 
         void release() override
         {
+            //delete m_applier;
             delete this;
         }
 
@@ -101,26 +116,46 @@ namespace
         {
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
-            // TODO retrive params
+            std::vector<std::string> allowed_tone_map_operators;
+            allowed_tone_map_operators.reserve(ToneMapOperatorsCount);
+            for (auto tmo : ToneMapOperators)
+                allowed_tone_map_operators.push_back(tmo.id);
+
             const std::string tone_map_operator =
                 m_params.get_optional<std::string>(
                     "tone_map_operator",
-                    "filmic",
-                    make_vector("aces_unreal", "filmic", "reinhard"),
+                    DeafaultToneMapOperator.id,
+                    allowed_tone_map_operators,
                     context);
 
-            if (tone_map_operator == "aces_unreal")
-                m_operator = _ToneMapOperator::ACES_UNREAL;
-            else if (tone_map_operator == "reinhard")
-                m_operator = _ToneMapOperator::REINHARD;
-            else
+            // TODO retrive params
+            if (tone_map_operator == "aces_narkowicz")
             {
-                assert(tone_map_operator == "filmic");
+                const float gamma = m_params.get_optional(
+                    (std::string("aces_narkowicz_") +
+                     AcesNarkowiczApplier::Gamma.id).c_str(),
+                    AcesNarkowiczApplier::Gamma.default_value,
+                    context);
 
-                m_operator = _ToneMapOperator::FILMIC;
+                m_applier = new AcesNarkowiczApplier(gamma);
             }
+            else if (tone_map_operator == "reinhard_extended")
+            {
+                const float gamma = m_params.get_optional(
+                    (std::string("reinhard_extended_") +
+                     ReinhardExtendedApplier::Gamma.id).c_str(),
+                    ReinhardExtendedApplier::Gamma.default_value,
+                    context);
 
-            m_gamma = m_params.get_optional<float>("gamma", DeafaultGamma);
+                const float max_white = m_params.get_optional(
+                    (std::string("reinhard_extended_") +
+                     ReinhardExtendedApplier::Lmax.id).c_str(),
+                    ReinhardExtendedApplier::Lmax.default_value,
+                    context);
+
+                m_applier = new ReinhardExtendedApplier(gamma, max_white);
+            }
+            // FIXME else..
 
             return true;
         }
@@ -131,28 +166,30 @@ namespace
 
             Image& image = frame.image();
 
-            switch (m_operator)
-            {
-              case _ToneMapOperator::ACES_UNREAL:
-              {
-                (const AcesUnrealApplier()).apply_on_tiles(image, thread_count);
-                break;
-              }
+            m_applier->apply_on_tiles(image, thread_count);
+            // if ()
+            // switch (m_operator)
+            // {
+            //   case _ToneMapOperator::ACES_UNREAL:
+            //   {
+            //     (const AcesUnrealApplier()).apply_on_tiles(image, thread_count);
+            //     break;
+            //   }
 
-              case _ToneMapOperator::FILMIC:
-              {
-                (const FilmicHejlApplier()).apply_on_tiles(image, thread_count);
-                break;
-              }
+            //   case _ToneMapOperator::FILMIC:
+            //   {
+            //     (const FilmicHejlApplier()).apply_on_tiles(image, thread_count);
+            //     break;
+            //   }
 
-              case _ToneMapOperator::REINHARD:
-              {
-                (const ReinhardApplier(m_gamma)).apply_on_tiles(image, thread_count);
-                break;
-              }
+            //   case _ToneMapOperator::REINHARD:
+            //   {
+            //     (const ReinhardApplier(m_gamma)).apply_on_tiles(image, thread_count);
+            //     break;
+            //   }
 
-              assert_otherwise;
-            }
+            //   assert_otherwise;
+            // }
 
             // TODO figure out if this is actually correct (technically)
             // NOTE conversion needed to match the output of tonemapper: https://github.com/tizian/tonemapper
@@ -161,7 +198,7 @@ namespace
 
       private:
         // TODO add params
-        _ToneMapOperator     m_operator;
+        ToneMapApplier*     m_applier;
         float               m_gamma;
     };
 }
@@ -195,6 +232,9 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
 
     add_common_input_metadata(metadata);
 
+    Dictionary tone_map_operator_items;
+    for (auto tmo : ToneMapOperators)
+        tone_map_operator_items.insert(tmo.name, tmo.id);
     metadata.push_back(
         Dictionary()
             .insert("name", "tone_map_operator")
@@ -202,19 +242,21 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
             // FIXME
             .insert("type", "enumeration")
             .insert("items",
-                Dictionary()
-                    .insert("ACES (Unreal)", "aces_unreal")
-                    .insert("Filmic", "filmic")
-                    .insert("Reinhard", "reinhard"))
+                tone_map_operator_items)
+                // Dictionary()
+                    // .insert("ACES (Unreal)", "aces_unreal")
+                    // .insert("Filmic", "filmic")
+                    // .insert("Reinhard", "reinhard"))
             .insert("use", "required")
-            .insert("default", "filmic")
+            .insert("default", DeafaultToneMapOperator.id)
             .insert("on_change", "rebuild_form"));
 
     // TODO add operator params:
 
+    // FIXME quick testing, automate this later..
     metadata.push_back(
         Dictionary()
-            .insert("name", "gamma")
+            .insert("name", "aces_narkowicz_gamma")
             .insert("label", "Gamma")
             .insert("type", "numeric")
             .insert("min",
@@ -229,7 +271,45 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
             .insert("default", "2.2")
             .insert("visible_if",
                 Dictionary()
-                    .insert("tone_map_operator", "reinhard")));
+                    .insert("tone_map_operator", "aces_narkowicz")));
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "reinhard_extended_gamma")
+            .insert("label", "Gamma")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "10.0")
+                    .insert("type", "soft"))
+            .insert("use", "optional")
+            .insert("default", "2.2")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("tone_map_operator", "reinhard_extended")));
+
+    // FIXME should be computed depending on the image (is it feasible?)
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "reinhard_extended_l_max")
+            .insert("label", "Lmax")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "10000.0")
+                    .insert("type", "soft"))
+            .insert("use", "optional")
+            .insert("default", "1.0")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("tone_map_operator", "reinhard_extended")));
 
     return metadata;
 }

@@ -68,60 +68,89 @@ struct ToneMapOperator
 {
     struct Parameter
     {
-        float           value;
+        const char*     id;
+        const char*     name;
         const float     default_value;
         const float     min_value;
         const float     max_value;
     };
 
-    typedef std::map<const std::string, Parameter> ParameterMap;
-
-    const std::string   id;
-    const std::string   name;
-    const ParameterMap  parameters;
-
-    // Constructor.
-    ToneMapOperator(
-        const std::string id,
-        const std::string name,
-        const ParameterMap parameters)
-      : id(id)
-      , name(name)
-      , parameters(parameters)
-    {
-    }
-
-    // FIXME ideally, this should be a pure virtual function..
-    //       is it better to store a ToneMapOperator* in the applier?
-
-    // Tone mapping curve.
-    virtual void tone_map(foundation::Color3f& color) const {};
+    const char*     id;
+    const char*     name;
+    const Parameter parameters[];
 };
+
+#if 0
+struct ToneMapOperatorParameter
+{
+    const char*     id;
+    const char*     name;
+    const float     default_value;
+    const float     min_value;
+    const float     max_value;
+};
+#endif
 
 
 class ToneMapApplier
   : public ImageEffectApplier
 {
   public:
-    // Constructor.
-    ToneMapApplier(
-        const ToneMapOperator   tone_map_operator);
-
     // Delete this instance.
     void release() override;
 
     // Apply a tone mapping curve to a given tile.
-    void apply(
+    virtual void apply(
         foundation::Image&      image,
         const std::size_t       tile_x,
         const std::size_t       tile_y) const override;
 
-    typedef std::map<const std::string, ToneMapOperator::ParameterMap> OperatorParameterMap;
+  protected:
+    // Apply a tone mapping curve to a given pixel.
+    virtual void tone_map(foundation::Color3f& color) const = 0;
+};
 
-    const OperatorParameterMap get_operator_parameters() const;
+class AcesNarkowiczApplier
+  : public ToneMapApplier
+{
+  public:
+    static constexpr const char* Name = "ACES (Narkowicz)";
+
+    static constexpr ToneMapOperatorParameter
+        Gamma { "gamma", "Gamma", 2.2f, 1.0f, 10.0f };
+
+    // Constructor.
+    explicit AcesNarkowiczApplier(
+        const float     gamma);
 
   private:
-    const ToneMapOperator       m_operator;
+    const float         m_gamma;
+
+    void tone_map(foundation::Color3f& color) const override;
+};
+
+
+class ReinhardExtendedApplier
+  : public ToneMapApplier
+{
+  public:
+    static constexpr const char* Name = "Reinhard (Extended)";
+
+    static constexpr ToneMapOperatorParameter
+        Gamma { "gamma", "Gamma", 2.2f, 1.0f, 10.0f };
+
+    static constexpr ToneMapOperatorParameter
+        Lmax { "l_max", "Lmax", 1.0f, 0.0f, 10000.0f }; // FIXME
+
+    explicit ReinhardExtendedApplier(
+        const float     gamma,
+        const float     max_white);
+
+  private:
+    const float         m_gamma;
+    const float         m_max_white;    // maximum luminance in the scene
+
+    void tone_map(foundation::Color3f& color) const override;
 };
 
 #if 0
