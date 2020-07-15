@@ -41,6 +41,7 @@
 #include <functional>
 #include <map>
 #include <string>
+#include <array>
 
 // Forward declarations.
 namespace foundation    { class Image; }
@@ -73,11 +74,15 @@ struct ToneMapOperator
         const float     default_value;
         const float     min_value;
         const float     max_value;
+
+        Parameter() = default;
     };
 
     const char*     id;
     const char*     name;
     const Parameter parameters[];
+
+    ToneMapOperator() = default;
 };
 
 #if 0
@@ -114,19 +119,26 @@ class AcesNarkowiczApplier
   : public ToneMapApplier
 {
   public:
-    static constexpr const char* Name = "ACES (Narkowicz)";
+    static constexpr const ToneMapOperator Operator
+    {
+        "aces_narkowicz",
+        "ACES (Narkowicz)",
 
-    static constexpr ToneMapOperatorParameter
-        Gamma { "gamma", "Gamma", 2.2f, 1.0f, 10.0f };
+        // Curve parameters.
+        {
+            { "gamma", "Gamma", 2.2f, 1.0f, 10.0f }
+        }
+    };
 
     // Constructor.
     explicit AcesNarkowiczApplier(
         const float     gamma);
 
+  protected:
+    void tone_map(foundation::Color3f& color) const override; // TODO use final (?)
+
   private:
     const float         m_gamma;
-
-    void tone_map(foundation::Color3f& color) const override;
 };
 
 
@@ -134,13 +146,17 @@ class ReinhardExtendedApplier
   : public ToneMapApplier
 {
   public:
-    static constexpr const char* Name = "Reinhard (Extended)";
+    static constexpr const ToneMapOperator Operator
+    {
+        "reinhard_extended",
+        "Reinhard (Extended)",
 
-    static constexpr ToneMapOperatorParameter
-        Gamma { "gamma", "Gamma", 2.2f, 1.0f, 10.0f };
-
-    static constexpr ToneMapOperatorParameter
-        Lmax { "l_max", "Lmax", 1.0f, 0.0f, 10000.0f }; // FIXME
+        // Curve parameters.
+        {
+            { "gamma", "Gamma", 2.2f, 1.0f, 10.0f },
+            { "l_max", "Lmax", 1.0f, 0.0f, 10000.0f } // FIXME these values depend on the image
+        }
+    };
 
     explicit ReinhardExtendedApplier(
         const float     gamma,

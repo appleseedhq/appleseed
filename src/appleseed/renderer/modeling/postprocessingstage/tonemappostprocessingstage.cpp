@@ -62,29 +62,14 @@ namespace
 
     const char* Model = "tone_map_post_processing_stage";
 
-    // FIXME remove & improve
-    // enum class _ToneMapOperator
-    // {
-    //     ACES_UNREAL,
-    //     FILMIC,
-    //     REINHARD,
-    // };
-
-    struct ToneMapOperator_
+    static constexpr const size_t ToneMapOperatorsCount = 2;
+    static constexpr const ToneMapOperator ToneMapOperators[ToneMapOperatorsCount] =
     {
-        const char* id;
-        const char* name;
+        AcesNarkowiczApplier::Operator,
+        ReinhardExtendedApplier::Operator,
     };
 
-    static constexpr size_t ToneMapOperatorsCount = 2;
-    static constexpr ToneMapOperator ToneMapOperators[ToneMapOperatorsCount] =
-    {
-        // TODO also store the id inside the applier
-        { "aces_narkowicz", AcesNarkowiczApplier::Name },
-        { "reinhard_extended", ReinhardExtendedApplier::Name },
-    };
-
-    static constexpr ToneMapOperator DeafaultToneMapOperator = ToneMapOperators[0];
+    static constexpr const ToneMapOperator DeafaultToneMapOperator = AcesNarkowiczApplier::Operator;
 
     class ToneMapPostProcessingStage
       : public PostProcessingStage
@@ -116,41 +101,47 @@ namespace
         {
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
-            std::vector<std::string> allowed_tone_map_operators;
-            allowed_tone_map_operators.reserve(ToneMapOperatorsCount);
-            for (auto tmo : ToneMapOperators)
-                allowed_tone_map_operators.push_back(tmo.id);
+            std::vector<std::string> allowed_values;
+            allowed_values.reserve(ToneMapOperatorsCount);
+
+            for (auto tone_map_operator : ToneMapOperators)
+                allowed_values.push_back(tone_map_operator.id);
 
             const std::string tone_map_operator =
                 m_params.get_optional<std::string>(
                     "tone_map_operator",
                     DeafaultToneMapOperator.id,
-                    allowed_tone_map_operators,
+                    allowed_values,
                     context);
 
-            // TODO retrive params
-            if (tone_map_operator == "aces_narkowicz")
+            // FIXME either stop indexing into parameters (it is too obfuscated)
+            //       or loop over them, capture all, then create the applier (?)
+
+
+            const std::string sep = "_";
+            if (tone_map_operator == AcesNarkowiczApplier::Operator.id)
             {
+                const auto& tmo = AcesNarkowiczApplier::Operator;
+
                 const float gamma = m_params.get_optional(
-                    (std::string("aces_narkowicz_") +
-                     AcesNarkowiczApplier::Gamma.id).c_str(),
-                    AcesNarkowiczApplier::Gamma.default_value,
+                    (tmo.id + sep + tmo.parameters[0].id).c_str(),
+                    tmo.parameters[0].default_value,
                     context);
 
                 m_applier = new AcesNarkowiczApplier(gamma);
             }
-            else if (tone_map_operator == "reinhard_extended")
+            else if (tone_map_operator == ReinhardExtendedApplier::Operator.id)
             {
+                const auto& tmo = ReinhardExtendedApplier::Operator;
+
                 const float gamma = m_params.get_optional(
-                    (std::string("reinhard_extended_") +
-                     ReinhardExtendedApplier::Gamma.id).c_str(),
-                    ReinhardExtendedApplier::Gamma.default_value,
+                    (tmo.id + sep + tmo.parameters[0].id).c_str(),
+                    tmo.parameters[0].default_value,
                     context);
 
                 const float max_white = m_params.get_optional(
-                    (std::string("reinhard_extended_") +
-                     ReinhardExtendedApplier::Lmax.id).c_str(),
-                    ReinhardExtendedApplier::Lmax.default_value,
+                    (tmo.id + sep + tmo.parameters[1].id).c_str(),
+                    tmo.parameters[1].default_value,
                     context);
 
                 m_applier = new ReinhardExtendedApplier(gamma, max_white);
@@ -167,29 +158,6 @@ namespace
             Image& image = frame.image();
 
             m_applier->apply_on_tiles(image, thread_count);
-            // if ()
-            // switch (m_operator)
-            // {
-            //   case _ToneMapOperator::ACES_UNREAL:
-            //   {
-            //     (const AcesUnrealApplier()).apply_on_tiles(image, thread_count);
-            //     break;
-            //   }
-
-            //   case _ToneMapOperator::FILMIC:
-            //   {
-            //     (const FilmicHejlApplier()).apply_on_tiles(image, thread_count);
-            //     break;
-            //   }
-
-            //   case _ToneMapOperator::REINHARD:
-            //   {
-            //     (const ReinhardApplier(m_gamma)).apply_on_tiles(image, thread_count);
-            //     break;
-            //   }
-
-            //   assert_otherwise;
-            // }
 
             // TODO figure out if this is actually correct (technically)
             // NOTE conversion needed to match the output of tonemapper: https://github.com/tizian/tonemapper
@@ -197,9 +165,7 @@ namespace
         }
 
       private:
-        // TODO add params
         ToneMapApplier*     m_applier;
-        float               m_gamma;
     };
 }
 
@@ -233,8 +199,12 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
     add_common_input_metadata(metadata);
 
     Dictionary tone_map_operator_items;
-    for (auto tmo : ToneMapOperators)
-        tone_map_operator_items.insert(tmo.name, tmo.id);
+
+    for (const auto& tone_map_operator : ToneMapOperators)
+        tone_map_operator_items.insert(
+            tone_map_operator.name,
+            tone_map_operator.id);
+
     metadata.push_back(
         Dictionary()
             .insert("name", "tone_map_operator")
@@ -252,7 +222,34 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
             .insert("on_change", "rebuild_form"));
 
     // TODO add operator params:
+    const std::string sep = "_"; // FIXME
+    for (const auto& tmo : ToneMapOperators)
+    {
+        for (const auto& parameter : tmo.parameters)
+        {
+            metadata.push_back(
+                Dictionary()
+                    .insert("name", tmo.id + sep + parameter.id)
+                    .insert("label", parameter.name)
+                    // FIXME
+                    .insert("type", "numeric")
+                    .insert("min",
+                        Dictionary()
+                            .insert("value", std::to_string(parameter.min_value))
+                            .insert("type", "soft"))
+                    .insert("max",
+                        Dictionary()
+                            .insert("value", std::to_string(parameter.max_value))
+                            .insert("type", "soft"))
+                    .insert("use", "optional")
+                    .insert("default", std::to_string(parameter.default_value))
+                    .insert("visible_if",
+                        Dictionary()
+                            .insert("tone_map_operator", tmo.id)));
+        }
+    }
 
+#if 0
     // FIXME quick testing, automate this later..
     metadata.push_back(
         Dictionary()
@@ -310,6 +307,7 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
             .insert("visible_if",
                 Dictionary()
                     .insert("tone_map_operator", "reinhard_extended")));
+#endif
 
     return metadata;
 }
