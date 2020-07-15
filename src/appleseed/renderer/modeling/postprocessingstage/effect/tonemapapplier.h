@@ -65,6 +65,7 @@ namespace renderer
 //
 
 
+
 struct ToneMapOperator
 {
     struct Parameter
@@ -74,27 +75,11 @@ struct ToneMapOperator
         const float     default_value;
         const float     min_value;
         const float     max_value;
-
-        Parameter() = default;
     };
 
     const char*     id;
     const char*     name;
-    const Parameter parameters[];
-
-    ToneMapOperator() = default;
 };
-
-#if 0
-struct ToneMapOperatorParameter
-{
-    const char*     id;
-    const char*     name;
-    const float     default_value;
-    const float     min_value;
-    const float     max_value;
-};
-#endif
 
 
 class ToneMapApplier
@@ -119,16 +104,12 @@ class AcesNarkowiczApplier
   : public ToneMapApplier
 {
   public:
+    // Curve parameters.
     static constexpr const ToneMapOperator Operator
-    {
-        "aces_narkowicz",
-        "ACES (Narkowicz)",
+        { "aces_narkowicz", "ACES (Narkowicz)" };
 
-        // Curve parameters.
-        {
-            { "gamma", "Gamma", 2.2f, 1.0f, 10.0f }
-        }
-    };
+    static constexpr const ToneMapOperator::Parameter Gamma
+        { "gamma", "Gamma", 2.2f, 1.0f, 10.0f };
 
     // Constructor.
     explicit AcesNarkowiczApplier(
@@ -146,18 +127,17 @@ class ReinhardExtendedApplier
   : public ToneMapApplier
 {
   public:
+    // Curve parameters.
     static constexpr const ToneMapOperator Operator
-    {
-        "reinhard_extended",
-        "Reinhard (Extended)",
+        { "reinhard_extended", "Reinhard (Extended)" };
 
-        // Curve parameters.
-        {
-            { "gamma", "Gamma", 2.2f, 1.0f, 10.0f },
-            { "l_max", "Lmax", 1.0f, 0.0f, 10000.0f } // FIXME these values depend on the image
-        }
-    };
+    static constexpr const ToneMapOperator::Parameter Gamma
+        { "gamma", "Gamma", 2.2f, 1.0f, 10.0f };
 
+    static constexpr const ToneMapOperator::Parameter Lmax
+        { "l_max", "Lmax", 1.0f, 0.0f, 10000.0f }; // FIXME these values depend on the image
+
+    // Constructor.
     explicit ReinhardExtendedApplier(
         const float     gamma,
         const float     max_white);

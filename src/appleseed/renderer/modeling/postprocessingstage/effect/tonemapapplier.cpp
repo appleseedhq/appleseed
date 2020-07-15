@@ -176,7 +176,7 @@ void AcesNarkowiczApplier::tone_map(Color3f& color) const
 
 ReinhardExtendedApplier::ReinhardExtendedApplier(
     const float gamma,
-        const float     max_white)
+    const float max_white)
   : m_gamma(gamma)
   , m_max_white(max_white)
 {
