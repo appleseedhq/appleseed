@@ -109,15 +109,11 @@ namespace
 
     const char* Model = "bloom_post_processing_stage";
 
-    static constexpr std::size_t DefaultIterations = 4;
-
-    static constexpr float DefaultIntensity = 0.1f;
-
-    static constexpr float DefaultThreshold = 1.0f;
-
-    static constexpr float DefaultSoftThreshold = 0.5f;
-
-    static constexpr bool DefaultDebugBlur = false;
+    constexpr std::size_t DefaultIterations = 4;    // number of downsampling iterations used for blurring, which controls the spread radius
+    constexpr float DefaultIntensity = 0.1f;        // strength of the Bloom effect (i.e. blending factor with the original image)
+    constexpr float DefaultThreshold = 1.0f;        // filters out pixels under this level of brightness
+    constexpr float DefaultSoftKnee = 0.5f;         // makes the trasition between under/over-threshold gradual (0 = hard, 1 = soft)
+    constexpr bool DefaultDebugBlur = false;        // toggle to only show the Bloom target, instead of compositing it with the final render
 
     class BloomPostProcessingStage
       : public PostProcessingStage
@@ -151,7 +147,7 @@ namespace
             m_iterations = m_params.get_optional("iterations", DefaultIterations, context);
             m_intensity = m_params.get_optional("intensity", DefaultIntensity, context);
             m_threshold = m_params.get_optional("threshold", DefaultThreshold, context);
-            m_soft_threshold = m_params.get_optional("soft_threshold", DefaultSoftThreshold, context);
+            m_soft_knee = m_params.get_optional("soft_knee", DefaultSoftKnee, context);
             m_debug_blur = m_params.get_optional("debug_blur", DefaultDebugBlur, context);
 
             return true;
@@ -270,7 +266,7 @@ namespace
             Image prefiltered_image(image, props.m_pixel_format, shuffle_table);
 
             // Filter out dark pixels.
-            const BrightPassApplier bright_pass(m_threshold, m_soft_threshold);
+            const BrightPassApplier bright_pass(m_threshold, m_soft_knee);
             bright_pass.apply_on_tiles(prefiltered_image, thread_count);
 
             //
@@ -347,7 +343,7 @@ namespace
         std::size_t     m_iterations;
         float           m_intensity;
         float           m_threshold;
-        float           m_soft_threshold;
+        float           m_soft_knee;
         bool            m_debug_blur;
 
         void execute_single_iteration(
@@ -407,7 +403,7 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
     metadata.push_back(
         Dictionary()
             .insert("name", "iterations")
-            .insert("label", "Iterations")
+            .insert("label", "Radius")
             .insert("type", "integer")
             .insert("min",
                     Dictionary()
@@ -454,8 +450,8 @@ DictionaryArray BloomPostProcessingStageFactory::get_input_metadata() const
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "soft_threshold")
-            .insert("label", "Soft Threshold")
+            .insert("name", "soft_knee")
+            .insert("label", "Soft Knee")
             .insert("type", "numeric")
             .insert("min",
                     Dictionary()

@@ -568,7 +568,7 @@
                     <parameter name="iterations" value="5" />
                     <parameter name="intensity" value="4.0" />
                     <parameter name="threshold" value="1.0" />
-                    <parameter name="soft_threshold" value="0.5" />
+                    <parameter name="soft_knee" value="0.5" />
                     <parameter name="debug_blur" value="false" />
                 </post_processing_stage>
             </post_processing_stages>
