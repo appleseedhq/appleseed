@@ -93,6 +93,11 @@ class ResampleApplier
     const std::size_t               m_src_height;
     const std::size_t               m_border_size;
     const foundation::Image         m_src_image_with_border;
+
+    // Sample m_src_image_with_border at coordinates (fx, fy), based on m_mode.
+    const foundation::Color3f sample(
+        const float                 fx,
+        const float                 fy) const;
 };
 
 }   // namespace renderer

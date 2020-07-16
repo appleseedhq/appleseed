@@ -93,6 +93,11 @@ class ResampleX2Applier
     const std::size_t               m_src_width;
     const std::size_t               m_src_height;
     const foundation::Image&        m_src_image;
+
+    // Sample m_src_image at coordinates (fx, fy), based on m_mode.
+    const foundation::Color3f sample(
+        const float                 fx,
+        const float                 fy) const;
 };
 
 }   // namespace renderer

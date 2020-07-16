@@ -62,6 +62,44 @@ void ResampleX2Applier::release()
     delete this;
 }
 
+inline const Color3f ResampleX2Applier::sample(
+    const float     fx,
+    const float     fy) const
+{
+    const std::size_t x0 = truncate<std::size_t>(fx);
+    const std::size_t y0 = truncate<std::size_t>(fy);
+    const std::size_t x1 = std::min(x0 + 1, m_src_width - 1);
+    const std::size_t y1 = std::min(y0 + 1, m_src_height - 1);
+
+    // Retrieve the four surrounding pixels.
+    Color3f c00, c10, c01, c11;
+    m_src_image.get_pixel(x0, y0, c00);
+    m_src_image.get_pixel(x1, y0, c10);
+    m_src_image.get_pixel(x0, y1, c01);
+    m_src_image.get_pixel(x1, y1, c11);
+
+    if (m_mode == SamplingMode::DOUBLE)
+    {
+        // Compute bilinear interpolation weights.
+        const float wx1 = fx - x0;
+        const float wy1 = fy - y0;
+        const float wx0 = 1.0f - wx1;
+        const float wy0 = 1.0f - wy1;
+
+        // Return the weighted sum.
+        return
+            c00 * wx0 * wy0 +
+            c10 * wx1 * wy0 +
+            c01 * wx0 * wy1 +
+            c11 * wx1 * wy1;
+    }
+    else // m_mode == SamplingMode::HALVE
+    {
+        // Return the average sum.
+        return 0.25f * (c00 + c10 + c01 + c11);
+    }
+}
+
 void ResampleX2Applier::apply(
     Image&              image,
     const std::size_t   tile_x,
@@ -84,6 +122,9 @@ void ResampleX2Applier::apply(
         static_cast<float>(m_src_width - 1) / (dst_width - 1),
         static_cast<float>(m_src_height - 1) / (dst_height - 1));
 
+    // Note: using "dst / 2 == m_src" instead of "dst == m_src * 2" when upsampling accounts for
+    // the destination image having odd dimenion values, making "dst == 2 * m_src + 1" actually.
+    // Thus, integer truncation also allows a source image with odd dimenions when downsampling.
     assert(
         m_mode == SamplingMode::DOUBLE
         ? dst_width / 2 == m_src_width && dst_height / 2 == m_src_height    // scale x2 with bilinear filtering
@@ -97,44 +138,7 @@ void ResampleX2Applier::apply(
             const float fy = (y + tile_offset.y) * scaling_factor.y;
             const float fx = (x + tile_offset.x) * scaling_factor.x;
 
-            const std::size_t x0 = truncate<std::size_t>(fx);
-            const std::size_t y0 = truncate<std::size_t>(fy);
-            const std::size_t x1 = std::min(x0 + 1, m_src_width - 1);
-            const std::size_t y1 = std::min(y0 + 1, m_src_height - 1);
-
-            // Retrieve the four surrounding pixels.
-            Color3f c00, c10, c01, c11;
-            m_src_image.get_pixel(x0, y0, c00);
-            m_src_image.get_pixel(x1, y0, c10);
-            m_src_image.get_pixel(x0, y1, c01);
-            m_src_image.get_pixel(x1, y1, c11);
-
-            const Color3f result = (
-                [&]() -> const Color3f
-                {
-                    if (m_mode == SamplingMode::DOUBLE)
-                    {
-                        // Compute bilinear interpolation weights.
-                        const float wx1 = fx - x0;
-                        const float wy1 = fy - y0;
-                        const float wx0 = 1.0f - wx1;
-                        const float wy0 = 1.0f - wy1;
-
-                        // Return the weighted sum.
-                        return
-                            c00 * wx0 * wy0 +
-                            c10 * wx1 * wy0 +
-                            c01 * wx0 * wy1 +
-                            c11 * wx1 * wy1;
-                    }
-                    else // m_mode == SamplingMode::HALVE
-                    {
-                        // Return the average sum.
-                        return 0.25f * (c00 + c10 + c01 + c11);
-                    }
-                })();
-
-            tile.set_pixel(x, y, result);
+            tile.set_pixel(x, y, sample(fx, fy));
         }
     }
 }

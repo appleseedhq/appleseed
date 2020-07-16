@@ -98,37 +98,80 @@ void ResampleApplier::release()
     delete this;
 }
 
-static const Color3f blerp(
-    const Image&    image,
-    const float     fx,
-    const float     fy)
+namespace
 {
-    const std::size_t x0 = truncate<std::size_t>(fx);
-    const std::size_t y0 = truncate<std::size_t>(fy);
-    const std::size_t x1 = std::min(x0 + 1, image.properties().m_canvas_width - 1);
-    const std::size_t y1 = std::min(y0 + 1, image.properties().m_canvas_height - 1);
+    inline const Color3f blerp(
+        const Image&    image,
+        const float     fx,
+        const float     fy)
+    {
+        const std::size_t x0 = truncate<std::size_t>(fx);
+        const std::size_t y0 = truncate<std::size_t>(fy);
+        const std::size_t x1 = std::min(x0 + 1, image.properties().m_canvas_width - 1);
+        const std::size_t y1 = std::min(y0 + 1, image.properties().m_canvas_height - 1);
 
-    // Retrieve the four surrounding pixels.
-    Color3f c00, c10, c01, c11;
-    image.get_pixel(x0, y0, c00);
-    image.get_pixel(x1, y0, c10);
-    image.get_pixel(x0, y1, c01);
-    image.get_pixel(x1, y1, c11);
+        // Retrieve the four surrounding pixels.
+        Color3f c00, c10, c01, c11;
+        image.get_pixel(x0, y0, c00);
+        image.get_pixel(x1, y0, c10);
+        image.get_pixel(x0, y1, c01);
+        image.get_pixel(x1, y1, c11);
 
-    // Compute weights.
-    const float wx1 = fx - x0;
-    const float wy1 = fy - y0;
-    const float wx0 = 1.0f - wx1;
-    const float wy0 = 1.0f - wy1;
+        // Compute weights.
+        const float wx1 = fx - x0;
+        const float wy1 = fy - y0;
+        const float wx0 = 1.0f - wx1;
+        const float wy0 = 1.0f - wy1;
 
-    // Return the bilinear interpolation of colors.
-    const Color3f result =
-        c00 * wx0 * wy0 +
-        c10 * wx1 * wy0 +
-        c01 * wx0 * wy1 +
-        c11 * wx1 * wy1;
+        // Return the bilinear interpolation of colors.
+        const Color3f result =
+            c00 * wx0 * wy0 +
+            c10 * wx1 * wy0 +
+            c01 * wx0 * wy1 +
+            c11 * wx1 * wy1;
 
-    return result;
+        return result;
+    }
+}
+
+inline const Color3f ResampleApplier::sample(
+    const float     fx,
+    const float     fy) const
+{
+    //
+    // Sampling filters based on Marius Bjørge's "Dual filtering" method.
+    //
+    // Reference:
+    //
+    //   "Bandwidth-Efficient Rendering" SIGGRAPH2015 Presentation
+    //   https://community.arm.com/cfs-file/__key/communityserver-blogs-components-weblogfiles/00-00-00-20-66/siggraph2015_2D00_mmg_2D00_marius_2D00_notes.pdf
+    //
+    //
+
+    if (m_mode == SamplingMode::UP)
+    {
+        return (
+            blerp(m_src_image_with_border, fx - 1.0f, fy) +
+            blerp(m_src_image_with_border, fx + 1.0f, fy) +
+            blerp(m_src_image_with_border, fx, fy - 1.0f) +
+            blerp(m_src_image_with_border, fx, fy + 1.0f) +
+            2.0f * (
+               blerp(m_src_image_with_border, fx - 0.5f, fy - 0.5f) +
+               blerp(m_src_image_with_border, fx - 0.5f, fy + 0.5f) +
+               blerp(m_src_image_with_border, fx + 0.5f, fy - 0.5f) +
+               blerp(m_src_image_with_border, fx + 0.5f, fy + 0.5f)))
+            / 12.0f;
+    }
+    else // m_mode == SamplingMode::DOWN
+    {
+        return (
+            4.0f * blerp(m_src_image_with_border, fx, fy) +
+            blerp(m_src_image_with_border, fx - 1.0f, fy + 1.0f) +
+            blerp(m_src_image_with_border, fx + 1.0f, fy + 1.0f) +
+            blerp(m_src_image_with_border, fx - 1.0f, fy - 1.0f) +
+            blerp(m_src_image_with_border, fx + 1.0f, fy - 1.0f))
+            / 8.0f;
+    }
 }
 
 void ResampleApplier::apply(
@@ -161,46 +204,7 @@ void ResampleApplier::apply(
             const float fy = (y + tile_offset.y) * scaling_factor.y + m_border_size;
             const float fx = (x + tile_offset.x) * scaling_factor.x + m_border_size;
 
-            //
-            // Sampling filters based on Marius Bjørge's "Dual filtering" method.
-            //
-            // Reference:
-            //
-            //   "Bandwidth-Efficient Rendering" SIGGRAPH2015 Presentation
-            //   https://community.arm.com/cfs-file/__key/communityserver-blogs-components-weblogfiles/00-00-00-20-66/siggraph2015_2D00_mmg_2D00_marius_2D00_notes.pdf
-            //
-            //
-
-            const Color3f result = (
-                [&]() -> const Color3f
-                {
-                    if (m_mode == SamplingMode::UP)
-                    {
-                        return (
-                            blerp(m_src_image_with_border, fx - 1.0f, fy) +
-                            blerp(m_src_image_with_border, fx + 1.0f, fy) +
-                            blerp(m_src_image_with_border, fx, fy - 1.0f) +
-                            blerp(m_src_image_with_border, fx, fy + 1.0f) +
-                            2.0f * (
-                                blerp(m_src_image_with_border, fx - 0.5f, fy - 0.5f) +
-                                blerp(m_src_image_with_border, fx - 0.5f, fy + 0.5f) +
-                                blerp(m_src_image_with_border, fx + 0.5f, fy - 0.5f) +
-                                blerp(m_src_image_with_border, fx + 0.5f, fy + 0.5f)))
-                            / 12.0f;
-                    }
-                    else // m_mode == SamplingMode::DOWN
-                    {
-                        return (
-                            4.0f * blerp(m_src_image_with_border, fx, fy) +
-                            blerp(m_src_image_with_border, fx - 1.0f, fy + 1.0f) +
-                            blerp(m_src_image_with_border, fx + 1.0f, fy + 1.0f) +
-                            blerp(m_src_image_with_border, fx - 1.0f, fy - 1.0f) +
-                            blerp(m_src_image_with_border, fx + 1.0f, fy - 1.0f))
-                            / 8.0f;
-                    }
-                })();
-
-            tile.set_pixel(x, y, result);
+            tile.set_pixel(x, y, sample(fx, fy));
         }
     }
 }

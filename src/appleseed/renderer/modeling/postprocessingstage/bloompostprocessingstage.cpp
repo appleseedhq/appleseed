@@ -60,6 +60,47 @@ using namespace foundation;
 namespace renderer
 {
 
+//
+// Initialize the two image pyramids used for blurring (through down/up sampling).
+//
+// Both have level_count images, with pixel format and channel count given by max_level_props,
+// that also specifies the dimensions of their first elements, which get subsequently halved.
+//
+
+void init_blur_pyramids(
+    std::vector<Image>&         blur_pyramid_down,
+    std::vector<Image>&         blur_pyramid_up,
+    const std::size_t           level_count,
+    const CanvasProperties&     max_level_props,
+    const std::size_t           max_tile_size)
+{
+    blur_pyramid_down.reserve(level_count);
+    blur_pyramid_up.reserve(level_count);
+
+    // Note that lower levels have larger images.
+    std::size_t level_width = max_level_props.m_canvas_width;
+    std::size_t level_height = max_level_props.m_canvas_height;
+
+    for (std::size_t level = 0; level < level_count; ++level)
+    {
+        const CanvasProperties level_props(
+            level_width,
+            level_height,
+            std::min(level_width, max_tile_size),
+            std::min(level_height, max_tile_size),
+            max_level_props.m_channel_count,
+            max_level_props.m_pixel_format);
+
+        blur_pyramid_down.push_back(Image(level_props));
+        blur_pyramid_up.push_back(Image(level_props));
+
+        // Halve dimensions for the next buffer level.
+        assert(level_width >= 4 && level_height >= 4);
+        level_width /= 2;
+        level_height /= 2;
+    }
+}
+
 namespace
 {
     //
@@ -177,40 +218,6 @@ namespace
         //   Bandwidth-Efficient Rendering
         //   https://community.arm.com/cfs-file/__key/communityserver-blogs-components-weblogfiles/00-00-00-20-66/siggraph2015_2D00_mmg_2D00_marius_2D00_notes.pdf
         //
-
-        static void init_blur_pyramids(
-            std::vector<Image>&         blur_pyramid_down,
-            std::vector<Image>&         blur_pyramid_up,
-            const std::size_t           level_count,
-            const CanvasProperties&     max_level_props,
-            const std::size_t           max_tile_size)
-        {
-            blur_pyramid_down.reserve(level_count);
-            blur_pyramid_up.reserve(level_count);
-
-            // Note that lower levels have larger images.
-            std::size_t level_width = max_level_props.m_canvas_width;
-            std::size_t level_height = max_level_props.m_canvas_height;
-
-            for (std::size_t level = 0; level < level_count; ++level)
-            {
-                const CanvasProperties level_props(
-                    level_width,
-                    level_height,
-                    std::min(level_width, max_tile_size),
-                    std::min(level_height, max_tile_size),
-                    max_level_props.m_channel_count,
-                    max_level_props.m_pixel_format);
-
-                blur_pyramid_down.push_back(Image(level_props));
-                blur_pyramid_up.push_back(Image(level_props));
-
-                // Halve dimensions for the next buffer level.
-                assert(level_width >= 4 && level_height >= 4);
-                level_width /= 2;
-                level_height /= 2;
-            }
-        }
 
         void execute(Frame& frame, const std::size_t thread_count) const override
         {
