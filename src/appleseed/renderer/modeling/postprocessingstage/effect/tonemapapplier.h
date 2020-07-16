@@ -68,6 +68,8 @@ namespace renderer
 
 struct ToneMapOperator
 {
+    static constexpr const size_t MaxParametersCount = 8; // FIXME can't use VLAs in C++ ;(
+
     struct Parameter
     {
         const char*     id;
@@ -75,10 +77,14 @@ struct ToneMapOperator
         const float     default_value;
         const float     min_value;
         const float     max_value;
+
+        Parameter() = default;
     };
 
-    const char*     id;
-    const char*     name;
+    const char*         id;
+    const char*         name;
+    const size_t        parameters_count;
+    const Parameter     parameters[MaxParametersCount];
 };
 
 
@@ -105,11 +111,18 @@ class AcesNarkowiczApplier
 {
   public:
     // Curve parameters.
+      static constexpr const ToneMapOperator::Parameter Parameters[]
+        { { "gamma", "Gamma", 2.2f, 1.0f, 10.0f } };
     static constexpr const ToneMapOperator Operator
-        { "aces_narkowicz", "ACES (Narkowicz)" };
+        // { "aces_narkowicz", "ACES (Narkowicz)" };
+        {
+            "aces_narkowicz", "ACES (Narkowicz)",
+            1,
+            AcesNarkowiczApplier::Parameters
+        };
 
-    static constexpr const ToneMapOperator::Parameter Gamma
-        { "gamma", "Gamma", 2.2f, 1.0f, 10.0f };
+    // static constexpr const ToneMapOperator::Parameter Gamma
+    //     { "gamma", "Gamma", 2.2f, 1.0f, 10.0f };
 
     // Constructor.
     explicit AcesNarkowiczApplier(
@@ -129,13 +142,21 @@ class ReinhardExtendedApplier
   public:
     // Curve parameters.
     static constexpr const ToneMapOperator Operator
-        { "reinhard_extended", "Reinhard (Extended)" };
+        // { "reinhard_extended", "Reinhard (Extended)" };
+        {
+            "reinhard_extended", "Reinhard (Extended)",
+            2,
+            {
+                { "gamma", "Gamma", 2.2f, 1.0f, 10.0f },
+                { "l_max", "Lmax", 1.0f, 0.0f, 10000.0f }
+            }
+        };
 
-    static constexpr const ToneMapOperator::Parameter Gamma
-        { "gamma", "Gamma", 2.2f, 1.0f, 10.0f };
+    // static constexpr const ToneMapOperator::Parameter Gamma
+    //     { "gamma", "Gamma", 2.2f, 1.0f, 10.0f };
 
-    static constexpr const ToneMapOperator::Parameter Lmax
-        { "l_max", "Lmax", 1.0f, 0.0f, 10000.0f }; // FIXME these values depend on the image
+    // static constexpr const ToneMapOperator::Parameter Lmax
+    //     { "l_max", "Lmax", 1.0f, 0.0f, 10000.0f }; // FIXME these values depend on the image
 
     // Constructor.
     explicit ReinhardExtendedApplier(

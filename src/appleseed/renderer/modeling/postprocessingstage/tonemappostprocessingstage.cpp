@@ -46,7 +46,7 @@
 
 // Standard headers.
 #include <cstddef>
-#include <map>
+#include <list>
 #include <memory>
 #include <vector>
 
@@ -69,12 +69,6 @@ namespace
     {
         AcesNarkowiczApplier::Operator,
         ReinhardExtendedApplier::Operator,
-    };
-
-    static constexpr const std::map<std::string, ToneMapOperator::Parameter> ToneMapOperatorsParameters =
-    {
-        { AcesNarkowiczApplier::Gamma },
-        { ReinhardExtendedApplier::Gamma, ReinhardExtendedApplier::Lmax },
     };
 
     static constexpr const ToneMapOperator DeafaultToneMapOperator = AcesNarkowiczApplier::Operator;
@@ -129,7 +123,7 @@ namespace
             if (tone_map_operator == AcesNarkowiczApplier::Operator.id)
             {
                 const auto& tmo = AcesNarkowiczApplier::Operator;
-                const auto& params = AcesNarkowiczApplier::Parameters;
+                const auto& params = tmo.parameters;
 
                 const float gamma = m_params.get_optional(
                     (tmo.id + sep + params[0].id).c_str(),
@@ -141,7 +135,7 @@ namespace
             else if (tone_map_operator == ReinhardExtendedApplier::Operator.id)
             {
                 const auto& tmo = ReinhardExtendedApplier::Operator;
-                const auto& params = ReinhardExtendedApplier::Parameters;
+                const auto& params = tmo.parameters;
 
                 const float gamma = m_params.get_optional(
                     (tmo.id + sep + params[0].id).c_str(),
@@ -233,13 +227,10 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
     // FIXME add operator params:
     const std::string sep = "_";
     
-    for (size_t i = 0; i < ToneMapOperatorsCount; ++i)
-    {
-        const auto& tmo = ToneMapOperators[i];
-        const auto& params = ToneMapOperatorsParameters[i];
-        
-        const auto& param = *params;
-        while (&param != &Sentinel)
+    for (const auto& tmo : ToneMapOperators)
+    {        
+        const auto& params = tmo.parameters;
+        for (size_t i = 0; i < tmo.parameters_count; ++i)
         {
             metadata.push_back(
                 Dictionary()
@@ -260,7 +251,6 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
                     .insert("visible_if",
                         Dictionary()
                             .insert("tone_map_operator", tmo.id)));
-            ++param;
         }
     }
 
