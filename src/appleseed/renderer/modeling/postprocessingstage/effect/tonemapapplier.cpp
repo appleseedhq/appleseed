@@ -170,6 +170,54 @@ void FilmicHejlApplier::tone_map(Color3f& color) const
 }
 
 //
+// Filmic (Uncharted)
+//
+
+FilmicUnchartedApplier::FilmicUnchartedApplier(
+    const float     A,
+    const float     B,
+    const float     C,
+    const float     D,
+    const float     E,
+    const float     F,
+    const float     W,
+    const float     exposure_bias)
+  : m_A(A)
+  , m_B(B)
+  , m_C(C)
+  , m_D(D)
+  , m_E(E)
+  , m_F(F)
+  , m_W(W)
+  , m_exposure_bias(exposure_bias)
+{
+}
+
+void FilmicUnchartedApplier::tone_map(Color3f& color) const
+{
+    //
+    // Apply a filmic tone mapper developed by John Hable for Uncharted 2.
+    //
+    // References:
+    //
+    //   http://filmicworlds.com/blog/filmic-tonemapping-operators/
+    //   http://filmicworlds.com/blog/filmic-tonemapping-with-piecewise-power-curves/
+    //   https://www.slideshare.net/ozlael/hable-john-uncharted2-hdr-lighting (see slides 141-142)
+    //
+
+    color *= m_exposure_bias;
+
+    color =
+        ((color * (m_A * color + Color3f(m_C * m_B)) + Color3f(m_D * m_E)) /
+         (color * (m_A * color + Color3f(m_B)) + Color3f(m_D * m_F))) -  Color3f(m_E / m_F);
+
+    const Color3f white_scale(1.0f / m_W);
+    color *= white_scale;
+
+    // FIXME gamma correct (add gamma param)
+}
+
+//
 // ReinhardApplier class implementation.
 //
 

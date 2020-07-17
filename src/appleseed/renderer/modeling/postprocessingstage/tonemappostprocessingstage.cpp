@@ -71,6 +71,7 @@ namespace
     constexpr const ToneMapOperator AcesNarkowicz { "ACES (Narkowicz)", "aces_narkowicz" };
     constexpr const ToneMapOperator AcesUnreal { "ACES (Unreal)", "aces_unreal" };
     constexpr const ToneMapOperator FilmicHejl { "Filmic (Hejl)", "filmic_hejl" };
+    constexpr const ToneMapOperator FilmicUncharted { "Filmic (Uncharted)", "filmic_uncharted" };
     constexpr const ToneMapOperator Reinhard { "Reinhard", "reinhard" };
     constexpr const ToneMapOperator ReinhardExtended { "Reinhard (Extended)", "reinhard_extended" };
 
@@ -112,18 +113,32 @@ namespace
         {
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
+            const std::vector<std::string> allowed_values =
+            {
+                AcesNarkowicz.id,
+                AcesUnreal.id,
+                FilmicHejl.id,
+                FilmicUncharted.id,
+                Reinhard.id,
+                ReinhardExtended.id
+            };
 
             const std::string tone_map_operator =
                 m_params.get_optional<std::string>(
                     "tone_map_operator",
                     DeafaultToneMapOperatorId,
-                    make_vector(
-                        AcesNarkowicz.id,
-                        AcesUnreal.id,
-                        FilmicHejl.id,
-                        Reinhard.id,
-                        ReinhardExtended.id),
+                    //@Todo add TMO
+                    allowed_values,
+                    // make_vector(
+                    //     AcesNarkowicz.id,
+                    //     AcesUnreal.id,
+                    //     FilmicHejl.id,
+                    //     FilmicUncharted,
+                    //     Reinhard.id,
+                    //     ReinhardExtended.id),
                     context);
+
+            //@Todo add TMO
 
             // Initialize the tone map applier.
             if (tone_map_operator == AcesNarkowicz.id)
@@ -143,6 +158,30 @@ namespace
             else if (tone_map_operator == FilmicHejl.id)
             {
                 m_tone_map = new FilmicHejlApplier();
+            }
+            else if (tone_map_operator == FilmicUncharted.id)
+            {
+                const float A =
+                    m_params.get_optional("filmic_uncharted_A", FilmicUnchartedApplier::DefaultA, context);
+                const float B =
+                    m_params.get_optional("filmic_uncharted_B", FilmicUnchartedApplier::DefaultB, context);
+                const float C =
+                    m_params.get_optional("filmic_uncharted_C", FilmicUnchartedApplier::DefaultC, context);
+                const float D =
+                    m_params.get_optional("filmic_uncharted_D", FilmicUnchartedApplier::DefaultD, context);
+                const float E =
+                    m_params.get_optional("filmic_uncharted_E", FilmicUnchartedApplier::DefaultE, context);
+                const float F =
+                    m_params.get_optional("filmic_uncharted_F", FilmicUnchartedApplier::DefaultF, context);
+                const float W =
+                    m_params.get_optional("filmic_uncharted_W", FilmicUnchartedApplier::DefaultW, context);
+                const float exposure_bias =
+                    m_params.get_optional(
+                        "filmic_uncharted_exposure_bias",
+                        FilmicUnchartedApplier::DefaultExposureBias,
+                        context);
+
+                m_tone_map = new FilmicUnchartedApplier(A, B, C, D, E, F, W, exposure_bias);
             }
             else if (tone_map_operator == Reinhard.id)
             {
@@ -267,14 +306,18 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
             .insert("type", "enumeration")
             .insert("items",
                     Dictionary()
+                        //@Todo add TMO
                         .insert(AcesNarkowicz.label, AcesNarkowicz.id)
                         .insert(AcesUnreal.label, AcesUnreal.id)
                         .insert(FilmicHejl.label, FilmicHejl.id)
+                        .insert(FilmicUncharted.label, FilmicUncharted.id)
                         .insert(Reinhard.label, Reinhard.id)
                         .insert(ReinhardExtended.label, ReinhardExtended.id))
             .insert("use", "required")
             .insert("default", DeafaultToneMapOperatorId)
             .insert("on_change", "rebuild_form"));
+
+    //@Todo add TMO params
 
     // ACES (Narkowicz)
     {
@@ -296,6 +339,81 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
     // Filmic (Hejl)
     {
         // No parameters.
+    }
+
+    // Filmic (Uncharted)
+    {
+        add_numeric_param_metadata(
+            metadata,
+            "filmic_uncharted_A",
+            "Shoulder strength",
+            "0.0", "hard",              // min
+            "1.0", "hard",              // max
+            "0.15",                     // FilmicUnchartedApplier::DefaultA
+            FilmicUncharted.id);
+
+        add_numeric_param_metadata(
+            metadata,
+            "filmic_uncharted_B",
+            "Linear strength",
+            "0.0", "hard",              // min
+            "1.0", "hard",              // max
+            "0.50",                     // FilmicUnchartedApplier::DefaultB
+            FilmicUncharted.id);
+
+        add_numeric_param_metadata(
+            metadata,
+            "filmic_uncharted_C",
+            "Linear angle",
+            "0.0", "hard",              // min
+            "1.0", "hard",              // max
+            "0.10",                     // FilmicUnchartedApplier::DefaultC
+            FilmicUncharted.id);
+
+        add_numeric_param_metadata(
+            metadata,
+            "filmic_uncharted_D",
+            "Toe strength",
+            "0.0", "hard",              // min
+            "1.0", "hard",              // max
+            "0.20",                     // FilmicUnchartedApplier::DefaultD
+            FilmicUncharted.id);
+
+        add_numeric_param_metadata(
+            metadata,
+            "filmic_uncharted_E",
+            "Toe numerator",
+            "0.0", "hard",              // min
+            "1.0", "hard",              // max
+            "0.02",                     // FilmicUnchartedApplier::DefaultE
+            FilmicUncharted.id);
+
+        add_numeric_param_metadata(
+            metadata,
+            "filmic_uncharted_F",
+            "Toe denominator",
+            "0.0", "hard",              // min
+            "1.0", "hard",              // max
+            "0.30",                     // FilmicUnchartedApplier::DefaultF
+            FilmicUncharted.id);
+
+        add_numeric_param_metadata(
+            metadata,
+            "filmic_uncharted_W",
+            "Linear white point",
+            "0.0", "hard",              // min
+            "1.0", "hard",              // max
+            "11.2",                     // FilmicUnchartedApplier::DefaultW
+            FilmicUncharted.id);
+
+        add_numeric_param_metadata(
+            metadata,
+            "filmic_uncharted_exposure_bias",
+            "Exposure bias",
+            "0.0", "hard",              // min
+            "10.0", "hard",             // max
+            "2.0",                      // FilmicUnchartedApplier::DefaultExposureBias
+            FilmicUncharted.id);
     }
 
     // Reinhard

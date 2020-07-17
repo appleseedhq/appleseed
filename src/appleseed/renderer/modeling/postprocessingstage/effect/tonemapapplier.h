@@ -137,6 +137,47 @@ class FilmicHejlApplier
 };
 
 //
+// Filmic (Uncharted)
+//
+
+class FilmicUnchartedApplier
+  : public ToneMapApplier
+{
+  public:
+    // Constructor.
+    explicit FilmicUnchartedApplier(
+        const float     A,
+        const float     B,
+        const float     C,
+        const float     D,
+        const float     E,
+        const float     F,
+        const float     W,
+        const float     exposure_bias);
+
+    static constexpr float DefaultA = 0.15f; // 0.22f;
+    static constexpr float DefaultB = 0.50f; // 0.30f;
+    static constexpr float DefaultC = 0.10f; // 0.10f;
+    static constexpr float DefaultD = 0.20f; // 0.20f;
+    static constexpr float DefaultE = 0.02f; // 0.01f;
+    static constexpr float DefaultF = 0.30f; // 0.30f;
+    static constexpr float DefaultW = 11.2f; // 11.2f;
+    static constexpr float DefaultExposureBias = 2.0f;
+
+  private:
+    const float         m_A;                // shoulder strength
+    const float         m_B;                // linear strength
+    const float         m_C;                // linear angle
+    const float         m_D;                // toe strength
+    const float         m_E;                // toe numerator
+    const float         m_F;                // toe denominator
+    const float         m_W;                // linear white point (minimal value that is mapped to 1)
+    const float         m_exposure_bias;
+
+    void tone_map(foundation::Color3f& color) const final;
+};
+
+//
 // Reinhard (Simple)
 //
 
