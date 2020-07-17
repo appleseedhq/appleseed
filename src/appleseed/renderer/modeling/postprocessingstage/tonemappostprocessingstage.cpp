@@ -48,6 +48,7 @@
 #include <cstddef>
 #include <list>
 #include <memory>
+#include <string>
 #include <vector>
 
 using namespace foundation;
@@ -63,15 +64,17 @@ namespace
 
     const char* Model = "tone_map_post_processing_stage";
 
-    constexpr const size_t ToneMapOperatorIdsCount = 2;
-
-    const char* ToneMapOperatorIds[ToneMapOperatorIdsCount] =
+    struct ToneMapOperator
     {
-        AcesNarkowiczApplier::get_operator_id(),
-        ReinhardExtendedApplier::get_operator_id(),
+        const char* id;
+        const char* name;
     };
 
-    const char* DeafaultToneMapOperatorId = AcesNarkowiczApplier::get_operator_id();
+    // Tone mapping operators.
+    constexpr const ToneMapOperator AcesNarkowicz = { "aces_narkowicz", "ACES (Narkowicz)" };
+    constexpr const ToneMapOperator ReinhardExtended = { "reinhard_extended", "Reinhard (Extended)" };
+
+    constexpr const char* DeafaultToneMapOperatorId = AcesNarkowicz.id;
 
     class ToneMapPostProcessingStage
       : public PostProcessingStage
@@ -81,12 +84,13 @@ namespace
             const char*             name,
             const ParamArray&       params)
           : PostProcessingStage(name, params)
+          , m_applier(nullptr)
         {
         }
 
         void release() override
         {
-            //delete m_applier;
+            // delete m_applier; // FIXME read access violation
             delete this;
         }
 
@@ -103,37 +107,44 @@ namespace
         {
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
-            std::vector<std::string> allowed_values;
-            allowed_values.reserve(ToneMapOperatorIdsCount);
-            for (const auto& tmo_id : ToneMapOperatorIds)
-                allowed_values.push_back(tmo_id);
-
             const std::string tone_map_operator =
                 m_params.get_optional<std::string>(
                     "tone_map_operator",
                     DeafaultToneMapOperatorId,
-                    allowed_values,
+                    make_vector(AcesNarkowicz.id, ReinhardExtended.id),
                     context);
 
-            // FIXME either stop indexing into parameters (it is too obfuscated)
-            //       or loop over them, capture all, then create the applier (?)
-
-            if (tone_map_operator == AcesNarkowiczApplier::Operator.id)
+            if (tone_map_operator == AcesNarkowicz.id)
             {
-                const auto& params = AcesNarkowiczApplier::Operator.parameters;
-                const float gamma = m_params.get_optional(params[0].id, params[0].default_value, context);
+                const float gamma =
+                    m_params.get_optional(
+                        "aces_narkowicz_gamma",
+                        AcesNarkowiczApplier::DefaultGamma,
+                        context);
 
                 m_applier = new AcesNarkowiczApplier(gamma);
             }
-            else if (tone_map_operator == ReinhardExtendedApplier::Operator.id)
+            else if (tone_map_operator == ReinhardExtended.id)
             {
-                const auto& params = ReinhardExtendedApplier::Operator.parameters;
-                const float gamma = m_params.get_optional(params[0].id, params[0].default_value, context);
-                const float max_white = m_params.get_optional(params[1].id, params[1].default_value, context);
+                const float gamma =
+                    m_params.get_optional(
+                        "reinhard_extended_gamma",
+                        ReinhardExtendedApplier::DefaultGamma,
+                        context);
+
+                const float max_white =
+                    m_params.get_optional(
+                        "reinhard_extended_max_white",
+                        ReinhardExtendedApplier::DefaultMaxWhite,
+                        context);
 
                 m_applier = new ReinhardExtendedApplier(gamma, max_white);
             }
-            // FIXME else..
+            else
+            {
+                m_applier = nullptr; // FIXME
+                assert(false);
+            }
 
             return true;
         }
@@ -185,55 +196,79 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
 
     add_common_input_metadata(metadata);
 
-    Dictionary tone_map_operator_items = Dictionary();
-    for (const auto& tone_map_operator : ToneMapOperators)
-    {
-        const char* name = tone_map_operator.name;
-        const char* id = tone_map_operator.id;
-        tone_map_operator_items.insert(name, id);
-    }
-
     metadata.push_back(
         Dictionary()
             .insert("name", "tone_map_operator")
             .insert("label", "Operator")
-            // FIXME
             .insert("type", "enumeration")
             .insert("items",
-                tone_map_operator_items)
-                // Dictionary()
-                    // .insert("ACES (Unreal)", "aces_unreal")
-                    // .insert("Filmic", "filmic")
-                    // .insert("Reinhard", "reinhard"))
+                    Dictionary()
+                        .insert(AcesNarkowicz.name, AcesNarkowicz.id)
+                        .insert(ReinhardExtended.name, ReinhardExtended.id))
             .insert("use", "required")
-            .insert("default", DeafaultToneMapOperator.id)
+            .insert("default", DeafaultToneMapOperatorId)
             .insert("on_change", "rebuild_form"));
 
-    for (const auto& tmo : ToneMapOperators)
-    {
-        for(const auto& param : tmo.parameters)
-        {
-            metadata.push_back(
-                Dictionary()
-                    .insert("name", param.id)
-                    .insert("label", param.name)
-                    // FIXME
-                    .insert("type", "numeric")
-                    .insert("min",
-                        Dictionary()
-                            .insert("value", param.min_value_str)
-                            .insert("type", "soft"))
-                    .insert("max",
-                        Dictionary()
-                            .insert("value", param.max_value_str)
-                            .insert("type", "soft"))
-                    .insert("use", "optional")
-                    .insert("default", param.default_value_str));
-                    // .insert("visible_if",
-                    //     Dictionary()
-                    //         .insert("tone_map_operator", tmo.id)));
-        }
-    }
+    // ACES (Narkowicz)
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "aces_narkowicz_gamma")
+            .insert("label", "Gamma")
+            .insert("type", "numeric")
+            .insert("min",
+                    Dictionary()
+                        .insert("value", "0.0")
+                        .insert("type", "soft"))
+            .insert("max",
+                    Dictionary()
+                        .insert("value", "10.0")
+                        .insert("type", "soft"))
+            .insert("use", "optional")
+            .insert("default", /*AcesNarkowiczApplier::DefaultGamma*/ "2.2")
+            .insert("visible_if",
+                    Dictionary()
+                        .insert("tone_map_operator", AcesNarkowicz.id)));
+
+    // Reinhard (Extended)
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "reinhard_extended_gamma")
+            .insert("label", "Gamma")
+            .insert("type", "numeric")
+            .insert("min",
+                    Dictionary()
+                        .insert("value", "0.0")
+                        .insert("type", "soft"))
+            .insert("max",
+                    Dictionary()
+                        .insert("value", "10.0")
+                        .insert("type", "soft"))
+            .insert("use", "optional")
+            .insert("default", /*ReinhardExtendedApplier::DefaultGamma*/ "2.2")
+            .insert("visible_if",
+                    Dictionary()
+                        .insert("tone_map_operator", ReinhardExtended.id)));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "reinhard_extended_max_white")
+            .insert("label", "Lmax")
+            .insert("type", "numeric")
+            // FIXME min/max luminance values can only
+            // be accurately computed at run-time.. :(
+            .insert("min",
+                    Dictionary()
+                        .insert("value", "0.0")
+                        .insert("type", "hard"))
+            .insert("max",
+                    Dictionary()
+                        .insert("value", "10000.0")
+                        .insert("type", "soft"))
+            .insert("use", "optional")
+            .insert("default", /*ReinhardExtendedApplier::DefaultMaxWhite*/ "1.0")
+            .insert("visible_if",
+                    Dictionary()
+                        .insert("tone_map_operator", ReinhardExtended.id)));
 
 #if 0
     for (const auto& parameter : AcesNarkowiczApplier::Parameters)

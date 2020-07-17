@@ -78,12 +78,6 @@ class ToneMapApplier
         const std::size_t       tile_x,
         const std::size_t       tile_y) const override;
 
-    // Return a string identifying the tone mapping operator.
-    // virtual const char* get_operator_id() const = 0;
-
-    // Return a human-readable string identifying the tone mapping operator.
-    // virtual const char* get_operator_name() const = 0;
-
   protected:
     // Apply a tone mapping curve to a given pixel.
     virtual void tone_map(foundation::Color3f& color) const = 0;
@@ -102,11 +96,6 @@ class AcesNarkowiczApplier
     // Constructor.
     explicit AcesNarkowiczApplier(
         const float     gamma);
-
-    // Operator metadata.
-    static const char* get_operator_id();// const;
-    static const char* get_operator_name();// const;
-    static void add_operator_metadata(foundation::DictionaryArray& metadata);
 
   private:
     const float         m_gamma;
@@ -129,11 +118,6 @@ class ReinhardExtendedApplier
     explicit ReinhardExtendedApplier(
         const float     gamma,
         const float     max_white);
-
-    // Operator metadata.
-    static const char* get_operator_id();// const;
-    static const char* get_operator_name();// const;
-    static void add_operator_metadata(foundation::DictionaryArray& metadata);
 
   private:
     const float         m_gamma;
