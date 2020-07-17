@@ -46,7 +46,6 @@
 
 // Standard headers.
 #include <cstddef>
-#include <list>
 #include <memory>
 #include <string>
 #include <vector>
@@ -58,21 +57,28 @@ namespace renderer
 
 namespace
 {
+
+    //
+    // Tone mapping operators.
+    //
+
+    struct ToneMapOperator
+    {
+        const char* label;
+        const char* id;
+    };
+
+    constexpr const ToneMapOperator AcesNarkowicz { "ACES (Narkowicz)", "aces_narkowicz" };
+    constexpr const ToneMapOperator AcesUnreal { "ACES (Unreal)", "aces_unreal" };
+    constexpr const ToneMapOperator FilmicHejl { "Filmic (Hejl)", "filmic_hejl" };
+    constexpr const ToneMapOperator Reinhard { "Reinhard", "reinhard" };
+    constexpr const ToneMapOperator ReinhardExtended { "Reinhard (Extended)", "reinhard_extended" };
+
     //
     // Tone map post-processing stage.
     //
 
     const char* Model = "tone_map_post_processing_stage";
-
-    struct ToneMapOperator
-    {
-        const char* id;
-        const char* name;
-    };
-
-    // Tone mapping operators.
-    constexpr const ToneMapOperator AcesNarkowicz = { "aces_narkowicz", "ACES (Narkowicz)" };
-    constexpr const ToneMapOperator ReinhardExtended = { "reinhard_extended", "Reinhard (Extended)" };
 
     constexpr const char* DeafaultToneMapOperatorId = AcesNarkowicz.id;
 
@@ -84,13 +90,12 @@ namespace
             const char*             name,
             const ParamArray&       params)
           : PostProcessingStage(name, params)
-          , m_applier(nullptr)
         {
         }
 
         void release() override
         {
-            // delete m_applier; // FIXME read access violation
+            // delete m_tone_map; // FIXME read access violation
             delete this;
         }
 
@@ -107,13 +112,20 @@ namespace
         {
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
+
             const std::string tone_map_operator =
                 m_params.get_optional<std::string>(
                     "tone_map_operator",
                     DeafaultToneMapOperatorId,
-                    make_vector(AcesNarkowicz.id, ReinhardExtended.id),
+                    make_vector(
+                        AcesNarkowicz.id,
+                        AcesUnreal.id,
+                        FilmicHejl.id,
+                        Reinhard.id,
+                        ReinhardExtended.id),
                     context);
 
+            // Initialize the tone map applier.
             if (tone_map_operator == AcesNarkowicz.id)
             {
                 const float gamma =
@@ -122,7 +134,25 @@ namespace
                         AcesNarkowiczApplier::DefaultGamma,
                         context);
 
-                m_applier = new AcesNarkowiczApplier(gamma);
+                m_tone_map = new AcesNarkowiczApplier(gamma);
+            }
+            else if (tone_map_operator == AcesUnreal.id)
+            {
+                m_tone_map = new AcesUnrealApplier();
+            }
+            else if (tone_map_operator == FilmicHejl.id)
+            {
+                m_tone_map = new FilmicHejlApplier();
+            }
+            else if (tone_map_operator == Reinhard.id)
+            {
+                const float gamma =
+                    m_params.get_optional(
+                        "reinhard_gamma",
+                        ReinhardApplier::DefaultGamma,
+                        context);
+
+                m_tone_map = new ReinhardApplier(gamma);
             }
             else if (tone_map_operator == ReinhardExtended.id)
             {
@@ -138,11 +168,11 @@ namespace
                         ReinhardExtendedApplier::DefaultMaxWhite,
                         context);
 
-                m_applier = new ReinhardExtendedApplier(gamma, max_white);
+                m_tone_map = new ReinhardExtendedApplier(gamma, max_white);
             }
             else
             {
-                m_applier = nullptr; // FIXME
+                m_tone_map = nullptr; // FIXME
                 assert(false);
             }
 
@@ -155,7 +185,7 @@ namespace
 
             Image& image = frame.image();
 
-            m_applier->apply_on_tiles(image, thread_count);
+            m_tone_map->apply_on_tiles(image, thread_count);
 
             // TODO figure out if this is actually correct (technically)
             // NOTE conversion needed to match the output of tonemapper: https://github.com/tizian/tonemapper
@@ -163,7 +193,7 @@ namespace
         }
 
       private:
-        ToneMapApplier*     m_applier;
+        ToneMapApplier*     m_tone_map;
     };
 }
 
@@ -190,6 +220,40 @@ Dictionary ToneMapPostProcessingStageFactory::get_model_metadata() const
             .insert("label", "Tone Map");
 }
 
+namespace
+{
+    inline void add_numeric_param_metadata(
+        DictionaryArray&    metadata,
+        const char*         name,
+        const char*         label,
+        const char*         min_value,
+        const char*         min_type,
+        const char*         max_value,
+        const char*         max_type,
+        const char*         default_value,
+        const char*         tone_map_operator_id)
+    {
+        metadata.push_back(
+            Dictionary()
+                .insert("name", name)
+                .insert("label", label)
+                .insert("type", "numeric")
+                .insert("min",
+                        Dictionary()
+                            .insert("value", min_value)
+                            .insert("type", min_type))
+                .insert("max",
+                        Dictionary()
+                            .insert("value", max_value)
+                            .insert("type", max_type))
+                .insert("use", "optional")
+                .insert("default", default_value)
+                .insert("visible_if",
+                        Dictionary()
+                            .insert("tone_map_operator", tone_map_operator_id)));
+    }
+}
+
 DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
 {
     DictionaryArray metadata;
@@ -203,177 +267,73 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
             .insert("type", "enumeration")
             .insert("items",
                     Dictionary()
-                        .insert(AcesNarkowicz.name, AcesNarkowicz.id)
-                        .insert(ReinhardExtended.name, ReinhardExtended.id))
+                        .insert(AcesNarkowicz.label, AcesNarkowicz.id)
+                        .insert(AcesUnreal.label, AcesUnreal.id)
+                        .insert(FilmicHejl.label, FilmicHejl.id)
+                        .insert(Reinhard.label, Reinhard.id)
+                        .insert(ReinhardExtended.label, ReinhardExtended.id))
             .insert("use", "required")
             .insert("default", DeafaultToneMapOperatorId)
             .insert("on_change", "rebuild_form"));
 
     // ACES (Narkowicz)
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "aces_narkowicz_gamma")
-            .insert("label", "Gamma")
-            .insert("type", "numeric")
-            .insert("min",
-                    Dictionary()
-                        .insert("value", "0.0")
-                        .insert("type", "soft"))
-            .insert("max",
-                    Dictionary()
-                        .insert("value", "10.0")
-                        .insert("type", "soft"))
-            .insert("use", "optional")
-            .insert("default", /*AcesNarkowiczApplier::DefaultGamma*/ "2.2")
-            .insert("visible_if",
-                    Dictionary()
-                        .insert("tone_map_operator", AcesNarkowicz.id)));
+    {
+        add_numeric_param_metadata(
+            metadata,
+            "aces_narkowicz_gamma",
+            "Gamma",
+            "0.0", "soft",              // min
+            "10.0", "soft",             // max
+            "2.2",                      // AcesNarkowiczApplier::DefaultGamma
+            AcesNarkowicz.id);
+    }
+
+    // ACES (Unreal)
+    {
+        // No parameters.
+    }
+
+    // Filmic (Hejl)
+    {
+        // No parameters.
+    }
+
+    // Reinhard
+    {
+        add_numeric_param_metadata(
+            metadata,
+            "reinhard_gamma",
+            "Gamma",
+            "0.0", "soft",              // min
+            "10.0", "soft",             // max
+            "2.2",                      // ReinhardApplier::DefaultGamma
+            Reinhard.id);
+    }
 
     // Reinhard (Extended)
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "reinhard_extended_gamma")
-            .insert("label", "Gamma")
-            .insert("type", "numeric")
-            .insert("min",
-                    Dictionary()
-                        .insert("value", "0.0")
-                        .insert("type", "soft"))
-            .insert("max",
-                    Dictionary()
-                        .insert("value", "10.0")
-                        .insert("type", "soft"))
-            .insert("use", "optional")
-            .insert("default", /*ReinhardExtendedApplier::DefaultGamma*/ "2.2")
-            .insert("visible_if",
-                    Dictionary()
-                        .insert("tone_map_operator", ReinhardExtended.id)));
+    {
+        add_numeric_param_metadata(
+            metadata,
+            "reinhard_extended_gamma",
+            "Gamma",
+            "0.0", "soft",              // min
+            "10.0", "soft",             // max
+            "2.2",                      // ReinhardExtendedApplier::DefaultGamma
+            ReinhardExtended.id);
 
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "reinhard_extended_max_white")
-            .insert("label", "Lmax")
-            .insert("type", "numeric")
+        add_numeric_param_metadata(
+            metadata,
+            "reinhard_extended_max_white",
+            "Lmax",
+
             // FIXME min/max luminance values can only
             // be accurately computed at run-time.. :(
-            .insert("min",
-                    Dictionary()
-                        .insert("value", "0.0")
-                        .insert("type", "hard"))
-            .insert("max",
-                    Dictionary()
-                        .insert("value", "10000.0")
-                        .insert("type", "soft"))
-            .insert("use", "optional")
-            .insert("default", /*ReinhardExtendedApplier::DefaultMaxWhite*/ "1.0")
-            .insert("visible_if",
-                    Dictionary()
-                        .insert("tone_map_operator", ReinhardExtended.id)));
+            "0.0", "hard",              // min
+            "10000.0", "soft",          // max
 
-#if 0
-    for (const auto& parameter : AcesNarkowiczApplier::Parameters)
-    {
-        metadata.push_back(
-            Dictionary()
-                .insert("name", AcesNarkowiczApplier::Operator.id + sep + parameter.id)
-                .insert("label", parameter.name)
-                // FIXME
-                .insert("type", "numeric")
-                .insert("min",
-                    Dictionary()
-                        .insert("value", std::to_string(parameter.min_value))
-                        .insert("type", "soft"))
-                .insert("max",
-                    Dictionary()
-                        .insert("value", std::to_string(parameter.max_value))
-                        .insert("type", "soft"))
-                .insert("use", "optional")
-                .insert("default", std::to_string(parameter.default_value))
-                .insert("visible_if",
-                    Dictionary()
-                        .insert("tone_map_operator", AcesNarkowiczApplier::Operator.id)));
+            "1.0",                      // ReinhardExtendedApplier::DefaultMaxWhite
+            ReinhardExtended.id);
     }
-    for (const auto& parameter : ReinhardExtendedApplier::Parameters)
-    {
-        metadata.push_back(
-            Dictionary()
-                .insert("name", ReinhardExtendedApplier::Operator.id + sep + parameter.id)
-                .insert("label", parameter.name)
-                // FIXME
-                .insert("type", "numeric")
-                .insert("min",
-                    Dictionary()
-                        .insert("value", std::to_string(parameter.min_value))
-                        .insert("type", "soft"))
-                .insert("max",
-                    Dictionary()
-                        .insert("value", std::to_string(parameter.max_value))
-                        .insert("type", "soft"))
-                .insert("use", "optional")
-                .insert("default", std::to_string(parameter.default_value))
-                .insert("visible_if",
-                    Dictionary()
-                        .insert("tone_map_operator", ReinhardExtendedApplier::Operator.id)));
-    }
-
-    // FIXME quick testing, automate this later..
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "aces_narkowicz_gamma")
-            .insert("label", "Gamma")
-            .insert("type", "numeric")
-            .insert("min",
-                Dictionary()
-                    .insert("value", "0.0")
-                    .insert("type", "soft"))
-            .insert("max",
-                Dictionary()
-                    .insert("value", "10.0")
-                    .insert("type", "soft"))
-            .insert("use", "optional")
-            .insert("default", "2.2")
-            .insert("visible_if",
-                Dictionary()
-                    .insert("tone_map_operator", "aces_narkowicz")));
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "reinhard_extended_gamma")
-            .insert("label", "Gamma")
-            .insert("type", "numeric")
-            .insert("min",
-                Dictionary()
-                    .insert("value", "0.0")
-                    .insert("type", "soft"))
-            .insert("max",
-                Dictionary()
-                    .insert("value", "10.0")
-                    .insert("type", "soft"))
-            .insert("use", "optional")
-            .insert("default", "2.2")
-            .insert("visible_if",
-                Dictionary()
-                    .insert("tone_map_operator", "reinhard_extended")));
-
-    // FIXME should be computed depending on the image (is it feasible?)
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "reinhard_extended_l_max")
-            .insert("label", "Lmax")
-            .insert("type", "numeric")
-            .insert("min",
-                Dictionary()
-                    .insert("value", "0.0")
-                    .insert("type", "soft"))
-            .insert("max",
-                Dictionary()
-                    .insert("value", "10000.0")
-                    .insert("type", "soft"))
-            .insert("use", "optional")
-            .insert("default", "1.0")
-            .insert("visible_if",
-                Dictionary()
-                    .insert("tone_map_operator", "reinhard_extended")));
-#endif
 
     return metadata;
 }

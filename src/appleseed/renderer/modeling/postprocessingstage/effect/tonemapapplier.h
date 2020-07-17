@@ -38,9 +38,6 @@
 
 // Standard headers.
 #include <cstddef>
-#include <functional>
-#include <string>
-#include <vector>
 
 // Forward declarations.
 namespace foundation    { class Image; }
@@ -53,16 +50,15 @@ namespace renderer
 //
 // Tone map post-processing effect appliers.
 //
-
-//
 // References:
 //
 //   Tone Mapper, Tizian Zeltner
 //   https://github.com/tizian/tonemapper
 //
-//   Tone Mapping, Matt Taylor
+//   "Tone Mapping", Matt Taylor
 //   https://64.github.io/tonemapping/
 //
+
 
 
 class ToneMapApplier
@@ -83,6 +79,13 @@ class ToneMapApplier
     virtual void tone_map(foundation::Color3f& color) const = 0;
 };
 
+
+// TODO
+// - add references for each operator and also note that they are
+//   only *barely* modified from: https://github.com/tizian/tonemapper
+// - add the option to apply Reinhard operators to RGB channels
+
+
 //
 // ACES (Narkowicz)
 //
@@ -91,11 +94,61 @@ class AcesNarkowiczApplier
   : public ToneMapApplier
 {
   public:
-    static constexpr float DefaultGamma = 2.2f;
-
     // Constructor.
     explicit AcesNarkowiczApplier(
         const float     gamma);
+
+    static constexpr float DefaultGamma = 2.2f;
+
+  private:
+    const float         m_gamma;
+
+    void tone_map(foundation::Color3f& color) const final;
+};
+
+//
+// ACES (Unreal)
+//
+
+class AcesUnrealApplier
+  : public ToneMapApplier
+{
+  public:
+    // Constructor.
+    explicit AcesUnrealApplier();
+
+  private:
+    void tone_map(foundation::Color3f& color) const final;
+};
+
+//
+// Filmic (Hejl)
+//
+
+class FilmicHejlApplier
+  : public ToneMapApplier
+{
+  public:
+    // Constructor.
+    explicit FilmicHejlApplier();
+
+  private:
+    void tone_map(foundation::Color3f& color) const final;
+};
+
+//
+// Reinhard (Simple)
+//
+
+class ReinhardApplier
+  : public ToneMapApplier
+{
+  public:
+    // Constructor.
+    explicit ReinhardApplier(
+        const float     gamma);
+
+    static constexpr float DefaultGamma = 2.2f;
 
   private:
     const float         m_gamma;
@@ -111,13 +164,13 @@ class ReinhardExtendedApplier
   : public ToneMapApplier
 {
   public:
-    static constexpr float DefaultGamma = 2.2f;
-    static constexpr float DefaultMaxWhite = 1.0f;
-
     // Constructor.
     explicit ReinhardExtendedApplier(
         const float     gamma,
         const float     max_white);
+
+    static constexpr float DefaultGamma = 2.2f;
+    static constexpr float DefaultMaxWhite = 1.0f;
 
   private:
     const float         m_gamma;
@@ -125,61 +178,5 @@ class ReinhardExtendedApplier
 
     void tone_map(foundation::Color3f& color) const final;
 };
-
-#if 0
-// TODO add references for each and note that
-//      they are only slightly modified from:
-//      https://github.com/tizian/tonemapper
-//      (also, include the original license)
-
-class AcesUnrealApplier
-  : public ToneMapApplier
-{
-  public:
-    explicit AcesUnrealApplier();
-};
-
-class AcesNarkowiczApplier
-  : public ToneMapApplier
-{
-  public:
-    explicit AcesNarkowiczApplier(
-        const float     gamma);
-
-  private:
-    const float         m_gamma;
-};
-
-class FilmicHejlApplier
-  : public ToneMapApplier
-{
-  public:
-    explicit FilmicHejlApplier();
-};
-
-class ReinhardApplier
-  : public ToneMapApplier
-{
-  public:
-    explicit ReinhardApplier(
-        const float     gamma);
-
-  private:
-    const float         m_gamma;
-};
-
-class ReinhardExtendedApplier
-  : public ToneMapApplier
-{
-  public:
-    explicit ReinhardExtendedApplier(
-        const float     gamma,
-        const float     max_white);
-
-  private:
-    const float         m_gamma;
-    const float         m_max_white;    // maximum luminance in the scene
-};
-#endif
 
 }   // namespace renderer
