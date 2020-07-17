@@ -39,12 +39,12 @@
 // Standard headers.
 #include <cstddef>
 #include <functional>
-#include <map>
 #include <string>
-#include <array>
+#include <vector>
 
 // Forward declarations.
 namespace foundation    { class Image; }
+namespace foundation    { class DictionaryArray; }
 
 namespace renderer
 {
@@ -65,29 +65,6 @@ namespace renderer
 //
 
 
-
-struct ToneMapOperator
-{
-    static constexpr const size_t MaxParametersCount = 8; // FIXME can't use VLAs in C++ ;(
-
-    struct Parameter
-    {
-        const char*     id;
-        const char*     name;
-        const float     default_value;
-        const float     min_value;
-        const float     max_value;
-
-        Parameter() = default;
-    };
-
-    const char*         id;
-    const char*         name;
-    const size_t        parameters_count;
-    const Parameter     parameters[MaxParametersCount];
-};
-
-
 class ToneMapApplier
   : public ImageEffectApplier
 {
@@ -101,73 +78,68 @@ class ToneMapApplier
         const std::size_t       tile_x,
         const std::size_t       tile_y) const override;
 
+    // Return a string identifying the tone mapping operator.
+    // virtual const char* get_operator_id() const = 0;
+
+    // Return a human-readable string identifying the tone mapping operator.
+    // virtual const char* get_operator_name() const = 0;
+
   protected:
     // Apply a tone mapping curve to a given pixel.
     virtual void tone_map(foundation::Color3f& color) const = 0;
 };
 
+//
+// ACES (Narkowicz)
+//
+
 class AcesNarkowiczApplier
   : public ToneMapApplier
 {
   public:
-    // Curve parameters.
-      static constexpr const ToneMapOperator::Parameter Parameters[]
-        { { "gamma", "Gamma", 2.2f, 1.0f, 10.0f } };
-    static constexpr const ToneMapOperator Operator
-        // { "aces_narkowicz", "ACES (Narkowicz)" };
-        {
-            "aces_narkowicz", "ACES (Narkowicz)",
-            1,
-            AcesNarkowiczApplier::Parameters
-        };
-
-    // static constexpr const ToneMapOperator::Parameter Gamma
-    //     { "gamma", "Gamma", 2.2f, 1.0f, 10.0f };
+    static constexpr float DefaultGamma = 2.2f;
 
     // Constructor.
     explicit AcesNarkowiczApplier(
         const float     gamma);
 
-  protected:
-    void tone_map(foundation::Color3f& color) const override; // TODO use final (?)
+    // Operator metadata.
+    static const char* get_operator_id();// const;
+    static const char* get_operator_name();// const;
+    static void add_operator_metadata(foundation::DictionaryArray& metadata);
 
   private:
     const float         m_gamma;
+
+    void tone_map(foundation::Color3f& color) const final;
 };
 
+//
+// Reinhard (Extended)
+//
 
 class ReinhardExtendedApplier
   : public ToneMapApplier
 {
   public:
-    // Curve parameters.
-    static constexpr const ToneMapOperator Operator
-        // { "reinhard_extended", "Reinhard (Extended)" };
-        {
-            "reinhard_extended", "Reinhard (Extended)",
-            2,
-            {
-                { "gamma", "Gamma", 2.2f, 1.0f, 10.0f },
-                { "l_max", "Lmax", 1.0f, 0.0f, 10000.0f }
-            }
-        };
-
-    // static constexpr const ToneMapOperator::Parameter Gamma
-    //     { "gamma", "Gamma", 2.2f, 1.0f, 10.0f };
-
-    // static constexpr const ToneMapOperator::Parameter Lmax
-    //     { "l_max", "Lmax", 1.0f, 0.0f, 10000.0f }; // FIXME these values depend on the image
+    static constexpr float DefaultGamma = 2.2f;
+    static constexpr float DefaultMaxWhite = 1.0f;
 
     // Constructor.
     explicit ReinhardExtendedApplier(
         const float     gamma,
         const float     max_white);
 
+    // Operator metadata.
+    static const char* get_operator_id();// const;
+    static const char* get_operator_name();// const;
+    static void add_operator_metadata(foundation::DictionaryArray& metadata);
+
   private:
     const float         m_gamma;
     const float         m_max_white;    // maximum luminance in the scene
 
-    void tone_map(foundation::Color3f& color) const override;
+    void tone_map(foundation::Color3f& color) const final;
 };
 
 #if 0

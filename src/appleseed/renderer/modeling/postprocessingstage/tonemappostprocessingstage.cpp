@@ -63,15 +63,15 @@ namespace
 
     const char* Model = "tone_map_post_processing_stage";
 
-    static constexpr const size_t ToneMapOperatorsCount = 2;
+    constexpr const size_t ToneMapOperatorIdsCount = 2;
 
-    static constexpr const ToneMapOperator ToneMapOperators[ToneMapOperatorsCount] =
+    const char* ToneMapOperatorIds[ToneMapOperatorIdsCount] =
     {
-        AcesNarkowiczApplier::Operator,
-        ReinhardExtendedApplier::Operator,
+        AcesNarkowiczApplier::get_operator_id(),
+        ReinhardExtendedApplier::get_operator_id(),
     };
 
-    static constexpr const ToneMapOperator DeafaultToneMapOperator = AcesNarkowiczApplier::Operator;
+    const char* DeafaultToneMapOperatorId = AcesNarkowiczApplier::get_operator_id();
 
     class ToneMapPostProcessingStage
       : public PostProcessingStage
@@ -104,48 +104,32 @@ namespace
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
             std::vector<std::string> allowed_values;
-            allowed_values.reserve(ToneMapOperatorsCount);
-            for (const auto& tmo : ToneMapOperators)
-                allowed_values.push_back(tmo.id);
+            allowed_values.reserve(ToneMapOperatorIdsCount);
+            for (const auto& tmo_id : ToneMapOperatorIds)
+                allowed_values.push_back(tmo_id);
 
             const std::string tone_map_operator =
                 m_params.get_optional<std::string>(
                     "tone_map_operator",
-                    DeafaultToneMapOperator.id,
+                    DeafaultToneMapOperatorId,
                     allowed_values,
                     context);
 
             // FIXME either stop indexing into parameters (it is too obfuscated)
             //       or loop over them, capture all, then create the applier (?)
 
-
-            const std::string sep = "_";
             if (tone_map_operator == AcesNarkowiczApplier::Operator.id)
             {
-                const auto& tmo = AcesNarkowiczApplier::Operator;
-                const auto& params = tmo.parameters;
-
-                const float gamma = m_params.get_optional(
-                    (tmo.id + sep + params[0].id).c_str(),
-                    params[0].default_value,
-                    context);
+                const auto& params = AcesNarkowiczApplier::Operator.parameters;
+                const float gamma = m_params.get_optional(params[0].id, params[0].default_value, context);
 
                 m_applier = new AcesNarkowiczApplier(gamma);
             }
             else if (tone_map_operator == ReinhardExtendedApplier::Operator.id)
             {
-                const auto& tmo = ReinhardExtendedApplier::Operator;
-                const auto& params = tmo.parameters;
-
-                const float gamma = m_params.get_optional(
-                    (tmo.id + sep + params[0].id).c_str(),
-                    params[0].default_value,
-                    context);
-
-                const float max_white = m_params.get_optional(
-                    (tmo.id + sep + params[1].id).c_str(),
-                    params[1].default_value,
-                    context);
+                const auto& params = ReinhardExtendedApplier::Operator.parameters;
+                const float gamma = m_params.get_optional(params[0].id, params[0].default_value, context);
+                const float max_white = m_params.get_optional(params[1].id, params[1].default_value, context);
 
                 m_applier = new ReinhardExtendedApplier(gamma, max_white);
             }
@@ -201,12 +185,13 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
 
     add_common_input_metadata(metadata);
 
-    Dictionary tone_map_operator_items;
-
+    Dictionary tone_map_operator_items = Dictionary();
     for (const auto& tone_map_operator : ToneMapOperators)
-        tone_map_operator_items.insert(
-            tone_map_operator.name,
-            tone_map_operator.id);
+    {
+        const char* name = tone_map_operator.name;
+        const char* id = tone_map_operator.id;
+        tone_map_operator_items.insert(name, id);
+    }
 
     metadata.push_back(
         Dictionary()
@@ -224,33 +209,29 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
             .insert("default", DeafaultToneMapOperator.id)
             .insert("on_change", "rebuild_form"));
 
-    // FIXME add operator params:
-    const std::string sep = "_";
-    
     for (const auto& tmo : ToneMapOperators)
-    {        
-        const auto& params = tmo.parameters;
-        for (size_t i = 0; i < tmo.parameters_count; ++i)
+    {
+        for(const auto& param : tmo.parameters)
         {
             metadata.push_back(
                 Dictionary()
-                    .insert("name", tmo.id + sep + param.id)
+                    .insert("name", param.id)
                     .insert("label", param.name)
                     // FIXME
                     .insert("type", "numeric")
                     .insert("min",
                         Dictionary()
-                            .insert("value", std::to_string(param.min_value))
+                            .insert("value", param.min_value_str)
                             .insert("type", "soft"))
                     .insert("max",
                         Dictionary()
-                            .insert("value", std::to_string(param.max_value))
+                            .insert("value", param.max_value_str)
                             .insert("type", "soft"))
                     .insert("use", "optional")
-                    .insert("default", std::to_string(param.default_value))
-                    .insert("visible_if",
-                        Dictionary()
-                            .insert("tone_map_operator", tmo.id)));
+                    .insert("default", param.default_value_str));
+                    // .insert("visible_if",
+                    //     Dictionary()
+                    //         .insert("tone_map_operator", tmo.id)));
         }
     }
 

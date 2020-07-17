@@ -30,11 +30,14 @@
 #include "tonemapapplier.h"
 
 // appleseed.foundation headers.
+#include "foundation/containers/dictionary.h"
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/colorspace.h"
 #include "foundation/image/color.h"
 #include "foundation/image/image.h"
 #include "foundation/math/scalar.h"
+#include "foundation/utility/api/apistring.h"
+#include "foundation/utility/api/specializedapiarrays.h"
 
 using namespace foundation;
 
@@ -148,11 +151,38 @@ void ToneMapApplier::apply(
     }
 }
 
-AcesNarkowiczApplier::AcesNarkowiczApplier(
-    const float gamma)
+//
+// ACES (Narkowicz)
+//
+
+AcesNarkowiczApplier::AcesNarkowiczApplier(const float gamma)
   : m_gamma(gamma)
 {
 };
+
+const char* AcesNarkowiczApplier::get_operator_id() const { return "aces_narkowicz"; }
+const char* AcesNarkowiczApplier::get_operator_name() const { return "ACES (Narkowicz)"; }
+
+void AcesNarkowiczApplier::add_operator_metadata(DictionaryArray& metadata)
+{
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "aces_narkowicz_gamma")
+            .insert("label", "Gamma")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "10.0")
+                    .insert("type", "soft"))
+            .insert("use", "optional")
+            .insert("default", "2.2")
+            .insert("visible_if", // FIXME should this be added here?
+                Dictionary()
+                    .insert("tone_map_operator", "aces_narkowicz")));
+}
 
 void AcesNarkowiczApplier::tone_map(Color3f& color) const
 {
@@ -173,14 +203,58 @@ void AcesNarkowiczApplier::tone_map(Color3f& color) const
         pow(color[2], rcp_gamma));
 }
 
+//
+// Reinhard (Extended)
+//
 
-ReinhardExtendedApplier::ReinhardExtendedApplier(
-    const float gamma,
-    const float max_white)
+ReinhardExtendedApplier::ReinhardExtendedApplier(const float gamma, const float max_white)
   : m_gamma(gamma)
   , m_max_white(max_white)
 {
 };
+
+const char* AcesNarkowiczApplier::get_operator_id() const { return "reinhard_extended"; }
+const char* AcesNarkowiczApplier::get_operator_name() const { return "Reinhard (Extended)"; }
+
+void AcesNarkowiczApplier::add_operator_metadata(DictionaryArray& metadata)
+{
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "reinhard_extended_gamma")
+            .insert("label", "Gamma")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "10.0")
+                    .insert("type", "soft"))
+            .insert("use", "optional")
+            .insert("default", "2.2")
+            .insert("visible_if", // FIXME should this be added here?
+                Dictionary()
+                    .insert("tone_map_operator", "reinhard_extended")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "reinhard_extended_max_white")
+            .insert("label", "Lmax")
+            // FIXME these values depend on the image:
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.0")
+                    .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "10000.0")
+                    .insert("type", "soft"))
+            .insert("use", "optional")
+            .insert("default", "1.0")
+            .insert("visible_if", // FIXME should this be added here?
+                Dictionary()
+                    .insert("tone_map_operator", "reinhard_extended")));
+}
 
 void ReinhardExtendedApplier::tone_map(Color3f& color) const
 {
@@ -195,7 +269,6 @@ void ReinhardExtendedApplier::tone_map(Color3f& color) const
         pow(color[1], rcp_gamma),
         pow(color[2], rcp_gamma));
 }
-
 
 #if 0
 //
