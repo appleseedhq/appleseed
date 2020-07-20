@@ -68,12 +68,12 @@ namespace
         const char* id;
     };
 
-    constexpr const ToneMapOperator AcesNarkowicz { "ACES (Narkowicz)", "aces_narkowicz" };
-    constexpr const ToneMapOperator AcesUnreal { "ACES (Unreal)", "aces_unreal" };
-    constexpr const ToneMapOperator FilmicHejl { "Filmic (Hejl)", "filmic_hejl" };
-    constexpr const ToneMapOperator FilmicUncharted { "Filmic (Uncharted)", "filmic_uncharted" };
-    constexpr const ToneMapOperator Reinhard { "Reinhard", "reinhard" };
-    constexpr const ToneMapOperator ReinhardExtended { "Reinhard (Extended)", "reinhard_extended" };
+    constexpr const ToneMapOperator AcesNarkowicz       { "ACES (Narkowicz)",       "aces_narkowicz" };
+    constexpr const ToneMapOperator AcesUnreal          { "ACES (Unreal)",          "aces_unreal" };
+    constexpr const ToneMapOperator FilmicHejl          { "Filmic (Hejl)",          "filmic_hejl" };
+    constexpr const ToneMapOperator FilmicUncharted     { "Filmic (Uncharted)",     "filmic_uncharted" };
+    constexpr const ToneMapOperator Reinhard            { "Reinhard",               "reinhard" };
+    constexpr const ToneMapOperator ReinhardExtended    { "Reinhard (Extended)",    "reinhard_extended" };
 
     //@Todo add new TMOs
     #define TONE_MAP_OPERATOR_ARRAY {   \
@@ -112,12 +112,15 @@ namespace
             const char*             name,
             const ParamArray&       params)
           : PostProcessingStage(name, params)
+          , m_tone_map(nullptr)
         {
         }
 
         void release() override
         {
-            // delete m_tone_map; // FIXME read access violation
+            if (m_tone_map != nullptr)
+                delete m_tone_map;
+
             delete this;
         }
 
@@ -139,7 +142,6 @@ namespace
                     "tone_map_operator",
                     DeafaultToneMapOperatorId,
                     TONE_MAP_OPERATOR_ARRAY,
-                    // allowed_values,
                     context);
 
             //@Todo add new TMOs
@@ -215,7 +217,8 @@ namespace
             }
             else
             {
-                m_tone_map = nullptr; // FIXME
+                // FIXME we shouldn't reach here.. but what if we do?
+                m_tone_map = nullptr;
                 assert(false);
             }
 

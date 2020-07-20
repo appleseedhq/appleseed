@@ -76,8 +76,17 @@ void ToneMapApplier::apply(
 
             Color4f pixel;
             tile.get_pixel(x, y, pixel);
+
+            // pixel.unpremultiply_in_place();
+
             tone_map(pixel.rgb());
-            tile.set_pixel(x, y, saturate(pixel));
+
+            // pixel.rgb() = srgb_to_linear_rgb(pixel.rgb());
+            pixel = saturate(pixel);
+
+            // pixel.premultiply_in_place();
+
+            tile.set_pixel(x, y, pixel);
         }
     }
 }
