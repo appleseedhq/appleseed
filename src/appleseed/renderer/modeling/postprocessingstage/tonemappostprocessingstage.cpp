@@ -75,6 +75,27 @@ namespace
     constexpr const ToneMapOperator Reinhard { "Reinhard", "reinhard" };
     constexpr const ToneMapOperator ReinhardExtended { "Reinhard (Extended)", "reinhard_extended" };
 
+    //@Todo add new TMOs
+    #define TONE_MAP_OPERATOR_ARRAY {   \
+        AcesNarkowicz.id,               \
+        AcesUnreal.id,                  \
+        FilmicHejl.id,                  \
+        FilmicUncharted.id,             \
+        Reinhard.id,                    \
+        ReinhardExtended.id,            \
+    }
+
+    #define INSERT_TONE_MAP_OPERATOR(tmo) insert(tmo.label, tmo.id)
+
+    //@Todo add new TMOs
+    #define TONE_MAP_OPERATOR_DICTIONARY Dictionary()   \
+        .INSERT_TONE_MAP_OPERATOR(AcesNarkowicz)        \
+        .INSERT_TONE_MAP_OPERATOR(AcesUnreal)           \
+        .INSERT_TONE_MAP_OPERATOR(FilmicHejl)           \
+        .INSERT_TONE_MAP_OPERATOR(FilmicUncharted)      \
+        .INSERT_TONE_MAP_OPERATOR(Reinhard)             \
+        .INSERT_TONE_MAP_OPERATOR(ReinhardExtended)
+
     //
     // Tone map post-processing stage.
     //
@@ -113,32 +134,15 @@ namespace
         {
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
-            const std::vector<std::string> allowed_values =
-            {
-                AcesNarkowicz.id,
-                AcesUnreal.id,
-                FilmicHejl.id,
-                FilmicUncharted.id,
-                Reinhard.id,
-                ReinhardExtended.id
-            };
-
             const std::string tone_map_operator =
                 m_params.get_optional<std::string>(
                     "tone_map_operator",
                     DeafaultToneMapOperatorId,
-                    //@Todo add TMO
-                    allowed_values,
-                    // make_vector(
-                    //     AcesNarkowicz.id,
-                    //     AcesUnreal.id,
-                    //     FilmicHejl.id,
-                    //     FilmicUncharted,
-                    //     Reinhard.id,
-                    //     ReinhardExtended.id),
+                    TONE_MAP_OPERATOR_ARRAY,
+                    // allowed_values,
                     context);
 
-            //@Todo add TMO
+            //@Todo add new TMOs
 
             // Initialize the tone map applier.
             if (tone_map_operator == AcesNarkowicz.id)
@@ -304,20 +308,12 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
             .insert("name", "tone_map_operator")
             .insert("label", "Operator")
             .insert("type", "enumeration")
-            .insert("items",
-                    Dictionary()
-                        //@Todo add TMO
-                        .insert(AcesNarkowicz.label, AcesNarkowicz.id)
-                        .insert(AcesUnreal.label, AcesUnreal.id)
-                        .insert(FilmicHejl.label, FilmicHejl.id)
-                        .insert(FilmicUncharted.label, FilmicUncharted.id)
-                        .insert(Reinhard.label, Reinhard.id)
-                        .insert(ReinhardExtended.label, ReinhardExtended.id))
+            .insert("items", TONE_MAP_OPERATOR_DICTIONARY)
             .insert("use", "required")
             .insert("default", DeafaultToneMapOperatorId)
             .insert("on_change", "rebuild_form"));
 
-    //@Todo add TMO params
+    //@Todo add new TMO params
 
     // ACES (Narkowicz)
     {
