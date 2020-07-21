@@ -230,8 +230,9 @@ void FilmicUnchartedApplier::tone_map(Color3f& color) const
 // ReinhardApplier class implementation.
 //
 
-ReinhardApplier::ReinhardApplier(const float gamma)
+ReinhardApplier::ReinhardApplier(const float gamma, const bool use_luminance)
   : m_gamma(gamma)
+  , m_use_luminance(use_luminance)
 {
 }
 
@@ -245,9 +246,22 @@ void ReinhardApplier::tone_map(Color3f& color) const
     //   http://www.cmap.polytechnique.fr/~peyre/cours/x2005signal/hdr_photographic.pdf
     //
 
-    const float L = luminance(color);     // world luminance
-    const float Ld = L / (1.0f + L);      // display luminance
-    color = Ld * color / L;
+    if (m_use_luminance)
+    {
+        color /= 1.0f + luminance(color);
+
+        //
+        // Note: this is equivalent to the paper's implementation:
+        //
+        // const float L = luminance(color);     // world luminance
+        // const float Ld = L / (1.0f + L);      // display luminance
+        // color = Ld * color / L;
+        //
+    }
+    else
+    {
+        color /= Color3f(1.0f) + color;
+    }
 
     // Gamma correct.
     const float rcp_gamma = 1.0f / m_gamma;
@@ -261,9 +275,13 @@ void ReinhardApplier::tone_map(Color3f& color) const
 // ReinhardExtendedApplier class implementation.
 //
 
-ReinhardExtendedApplier::ReinhardExtendedApplier(const float gamma, const float max_white)
+ReinhardExtendedApplier::ReinhardExtendedApplier(
+    const float gamma,
+    const float max_white,
+    const bool use_luminance)
   : m_gamma(gamma)
   , m_max_white(max_white)
+  , m_use_luminance(use_luminance)
 {
 }
 
@@ -281,9 +299,17 @@ void ReinhardExtendedApplier::tone_map(Color3f& color) const
     //   http://www.cmap.polytechnique.fr/~peyre/cours/x2005signal/hdr_photographic.pdf
     //
 
-    const float L = luminance(color);
-    const float Ld = (L * (1.0f + L / (m_max_white * m_max_white))) / (1.0f + L);
-    color = Ld * color / L;
+    if (m_use_luminance)
+    {
+        const float L = luminance(color);
+        const float Ld = (L * (1.0f + L / (m_max_white * m_max_white))) / (1.0f + L);
+        color = Ld * color / L;
+    }
+    else
+    {
+        color = (color * (Color3f(1.0f) + color / (m_max_white * m_max_white))) /
+                (Color3f(1.0f) + color);
+    }
 
     // Gamma correct.
     const float rcp_gamma = 1.0f / m_gamma;

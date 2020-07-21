@@ -197,7 +197,13 @@ namespace
                         ReinhardApplier::DefaultGamma,
                         context);
 
-                m_tone_map = new ReinhardApplier(gamma);
+                const bool use_luminance =
+                    m_params.get_optional(
+                        "reinhard_use_luminance",
+                        ReinhardApplier::DefaultUseLuminance,
+                        context);
+
+                m_tone_map = new ReinhardApplier(gamma, use_luminance);
             }
             else if (tone_map_operator == ReinhardExtended.id)
             {
@@ -292,6 +298,25 @@ namespace
                         Dictionary()
                             .insert("value", max_value)
                             .insert("type", max_type))
+                .insert("use", "optional")
+                .insert("default", default_value)
+                .insert("visible_if",
+                        Dictionary()
+                            .insert("tone_map_operator", tone_map_operator_id)));
+    }
+
+    inline void add_boolean_param_metadata(
+        DictionaryArray&    metadata,
+        const char*         name,
+        const char*         label,
+        const char*         default_value,
+        const char*         tone_map_operator_id)
+    {
+        metadata.push_back(
+            Dictionary()
+                .insert("name", name)
+                .insert("label", label)
+                .insert("type", "boolean")
                 .insert("use", "optional")
                 .insert("default", default_value)
                 .insert("visible_if",
@@ -424,6 +449,13 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
             "0.0", "soft",              // min
             "10.0", "soft",             // max
             "2.2",                      // ReinhardApplier::DefaultGamma
+            Reinhard.id);
+
+        add_boolean_param_metadata(
+            metadata,
+            "reinhard_use_luminance",
+            "Use Luminance",
+            "true",                     // ReinhardApplier::DefaultUseLuminance
             Reinhard.id);
     }
 

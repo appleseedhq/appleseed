@@ -187,12 +187,16 @@ class ReinhardApplier
   public:
     // Constructor.
     explicit ReinhardApplier(
-        const float     gamma);
+        const float     gamma,
+        const bool      use_luminance);
 
     static constexpr float DefaultGamma = 2.2f;
+    static constexpr bool DefaultUseLuminance = true;
 
   private:
     const float         m_gamma;
+    const bool          m_use_luminance;    // true  = apply the curve to luminance values only
+                                            // false = apply the curve to each RGB channel individually
 
     void tone_map(foundation::Color3f& color) const final;
 };
@@ -208,14 +212,18 @@ class ReinhardExtendedApplier
     // Constructor.
     explicit ReinhardExtendedApplier(
         const float     gamma,
-        const float     max_white);
+        const float     max_white,
+        const bool      use_luminance);
 
     static constexpr float DefaultGamma = 2.2f;
     static constexpr float DefaultMaxWhite = 1.0f;
+    static constexpr bool DefaultUseLuminance = true;
 
   private:
     const float         m_gamma;
-    const float         m_max_white;    // maximum luminance in the scene
+    const float         m_max_white;        // maximum luminance in the scene
+    const bool          m_use_luminance;    // true  = apply the curve to luminance values only
+                                            // false = apply the curve to each RGB channel individually
 
     void tone_map(foundation::Color3f& color) const final;
 };
