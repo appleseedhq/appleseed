@@ -86,6 +86,17 @@ class ToneMapApplier
 // - add the option to apply Reinhard operators to RGB channels
 
 
+class DebugToneMapApplier
+  : public ToneMapApplier
+{
+  public:
+    // Constructor.
+    explicit DebugToneMapApplier();
+
+  private:
+    void tone_map(foundation::Color3f& color) const final;
+};
+
 //
 // ACES (Narkowicz)
 //

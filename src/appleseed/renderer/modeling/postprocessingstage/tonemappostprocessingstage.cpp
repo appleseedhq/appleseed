@@ -74,6 +74,7 @@ namespace
     constexpr const ToneMapOperator FilmicUncharted     { "Filmic (Uncharted)",     "filmic_uncharted" };
     constexpr const ToneMapOperator Reinhard            { "Reinhard",               "reinhard" };
     constexpr const ToneMapOperator ReinhardExtended    { "Reinhard (Extended)",    "reinhard_extended" };
+    constexpr const ToneMapOperator DebugToneMap        { "Debug",                  "debug" };
 
     //@Todo add new TMOs
     #define TONE_MAP_OPERATOR_ARRAY {   \
@@ -83,6 +84,7 @@ namespace
         FilmicUncharted.id,             \
         Reinhard.id,                    \
         ReinhardExtended.id,            \
+        DebugToneMap.id,                \
     }
 
     #define INSERT_TONE_MAP_OPERATOR(tmo) insert(tmo.label, tmo.id)
@@ -94,7 +96,8 @@ namespace
         .INSERT_TONE_MAP_OPERATOR(FilmicHejl)           \
         .INSERT_TONE_MAP_OPERATOR(FilmicUncharted)      \
         .INSERT_TONE_MAP_OPERATOR(Reinhard)             \
-        .INSERT_TONE_MAP_OPERATOR(ReinhardExtended)
+        .INSERT_TONE_MAP_OPERATOR(ReinhardExtended)     \
+        .INSERT_TONE_MAP_OPERATOR(DebugToneMap)
 
     //
     // Tone map post-processing stage.
@@ -150,7 +153,7 @@ namespace
             if (tone_map_operator == AcesNarkowicz.id)
             {
                 const float gamma =
-                    m_params.get_optional("aces_narkowicz_gamma",AcesNarkowiczApplier::DefaultGamma, context);
+                    m_params.get_optional("aces_narkowicz_gamma", AcesNarkowiczApplier::DefaultGamma, context);
 
                 m_tone_map = new AcesNarkowiczApplier(gamma);
             }
@@ -188,7 +191,7 @@ namespace
             else if (tone_map_operator == Reinhard.id)
             {
                 const float gamma =
-                    m_params.get_optional("reinhard_gamma",ReinhardApplier::DefaultGamma, context);
+                    m_params.get_optional("reinhard_gamma", ReinhardApplier::DefaultGamma, context);
                 const bool use_luminance =
                     m_params.get_optional("reinhard_use_luminance", ReinhardApplier::DefaultUseLuminance, context);
 
@@ -205,11 +208,15 @@ namespace
 
                 m_tone_map = new ReinhardExtendedApplier(gamma, max_white, use_luminance);
             }
+            else if (tone_map_operator == DebugToneMap.id)
+            {
+                m_tone_map = new DebugToneMapApplier();
+            }
             else
             {
                 // FIXME we shouldn't reach here.. but what if we do?
-                m_tone_map = nullptr;
-                assert(false);
+                // m_tone_map = nullptr;
+                // assert(false);
             }
 
             return true;
@@ -225,7 +232,7 @@ namespace
 
             // TODO figure out if this is actually correct (technically)
             // NOTE conversion needed to match the output of tonemapper: https://github.com/tizian/tonemapper
-            convert_srgb_to_linear_rgb(image);
+            // convert_srgb_to_linear_rgb(image);
         }
 
       private:

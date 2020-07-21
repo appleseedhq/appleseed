@@ -70,25 +70,42 @@ void ToneMapApplier::apply(
         for (std::size_t x = 0; x < tile_width; ++x)
         {
             // TODO move gamma correction out of the TMOs (?)
-
-            // FIXME unpremultiply, tonemap, saturate, then premultiply
-            //       as in conversion.cpp (also check if it is Color3f)
+            // TODO check if it should be Color3f, as in conversion.cpp
 
             Color4f pixel;
             tile.get_pixel(x, y, pixel);
-
-            // pixel.unpremultiply_in_place();
+            pixel.unpremultiply_in_place();
 
             tone_map(pixel.rgb());
-
-            // pixel.rgb() = srgb_to_linear_rgb(pixel.rgb());
             pixel = saturate(pixel);
 
-            // pixel.premultiply_in_place();
+            // Gamma correct.
+            // // sRGB
+            // pixel.rgb() = srgb_to_linear_rgb(pixel.rgb());
+            // // γ = 2.2
+            // const float rcp_gamma = 1.0f / 2.2f;
+            // pixel.rgb() = Color3f(
+            //     pow(pixel.r, rcp_gamma),
+            //     pow(pixel.g, rcp_gamma),
+            //     pow(pixel.b, rcp_gamma));
 
+            pixel.premultiply_in_place();
             tile.set_pixel(x, y, pixel);
         }
     }
+}
+
+//
+// DebugToneMapApplier class implementation.
+//
+
+DebugToneMapApplier::DebugToneMapApplier()
+{
+}
+
+void DebugToneMapApplier::tone_map(Color3f& color) const
+{
+    // Do nothing.
 }
 
 //
@@ -120,13 +137,6 @@ void AcesNarkowiczApplier::tone_map(Color3f& color) const
     color =
         (color * (a * color + b)) /
         (color * (c * color + d) + e);
-
-    // Gamma correct.
-    const float rcp_gamma = 1.0f / m_gamma;
-    color = Color3f(
-        pow(color[0], rcp_gamma),
-        pow(color[1], rcp_gamma),
-        pow(color[2], rcp_gamma));
 }
 
 //
@@ -151,6 +161,12 @@ void AcesUnrealApplier::tone_map(Color3f& color) const
     //
 
     color = color / (color + Color3f(0.155f)) * 1.019f;
+
+    // Decode 2.2 gamma correction.
+    color = Color3f(
+        pow(color.r, 2.2f),
+        pow(color.g, 2.2f),
+        pow(color.b, 2.2f));
 }
 
 //
@@ -166,6 +182,8 @@ void FilmicHejlApplier::tone_map(Color3f& color) const
     //
     // Apply a filmic tone mapper developed by Jim Hejl and Richard Burgess-Dawson at EA.
     //
+    // Note: gamma 2.2 correction is baked in.
+    //
     // References:
     //
     //   http://filmicworlds.com/blog/filmic-tonemapping-operators/
@@ -176,6 +194,12 @@ void FilmicHejlApplier::tone_map(Color3f& color) const
     color =
         (color * (6.2f * color + Color3f(0.5f))) /
         (color * (6.2f * color + Color3f(1.7f)) + Color3f(0.06f));
+
+    // Decode 2.2 gamma correction.
+    color = Color3f(
+        pow(color.r, 2.2f),
+        pow(color.g, 2.2f),
+        pow(color.b, 2.2f));
 }
 
 //
@@ -235,13 +259,6 @@ void FilmicUnchartedApplier::tone_map(Color3f& color) const
 
     const Color3f white_scale(1.0f / uncharted_tone_map(m_W));
     color *= white_scale;
-
-    // Gamma correct.
-    const float rcp_gamma = 1.0f / m_gamma;
-    color = Color3f(
-        pow(color[0], rcp_gamma),
-        pow(color[1], rcp_gamma),
-        pow(color[2], rcp_gamma));
 }
 
 //
@@ -280,13 +297,6 @@ void ReinhardApplier::tone_map(Color3f& color) const
     {
         color /= Color3f(1.0f) + color;
     }
-
-    // Gamma correct.
-    const float rcp_gamma = 1.0f / m_gamma;
-    color = Color3f(
-        pow(color[0], rcp_gamma),
-        pow(color[1], rcp_gamma),
-        pow(color[2], rcp_gamma));
 }
 
 //
@@ -328,13 +338,6 @@ void ReinhardExtendedApplier::tone_map(Color3f& color) const
         color = (color * (Color3f(1.0f) + color / (m_max_white * m_max_white))) /
                 (Color3f(1.0f) + color);
     }
-
-    // Gamma correct.
-    const float rcp_gamma = 1.0f / m_gamma;
-    color = Color3f(
-        pow(color[0], rcp_gamma),
-        pow(color[1], rcp_gamma),
-        pow(color[2], rcp_gamma));
 }
 
 }   // namespace renderer
