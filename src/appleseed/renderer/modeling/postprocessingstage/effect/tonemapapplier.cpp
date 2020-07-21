@@ -183,6 +183,7 @@ void FilmicHejlApplier::tone_map(Color3f& color) const
 //
 
 FilmicUnchartedApplier::FilmicUnchartedApplier(
+    const float     gamma,
     const float     A,
     const float     B,
     const float     C,
@@ -191,7 +192,8 @@ FilmicUnchartedApplier::FilmicUnchartedApplier(
     const float     F,
     const float     W,
     const float     exposure_bias)
-  : m_A(A)
+  : m_gamma(gamma)
+  , m_A(A)
   , m_B(B)
   , m_C(C)
   , m_D(D)
@@ -202,10 +204,23 @@ FilmicUnchartedApplier::FilmicUnchartedApplier(
 {
 }
 
+inline float FilmicUnchartedApplier::uncharted_tone_map(const float x) const
+{
+    return ((x * (m_A * x + m_C * m_B) + m_D * m_E) /
+            (x * (m_A * x + m_B) + m_D * m_F)) - m_E / m_F;
+}
+
+inline Color3f FilmicUnchartedApplier::uncharted_tone_map(const Color3f& x) const
+{
+    return ((x * (m_A * x + Color3f(m_C * m_B)) + Color3f(m_D * m_E)) /
+            (x * (m_A * x + Color3f(m_B)) + Color3f(m_D * m_F))) - Color3f(m_E / m_F);
+}
+
 void FilmicUnchartedApplier::tone_map(Color3f& color) const
 {
     //
     // Apply a filmic tone mapper developed by John Hable for Uncharted 2.
+    // ((x * (A * x + C * B) + D * E) / (x * (A * x + B) + D * F)) - E / F
     //
     // References:
     //
@@ -216,14 +231,17 @@ void FilmicUnchartedApplier::tone_map(Color3f& color) const
 
     color *= m_exposure_bias;
 
-    color =
-        ((color * (m_A * color + Color3f(m_C * m_B)) + Color3f(m_D * m_E)) /
-         (color * (m_A * color + Color3f(m_B)) + Color3f(m_D * m_F))) -  Color3f(m_E / m_F);
+    color = uncharted_tone_map(color);
 
-    const Color3f white_scale(1.0f / m_W);
+    const Color3f white_scale(1.0f / uncharted_tone_map(m_W));
     color *= white_scale;
 
-    // FIXME gamma correct (add gamma param)
+    // Gamma correct.
+    const float rcp_gamma = 1.0f / m_gamma;
+    color = Color3f(
+        pow(color[0], rcp_gamma),
+        pow(color[1], rcp_gamma),
+        pow(color[2], rcp_gamma));
 }
 
 //

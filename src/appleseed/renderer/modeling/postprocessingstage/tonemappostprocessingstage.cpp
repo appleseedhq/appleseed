@@ -150,10 +150,7 @@ namespace
             if (tone_map_operator == AcesNarkowicz.id)
             {
                 const float gamma =
-                    m_params.get_optional(
-                        "aces_narkowicz_gamma",
-                        AcesNarkowiczApplier::DefaultGamma,
-                        context);
+                    m_params.get_optional("aces_narkowicz_gamma",AcesNarkowiczApplier::DefaultGamma, context);
 
                 m_tone_map = new AcesNarkowiczApplier(gamma);
             }
@@ -167,6 +164,8 @@ namespace
             }
             else if (tone_map_operator == FilmicUncharted.id)
             {
+                const float gamma =
+                    m_params.get_optional("filmic_uncharted_gamma", FilmicUnchartedApplier::DefaultGamma, context);
                 const float A =
                     m_params.get_optional("filmic_uncharted_A", FilmicUnchartedApplier::DefaultA, context);
                 const float B =
@@ -182,44 +181,29 @@ namespace
                 const float W =
                     m_params.get_optional("filmic_uncharted_W", FilmicUnchartedApplier::DefaultW, context);
                 const float exposure_bias =
-                    m_params.get_optional(
-                        "filmic_uncharted_exposure_bias",
-                        FilmicUnchartedApplier::DefaultExposureBias,
-                        context);
+                    m_params.get_optional("filmic_uncharted_exposure_bias", FilmicUnchartedApplier::DefaultExposureBias, context);
 
-                m_tone_map = new FilmicUnchartedApplier(A, B, C, D, E, F, W, exposure_bias);
+                m_tone_map = new FilmicUnchartedApplier(gamma, A, B, C, D, E, F, W, exposure_bias);
             }
             else if (tone_map_operator == Reinhard.id)
             {
                 const float gamma =
-                    m_params.get_optional(
-                        "reinhard_gamma",
-                        ReinhardApplier::DefaultGamma,
-                        context);
-
+                    m_params.get_optional("reinhard_gamma",ReinhardApplier::DefaultGamma, context);
                 const bool use_luminance =
-                    m_params.get_optional(
-                        "reinhard_use_luminance",
-                        ReinhardApplier::DefaultUseLuminance,
-                        context);
+                    m_params.get_optional("reinhard_use_luminance", ReinhardApplier::DefaultUseLuminance, context);
 
                 m_tone_map = new ReinhardApplier(gamma, use_luminance);
             }
             else if (tone_map_operator == ReinhardExtended.id)
             {
                 const float gamma =
-                    m_params.get_optional(
-                        "reinhard_extended_gamma",
-                        ReinhardExtendedApplier::DefaultGamma,
-                        context);
-
+                    m_params.get_optional("reinhard_extended_gamma", ReinhardExtendedApplier::DefaultGamma, context);
                 const float max_white =
-                    m_params.get_optional(
-                        "reinhard_extended_max_white",
-                        ReinhardExtendedApplier::DefaultMaxWhite,
-                        context);
+                    m_params.get_optional("reinhard_extended_max_white", ReinhardExtendedApplier::DefaultMaxWhite, context);
+                const bool use_luminance =
+                    m_params.get_optional("reinhard_extended_use_luminance", ReinhardExtendedApplier::DefaultUseLuminance, context);
 
-                m_tone_map = new ReinhardExtendedApplier(gamma, max_white);
+                m_tone_map = new ReinhardExtendedApplier(gamma, max_white, use_luminance);
             }
             else
             {
@@ -369,8 +353,17 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
     {
         add_numeric_param_metadata(
             metadata,
+            "filmic_uncharted_gamma",
+            "Gamma",
+            "0.0", "soft",              // min
+            "10.0", "soft",             // max
+            "2.2",                      // FilmicUnchartedApplier::DefaultGamma
+            FilmicUncharted.id);
+
+        add_numeric_param_metadata(
+            metadata,
             "filmic_uncharted_A",
-            "Shoulder strength",
+            "A", // "Shoulder strength",
             "0.0", "hard",              // min
             "1.0", "hard",              // max
             "0.15",                     // FilmicUnchartedApplier::DefaultA
@@ -379,7 +372,7 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
         add_numeric_param_metadata(
             metadata,
             "filmic_uncharted_B",
-            "Linear strength",
+            "B", // "Linear strength",
             "0.0", "hard",              // min
             "1.0", "hard",              // max
             "0.50",                     // FilmicUnchartedApplier::DefaultB
@@ -388,7 +381,7 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
         add_numeric_param_metadata(
             metadata,
             "filmic_uncharted_C",
-            "Linear angle",
+            "C", // "Linear angle",
             "0.0", "hard",              // min
             "1.0", "hard",              // max
             "0.10",                     // FilmicUnchartedApplier::DefaultC
@@ -397,7 +390,7 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
         add_numeric_param_metadata(
             metadata,
             "filmic_uncharted_D",
-            "Toe strength",
+            "D", // "Toe strength",
             "0.0", "hard",              // min
             "1.0", "hard",              // max
             "0.20",                     // FilmicUnchartedApplier::DefaultD
@@ -406,7 +399,7 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
         add_numeric_param_metadata(
             metadata,
             "filmic_uncharted_E",
-            "Toe numerator",
+            "E", // "Toe numerator",
             "0.0", "hard",              // min
             "1.0", "hard",              // max
             "0.02",                     // FilmicUnchartedApplier::DefaultE
@@ -415,7 +408,7 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
         add_numeric_param_metadata(
             metadata,
             "filmic_uncharted_F",
-            "Toe denominator",
+            "F", // "Toe denominator",
             "0.0", "hard",              // min
             "1.0", "hard",              // max
             "0.30",                     // FilmicUnchartedApplier::DefaultF
@@ -481,6 +474,13 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
             "10000.0", "soft",          // max
 
             "1.0",                      // ReinhardExtendedApplier::DefaultMaxWhite
+            ReinhardExtended.id);
+
+        add_boolean_param_metadata(
+            metadata,
+            "reinhard_extended_use_luminance",
+            "Use Luminance",
+            "true",                     // ReinhardExtendedApplier::DefaultUseLuminance
             ReinhardExtended.id);
     }
 
