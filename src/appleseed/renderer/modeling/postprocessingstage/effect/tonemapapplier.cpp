@@ -129,6 +129,7 @@ void AcesNarkowiczApplier::tone_map(Color3f& color) const
     //   https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
     //
 
+    // color *= 0.6f; // TODO test & compare
     const Color3f a(2.51f);
     const Color3f b(0.03f);
     const Color3f c(2.43f);
@@ -259,6 +260,103 @@ void FilmicUnchartedApplier::tone_map(Color3f& color) const
 
     const Color3f white_scale(1.0f / uncharted_tone_map(m_W));
     color *= white_scale;
+}
+
+//
+// PiecewiseApplier class implementation.
+//
+
+namespace
+{
+    float eval_derivative_linear_gamma(
+        const float m,
+        const float b,
+        const float g,
+        const float x)
+    {
+        // f(x) = (mx+b)^g
+        // f'(x) = gm(mx+b)^(g-1)
+
+        // if (g == 1.0f) return m;
+        return g * m * powf(m * x + b, g - 1.0f);
+    }
+}
+
+PiecewiseApplier::PiecewiseApplier(
+    const float     toe_strength,
+    const float     toe_length,
+    const float     shoulder_strength,
+    const float     shoulder_length,
+    const float     shoulder_angle)
+  : m_x0(0.5f * powf(toe_length, 2.2f))
+  , m_y0(m_x0 * (1.0f - toe_strength))
+  , m_x1(m_x0 + (1.0f - shoulder_length) * (1.0f - m_y0))
+  , m_y1(m_y0 + (1.0f - shoulder_length) * (1.0f - m_y0))
+  , m_W(m_x0 - m_y0 + exp2f(shoulder_strength))
+  , m_rcp_W(1.0f / m_W)
+  , m_overshoot_x(2.0f * m_W * shoulder_angle * shoulder_strength)
+  , m_overshoot_y(0.5f * shoulder_angle * shoulder_strength)
+{
+    // FIXME add a comment explaining what's being done, and reference the article:
+    // http://filmicworlds.com/blog/filmic-tonemapping-with-piecewise-power-curves/
+
+    // Normalize params to 1.0 range.
+    // m_x0 *= m_rcp_W;
+    // m_x1 *= m_rcp_W;
+    // m_overshoot_x *= m_rcp_W;
+    // m_W = 1.0f;
+    // m_rcp_W = 1.0f;
+
+    const float m = m_x1 == m_x0 ? 1.0f : (m_y1 - m_y0) / (m_x1 - m_x0);
+    const float b = m_y0 - m * m_x0;
+
+    const float linear_B = 1.0f;
+	const float linear_lnA = logf(m);
+    PiecewiseApplier::CurveSegment linear { -b/m, 0.0f, 1.0f, 1.0f, linear_lnA, linear_B };
+
+    const float toe_B = (m * m_x0) / m_y0;
+	const float toe_lnA = logf(m_y0) - toe_B * logf(m_x0);
+    PiecewiseApplier::CurveSegment toe { 0.0f, 0.0f, 1.0f, 1.0f, toe_lnA, toe_B };
+
+    const float x0 = 1.0f + m_overshoot_x - m_x1;
+    const float y0 = 1.0f + m_overshoot_y - m_y1;
+    const float shoulder_B = (m * x0) / y0;
+	const float shoulder_lnA = logf(y0) - shoulder_B * logf(x0);
+    PiecewiseApplier::CurveSegment shoulder { 0.0f, 0.0f, 1.0f, 1.0f, shoulder_lnA, shoulder_B };
+
+	// Normalize so that we hit 1.0 at our white point.
+    // const float rcp_scale = 1.0f / shoulder.eval(1.0f);
+    // shoulder.offset_y *= rcp_scale;
+    // shoulder.scale_y *= rcp_scale;
+    // linear.offset_y *= rcp_scale;
+    // linear.scale_y *= rcp_scale;
+    // toe.offset_y *= rcp_scale;
+    // toe.scale_y *= rcp_scale;
+}
+
+float PiecewiseApplier::CurveSegment::eval(const float x) const{
+    const float x0 = scale_x * (x - offset_x);
+
+    if (x0 > 0.0f)
+        return offset_y + scale_y * expf(lnA + B * logf(x0));
+    else
+        return offset_y;
+}
+
+void PiecewiseApplier::tone_map(Color3f& color) const
+{
+    // FIXME add a comment explaining what's being done, and reference the article:
+    // http://filmicworlds.com/blog/filmic-tonemapping-with-piecewise-power-curves/
+
+    const float L = luminance(color); // TODO remove and apply to each channel individually
+
+    const auto x = L * m_rcp_W;
+    Segment segment =
+        x < m_x0 ? Segment::TOE :
+        x < m_x1 ? Segment::LINEAR
+                 : Segment::SHOULDER;
+
+    // ...
 }
 
 //

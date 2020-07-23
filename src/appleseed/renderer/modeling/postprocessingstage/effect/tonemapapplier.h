@@ -83,7 +83,7 @@ class ToneMapApplier
 // TODO
 // - add references for each operator and also note that they are
 //   only *barely* modified from: https://github.com/tizian/tonemapper
-// - add the option to apply Reinhard operators to RGB channels
+// - remove TMOs with gamma as a param (cleanup)
 
 
 class DebugToneMapApplier
@@ -193,6 +193,55 @@ class FilmicUnchartedApplier
 
     float uncharted_tone_map(const float x) const;
     foundation::Color3f uncharted_tone_map(const foundation::Color3f& x) const;
+};
+
+//
+// Piecewise Power Curves (Hable)
+//
+
+class PiecewiseApplier
+  : public ToneMapApplier
+{
+  public:
+    // Constructor.
+    explicit PiecewiseApplier(
+        const float     toe_strength,       // 0..1 ratio
+        const float     toe_length,         // 0..1 ratio
+        const float     shoulder_strength,  // 0..1 ratio (defines the white point)
+        const float     shoulder_length,    // in F stops
+        const float     shoulder_angle);    // 0..1 ratio
+
+    static constexpr float DefaultToeStrength = 0.0f;
+    static constexpr float DefaultToeLength = 0.5f;
+    static constexpr float DefaultShoulderStrength = 0.0f;
+    static constexpr float DefaultShoulderLength = 0.5f;
+    static constexpr float DefaultShoulderAngle = 0.0f;
+
+  private:
+    const float         m_x0;               // (x0, y0) = toe segment end
+    const float         m_y0;
+    const float         m_x1;               // (x1, y1) = shoulder segment start
+    const float         m_y1;
+    const float         m_W;                // white point (i.e. values above W are clipped)
+    const float         m_rcp_W;
+    const float         m_overshoot_x;
+    const float         m_overshoot_y;
+
+    enum Segment { TOE = 0, LINEAR = 1, SHOULDER = 2 };
+
+    struct CurveSegment
+	{
+		const float offset_x;
+		const float offset_y;
+		const float scale_x;    // either 1 or -1
+		const float scale_y;
+		const float lnA;
+		const float B;
+
+		float eval(const float x) const;
+	};
+
+    void tone_map(foundation::Color3f& color) const final;
 };
 
 //
