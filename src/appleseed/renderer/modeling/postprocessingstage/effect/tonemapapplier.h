@@ -221,8 +221,21 @@ class PiecewiseApplier
     static constexpr float DefaultShoulderAngle = 0.0f;
 
   private:
-    FilmicToneCurve::FullCurve m_fullCurve;
-#if 0
+    struct PowerCurve
+	{
+		float offset_x;
+		float offset_y;
+		float scale_x;    // either 1 or -1
+		float scale_y;
+		float lnA;
+		float B;
+
+        PowerCurve() = default;
+        PowerCurve(const PowerCurve& other) = default;
+
+		float eval(const float x) const;
+	};
+
     const float         m_x0;               // (x0, y0) = toe segment end
     const float         m_y0;
     const float         m_x1;               // (x1, y1) = shoulder segment start
@@ -231,21 +244,35 @@ class PiecewiseApplier
     const float         m_rcp_W;
     const float         m_overshoot_x;
     const float         m_overshoot_y;
+    PowerCurve          m_segments[3];
 
-    enum Segment { TOE = 0, LINEAR = 1, SHOULDER = 2 };
+    enum Segment { TOE = 0, MID = 1, SHOULDER = 2 };
 
-    struct PowerCurve
-	{
-		const float offset_x;
-		const float offset_y;
-		const float scale_x;    // either 1 or -1
-		const float scale_y;
-		const float lnA;
-		const float B;
+    float eval_at(const float x) const;
+    void tone_map(foundation::Color3f& color) const final;
+};
 
-		float eval(const float x) const;
-	};
-#endif
+//@Todo remove after comparing results
+class PiecewiseDebugApplier
+  : public ToneMapApplier
+{
+  public:
+    // Constructor.
+    explicit PiecewiseDebugApplier(
+        const float     toe_strength,
+        const float     toe_length,
+        const float     shoulder_strength,
+        const float     shoulder_length,
+        const float     shoulder_angle);
+
+    static constexpr float DefaultToeStrength = 0.0f;
+    static constexpr float DefaultToeLength = 0.5f;
+    static constexpr float DefaultShoulderStrength = 0.0f;
+    static constexpr float DefaultShoulderLength = 0.5f;
+    static constexpr float DefaultShoulderAngle = 0.0f;
+
+  private:
+    FilmicToneCurve::FullCurve m_fullCurve;
 
     void tone_map(foundation::Color3f& color) const final;
 };

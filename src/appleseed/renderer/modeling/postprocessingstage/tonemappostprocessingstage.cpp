@@ -464,8 +464,8 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
             metadata,
             "piecewise_toe_strength",
             "Toe Strength",
-            "0.0", "hard",              // min
-            "1.0", "hard",              // max
+            "0.0", "soft",              // min
+            "1.0", "soft",              // max
             "0.0",                      // PiecewiseApplier::DefaultToeStrength
             Piecewise.id);
 
@@ -473,8 +473,8 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
             metadata,
             "piecewise_toe_length",
             "Toe Length",
-            "0.0", "hard",              // min
-            "1.0", "hard",              // max
+            "0.0", "soft",              // min
+            "1.0", "soft",              // max
             "0.5",                      // PiecewiseApplier::DefaultToeLength
             Piecewise.id);
 
@@ -482,20 +482,20 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
             metadata,
             "piecewise_shoulder_strength",
             "Shoulder Strength",
-            "0.0", "hard",              // min
-            "1.0", "hard",              // max
+            "0.0", "soft",              // min
+            "1.0", "soft",              // max
             "0.0",                      // PiecewiseApplier::DefaultShoulderStrength
             Piecewise.id);
 
         add_numeric_param_metadata(
             metadata,
             "piecewise_shoulder_length",
-            "Shoulder Length",
+            "Shoulder Length (F-stops)",
 
             // FIXME this is expressed in F-stops instead of
             // as a ratio, thus, what should be its min/max?
             "0.00001", "hard",          // min
-            "1.0", "soft",              // max
+            "10.0", "soft",             // max
 
             "0.5",                      // PiecewiseApplier::DefaultShoulderLength
             Piecewise.id);
@@ -504,8 +504,8 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
             metadata,
             "piecewise_shoulder_angle",
             "Shoulder Angle",
-            "0.0", "hard",              // min
-            "1.0", "hard",              // max
+            "0.0", "soft",              // min
+            "1.0", "soft",              // max
             "0.0",                      // PiecewiseApplier::DefaultShoulderAngle
             Piecewise.id);
 

@@ -36,6 +36,9 @@
 #include "foundation/image/image.h"
 #include "foundation/math/scalar.h"
 
+// Standard headers.
+#include <cmath>
+
 using namespace foundation;
 
 namespace renderer
@@ -165,9 +168,9 @@ void AcesUnrealApplier::tone_map(Color3f& color) const
 
     // Decode 2.2 gamma correction.
     color = Color3f(
-        pow(color.r, 2.2f),
-        pow(color.g, 2.2f),
-        pow(color.b, 2.2f));
+        std::powf(color.r, 2.2f),
+        std::powf(color.g, 2.2f),
+        std::powf(color.b, 2.2f));
 }
 
 //
@@ -198,9 +201,9 @@ void FilmicHejlApplier::tone_map(Color3f& color) const
 
     // Decode 2.2 gamma correction.
     color = Color3f(
-        pow(color.r, 2.2f),
-        pow(color.g, 2.2f),
-        pow(color.b, 2.2f));
+        std::powf(color.r, 2.2f),
+        std::powf(color.g, 2.2f),
+        std::powf(color.b, 2.2f));
 }
 
 //
@@ -266,7 +269,8 @@ void FilmicUnchartedApplier::tone_map(Color3f& color) const
 // PiecewiseApplier class implementation.
 //
 
-PiecewiseApplier::PiecewiseApplier(
+//@Todo remove after comparing results
+PiecewiseDebugApplier::PiecewiseDebugApplier(
     const float     toe_strength,
     const float     toe_length,
     const float     shoulder_strength,
@@ -288,29 +292,13 @@ PiecewiseApplier::PiecewiseApplier(
     FilmicToneCurve::CreateCurve(m_fullCurve, curveParamsDirect);
 }
 
-void PiecewiseApplier::tone_map(Color3f& color) const
+//@Todo remove after comparing results
+void PiecewiseDebugApplier::tone_map(Color3f& color) const
 {
     color = Color3f(
         m_fullCurve.Eval(color.r),
         m_fullCurve.Eval(color.g),
         m_fullCurve.Eval(color.b));
-}
-
-#if 0
-namespace
-{
-    float eval_derivative_linear_gamma(
-        const float m,
-        const float b,
-        const float g,
-        const float x)
-    {
-        // f(x) = (mx+b)^g
-        // f'(x) = gm(mx+b)^(g-1)
-
-        // if (g == 1.0f) return m;
-        return g * m * powf(m * x + b, g - 1.0f);
-    }
 }
 
 PiecewiseApplier::PiecewiseApplier(
@@ -319,59 +307,118 @@ PiecewiseApplier::PiecewiseApplier(
     const float     shoulder_strength,
     const float     shoulder_length,
     const float     shoulder_angle)
-  : m_x0(0.5f * powf(toe_length, 2.2f))
+  : m_x0(0.5f * std::powf(toe_length, 2.2f))
   , m_y0(m_x0 * (1.0f - toe_strength))
   , m_x1(m_x0 + (1.0f - shoulder_length) * (1.0f - m_y0))
   , m_y1(m_y0 + (1.0f - shoulder_length) * (1.0f - m_y0))
-  , m_W(m_x0 - m_y0 + exp2f(shoulder_strength))
-  , m_rcp_W(1.0f / m_W)
+  , m_W(m_x0 - m_y0 + std::exp2f(shoulder_strength))
+  , m_rcp_W(safe_rcp(m_W, default_eps<float>()))
   , m_overshoot_x(2.0f * m_W * shoulder_angle * shoulder_strength)
   , m_overshoot_y(0.5f * shoulder_angle * shoulder_strength)
+  , m_segments()
 {
+    // Note: since we don't apply gamma correction, many of the original equations
+    // from "Piecewise Power Curves" were simplified, as we assume gamma equal 1.0.
+
     // FIXME add a comment explaining what's being done, and reference the article:
     // http://filmicworlds.com/blog/filmic-tonemapping-with-piecewise-power-curves/
 
-    // Normalize params to 1.0 range.
-    // m_x0 *= m_rcp_W;
-    // m_x1 *= m_rcp_W;
-    // m_overshoot_x *= m_rcp_W;
-    // m_W = 1.0f;
-    // m_rcp_W = 1.0f;
+    // Normalize params to 1.0 range (note that we store the unnormalized x values).
+    const float x0 = m_x0 * m_rcp_W;
+    const float x1 = m_x1 * m_rcp_W;
+    const float overshoot_x = m_overshoot_x * m_rcp_W;
 
-    const float m = m_x1 == m_x0 ? 1.0f : (m_y1 - m_y0) / (m_x1 - m_x0);
-    const float b = m_y0 - m * m_x0;
+    // Convert to slope–intercept form (y = mx + b).
+    const float m = x1 == x0 ? 1.0f : (m_y1 - m_y0) / (x1 - x0);
+    const float b = m_y0 - m * x0;
 
-    const float linear_B = 1.0f;
-    const float linear_lnA = logf(m);
-    PiecewiseApplier::PowerCurve linear { -b/m, 0.0f, 1.0f, 1.0f, linear_lnA, linear_B };
+    {
+        //
+        // The base function of the linear (mid) section is y = mx + b, which we can rewrite as:
+        //    y = exp(ln(m) + ln(x + b/m))
+        //
+        // and our evaluation function is f(x) = y0 * scale_y + offset_y, where:
+        //    x0 = (x - offset_x) * scale_x
+        //    y0 = exp(lnA + B * log(x0))
+        //
 
-    const float toe_B = (m * m_x0) / m_y0;
-    const float toe_lnA = logf(m_y0) - toe_B * logf(m_x0);
-    PiecewiseApplier::PowerCurve toe { 0.0f, 0.0f, 1.0f, 1.0f, toe_lnA, toe_B };
+        //
+        // Thus, we have:
+        //    x0 = (x - (-b/m)) * 1.0f ,            offset_x = -b/m, scale_x = 1.0f
+        //       = x + b/m
+        //
+        //    y0 = exp(log(m) + 1.0f * log(x0)) ,   lnA = log(m), B = 1.0f
+        //       = exp(log(m) + log(x0))
+        //
+        //    f(x) = y0 * 1.0f + 0.0f ,             offset_y = 0.0f, scale_y = 1.0f
+        //         = y0
+        //         = exp(log(m) + log(x + b/m))
+        //
 
-    const float x0 = 1.0f + m_overshoot_x - m_x1;
-    const float y0 = 1.0f + m_overshoot_y - m_y1;
-    const float shoulder_B = (m * x0) / y0;
-    const float shoulder_lnA = logf(y0) - shoulder_B * logf(x0);
-    PiecewiseApplier::PowerCurve shoulder { 0.0f, 0.0f, 1.0f, 1.0f, shoulder_lnA, shoulder_B };
+        const float B = 1.0f;
+        const float lnA = std::logf(m);
+        m_segments[Segment::MID] = { -b/m, 0.0f, 1.0f, 1.0f, lnA, B };
+    }
+
+    {
+        const float B = (m * x0) / m_y0;
+        const float lnA = std::logf(m_y0) - B * std::logf(x0);
+        m_segments[Segment::TOE] = { 0.0f, 0.0f, 1.0f, 1.0f, lnA, B };
+    }
+
+    {
+        //
+        // For the shoulder, we can do the same thing as the toe, except flip it horizontally and vertically.
+        //
+        // However, instead of having the curve end at (W, 1.0), it will end at (W, 1.0) + (overshoot_x, overshoot_y).
+        // By changing how far we overshoot, it will increase the angle and give us more range at the end of our shoulder.
+        // Thus, we apply a 1/W scale to the overall function at the end to make sure we hit 1.0 at our chosen white point.
+        //
+
+        const float x0 = 1.0f + overshoot_x - x1;
+        const float y0 = 1.0f + m_overshoot_y - m_y1;
+
+        const float B = (m * x0) / y0;
+        const float lnA = std::logf(y0) - B * std::logf(x0);
+        m_segments[Segment::SHOULDER] = { 0.0f, 0.0f, 1.0f, 1.0f, lnA, B };
+    }
 
     // Normalize so that we hit 1.0 at our white point.
     // const float rcp_scale = 1.0f / shoulder.eval(1.0f);
-    // shoulder.offset_y *= rcp_scale;
-    // shoulder.scale_y *= rcp_scale;
-    // linear.offset_y *= rcp_scale;
-    // linear.scale_y *= rcp_scale;
     // toe.offset_y *= rcp_scale;
     // toe.scale_y *= rcp_scale;
+    // mid.offset_y *= rcp_scale;
+    // mid.scale_y *= rcp_scale;
+    // shoulder.offset_y *= rcp_scale;
+    // shoulder.scale_y *= rcp_scale;
 }
 
-float PiecewiseApplier::PowerCurve::eval(const float x) const{
+inline float PiecewiseApplier::PowerCurve::eval(const float x) const
+{
     const float x0 = scale_x * (x - offset_x);
 
     if (x0 > 0.0f)
-        return offset_y + scale_y * expf(lnA + B * logf(x0));
+        return offset_y + scale_y * std::expf(lnA + B * std::logf(x0));
     else
         return offset_y;
+}
+
+float PiecewiseApplier::eval_at(const float x) const
+{
+    const float norm_x = x * m_rcp_W;
+
+    //
+    // Note: since we don't store normalized values for the x coordinates
+    // (i.e. we are not dividing them by m_W in the constructor), we shouldn't
+    // use norm_x in the comparisons with m_x0 and m_x1, as in the original code.
+    //
+
+    if (/*norm_*/x < m_x0)
+        return m_segments[Segment::TOE].eval(norm_x);
+    else if (/*norm_*/x < m_x1)
+        return m_segments[Segment::MID].eval(norm_x);
+    else
+        return m_segments[Segment::SHOULDER].eval(norm_x);
 }
 
 void PiecewiseApplier::tone_map(Color3f& color) const
@@ -379,17 +426,11 @@ void PiecewiseApplier::tone_map(Color3f& color) const
     // FIXME add a comment explaining what's being done, and reference the article:
     // http://filmicworlds.com/blog/filmic-tonemapping-with-piecewise-power-curves/
 
-    const float L = luminance(color); // TODO remove and apply to each channel individually
-
-    const auto x = L * m_rcp_W;
-    Segment segment =
-        x < m_x0 ? Segment::TOE :
-        x < m_x1 ? Segment::LINEAR
-                 : Segment::SHOULDER;
-
-    // ...
+    color = Color3f(
+        eval_at(color.r),
+        eval_at(color.g),
+        eval_at(color.b));
 }
-#endif
 
 //
 // ReinhardApplier class implementation.
