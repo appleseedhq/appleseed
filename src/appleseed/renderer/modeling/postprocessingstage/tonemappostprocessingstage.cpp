@@ -73,6 +73,7 @@ namespace
     constexpr const ToneMapOperator FilmicHejl          { "Filmic (Hejl)",          "filmic_hejl" };
     constexpr const ToneMapOperator FilmicUncharted     { "Filmic (Uncharted)",     "filmic_uncharted" };
     constexpr const ToneMapOperator Piecewise           { "Piecewise",              "piecewise" };
+    constexpr const ToneMapOperator PiecewiseReference  { "Piecewise (Reference)",  "piecewise_reference" };
     constexpr const ToneMapOperator Reinhard            { "Reinhard",               "reinhard" };
     constexpr const ToneMapOperator ReinhardExtended    { "Reinhard (Extended)",    "reinhard_extended" };
     constexpr const ToneMapOperator DebugToneMap        { "Debug",                  "debug" };
@@ -84,6 +85,7 @@ namespace
         FilmicHejl.id,                  \
         FilmicUncharted.id,             \
         Piecewise.id,                   \
+        PiecewiseReference.id,          \
         Reinhard.id,                    \
         ReinhardExtended.id,            \
         DebugToneMap.id,                \
@@ -98,6 +100,7 @@ namespace
         .INSERT_TONE_MAP_OPERATOR(FilmicHejl)           \
         .INSERT_TONE_MAP_OPERATOR(FilmicUncharted)      \
         .INSERT_TONE_MAP_OPERATOR(Piecewise)            \
+        .INSERT_TONE_MAP_OPERATOR(PiecewiseReference)   \
         .INSERT_TONE_MAP_OPERATOR(Reinhard)             \
         .INSERT_TONE_MAP_OPERATOR(ReinhardExtended)     \
         .INSERT_TONE_MAP_OPERATOR(DebugToneMap)
@@ -205,6 +208,21 @@ namespace
                     m_params.get_optional("piecewise_shoulder_angle", PiecewiseApplier::DefaultShoulderAngle, context);
 
                 m_tone_map = new PiecewiseApplier(toe_strength, toe_length, shoulder_strength, shoulder_length, shoulder_angle);
+            }
+            else if (tone_map_operator == PiecewiseReference.id)
+            {
+                const float toe_strength =
+                    m_params.get_optional("piecewise_reference_toe_strength", PiecewiseReferenceApplier::DefaultToeStrength, context);
+                const float toe_length =
+                    m_params.get_optional("piecewise_reference_toe_length", PiecewiseReferenceApplier::DefaultToeLength, context);
+                const float shoulder_strength =
+                    m_params.get_optional("piecewise_reference_shoulder_strength", PiecewiseReferenceApplier::DefaultShoulderStrength, context);
+                const float shoulder_length =
+                    m_params.get_optional("piecewise_reference_shoulder_length", PiecewiseReferenceApplier::DefaultShoulderLength, context);
+                const float shoulder_angle =
+                    m_params.get_optional("piecewise_reference_shoulder_angle", PiecewiseReferenceApplier::DefaultShoulderAngle, context);
+
+                m_tone_map = new PiecewiseReferenceApplier(toe_strength, toe_length, shoulder_strength, shoulder_length, shoulder_angle);
             }
             else if (tone_map_operator == Reinhard.id)
             {
@@ -508,7 +526,30 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
             "1.0", "soft",              // max
             "0.0",                      // PiecewiseApplier::DefaultShoulderAngle
             Piecewise.id);
+    }
 
+    //@Todo remove after comparing results
+    // Piecewise (Reference)
+    {
+        add_numeric_param_metadata(metadata,
+            "piecewise_reference_toe_strength", "Toe Strength",
+            "0.0", "soft", "1.0", "soft", "0.0", PiecewiseReference.id);
+
+        add_numeric_param_metadata(metadata,
+            "piecewise_reference_toe_length", "Toe Length",
+            "0.0", "soft", "1.0", "soft", "0.5", PiecewiseReference.id);
+
+        add_numeric_param_metadata(metadata,
+            "piecewise_reference_shoulder_strength", "Shoulder Strength",
+            "0.0", "soft", "1.0", "soft", "0.0", PiecewiseReference.id);
+
+        add_numeric_param_metadata(metadata,
+            "piecewise_reference_shoulder_length", "Shoulder Length (F-stops)",
+            "0.00001", "hard", "10.0", "soft", "0.5", PiecewiseReference.id);
+
+        add_numeric_param_metadata(metadata,
+            "piecewise_reference_shoulder_angle", "Shoulder Angle",
+            "0.0", "soft", "1.0", "soft", "0.0", PiecewiseReference.id);
     }
 
     // Reinhard

@@ -39,7 +39,7 @@
 // Standard headers.
 #include <cstddef>
 
-// TODO remove after testing
+//@Todo remove after comparing results
 #include "FilmicToneCurve.h"
 
 // Forward declarations.
@@ -222,19 +222,19 @@ class PiecewiseApplier
 
   private:
     struct PowerCurve
-	{
-		float offset_x;
-		float offset_y;
-		float scale_x;    // either 1 or -1
-		float scale_y;
-		float lnA;
-		float B;
+    {
+        float offset_x;
+        float offset_y;
+        float scale_x;    // either 1 or -1
+        float scale_y;
+        float lnA;
+        float B;
 
         PowerCurve() = default;
         PowerCurve(const PowerCurve& other) = default;
 
-		float eval(const float x) const;
-	};
+        float eval(const float x) const;
+    };
 
     const float         m_x0;               // (x0, y0) = toe segment end
     const float         m_y0;
@@ -253,12 +253,12 @@ class PiecewiseApplier
 };
 
 //@Todo remove after comparing results
-class PiecewiseDebugApplier
+class PiecewiseReferenceApplier
   : public ToneMapApplier
 {
   public:
     // Constructor.
-    explicit PiecewiseDebugApplier(
+    explicit PiecewiseReferenceApplier(
         const float     toe_strength,
         const float     toe_length,
         const float     shoulder_strength,
