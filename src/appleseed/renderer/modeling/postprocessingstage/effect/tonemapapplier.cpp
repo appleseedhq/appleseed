@@ -317,13 +317,16 @@ PiecewiseApplier::PiecewiseApplier(
   , m_overshoot_y(0.5f * shoulder_angle * shoulder_strength)
   , m_segments()
 {
+    //
+    // Initialize the parameters that describe the power curves that (piecewisely)
+    // define the overall tone mapping curve developed by John Hable.
+    //
     // Note: since we don't apply gamma correction, many of the original equations
     // from "Piecewise Power Curves" were simplified, as we assume gamma equal 1.0.
+    //
 
-    // FIXME add a comment explaining what's being done, and reference the article:
-    // http://filmicworlds.com/blog/filmic-tonemapping-with-piecewise-power-curves/
-
-    // Normalize params to 1.0 range (note that we store the unnormalized x values).
+    // Normalize params to 1.0 range (note that we store the unnormalized x values,
+    // which changes how we choose the correct segment in PiecewiseApplier::eval_at).
     const float x0 = m_x0 * m_rcp_W;
     const float x1 = m_x1 * m_rcp_W;
     const float overshoot_x = m_overshoot_x * m_rcp_W;
@@ -442,8 +445,14 @@ float PiecewiseApplier::eval_at(const float x) const
 
 void PiecewiseApplier::tone_map(Color3f& color) const
 {
-    // FIXME add a comment explaining what's being done, and reference the article:
-    // http://filmicworlds.com/blog/filmic-tonemapping-with-piecewise-power-curves/
+    //
+    // Apply John Hable's filmic tone mapping, described by three power curve segments.
+    //
+    // Reference:
+    //
+    //   http://filmicworlds.com/blog/filmic-tonemapping-with-piecewise-power-curves/
+    //   https://github.com/johnhable/fw-public
+    //
 
     color = Color3f(
         eval_at(color.r),
