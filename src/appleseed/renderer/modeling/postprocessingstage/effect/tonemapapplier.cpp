@@ -332,6 +332,7 @@ PiecewiseApplier::PiecewiseApplier(
     const float m = x1 == x0 ? 1.0f : (m_y1 - m_y0) / (x1 - x0);
     const float b = m_y0 - m * x0;
 
+    // Linear (middle) section
     {
         //
         // The base function of the linear (mid) section is y = mx + b, which we can rewrite as:
@@ -360,12 +361,24 @@ PiecewiseApplier::PiecewiseApplier(
         m_segments[Segment::MID] = { -b/m, 0.0f, 1.0f, 1.0f, lnA, B };
     }
 
+    // Toe (start) section
     {
+        //
+        // The following equations find values for A and B such that:
+        //    f(x) = exp(lnA + Bln(x))
+        //
+        // with:
+        //    f(0)   = 0; not really a constraint (handled in PowerCurve::eval)
+        //    f(x0)  = y0
+        //    f'(x0) = m
+        //
+
         const float B = (m * x0) / m_y0;
         const float lnA = std::logf(m_y0) - B * std::logf(x0);
         m_segments[Segment::TOE] = { 0.0f, 0.0f, 1.0f, 1.0f, lnA, B };
     }
 
+    // Shoulder (end) section
     {
         //
         // For the shoulder, we can do the same thing as the toe, except flip it horizontally and vertically.
@@ -375,22 +388,28 @@ PiecewiseApplier::PiecewiseApplier(
         // Thus, we apply a 1/W scale to the overall function at the end to make sure we hit 1.0 at our chosen white point.
         //
 
-        const float x0 = 1.0f + overshoot_x - x1;
-        const float y0 = 1.0f + m_overshoot_y - m_y1;
+        const float offset_x = 1.0f + overshoot_x;
+        const float offset_y = 1.0f + m_overshoot_y;
+
+        const float x0 = offset_x - x1;
+        const float y0 = offset_y - m_y1;
 
         const float B = (m * x0) / y0;
         const float lnA = std::logf(y0) - B * std::logf(x0);
-        m_segments[Segment::SHOULDER] = { 0.0f, 0.0f, 1.0f, 1.0f, lnA, B };
+        m_segments[Segment::SHOULDER] = { offset_x, offset_y, -1.0f, -1.0f, lnA, B };
     }
 
-    // Normalize so that we hit 1.0 at our white point.
-    // const float rcp_scale = 1.0f / shoulder.eval(1.0f);
-    // toe.offset_y *= rcp_scale;
-    // toe.scale_y *= rcp_scale;
-    // mid.offset_y *= rcp_scale;
-    // mid.scale_y *= rcp_scale;
-    // shoulder.offset_y *= rcp_scale;
-    // shoulder.scale_y *= rcp_scale;
+    // Normalize y values so that we hit 1.0 at our white point.
+    const float rcp_white_scale = 1.0f / m_segments[Segment::SHOULDER].eval(1.0f);
+
+    m_segments[Segment::TOE].offset_y *= rcp_white_scale;
+    m_segments[Segment::TOE].scale_y *= rcp_white_scale;
+
+    m_segments[Segment::MID].offset_y *= rcp_white_scale;
+    m_segments[Segment::MID].scale_y *= rcp_white_scale;
+
+    m_segments[Segment::SHOULDER].offset_y *= rcp_white_scale;
+    m_segments[Segment::SHOULDER].scale_y *= rcp_white_scale;
 }
 
 inline float PiecewiseApplier::PowerCurve::eval(const float x) const
