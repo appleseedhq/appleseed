@@ -266,6 +266,37 @@ void FilmicUnchartedApplier::tone_map(Color3f& color) const
 // PiecewiseApplier class implementation.
 //
 
+PiecewiseApplier::PiecewiseApplier(
+    const float     toe_strength,
+    const float     toe_length,
+    const float     shoulder_strength,
+    const float     shoulder_length,
+    const float     shoulder_angle)
+{
+    // CalcDirectParamsFromUser -[output: CurveParamsDirect]-> CreateCurve -[output: FullCurve]-> Eval
+    FilmicToneCurve::CurveParamsUser curveParamsUser;
+    curveParamsUser.m_gamma = 1.0f;
+    curveParamsUser.m_shoulderAngle = shoulder_angle;
+    curveParamsUser.m_shoulderLength = shoulder_length;
+    curveParamsUser.m_shoulderStrength = shoulder_strength;
+    curveParamsUser.m_toeLength = toe_length;
+    curveParamsUser.m_toeStrength = toe_strength;
+
+    FilmicToneCurve::CurveParamsDirect curveParamsDirect;
+    FilmicToneCurve::CalcDirectParamsFromUser(curveParamsDirect, curveParamsUser);
+
+    FilmicToneCurve::CreateCurve(m_fullCurve, curveParamsDirect);
+}
+
+void PiecewiseApplier::tone_map(Color3f& color) const
+{
+    color = Color3f(
+        m_fullCurve.Eval(color.r),
+        m_fullCurve.Eval(color.g),
+        m_fullCurve.Eval(color.b));
+}
+
+#if 0
 namespace
 {
     float eval_derivative_linear_gamma(
@@ -311,20 +342,20 @@ PiecewiseApplier::PiecewiseApplier(
     const float b = m_y0 - m * m_x0;
 
     const float linear_B = 1.0f;
-	const float linear_lnA = logf(m);
-    PiecewiseApplier::CurveSegment linear { -b/m, 0.0f, 1.0f, 1.0f, linear_lnA, linear_B };
+    const float linear_lnA = logf(m);
+    PiecewiseApplier::PowerCurve linear { -b/m, 0.0f, 1.0f, 1.0f, linear_lnA, linear_B };
 
     const float toe_B = (m * m_x0) / m_y0;
-	const float toe_lnA = logf(m_y0) - toe_B * logf(m_x0);
-    PiecewiseApplier::CurveSegment toe { 0.0f, 0.0f, 1.0f, 1.0f, toe_lnA, toe_B };
+    const float toe_lnA = logf(m_y0) - toe_B * logf(m_x0);
+    PiecewiseApplier::PowerCurve toe { 0.0f, 0.0f, 1.0f, 1.0f, toe_lnA, toe_B };
 
     const float x0 = 1.0f + m_overshoot_x - m_x1;
     const float y0 = 1.0f + m_overshoot_y - m_y1;
     const float shoulder_B = (m * x0) / y0;
-	const float shoulder_lnA = logf(y0) - shoulder_B * logf(x0);
-    PiecewiseApplier::CurveSegment shoulder { 0.0f, 0.0f, 1.0f, 1.0f, shoulder_lnA, shoulder_B };
+    const float shoulder_lnA = logf(y0) - shoulder_B * logf(x0);
+    PiecewiseApplier::PowerCurve shoulder { 0.0f, 0.0f, 1.0f, 1.0f, shoulder_lnA, shoulder_B };
 
-	// Normalize so that we hit 1.0 at our white point.
+    // Normalize so that we hit 1.0 at our white point.
     // const float rcp_scale = 1.0f / shoulder.eval(1.0f);
     // shoulder.offset_y *= rcp_scale;
     // shoulder.scale_y *= rcp_scale;
@@ -334,7 +365,7 @@ PiecewiseApplier::PiecewiseApplier(
     // toe.scale_y *= rcp_scale;
 }
 
-float PiecewiseApplier::CurveSegment::eval(const float x) const{
+float PiecewiseApplier::PowerCurve::eval(const float x) const{
     const float x0 = scale_x * (x - offset_x);
 
     if (x0 > 0.0f)
@@ -358,6 +389,7 @@ void PiecewiseApplier::tone_map(Color3f& color) const
 
     // ...
 }
+#endif
 
 //
 // ReinhardApplier class implementation.

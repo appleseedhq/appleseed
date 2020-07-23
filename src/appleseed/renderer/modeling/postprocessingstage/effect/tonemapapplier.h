@@ -39,6 +39,9 @@
 // Standard headers.
 #include <cstddef>
 
+// TODO remove after testing
+#include "FilmicToneCurve.h"
+
 // Forward declarations.
 namespace foundation    { class Image; }
 namespace foundation    { class DictionaryArray; }
@@ -218,6 +221,8 @@ class PiecewiseApplier
     static constexpr float DefaultShoulderAngle = 0.0f;
 
   private:
+    FilmicToneCurve::FullCurve m_fullCurve;
+#if 0
     const float         m_x0;               // (x0, y0) = toe segment end
     const float         m_y0;
     const float         m_x1;               // (x1, y1) = shoulder segment start
@@ -229,7 +234,7 @@ class PiecewiseApplier
 
     enum Segment { TOE = 0, LINEAR = 1, SHOULDER = 2 };
 
-    struct CurveSegment
+    struct PowerCurve
 	{
 		const float offset_x;
 		const float offset_y;
@@ -240,6 +245,7 @@ class PiecewiseApplier
 
 		float eval(const float x) const;
 	};
+#endif
 
     void tone_map(foundation::Color3f& color) const final;
 };

@@ -72,6 +72,7 @@ namespace
     constexpr const ToneMapOperator AcesUnreal          { "ACES (Unreal)",          "aces_unreal" };
     constexpr const ToneMapOperator FilmicHejl          { "Filmic (Hejl)",          "filmic_hejl" };
     constexpr const ToneMapOperator FilmicUncharted     { "Filmic (Uncharted)",     "filmic_uncharted" };
+    constexpr const ToneMapOperator Piecewise           { "Piecewise",              "piecewise" };
     constexpr const ToneMapOperator Reinhard            { "Reinhard",               "reinhard" };
     constexpr const ToneMapOperator ReinhardExtended    { "Reinhard (Extended)",    "reinhard_extended" };
     constexpr const ToneMapOperator DebugToneMap        { "Debug",                  "debug" };
@@ -82,6 +83,7 @@ namespace
         AcesUnreal.id,                  \
         FilmicHejl.id,                  \
         FilmicUncharted.id,             \
+        Piecewise.id,                   \
         Reinhard.id,                    \
         ReinhardExtended.id,            \
         DebugToneMap.id,                \
@@ -95,6 +97,7 @@ namespace
         .INSERT_TONE_MAP_OPERATOR(AcesUnreal)           \
         .INSERT_TONE_MAP_OPERATOR(FilmicHejl)           \
         .INSERT_TONE_MAP_OPERATOR(FilmicUncharted)      \
+        .INSERT_TONE_MAP_OPERATOR(Piecewise)            \
         .INSERT_TONE_MAP_OPERATOR(Reinhard)             \
         .INSERT_TONE_MAP_OPERATOR(ReinhardExtended)     \
         .INSERT_TONE_MAP_OPERATOR(DebugToneMap)
@@ -187,6 +190,21 @@ namespace
                     m_params.get_optional("filmic_uncharted_exposure_bias", FilmicUnchartedApplier::DefaultExposureBias, context);
 
                 m_tone_map = new FilmicUnchartedApplier(gamma, A, B, C, D, E, F, W, exposure_bias);
+            }
+            else if (tone_map_operator == Piecewise.id)
+            {
+                const float toe_strength =
+                    m_params.get_optional("piecewise_toe_strength", PiecewiseApplier::DefaultToeStrength, context);
+                const float toe_length =
+                    m_params.get_optional("piecewise_toe_length", PiecewiseApplier::DefaultToeLength, context);
+                const float shoulder_strength =
+                    m_params.get_optional("piecewise_shoulder_strength", PiecewiseApplier::DefaultShoulderStrength, context);
+                const float shoulder_length =
+                    m_params.get_optional("piecewise_shoulder_length", PiecewiseApplier::DefaultShoulderLength, context);
+                const float shoulder_angle =
+                    m_params.get_optional("piecewise_shoulder_angle", PiecewiseApplier::DefaultShoulderAngle, context);
+
+                m_tone_map = new PiecewiseApplier(toe_strength, toe_length, shoulder_strength, shoulder_length, shoulder_angle);
             }
             else if (tone_map_operator == Reinhard.id)
             {
@@ -438,6 +456,59 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
             "10.0", "hard",             // max
             "2.0",                      // FilmicUnchartedApplier::DefaultExposureBias
             FilmicUncharted.id);
+    }
+
+    // Piecewise
+    {
+        add_numeric_param_metadata(
+            metadata,
+            "piecewise_toe_strength",
+            "Toe Strength",
+            "0.0", "hard",              // min
+            "1.0", "hard",              // max
+            "0.0",                      // PiecewiseApplier::DefaultToeStrength
+            Piecewise.id);
+
+        add_numeric_param_metadata(
+            metadata,
+            "piecewise_toe_length",
+            "Toe Length",
+            "0.0", "hard",              // min
+            "1.0", "hard",              // max
+            "0.5",                      // PiecewiseApplier::DefaultToeLength
+            Piecewise.id);
+
+        add_numeric_param_metadata(
+            metadata,
+            "piecewise_shoulder_strength",
+            "Shoulder Strength",
+            "0.0", "hard",              // min
+            "1.0", "hard",              // max
+            "0.0",                      // PiecewiseApplier::DefaultShoulderStrength
+            Piecewise.id);
+
+        add_numeric_param_metadata(
+            metadata,
+            "piecewise_shoulder_length",
+            "Shoulder Length",
+
+            // FIXME this is expressed in F-stops instead of
+            // as a ratio, thus, what should be its min/max?
+            "0.00001", "hard",          // min
+            "1.0", "soft",              // max
+
+            "0.5",                      // PiecewiseApplier::DefaultShoulderLength
+            Piecewise.id);
+
+        add_numeric_param_metadata(
+            metadata,
+            "piecewise_shoulder_angle",
+            "Shoulder Angle",
+            "0.0", "hard",              // min
+            "1.0", "hard",              // max
+            "0.0",                      // PiecewiseApplier::DefaultShoulderAngle
+            Piecewise.id);
+
     }
 
     // Reinhard
