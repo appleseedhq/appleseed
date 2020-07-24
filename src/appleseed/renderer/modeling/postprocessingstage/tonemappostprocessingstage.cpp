@@ -358,16 +358,16 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
         add_numeric_param_metadata(
             metadata,
             "filmic_uncharted_A",
-            "A", // "Shoulder strength",
+            "A (shoulder strength)",
             "0.0", "hard",              // min
             "1.0", "hard",              // max
-            "0.15",                     // FilmicUnchartedApplier::DefaultA
+            "0.22",                     // FilmicUnchartedApplier::DefaultA
             FilmicUncharted.id);
 
         add_numeric_param_metadata(
             metadata,
             "filmic_uncharted_B",
-            "B", // "Linear strength",
+            "B (linear strength)",
             "0.0", "hard",              // min
             "1.0", "hard",              // max
             "0.50",                     // FilmicUnchartedApplier::DefaultB
@@ -376,7 +376,7 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
         add_numeric_param_metadata(
             metadata,
             "filmic_uncharted_C",
-            "C", // "Linear angle",
+            "C (linear angle)",
             "0.0", "hard",              // min
             "1.0", "hard",              // max
             "0.10",                     // FilmicUnchartedApplier::DefaultC
@@ -385,7 +385,7 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
         add_numeric_param_metadata(
             metadata,
             "filmic_uncharted_D",
-            "D", // "Toe strength",
+            "D (toe strength)",
             "0.0", "hard",              // min
             "1.0", "hard",              // max
             "0.20",                     // FilmicUnchartedApplier::DefaultD
@@ -394,16 +394,16 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
         add_numeric_param_metadata(
             metadata,
             "filmic_uncharted_E",
-            "E", // "Toe numerator",
+            "E (toe numerator)",
             "0.0", "hard",              // min
             "1.0", "hard",              // max
-            "0.02",                     // FilmicUnchartedApplier::DefaultE
+            "0.01",                     // FilmicUnchartedApplier::DefaultE
             FilmicUncharted.id);
 
         add_numeric_param_metadata(
             metadata,
             "filmic_uncharted_F",
-            "F", // "Toe denominator",
+            "F (toe denominator)",
             "0.0", "hard",              // min
             "1.0", "hard",              // max
             "0.30",                     // FilmicUnchartedApplier::DefaultF
