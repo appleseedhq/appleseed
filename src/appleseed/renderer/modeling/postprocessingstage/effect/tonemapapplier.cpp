@@ -72,25 +72,12 @@ void ToneMapApplier::apply(
     {
         for (std::size_t x = 0; x < tile_width; ++x)
         {
-            // TODO move gamma correction out of the TMOs (?)
-            // TODO check if it should be Color3f, as in conversion.cpp
-
             Color4f pixel;
             tile.get_pixel(x, y, pixel);
             pixel.unpremultiply_in_place();
 
             tone_map(pixel.rgb());
-            pixel = saturate(pixel);
-
-            // Gamma correct.
-            // // sRGB
-            // pixel.rgb() = srgb_to_linear_rgb(pixel.rgb());
-            // // γ = 2.2
-            // const float rcp_gamma = 1.0f / 2.2f;
-            // pixel.rgb() = Color3f(
-            //     pow(pixel.r, rcp_gamma),
-            //     pow(pixel.g, rcp_gamma),
-            //     pow(pixel.b, rcp_gamma));
+            pixel = saturate(pixel); // TODO make this an option (?)
 
             pixel.premultiply_in_place();
             tile.set_pixel(x, y, pixel);
@@ -115,8 +102,7 @@ void DebugToneMapApplier::tone_map(Color3f& color) const
 // AcesNarkowiczApplier class implementation.
 //
 
-AcesNarkowiczApplier::AcesNarkowiczApplier(const float gamma)
-  : m_gamma(gamma)
+AcesNarkowiczApplier::AcesNarkowiczApplier()
 {
 }
 
@@ -211,7 +197,6 @@ void FilmicHejlApplier::tone_map(Color3f& color) const
 //
 
 FilmicUnchartedApplier::FilmicUnchartedApplier(
-    const float     gamma,
     const float     A,
     const float     B,
     const float     C,
@@ -220,8 +205,7 @@ FilmicUnchartedApplier::FilmicUnchartedApplier(
     const float     F,
     const float     W,
     const float     exposure_bias)
-  : m_gamma(gamma)
-  , m_A(A)
+  : m_A(A)
   , m_B(B)
   , m_C(C)
   , m_D(D)
@@ -466,9 +450,8 @@ void PiecewiseApplier::tone_map(Color3f& color) const
 // ReinhardApplier class implementation.
 //
 
-ReinhardApplier::ReinhardApplier(const float gamma, const bool use_luminance)
-  : m_gamma(gamma)
-  , m_use_luminance(use_luminance)
+ReinhardApplier::ReinhardApplier(const bool use_luminance)
+  : m_use_luminance(use_luminance)
 {
 }
 
@@ -505,11 +488,9 @@ void ReinhardApplier::tone_map(Color3f& color) const
 //
 
 ReinhardExtendedApplier::ReinhardExtendedApplier(
-    const float gamma,
     const float max_white,
     const bool use_luminance)
-  : m_gamma(gamma)
-  , m_max_white(max_white)
+  : m_max_white(max_white)
   , m_use_luminance(use_luminance)
 {
 }

@@ -87,6 +87,7 @@ class ToneMapApplier
 // - add references for each operator and also note that they are
 //   only *barely* modified from: https://github.com/tizian/tonemapper
 // - remove TMOs with gamma as a param (cleanup)
+// - rename AcesUnreal to AcesGuy and FilmicUncharted to FilmicHable (?)
 
 
 class DebugToneMapApplier
@@ -109,14 +110,9 @@ class AcesNarkowiczApplier
 {
   public:
     // Constructor.
-    explicit AcesNarkowiczApplier(
-        const float     gamma);
-
-    static constexpr float DefaultGamma = 2.2f;
+    explicit AcesNarkowiczApplier();
 
   private:
-    const float         m_gamma;
-
     void tone_map(foundation::Color3f& color) const final;
 };
 
@@ -160,7 +156,6 @@ class FilmicUnchartedApplier
   public:
     // Constructor.
     explicit FilmicUnchartedApplier(
-        const float     gamma,
         const float     A,
         const float     B,
         const float     C,
@@ -170,19 +165,16 @@ class FilmicUnchartedApplier
         const float     W,
         const float     exposure_bias);
 
-
-    static constexpr float DefaultGamma = 2.2f;
     static constexpr float DefaultA = 0.22f; // 0.15f;
     static constexpr float DefaultB = 0.30f; // 0.50f;
-    static constexpr float DefaultC = 0.10f; // 0.10f;
-    static constexpr float DefaultD = 0.20f; // 0.20f;
+    static constexpr float DefaultC = 0.10f;
+    static constexpr float DefaultD = 0.20f;
     static constexpr float DefaultE = 0.01f; // 0.02f;
-    static constexpr float DefaultF = 0.30f; // 0.30f;
-    static constexpr float DefaultW = 11.2f; // 11.2f;
+    static constexpr float DefaultF = 0.30f;
+    static constexpr float DefaultW = 11.2f;
     static constexpr float DefaultExposureBias = 2.0f;
 
   private:
-    const float         m_gamma;
     const float         m_A;                // shoulder strength
     const float         m_B;                // linear strength
     const float         m_C;                // linear angle
@@ -287,14 +279,11 @@ class ReinhardApplier
   public:
     // Constructor.
     explicit ReinhardApplier(
-        const float     gamma,
         const bool      use_luminance);
 
-    static constexpr float DefaultGamma = 2.2f;
     static constexpr bool DefaultUseLuminance = true;
 
   private:
-    const float         m_gamma;
     const bool          m_use_luminance;    // true  = apply the curve to luminance values only
                                             // false = apply the curve to each RGB channel individually
 
@@ -311,16 +300,13 @@ class ReinhardExtendedApplier
   public:
     // Constructor.
     explicit ReinhardExtendedApplier(
-        const float     gamma,
         const float     max_white,
         const bool      use_luminance);
 
-    static constexpr float DefaultGamma = 2.2f;
     static constexpr float DefaultMaxWhite = 1.0f;
     static constexpr bool DefaultUseLuminance = true;
 
   private:
-    const float         m_gamma;
     const float         m_max_white;        // maximum luminance in the scene
     const bool          m_use_luminance;    // true  = apply the curve to luminance values only
                                             // false = apply the curve to each RGB channel individually

@@ -158,10 +158,7 @@ namespace
             // Initialize the tone map applier.
             if (tone_map_operator == AcesNarkowicz.id)
             {
-                const float gamma =
-                    m_params.get_optional("aces_narkowicz_gamma", AcesNarkowiczApplier::DefaultGamma, context);
-
-                m_tone_map = new AcesNarkowiczApplier(gamma);
+                m_tone_map = new AcesNarkowiczApplier();
             }
             else if (tone_map_operator == AcesUnreal.id)
             {
@@ -173,8 +170,6 @@ namespace
             }
             else if (tone_map_operator == FilmicUncharted.id)
             {
-                const float gamma =
-                    m_params.get_optional("filmic_uncharted_gamma", FilmicUnchartedApplier::DefaultGamma, context);
                 const float A =
                     m_params.get_optional("filmic_uncharted_A", FilmicUnchartedApplier::DefaultA, context);
                 const float B =
@@ -192,7 +187,7 @@ namespace
                 const float exposure_bias =
                     m_params.get_optional("filmic_uncharted_exposure_bias", FilmicUnchartedApplier::DefaultExposureBias, context);
 
-                m_tone_map = new FilmicUnchartedApplier(gamma, A, B, C, D, E, F, W, exposure_bias);
+                m_tone_map = new FilmicUnchartedApplier(A, B, C, D, E, F, W, exposure_bias);
             }
             else if (tone_map_operator == Piecewise.id)
             {
@@ -226,23 +221,19 @@ namespace
             }
             else if (tone_map_operator == Reinhard.id)
             {
-                const float gamma =
-                    m_params.get_optional("reinhard_gamma", ReinhardApplier::DefaultGamma, context);
                 const bool use_luminance =
                     m_params.get_optional("reinhard_use_luminance", ReinhardApplier::DefaultUseLuminance, context);
 
-                m_tone_map = new ReinhardApplier(gamma, use_luminance);
+                m_tone_map = new ReinhardApplier(use_luminance);
             }
             else if (tone_map_operator == ReinhardExtended.id)
             {
-                const float gamma =
-                    m_params.get_optional("reinhard_extended_gamma", ReinhardExtendedApplier::DefaultGamma, context);
                 const float max_white =
                     m_params.get_optional("reinhard_extended_max_white", ReinhardExtendedApplier::DefaultMaxWhite, context);
                 const bool use_luminance =
                     m_params.get_optional("reinhard_extended_use_luminance", ReinhardExtendedApplier::DefaultUseLuminance, context);
 
-                m_tone_map = new ReinhardExtendedApplier(gamma, max_white, use_luminance);
+                m_tone_map = new ReinhardExtendedApplier(max_white, use_luminance);
             }
             else if (tone_map_operator == DebugToneMap.id)
             {
@@ -372,14 +363,7 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
 
     // ACES (Narkowicz)
     {
-        add_numeric_param_metadata(
-            metadata,
-            "aces_narkowicz_gamma",
-            "Gamma",
-            "0.0", "soft",              // min
-            "10.0", "soft",             // max
-            "2.2",                      // AcesNarkowiczApplier::DefaultGamma
-            AcesNarkowicz.id);
+        // No parameters.
     }
 
     // ACES (Unreal)
@@ -394,15 +378,6 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
 
     // Filmic (Uncharted)
     {
-        add_numeric_param_metadata(
-            metadata,
-            "filmic_uncharted_gamma",
-            "Gamma",
-            "0.0", "soft",              // min
-            "10.0", "soft",             // max
-            "2.2",                      // FilmicUnchartedApplier::DefaultGamma
-            FilmicUncharted.id);
-
         add_numeric_param_metadata(
             metadata,
             "filmic_uncharted_A",
@@ -554,15 +529,6 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
 
     // Reinhard
     {
-        add_numeric_param_metadata(
-            metadata,
-            "reinhard_gamma",
-            "Gamma",
-            "0.0", "soft",              // min
-            "10.0", "soft",             // max
-            "2.2",                      // ReinhardApplier::DefaultGamma
-            Reinhard.id);
-
         add_boolean_param_metadata(
             metadata,
             "reinhard_use_luminance",
@@ -573,15 +539,6 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
 
     // Reinhard (Extended)
     {
-        add_numeric_param_metadata(
-            metadata,
-            "reinhard_extended_gamma",
-            "Gamma",
-            "0.0", "soft",              // min
-            "10.0", "soft",             // max
-            "2.2",                      // ReinhardExtendedApplier::DefaultGamma
-            ReinhardExtended.id);
-
         add_numeric_param_metadata(
             metadata,
             "reinhard_extended_max_white",
