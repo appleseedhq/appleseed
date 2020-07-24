@@ -253,40 +253,6 @@ void FilmicUnchartedApplier::tone_map(Color3f& color) const
 // PiecewiseApplier class implementation.
 //
 
-//@Todo remove after comparing results
-PiecewiseReferenceApplier::PiecewiseReferenceApplier(
-    const float     toe_strength,
-    const float     toe_length,
-    const float     shoulder_strength,
-    const float     shoulder_length,
-    const float     shoulder_angle)
-{
-    // User params.
-    FilmicToneCurve::CurveParamsUser curveParamsUser;
-    curveParamsUser.m_gamma = 1.0f;
-    curveParamsUser.m_shoulderAngle = shoulder_angle;
-    curveParamsUser.m_shoulderLength = shoulder_length;
-    curveParamsUser.m_shoulderStrength = shoulder_strength;
-    curveParamsUser.m_toeLength = toe_length;
-    curveParamsUser.m_toeStrength = toe_strength;
-
-    // Direct params (from user params).
-    FilmicToneCurve::CurveParamsDirect curveParamsDirect;
-    FilmicToneCurve::CalcDirectParamsFromUser(curveParamsDirect, curveParamsUser);
-
-    // Full curve (from direct params).
-    FilmicToneCurve::CreateCurve(m_fullCurve, curveParamsDirect);
-}
-
-//@Todo remove after comparing results
-void PiecewiseReferenceApplier::tone_map(Color3f& color) const
-{
-    color = Color3f(
-        m_fullCurve.Eval(color.r),
-        m_fullCurve.Eval(color.g),
-        m_fullCurve.Eval(color.b));
-}
-
 PiecewiseApplier::PiecewiseApplier(
     const float     toe_strength,
     const float     toe_length,

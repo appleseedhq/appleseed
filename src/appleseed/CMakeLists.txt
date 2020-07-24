@@ -2002,8 +2002,6 @@ set (renderer_modeling_postprocessingstage_sources
     renderer/modeling/postprocessingstage/tonemappostprocessingstage.h
     renderer/modeling/postprocessingstage/vignettepostprocessingstage.cpp
     renderer/modeling/postprocessingstage/vignettepostprocessingstage.h
-    renderer/modeling/postprocessingstage/effect/FilmicToneCurve.cpp
-    renderer/modeling/postprocessingstage/effect/FilmicToneCurve.h
     renderer/modeling/postprocessingstage/effect/imageeffectapplier.cpp
     renderer/modeling/postprocessingstage/effect/imageeffectapplier.h
     renderer/modeling/postprocessingstage/effect/imageeffectjob.cpp

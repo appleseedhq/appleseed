@@ -39,9 +39,6 @@
 // Standard headers.
 #include <cstddef>
 
-//@Todo remove after comparing results
-#include "FilmicToneCurve.h"
-
 // Forward declarations.
 namespace foundation    { class Image; }
 namespace foundation    { class DictionaryArray; }
@@ -241,31 +238,6 @@ class PiecewiseApplier
     enum Segment { TOE = 0, MID = 1, SHOULDER = 2 };
 
     float eval_at(const float x) const;
-    void tone_map(foundation::Color3f& color) const final;
-};
-
-//@Todo remove after comparing results
-class PiecewiseReferenceApplier
-  : public ToneMapApplier
-{
-  public:
-    // Constructor.
-    explicit PiecewiseReferenceApplier(
-        const float     toe_strength,
-        const float     toe_length,
-        const float     shoulder_strength,
-        const float     shoulder_length,
-        const float     shoulder_angle);
-
-    static constexpr float DefaultToeStrength = 0.0f;
-    static constexpr float DefaultToeLength = 0.5f;
-    static constexpr float DefaultShoulderStrength = 0.0f;
-    static constexpr float DefaultShoulderLength = 0.5f;
-    static constexpr float DefaultShoulderAngle = 0.0f;
-
-  private:
-    FilmicToneCurve::FullCurve m_fullCurve;
-
     void tone_map(foundation::Color3f& color) const final;
 };
 
