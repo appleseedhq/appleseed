@@ -83,8 +83,6 @@ class ToneMapApplier
 // TODO
 // - add references for each operator and also note that they are
 //   only *barely* modified from: https://github.com/tizian/tonemapper
-// - remove TMOs with gamma as a param (cleanup)
-// - rename AcesUnreal to AcesGuy and FilmicUncharted to FilmicHable (?)
 
 
 class DebugToneMapApplier

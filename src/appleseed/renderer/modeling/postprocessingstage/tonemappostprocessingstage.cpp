@@ -32,6 +32,7 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/frame/frame.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
+#include "renderer/modeling/postprocessingstage/effect/clampcolorsapplier.h"
 #include "renderer/modeling/postprocessingstage/effect/tonemapapplier.h"
 
 // appleseed.foundation headers.
@@ -109,6 +110,7 @@ namespace
     const char* Model = "tone_map_post_processing_stage";
 
     constexpr const char* DeafaultToneMapOperatorId = AcesNarkowicz.id;
+    constexpr bool DeafaultClampColors = true;
 
     class ToneMapPostProcessingStage
       : public PostProcessingStage
@@ -142,6 +144,8 @@ namespace
             IAbortSwitch*           abort_switch) override
         {
             const OnFrameBeginMessageContext context("post-processing stage", this);
+
+            m_clamp_colors = m_params.get_optional("clamp_colors", DeafaultClampColors, context);
 
             const std::string tone_map_operator =
                 m_params.get_optional<std::string>(
@@ -233,14 +237,25 @@ namespace
 
         void execute(Frame& frame, const std::size_t thread_count) const override
         {
+            const CanvasProperties& props = frame.image().properties();
+
             Image& image = frame.image();
 
             // Apply the selected tone mapping operator to each image tile, in parallel.
             m_tone_map->apply_on_tiles(image, thread_count);
+
+            // Clamp colors to LDR range [0, 1].
+            if (m_clamp_colors)
+            {
+                const ClampColorsApplier clamp_colors;
+                clamp_colors.apply_on_tiles(image, thread_count);
+            }
+
         }
 
       private:
         ToneMapApplier*     m_tone_map;
+        bool                m_clamp_colors;
     };
 }
 
@@ -335,6 +350,14 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
             .insert("use", "required")
             .insert("default", DeafaultToneMapOperatorId)
             .insert("on_change", "rebuild_form"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "clamp_colors")
+            .insert("label", "Clamp Colors")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "true"));
 
     //@Todo add new TMO params
 
