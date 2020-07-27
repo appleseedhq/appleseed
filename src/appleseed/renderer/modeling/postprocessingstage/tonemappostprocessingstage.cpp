@@ -86,7 +86,6 @@ namespace
         FilmicUncharted.id,             \
         Reinhard.id,                    \
         ReinhardExtended.id,            \
-        DebugToneMap.id,                \
     }
 
     #define INSERT_TONE_MAP_OPERATOR(tmo) insert(tmo.label, tmo.id)
@@ -98,8 +97,7 @@ namespace
         .INSERT_TONE_MAP_OPERATOR(FilmicPiecewise)      \
         .INSERT_TONE_MAP_OPERATOR(FilmicUncharted)      \
         .INSERT_TONE_MAP_OPERATOR(Reinhard)             \
-        .INSERT_TONE_MAP_OPERATOR(ReinhardExtended)     \
-        .INSERT_TONE_MAP_OPERATOR(DebugToneMap)
+        .INSERT_TONE_MAP_OPERATOR(ReinhardExtended)
 
     //
     // Tone map post-processing stage.
