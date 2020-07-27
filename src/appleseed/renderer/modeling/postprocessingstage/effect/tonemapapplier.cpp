@@ -192,67 +192,10 @@ void FilmicHejlApplier::tone_map(Color3f& color) const
 }
 
 //
-// Filmic (Uncharted)
+// FilmicPiecewiseApplier class implementation.
 //
 
-FilmicUnchartedApplier::FilmicUnchartedApplier(
-    const float     A,
-    const float     B,
-    const float     C,
-    const float     D,
-    const float     E,
-    const float     F,
-    const float     W,
-    const float     exposure_bias)
-  : m_A(A)
-  , m_B(B)
-  , m_C(C)
-  , m_D(D)
-  , m_E(E)
-  , m_F(F)
-  , m_W(W)
-  , m_exposure_bias(exposure_bias)
-{
-}
-
-inline float FilmicUnchartedApplier::uncharted_tone_map(const float x) const
-{
-    return ((x * (m_A * x + m_C * m_B) + m_D * m_E) /
-            (x * (m_A * x + m_B) + m_D * m_F)) - m_E / m_F;
-}
-
-inline Color3f FilmicUnchartedApplier::uncharted_tone_map(const Color3f& x) const
-{
-    return ((x * (m_A * x + Color3f(m_C * m_B)) + Color3f(m_D * m_E)) /
-            (x * (m_A * x + Color3f(m_B)) + Color3f(m_D * m_F))) - Color3f(m_E / m_F);
-}
-
-void FilmicUnchartedApplier::tone_map(Color3f& color) const
-{
-    //
-    // Apply a filmic tone mapper developed by John Hable for Uncharted 2.
-    // ((x * (A * x + C * B) + D * E) / (x * (A * x + B) + D * F)) - E / F
-    //
-    // References:
-    //
-    //   http://filmicworlds.com/blog/filmic-tonemapping-operators/
-    //   http://filmicworlds.com/blog/filmic-tonemapping-with-piecewise-power-curves/
-    //   https://www.slideshare.net/ozlael/hable-john-uncharted2-hdr-lighting (see slides 141-142)
-    //
-
-    color *= m_exposure_bias;
-
-    color = uncharted_tone_map(color);
-
-    const Color3f white_scale(1.0f / uncharted_tone_map(m_W));
-    color *= white_scale;
-}
-
-//
-// PiecewiseApplier class implementation.
-//
-
-PiecewiseApplier::PiecewiseApplier(
+FilmicPiecewiseApplier::FilmicPiecewiseApplier(
     const float     toe_strength,
     const float     toe_length,
     const float     shoulder_strength,
@@ -312,7 +255,7 @@ PiecewiseApplier::PiecewiseApplier(
 
         const float B = 1.0f;
         const float lnA = std::logf(m);
-        m_segments[Segment::MID] = { -b/m, 0.0f, 1.0f, 1.0f, lnA, B };
+        m_segments[Segment::LINEAR] = { -b/m, 0.0f, 1.0f, 1.0f, lnA, B };
     }
 
     // Toe (start) section
@@ -356,17 +299,15 @@ PiecewiseApplier::PiecewiseApplier(
     // Normalize y values so that we hit 1.0 at our white point.
     const float rcp_white_scale = 1.0f / m_segments[Segment::SHOULDER].eval(1.0f);
 
-    m_segments[Segment::TOE].offset_y *= rcp_white_scale;
     m_segments[Segment::TOE].scale_y *= rcp_white_scale;
-
-    m_segments[Segment::MID].offset_y *= rcp_white_scale;
-    m_segments[Segment::MID].scale_y *= rcp_white_scale;
-
-    m_segments[Segment::SHOULDER].offset_y *= rcp_white_scale;
+    m_segments[Segment::TOE].offset_y *= rcp_white_scale;
+    m_segments[Segment::LINEAR].scale_y *= rcp_white_scale;
+    m_segments[Segment::LINEAR].offset_y *= rcp_white_scale;
     m_segments[Segment::SHOULDER].scale_y *= rcp_white_scale;
+    m_segments[Segment::SHOULDER].offset_y *= rcp_white_scale;
 }
 
-inline float PiecewiseApplier::PowerCurve::eval(const float x) const
+inline float FilmicPiecewiseApplier::PowerCurve::eval(const float x) const
 {
     const float x0 = scale_x * (x - offset_x);
 
@@ -376,7 +317,7 @@ inline float PiecewiseApplier::PowerCurve::eval(const float x) const
         return offset_y;
 }
 
-float PiecewiseApplier::eval_at(const float x) const
+float FilmicPiecewiseApplier::eval_at(const float x) const
 {
     const float norm_x = x * m_rcp_W;
 
@@ -386,15 +327,15 @@ float PiecewiseApplier::eval_at(const float x) const
     // use norm_x in the comparisons with m_x0 and m_x1, as in the original code.
     //
 
-    if (/*norm_*/x < m_x0)
+    if (x < m_x0)
         return m_segments[Segment::TOE].eval(norm_x);
-    else if (/*norm_*/x < m_x1)
-        return m_segments[Segment::MID].eval(norm_x);
+    else if (x < m_x1)
+        return m_segments[Segment::LINEAR].eval(norm_x);
     else
         return m_segments[Segment::SHOULDER].eval(norm_x);
 }
 
-void PiecewiseApplier::tone_map(Color3f& color) const
+void FilmicPiecewiseApplier::tone_map(Color3f& color) const
 {
     //
     // Apply John Hable's filmic tone mapping, described by three power curve segments.
@@ -409,6 +350,63 @@ void PiecewiseApplier::tone_map(Color3f& color) const
         eval_at(color.r),
         eval_at(color.g),
         eval_at(color.b));
+}
+
+//
+// FilmicUnchartedApplier class implementation.
+//
+
+FilmicUnchartedApplier::FilmicUnchartedApplier(
+    const float     A,
+    const float     B,
+    const float     C,
+    const float     D,
+    const float     E,
+    const float     F,
+    const float     W,
+    const float     exposure_bias)
+  : m_A(A)
+  , m_B(B)
+  , m_C(C)
+  , m_D(D)
+  , m_E(E)
+  , m_F(F)
+  , m_W(W)
+  , m_exposure_bias(exposure_bias)
+{
+}
+
+inline float FilmicUnchartedApplier::uncharted_tone_map(const float x) const
+{
+    return ((x * (m_A * x + m_C * m_B) + m_D * m_E) /
+            (x * (m_A * x + m_B) + m_D * m_F)) - m_E / m_F;
+}
+
+inline Color3f FilmicUnchartedApplier::uncharted_tone_map(const Color3f& x) const
+{
+    return ((x * (m_A * x + Color3f(m_C * m_B)) + Color3f(m_D * m_E)) /
+            (x * (m_A * x + Color3f(m_B)) + Color3f(m_D * m_F))) - Color3f(m_E / m_F);
+}
+
+void FilmicUnchartedApplier::tone_map(Color3f& color) const
+{
+    //
+    // Apply a filmic tone mapper developed by John Hable for Uncharted 2.
+    // ((x * (A * x + C * B) + D * E) / (x * (A * x + B) + D * F)) - E / F
+    //
+    // References:
+    //
+    //   http://filmicworlds.com/blog/filmic-tonemapping-operators/
+    //   http://filmicworlds.com/blog/filmic-tonemapping-with-piecewise-power-curves/
+    //   https://www.slideshare.net/ozlael/hable-john-uncharted2-hdr-lighting (see slides 141-142)
+    //
+
+    color *= m_exposure_bias;
+
+    color = uncharted_tone_map(color);
+
+    const Color3f white_scale(1.0f / uncharted_tone_map(m_W));
+    color *= white_scale;
 }
 
 //
