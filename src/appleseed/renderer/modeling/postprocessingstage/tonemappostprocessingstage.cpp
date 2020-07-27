@@ -78,7 +78,6 @@ namespace
     constexpr const ToneMapOperator ReinhardExtended    { "Reinhard (Extended)",    "reinhard_extended" };
     constexpr const ToneMapOperator DebugToneMap        { "Debug",                  "debug" };
 
-    //@Todo add new TMOs
     #define TONE_MAP_OPERATOR_ARRAY {   \
         AcesNarkowicz.id,               \
         AcesUnreal.id,                  \
@@ -92,7 +91,6 @@ namespace
 
     #define INSERT_TONE_MAP_OPERATOR(tmo) insert(tmo.label, tmo.id)
 
-    //@Todo add new TMOs
     #define TONE_MAP_OPERATOR_DICTIONARY Dictionary()   \
         .INSERT_TONE_MAP_OPERATOR(AcesNarkowicz)        \
         .INSERT_TONE_MAP_OPERATOR(AcesUnreal)           \
@@ -154,12 +152,13 @@ namespace
                     TONE_MAP_OPERATOR_ARRAY,
                     context);
 
-            //@Todo add new TMOs
-
             // Initialize the tone map applier.
             if (tone_map_operator == AcesNarkowicz.id)
             {
-                m_tone_map = new AcesNarkowiczApplier();
+                const float exposure_bias =
+                    m_params.get_optional("aces_narkowicz_exposure_bias", AcesNarkowiczApplier::DefaultExposureBias, context);
+
+                m_tone_map = new AcesNarkowiczApplier(exposure_bias);
             }
             else if (tone_map_operator == AcesUnreal.id)
             {
@@ -221,14 +220,10 @@ namespace
 
                 m_tone_map = new ReinhardExtendedApplier(max_white, use_luminance);
             }
-            else if (tone_map_operator == DebugToneMap.id)
-            {
-                m_tone_map = new DebugToneMapApplier();
-            }
             else
             {
                 // FIXME we shouldn't reach here.. but what if we do?
-                // m_tone_map = nullptr;
+                m_tone_map = new DebugToneMapApplier();
                 assert(false);
             }
 
@@ -359,11 +354,16 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
             .insert("use", "optional")
             .insert("default", "true"));
 
-    //@Todo add new TMO params
-
     // ACES (Narkowicz)
     {
-        // No parameters.
+        add_numeric_param_metadata(
+            metadata,
+            "aces_narkowicz_exposure_bias",
+            "Exposure bias",
+            "0.0", "hard",              // min
+            "10.0", "hard",             // max
+            "0.6",                      // AcesNarkowiczApplier::DefaultExposureBias
+            AcesNarkowicz.id);
     }
 
     // ACES (Unreal)

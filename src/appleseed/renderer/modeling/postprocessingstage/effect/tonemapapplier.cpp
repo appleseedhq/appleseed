@@ -101,7 +101,9 @@ void DebugToneMapApplier::tone_map(Color3f& color) const
 // AcesNarkowiczApplier class implementation.
 //
 
-AcesNarkowiczApplier::AcesNarkowiczApplier()
+AcesNarkowiczApplier::AcesNarkowiczApplier(
+    const float     exposure_bias)
+  : m_exposure_bias(exposure_bias)
 {
 }
 
@@ -117,7 +119,8 @@ void AcesNarkowiczApplier::tone_map(Color3f& color) const
     //   https://knarkowicz.wordpress.com/2016/01/06/aces-filmic-tone-mapping-curve/
     //
 
-    // color *= 0.6f; // TODO test & compare
+    color *= m_exposure_bias;
+
     const Color3f a(2.51f);
     const Color3f b(0.03f);
     const Color3f c(2.43f);

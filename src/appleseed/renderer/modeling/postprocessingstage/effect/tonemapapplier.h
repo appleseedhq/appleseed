@@ -139,10 +139,15 @@ class AcesNarkowiczApplier
 {
   public:
     // Constructor.
-    explicit AcesNarkowiczApplier();
+    explicit AcesNarkowiczApplier(
+        const float     exposure_bias);
+
+    static constexpr float DefaultExposureBias = 0.6f;
 
   private:
-    void tone_map(foundation::Color3f& color) const final;
+    const float         m_exposure_bias;
+
+    void tone_map(foundation::Color3f& color) const final;    // linear white point (minimal value that is mapped to 1)
 };
 
 //
