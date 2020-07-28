@@ -393,7 +393,7 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
             "Linear Strength (B)",
             "0.0", "hard",              // min
             "1.0", "hard",              // max
-            "0.50",                     // FilmicUnchartedApplier::DefaultB
+            "0.30",                     // FilmicUnchartedApplier::DefaultB
             FilmicUncharted.id);
 
         add_numeric_param_metadata(
