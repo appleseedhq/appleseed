@@ -161,9 +161,9 @@ void AcesUnrealApplier::tone_map(Color3f& color) const
 
     // Decode 2.2 gamma correction.
     color = Color3f(
-        std::powf(color.r, 2.2f),
-        std::powf(color.g, 2.2f),
-        std::powf(color.b, 2.2f));
+        std::pow(color.r, 2.2f),
+        std::pow(color.g, 2.2f),
+        std::pow(color.b, 2.2f));
 }
 
 //
@@ -194,9 +194,9 @@ void FilmicHejlApplier::tone_map(Color3f& color) const
 
     // Decode 2.2 gamma correction.
     color = Color3f(
-        std::powf(color.r, 2.2f),
-        std::powf(color.g, 2.2f),
-        std::powf(color.b, 2.2f));
+        std::pow(color.r, 2.2f),
+        std::pow(color.g, 2.2f),
+        std::pow(color.b, 2.2f));
 }
 
 //
@@ -209,11 +209,11 @@ FilmicPiecewiseApplier::FilmicPiecewiseApplier(
     const float     shoulder_strength,
     const float     shoulder_length,
     const float     shoulder_angle)
-  : m_x0(0.5f * std::powf(toe_length, 2.2f))
+  : m_x0(0.5f * std::pow(toe_length, 2.2f))
   , m_y0(m_x0 * (1.0f - toe_strength))
   , m_x1(m_x0 + (1.0f - shoulder_length) * (1.0f - m_y0))
   , m_y1(m_y0 + (1.0f - shoulder_length) * (1.0f - m_y0))
-  , m_W(m_x0 - m_y0 + std::exp2f(shoulder_strength))
+  , m_W(m_x0 - m_y0 + std::exp2(shoulder_strength))
   , m_rcp_W(safe_rcp(m_W, default_eps<float>()))
   , m_overshoot_x(2.0f * m_W * shoulder_angle * shoulder_strength)
   , m_overshoot_y(0.5f * shoulder_angle * shoulder_strength)
@@ -262,7 +262,7 @@ FilmicPiecewiseApplier::FilmicPiecewiseApplier(
         //
 
         const float B = 1.0f;
-        const float lnA = std::logf(m);
+        const float lnA = std::log(m);
         m_segments[Segment::LINEAR] = { -b/m, 0.0f, 1.0f, 1.0f, lnA, B };
     }
 
@@ -279,7 +279,7 @@ FilmicPiecewiseApplier::FilmicPiecewiseApplier(
         //
 
         const float B = (m * x0) / m_y0;
-        const float lnA = std::logf(m_y0) - B * std::logf(x0);
+        const float lnA = std::log(m_y0) - B * std::log(x0);
         m_segments[Segment::TOE] = { 0.0f, 0.0f, 1.0f, 1.0f, lnA, B };
     }
 
@@ -300,7 +300,7 @@ FilmicPiecewiseApplier::FilmicPiecewiseApplier(
         const float y0 = offset_y - m_y1;
 
         const float B = (m * x0) / y0;
-        const float lnA = std::logf(y0) - B * std::logf(x0);
+        const float lnA = std::log(y0) - B * std::log(x0);
         m_segments[Segment::SHOULDER] = { offset_x, offset_y, -1.0f, -1.0f, lnA, B };
     }
 
@@ -320,7 +320,7 @@ inline float FilmicPiecewiseApplier::PowerCurve::eval(const float x) const
     const float x0 = scale_x * (x - offset_x);
 
     if (x0 > 0.0f)
-        return offset_y + scale_y * std::expf(lnA + B * std::logf(x0));
+        return offset_y + scale_y * std::exp(lnA + B * std::log(x0));
     else
         return offset_y;
 }

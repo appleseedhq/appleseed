@@ -232,8 +232,6 @@ namespace
 
         void execute(Frame& frame, const std::size_t thread_count) const override
         {
-            const CanvasProperties& props = frame.image().properties();
-
             Image& image = frame.image();
 
             // Apply the selected tone mapping operator to each image tile, in parallel.

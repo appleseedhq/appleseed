@@ -10,12 +10,6 @@
         <parameter name="tile_ordering" value="spiral" />
     </parameters>
     <parameters name="ui">
-        <parameters name="file_dialog">
-            <parameters name="projects">
-                <parameter name="last_directory" value="D:\dev\Appleseed\saves\scenes" />
-                <parameter name="selected_filter" value="Project Files (*.appleseed *.appleseedz)" />
-            </parameters>
-        </parameters>
         <parameters name="render_region">
             <parameter name="triggers_rendering" value="true" />
         </parameters>
