@@ -46,13 +46,12 @@ namespace foundation    { class DictionaryArray; }
 namespace renderer
 {
 
-
 //
 // Tone map post-processing effect appliers.
 //
 
 //
-// References and interesting resources on tone mapping:
+// References:
 //
 //   Tone Mapper, Tizian Zeltner
 //   https://github.com/tizian/tonemapper
@@ -60,17 +59,11 @@ namespace renderer
 //   "Tone Mapping", Matt Taylor (64)
 //   https://64.github.io/tonemapping/
 //
-//   "Filmic Tonemapping with Piecewise Power Curves", John Hable
-//   http://filmicworlds.com/blog/filmic-tonemapping-with-piecewise-power-curves/
-//
 //   "Filmic Tonemapping Operators", John Hable
 //   http://filmicworlds.com/blog/filmic-tonemapping-operators/
 //
-//   "A Closer Look At Tone Mapping", Matt Pettineo (MJP)
-//   https://mynameismjp.wordpress.com/2010/04/30/a-closer-look-at-tone-mapping/
-//
-//   "Filmic, darktable and the quest of the HDR tone mapping", Aurélien Pierre
-//   https://eng.aurelienpierre.com/2018/11/filmic-darktable-and-the-quest-of-the-hdr-tone-mapping
+//   "Filmic Tonemapping with Piecewise Power Curves", John Hable
+//   http://filmicworlds.com/blog/filmic-tonemapping-with-piecewise-power-curves/
 //
 
 class ToneMapApplier
@@ -91,12 +84,12 @@ class ToneMapApplier
     virtual void tone_map(foundation::Color3f& color) const = 0;
 };
 
-class DebugToneMapApplier
+class LinearApplier
   : public ToneMapApplier
 {
   public:
     // Constructor.
-    explicit DebugToneMapApplier();
+    explicit LinearApplier();
 
   private:
     void tone_map(foundation::Color3f& color) const final;
@@ -142,7 +135,7 @@ class AcesNarkowiczApplier
     explicit AcesNarkowiczApplier(
         const float     exposure_bias);
 
-    static constexpr float DefaultExposureBias = 0.6f;
+    static constexpr float DefaultExposureBias = 0.8f;
 
   private:
     const float         m_exposure_bias;
@@ -230,7 +223,7 @@ class FilmicPiecewiseApplier
 
     enum Segment { TOE = 0, LINEAR = 1, SHOULDER = 2 };
 
-    inline float eval_at(const float x) const;
+    float eval_at(const float x) const;
     void tone_map(foundation::Color3f& color) const final;
 };
 
@@ -286,8 +279,8 @@ class FilmicUnchartedApplier
 
     void tone_map(foundation::Color3f& color) const final;
 
-    inline float uncharted_tone_map(const float x) const;
-    inline foundation::Color3f uncharted_tone_map(const foundation::Color3f& x) const;
+    float uncharted_tone_map(const float x) const;
+    foundation::Color3f uncharted_tone_map(const foundation::Color3f& x) const;
 };
 
 //

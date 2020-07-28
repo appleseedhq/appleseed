@@ -76,7 +76,6 @@ namespace
     constexpr const ToneMapOperator FilmicUncharted     { "Filmic (Uncharted)",     "filmic_uncharted" };
     constexpr const ToneMapOperator Reinhard            { "Reinhard",               "reinhard" };
     constexpr const ToneMapOperator ReinhardExtended    { "Reinhard (Extended)",    "reinhard_extended" };
-    constexpr const ToneMapOperator DebugToneMap        { "Debug",                  "debug" };
 
     #define TONE_MAP_OPERATOR_ARRAY {   \
         AcesNarkowicz.id,               \
@@ -221,7 +220,7 @@ namespace
             else
             {
                 // FIXME we shouldn't reach here.. but what if we do?
-                m_tone_map = new DebugToneMapApplier();
+                m_tone_map = new LinearApplier(); // does nothing
                 assert(false);
             }
 
@@ -360,7 +359,7 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
             "Exposure bias",
             "0.0", "hard",              // min
             "10.0", "hard",             // max
-            "0.6",                      // AcesNarkowiczApplier::DefaultExposureBias
+            "0.8",                      // AcesNarkowiczApplier::DefaultExposureBias
             AcesNarkowicz.id);
     }
 
@@ -412,7 +411,6 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
             "0.20",                     // FilmicUnchartedApplier::DefaultD
             FilmicUncharted.id);
 
-#if 0
         add_numeric_param_metadata(
             metadata,
             "filmic_uncharted_E",
@@ -430,7 +428,6 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
             "1.0", "hard",              // max
             "0.30",                     // FilmicUnchartedApplier::DefaultF
             FilmicUncharted.id);
-#endif
 
         add_numeric_param_metadata(
             metadata,
@@ -484,12 +481,8 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
             metadata,
             "filmic_piecewise_shoulder_length",
             "Shoulder Length (F-stops)",
-
-            // FIXME this is expressed in F-stops instead of
-            // as a ratio, thus, what should be its min/max?
             "0.00001", "hard",          // min
-            "10.0", "soft",             // max
-
+            "32.0", "soft",             // max
             "0.5",                      // FilmicPiecewiseApplier::DefaultShoulderLength
             FilmicPiecewise.id);
 
@@ -518,7 +511,7 @@ DictionaryArray ToneMapPostProcessingStageFactory::get_input_metadata() const
         add_numeric_param_metadata(
             metadata,
             "reinhard_extended_max_white",
-            "Lmax",
+            "Max White",
 
             // FIXME min/max luminance values can only
             // be accurately computed at run-time.. :(

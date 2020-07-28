@@ -85,14 +85,14 @@ void ToneMapApplier::apply(
 }
 
 //
-// DebugToneMapApplier class implementation.
+// DontToneMapApplier class implementation.
 //
 
-DebugToneMapApplier::DebugToneMapApplier()
+LinearApplier::LinearApplier()
 {
 }
 
-void DebugToneMapApplier::tone_map(Color3f& color) const
+void LinearApplier::tone_map(Color3f& color) const
 {
     // Do nothing.
 }
@@ -112,7 +112,11 @@ void AcesNarkowiczApplier::tone_map(Color3f& color) const
     //
     // Apply Krzysztof Narkowicz's fitting of the ACES curve.
     //
-    // Note: for the original ACES curve, color should me multiplied by 0.6.
+    // Note that we add an exposure_bias factor to account for the following:
+    //   "Curve was manually fitted (max fit error: 0.0138) to be more precise in the blacks [...]
+    //    Additionally, data was pre-exposed, so 1 on input maps to ~0.8 on output and resulting
+    //    image's brightness is more consistent with the one without any tone mapping curve at all.
+    //    For the original ACES curve just multiply input (x) by 0.6."
     //
     // Reference:
     //
@@ -147,9 +151,10 @@ void AcesUnrealApplier::tone_map(Color3f& color) const
     //
     // Note: gamma 2.2 correction is baked in.
     //
-    // Reference:
+    // References:
     //
     //   https://www.shadertoy.com/view/llXyWr
+    //   https://twitter.com/romainguy/status/707008672434507776
     //
 
     color = color / (color + Color3f(0.155f)) * 1.019f;
@@ -341,7 +346,7 @@ float FilmicPiecewiseApplier::eval_at(const float x) const
 void FilmicPiecewiseApplier::tone_map(Color3f& color) const
 {
     //
-    // Apply John Hable's filmic tone mapping, described by three power curve segments.
+    // Apply John Hable's filmic tone mapper, described by three power curve segments.
     //
     // Reference:
     //
@@ -424,7 +429,7 @@ ReinhardApplier::ReinhardApplier(const bool use_luminance)
 void ReinhardApplier::tone_map(Color3f& color) const
 {
     //
-    // Apply Reinhard's simple tone mapping operator (Eq. 3).
+    // Apply Reinhard's simple tone mapping operator (Equation 3).
     //
     // Reference:
     //
@@ -436,11 +441,11 @@ void ReinhardApplier::tone_map(Color3f& color) const
         color /= 1.0f + luminance(color);
 
         //
-        // Note: this is equivalent to the paper's implementation:
+        // Note: this is equivalent to the following:
         //
         // const float L = luminance(color);     // world luminance
         // const float Ld = L / (1.0f + L);      // display luminance
-        // color = Ld * color / L;
+        // color *= Ld / L;
         //
     }
     else
@@ -464,11 +469,18 @@ ReinhardExtendedApplier::ReinhardExtendedApplier(
 void ReinhardExtendedApplier::tone_map(Color3f& color) const
 {
     //
-    // Apply Reinhard's extended tone mapping operator (Eq. 4).
+    // Apply Reinhard's extended tone mapping operator (Equation 4).
     //
     // Note that we use Lwhite = Lmax to avoid burn-out, where:
     //   * Lwhite is the smallest luminance that will be mapped to pure white
     //   * Lmax is the maximum luminance in the scene
+    //
+    // As mentioned in the paper (on Section 3.1, page 3):
+    //   "This function is a blend between Equation 3 and a linear mapping [...]
+    //    If Lwhite value is set to the maximum luminance in the scene Lmax or higher,
+    //    no burn-out will occur. If it is set to infinity, then the function reverts to Equation 3.
+    //    By default we set Lwhite to the maximum luminance in the scene. If this default is applied
+    //    to scenes that have a low dynamic range (i.e., Lmax < 1), the effect is a subtle contrast enhancement"
     //
     // Reference:
     //
@@ -479,7 +491,7 @@ void ReinhardExtendedApplier::tone_map(Color3f& color) const
     {
         const float L = luminance(color);
         const float Ld = (L * (1.0f + L / (m_max_white * m_max_white))) / (1.0f + L);
-        color = Ld * color / L;
+        color *= Ld / L;
     }
     else
     {
