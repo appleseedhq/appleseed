@@ -76,8 +76,10 @@ namespace
     constexpr const ToneMapOperator FilmicUncharted     { "Filmic (Uncharted)",     "filmic_uncharted" };
     constexpr const ToneMapOperator Reinhard            { "Reinhard",               "reinhard" };
     constexpr const ToneMapOperator ReinhardExtended    { "Reinhard (Extended)",    "reinhard_extended" };
+    constexpr const ToneMapOperator Linear              { "Linear",                 "linear" };
 
     #define TONE_MAP_OPERATOR_ARRAY {   \
+        Linear.id,                      \
         AcesNarkowicz.id,               \
         AcesUnreal.id,                  \
         FilmicHejl.id,                  \
@@ -89,6 +91,7 @@ namespace
 
     #define INSERT_TONE_MAP_OPERATOR(tmo) insert(tmo.label, tmo.id)
 
+    // Note: don't expose the Linear operator in .studio.
     #define TONE_MAP_OPERATOR_DICTIONARY Dictionary()   \
         .INSERT_TONE_MAP_OPERATOR(AcesNarkowicz)        \
         .INSERT_TONE_MAP_OPERATOR(AcesUnreal)           \
@@ -104,7 +107,7 @@ namespace
 
     const char* Model = "tone_map_post_processing_stage";
 
-    constexpr const char* DeafaultToneMapOperatorId = AcesNarkowicz.id;
+    constexpr const char* DeafaultToneMapOperatorId = Linear.id;
     constexpr bool DeafaultClampColors = true;
 
     class ToneMapPostProcessingStage
