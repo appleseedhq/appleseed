@@ -3,7 +3,10 @@
 <project format_revision="31">
     <search_paths>
         <search_path>
-            _shaders
+            ../../../shaders/appleseed
+        </search_path>
+        <search_path>
+            ../../../shaders/blenderseed
         </search_path>
     </search_paths>
     <scene>
