@@ -582,6 +582,10 @@ void MainWindow::update_pause_resume_checkbox(const bool checked)
     old_state = m_ui->action_rendering_pause_resume_rendering->blockSignals(true);
     m_ui->action_rendering_pause_resume_rendering->setChecked(checked);
     m_ui->action_rendering_pause_resume_rendering->blockSignals(old_state);
+
+    //@Cleanup enable/disable post process rendering preview.
+    m_ui->action_rendering_post_process_rendering->setEnabled(checked);
+    m_action_post_process_rendering->setEnabled(checked);
 }
 
 void MainWindow::build_status_bar()
@@ -864,9 +868,12 @@ void MainWindow::set_project_explorer_enabled(const bool is_enabled)
 
 void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const RenderingMode rendering_mode)
 {
-    const bool is_project_open = m_project_manager.is_project_open();
-    const bool allow_start = is_enabled && is_project_open && rendering_mode == RenderingMode::NotRendering;
-    const bool allow_stop = is_enabled && is_project_open && rendering_mode != RenderingMode::NotRendering;
+    const bool is_enabled_and_project_open = is_enabled && m_project_manager.is_project_open();
+    const bool is_not_rendering = rendering_mode == RenderingMode::NotRendering;
+
+    const bool allow_start = is_enabled_and_project_open && is_not_rendering;
+    const bool allow_stop = is_enabled_and_project_open && !is_not_rendering;
+    const bool allow_post_process = is_enabled_and_project_open && (m_rendering_manager.is_rendering_paused() || is_not_rendering);
 
     // Rendering -> Start Interactive Rendering.
     m_ui->action_rendering_start_interactive_rendering->setEnabled(allow_start);
@@ -885,8 +892,8 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const Rend
     m_action_stop_rendering->setEnabled(allow_stop);
 
     // Rendering -> Post Process Rendering.
-    m_ui->action_rendering_post_process_rendering->setEnabled(allow_start); // FIXME allow for paused renderings as well
-    m_action_post_process_rendering->setEnabled(allow_start); // FIXME allow for paused renderings as well
+    m_ui->action_rendering_post_process_rendering->setEnabled(allow_post_process);
+    m_action_post_process_rendering->setEnabled(allow_post_process);
 
     // Rendering -> Rendering Settings.
     m_ui->action_rendering_rendering_settings->setEnabled(allow_start);
@@ -903,15 +910,15 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const Rend
 
             // Clear frame.
             render_tab->set_clear_frame_button_enabled(
-                is_enabled && is_project_open && rendering_mode == RenderingMode::NotRendering);
+                is_enabled_and_project_open && rendering_mode == RenderingMode::NotRendering);
 
             // Set/clear rendering region.
             render_tab->set_render_region_buttons_enabled(
-                is_enabled && is_project_open && rendering_mode != RenderingMode::FinalRendering);
+                is_enabled_and_project_open && rendering_mode != RenderingMode::FinalRendering);
 
             // Scene picker.
             render_tab->get_scene_picking_handler()->set_enabled(
-                is_enabled && is_project_open && rendering_mode != RenderingMode::FinalRendering);
+                is_enabled_and_project_open && rendering_mode != RenderingMode::FinalRendering);
         }
     }
 }
