@@ -59,6 +59,7 @@
 #include "renderer/modeling/light/pointlight.h"
 #include "renderer/modeling/light/spotlight.h"
 #include "renderer/modeling/light/sunlight.h"
+#include "renderer/modeling/light/Hosek_sun.h"
 #include "renderer/modeling/material/material.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/postprocessingstage/renderstamppostprocessingstage.h"
@@ -425,7 +426,8 @@ namespace
                 move_if_exist(light, "radiance", "exitance");
                 move_if_exist(light, "radiance_multiplier", "exitance_multiplier");
             }
-            else if (strcmp(light.get_model(), SunLightFactory().get_model()) == 0)
+            else if (strcmp(light.get_model(), SunLightFactory().get_model()) == 0 ||
+                strcmp(light.get_model(), HosekSunLightFactory().get_model()) == 0)
             {
                 move_if_exist(light, "radiance_multiplier", "exitance_multiplier");
             }

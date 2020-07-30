@@ -150,6 +150,11 @@ bool SunLight::on_frame_begin(
     // Reference: https://en.wikipedia.org/wiki/Solid_angle#Sun_and_Moon
     m_sun_solid_angle = TwoPi<float>() * (1.0f - std::cos(std::atan(SunRadius * m_values.m_size_multiplier / m_values.m_distance)));
 
+    const float default_solid_angle = TwoPi<float>() * (1.0f - std::cos(std::atan(SunRadius / 149.6f)));
+
+    // Keep sun's irradiance constant for different sizes and distances.
+    m_values.m_radiance_multiplier = m_values.m_radiance_multiplier * default_solid_angle / m_sun_solid_angle;
+
     // If the Sun light is bound to an environment EDF, let it override the Sun's direction and turbidity.
     EnvironmentEDF* env_edf = dynamic_cast<EnvironmentEDF*>(m_inputs.get_entity("environment_edf"));
     if (env_edf != nullptr)
@@ -294,7 +299,6 @@ void SunLight::evaluate(
         square(static_cast<float>(distance_to_center)));
 
     value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
-    value *= m_sun_solid_angle;
 }
 
 void SunLight::compute_sun_radiance(
@@ -327,17 +331,17 @@ void SunLight::compute_sun_radiance(
         tau_a[i] = std::exp(-beta * m * m_k2[i]);
 
     // Compute transmittance due to ozone absorption.
-    const float L = 0.35f;                  // amount of ozone in cm
+    const float L = 0.0035f;                  // amount of ozone in m
     static const float Ko[31] =
     {
         0.000f, 0.000f, 0.000f, 0.000f,
-        0.000f, 0.003f, 0.006f, 0.009f,
-        0.014f, 0.021f, 0.030f, 0.040f,
-        0.048f, 0.063f, 0.075f, 0.085f,
-        0.103f, 0.120f, 0.120f, 0.115f,
-        0.125f, 0.120f, 0.105f, 0.090f,
-        0.079f, 0.067f, 0.057f, 0.048f,
-        0.036f, 0.028f, 0.023f
+        0.000f, 0.300f, 0.600f, 0.900f,
+        1.400f, 2.100f, 3.000f, 4.000f,
+        4.800f, 6.300f, 7.500f, 8.500f,
+        10.30f, 12.00f, 12.00f, 11.50f,
+        12.50f, 12.00f, 10.50f, 9.000f,
+        7.900f, 6.700f, 5.700f, 4.800f,
+        3.600f, 2.800f, 2.300f
     };
     RegularSpectrum31f tau_o;
     for (size_t i = 0; i < 31; ++i)
@@ -363,7 +367,7 @@ void SunLight::compute_sun_radiance(
 #endif
 
     // Compute transmittance due to water vapor absorption.
-    const float W = 2.0f;                   // precipitable water vapor in cm
+    const float W = 0.02f;                   // precipitable water vapor in m
     static const float Kwa[31] =
     {
         0.000f, 0.000f, 0.000f, 0.000f,
@@ -373,7 +377,7 @@ void SunLight::compute_sun_radiance(
         0.000f, 0.000f, 0.000f, 0.000f,
         0.000f, 0.000f, 0.000f, 0.000f,
         0.000f, 0.000f, 0.000f, 0.000f,
-        0.000f, 0.016f, 0.024f
+        0.000f, 1.600f, 2.400f
     };
     RegularSpectrum31f tau_wa;
     for (size_t i = 0; i < 31; ++i)
@@ -427,6 +431,7 @@ void SunLight::compute_sun_radiance(
 #endif
             tau_wa[i] *
             limb_darkening *
+            m_sun_solid_angle *
             radiance_multiplier;
     }
 }
@@ -532,7 +537,6 @@ void SunLight::sample_disk(
         + disk_radius * p[1] * basis.get_tangent_v();
 
     value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
-    value *= m_sun_solid_angle;
 }
 
 void SunLight::sample_sun_surface(
@@ -566,8 +570,8 @@ void SunLight::sample_sun_surface(
         + sun_radius * p[1] * basis.get_tangent_v();
 
     outgoing = normalize(target_point - position);
-    Vector2d disk_cord = static_cast<double>(SunRadius * m_values.m_size_multiplier) * p;
-    double squared_distance_to_center = disk_cord[0] * disk_cord[0] + disk_cord[1] * disk_cord[1];
+    Vector2d test = static_cast<double>(SunRadius * m_values.m_size_multiplier) * p;
+    double squared_distance_to_center = test[0] * test[0] + test[1] * test[1];
 
 
     RegularSpectrum31f radiance;
@@ -577,8 +581,6 @@ void SunLight::sample_sun_surface(
         m_values.m_radiance_multiplier,
         radiance,
         static_cast<float>(squared_distance_to_center));
-
-    value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
 
     // Shift sun.
     basis = Basis3d(-normalize(light_transform.get_parent_z() + light_transform.get_parent_origin()));
@@ -591,7 +593,7 @@ void SunLight::sample_sun_surface(
         + sun_radius * p[1] * basis.get_tangent_v();
     outgoing = normalize(target_point - position);
 
-    value *= m_sun_solid_angle;
+    value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
 
     //
     // The Sun is represented by a disk of finite radius. The Sun's illumination

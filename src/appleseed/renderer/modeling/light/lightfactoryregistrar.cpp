@@ -39,6 +39,7 @@
 #include "renderer/modeling/light/pointlight.h"
 #include "renderer/modeling/light/spotlight.h"
 #include "renderer/modeling/light/sunlight.h"
+#include "renderer/modeling/light/Hosek_sun.h"
 
 // appleseed.foundation headers.
 #include "foundation/memory/autoreleaseptr.h"
@@ -69,6 +70,7 @@ LightFactoryRegistrar::LightFactoryRegistrar(const SearchPaths& search_paths)
     impl->register_factory(auto_release_ptr<FactoryType>(new PointLightFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new SpotLightFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new SunLightFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new HosekSunLightFactory()));
 }
 
 LightFactoryRegistrar::~LightFactoryRegistrar()

@@ -10,6 +10,16 @@
         <parameter name="tile_ordering" value="spiral" />
     </parameters>
     <parameters name="ui">
+        <parameters name="file_dialog">
+            <parameters name="frames">
+                <parameter name="last_directory" value="D:\Gsoc-sun-sky\Applessed_sun_sky_comparison" />
+                <parameter name="selected_filter" value="JPEG Files (*.jpg *.jpe *.jpeg *.jif *.jfif *.jfi)" />
+            </parameters>
+            <parameters name="projects">
+                <parameter name="last_directory" value="D:\appleseed-scenes" />
+                <parameter name="selected_filter" value="Plain Project Files (*.appleseed)" />
+            </parameters>
+        </parameters>
         <parameters name="render_region">
             <parameter name="triggers_rendering" value="true" />
         </parameters>

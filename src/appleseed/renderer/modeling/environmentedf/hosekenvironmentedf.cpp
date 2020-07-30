@@ -40,6 +40,7 @@
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/sourceinputs.h"
 #include "renderer/modeling/light/sunlight.h"
+#include "renderer/modeling/light/Hosek_sun.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
@@ -232,7 +233,8 @@ namespace
             RegularSpectrum31f radiance;
             if (shifted_outgoing.y > 0.0f)
                 compute_sky_radiance(shading_context, shifted_outgoing, radiance);
-            else radiance.set(0.0f);
+            else
+                radiance.set(0.0f);
 
             value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
             value += sun_value;
