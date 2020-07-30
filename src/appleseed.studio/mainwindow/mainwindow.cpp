@@ -582,10 +582,6 @@ void MainWindow::update_pause_resume_checkbox(const bool checked)
     old_state = m_ui->action_rendering_pause_resume_rendering->blockSignals(true);
     m_ui->action_rendering_pause_resume_rendering->setChecked(checked);
     m_ui->action_rendering_pause_resume_rendering->blockSignals(old_state);
-
-    //@Cleanup enable/disable post process rendering preview.
-    m_ui->action_rendering_post_process_rendering->setEnabled(checked);
-    m_action_post_process_rendering->setEnabled(checked);
 }
 
 void MainWindow::build_status_bar()
@@ -1724,6 +1720,10 @@ void MainWindow::slot_pause_or_resume_rendering(const bool checked)
     {
         assert(!m_rendering_manager.is_rendering_paused());
         m_rendering_manager.pause_rendering();
+
+        //@CLEANUP enable/disable post process rendering preview.
+        m_ui->action_rendering_post_process_rendering->setEnabled(true);
+        m_action_post_process_rendering->setEnabled(true);
     }
     else
     {
@@ -1756,7 +1756,9 @@ void MainWindow::slot_post_process_rendering()
         RENDERER_LOG_INFO("previewing post-processing stage:");
 
         // Apply post-processing stages.
-        // FIXME follow stage ordering, like in MasterRenderer::postprocess()
+        //@FIXME follow stage ordering, like in MasterRenderer::postprocess()
+        //@NOTE actually.. it might make more sense to only preview a single effect
+        // at a time (considering this is triggered when parameters are changed.. ?)
         for (PostProcessingStage& stage : frame->post_processing_stages())
         {
             RENDERER_LOG_INFO("  \"%s\"", stage.get_path().c_str());

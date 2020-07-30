@@ -419,7 +419,7 @@
     <string>P&amp;ost Process Rendering</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Shift+P</string>
+    <string>Ctrl+Shift+F5</string>
    </property>
   </action>
   <action name="action_rendering_rendering_settings">
