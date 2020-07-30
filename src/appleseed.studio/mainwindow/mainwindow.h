@@ -138,6 +138,7 @@ class MainWindow
     QAction*                                    m_action_start_final_rendering;
     QAction*                                    m_action_pause_resume_rendering;
     QAction*                                    m_action_stop_rendering;
+    QAction*                                    m_action_post_process_rendering;
     QAction*                                    m_action_rendering_settings;
     QAction*                                    m_action_fullscreen;
 
@@ -275,6 +276,7 @@ class MainWindow
         const bool      successful);
     void slot_pause_or_resume_rendering(
         const bool      checked);
+    void slot_post_process_rendering();
     void slot_rendering_end();
     void slot_camera_changed();
 

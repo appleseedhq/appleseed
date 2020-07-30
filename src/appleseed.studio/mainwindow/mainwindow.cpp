@@ -407,6 +407,7 @@ void MainWindow::build_menus()
     connect(m_ui->action_rendering_start_final_rendering, SIGNAL(triggered()), SLOT(slot_start_final_rendering()));
     connect(m_ui->action_rendering_pause_resume_rendering, SIGNAL(toggled(bool)), SLOT(slot_pause_or_resume_rendering(const bool)));
     connect(m_ui->action_rendering_stop_rendering, SIGNAL(triggered()), &m_rendering_manager, SLOT(slot_abort_rendering()));
+    connect(m_ui->action_rendering_post_process_rendering, SIGNAL(triggered()), SLOT(slot_post_process_rendering()));
     connect(m_ui->action_rendering_rendering_settings, SIGNAL(triggered()), SLOT(slot_show_rendering_settings_window()));
 
     //
@@ -650,6 +651,10 @@ void MainWindow::build_toolbar()
     connect(m_action_stop_rendering, SIGNAL(triggered()), &m_rendering_manager, SLOT(slot_abort_rendering()));
     m_ui->main_toolbar->addAction(m_action_stop_rendering);
 
+    m_action_post_process_rendering = new QAction(load_icons("rendering_post_process"), combine_name_and_shortcut("Post Process Rendering", m_ui->action_rendering_post_process_rendering->shortcut()), this);
+    connect(m_action_post_process_rendering, SIGNAL(triggered()), SLOT(slot_post_process_rendering()));
+    m_ui->main_toolbar->addAction(m_action_post_process_rendering);
+
     m_action_rendering_settings = new QAction(load_icons("rendering_settings"), combine_name_and_shortcut("Rendering Settings...", m_ui->action_rendering_rendering_settings->shortcut()), this);
     connect(m_action_rendering_settings, SIGNAL(triggered()), SLOT(slot_show_rendering_settings_window()));
     m_ui->main_toolbar->addAction(m_action_rendering_settings);
@@ -878,6 +883,10 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const Rend
     // Rendering -> Stop Rendering.
     m_ui->action_rendering_stop_rendering->setEnabled(allow_stop);
     m_action_stop_rendering->setEnabled(allow_stop);
+
+    // Rendering -> Post Process Rendering.
+    m_ui->action_rendering_post_process_rendering->setEnabled(allow_start); // FIXME allow for paused renderings as well
+    m_action_post_process_rendering->setEnabled(allow_start); // FIXME allow for paused renderings as well
 
     // Rendering -> Rendering Settings.
     m_ui->action_rendering_rendering_settings->setEnabled(allow_start);
@@ -1715,6 +1724,38 @@ void MainWindow::slot_pause_or_resume_rendering(const bool checked)
     }
 
     update_pause_resume_checkbox(checked);
+}
+
+void MainWindow::slot_post_process_rendering()
+{
+    Project* project = m_project_manager.get_project();
+    assert(project != nullptr);
+
+    Frame* frame = project->get_frame();
+    assert(frame != nullptr);
+
+    if (!frame->post_processing_stages().empty())
+    {
+        // Make a temporary copy of the frame.
+        // Render info, AOVs and other data are not copied.
+        // todo: creating a frame with denoising enabled is very expensive, see benchmark_frame.cpp.
+        auto_release_ptr<Frame> working_frame =
+            FrameFactory::create(
+                (std::string(frame->get_name()) + "_copy").c_str(),
+                frame->get_parameters()
+                    .remove_path("denoiser"));
+        working_frame->image().copy_from(frame->image());
+
+        RENDERER_LOG_INFO("previewing post-processing stage:");
+
+        // Apply post-processing stages.
+        // FIXME follow stage ordering, like in MasterRenderer::postprocess()
+        for (PostProcessingStage& stage : frame->post_processing_stages())
+        {
+            RENDERER_LOG_INFO("  \"%s\"", stage.get_path().c_str());
+            apply_post_processing_stage(stage, working_frame.ref());
+        }
+    }
 }
 
 void MainWindow::slot_rendering_end()
