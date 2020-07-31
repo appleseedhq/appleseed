@@ -39,6 +39,7 @@
 #include "renderer/api/environment.h"
 #include "renderer/api/environmentedf.h"
 #include "renderer/api/light.h"
+#include "renderer/api/postprocessing.h"
 #include "renderer/api/project.h"
 #include "renderer/api/scene.h"
 #include "renderer/api/shadergroup.h"
@@ -93,6 +94,13 @@ class ProjectBuilder
     template <typename ParentEntity>
     renderer::TextureInstance* edit_entity(
         renderer::TextureInstance*          old_entity,
+        ParentEntity&                       parent,
+        const foundation::Dictionary&       values) const;
+
+    // Simulate partial specialization of edit_entity() for Entity = renderer::PostProcessingStage.
+    template <typename ParentEntity>
+    renderer::PostProcessingStage* edit_entity(
+        renderer::PostProcessingStage*      old_entity,
         ParentEntity&                       parent,
         const foundation::Dictionary&       values) const;
 
@@ -295,6 +303,26 @@ inline renderer::Light* ProjectBuilder::edit_entity(
     renderer::EntityTraits<renderer::Light>::remove_entity(old_entity, parent);
     renderer::EntityTraits<renderer::Light>::insert_entity(new_entity, parent);
 
+    slot_notify_project_modification();
+
+    return new_entity_ptr;
+}
+
+template <typename ParentEntity>
+inline renderer::PostProcessingStage* ProjectBuilder::edit_entity(
+    renderer::PostProcessingStage*      old_entity,
+    ParentEntity&                       parent,
+    const foundation::Dictionary&       values) const
+{
+    foundation::auto_release_ptr<renderer::PostProcessingStage> new_entity(
+        create_entity<renderer::PostProcessingStage>(values));
+    renderer::PostProcessingStage* new_entity_ptr = new_entity.get();
+
+    renderer::EntityTraits<renderer::PostProcessingStage>::remove_entity(old_entity, parent);
+    renderer::EntityTraits<renderer::PostProcessingStage>::insert_entity(new_entity, parent);
+
+    //@TODO create a slot_notify_post_processing_stage_modification()
+    // then apply the changes into a copy of the frame for preview
     slot_notify_project_modification();
 
     return new_entity_ptr;
