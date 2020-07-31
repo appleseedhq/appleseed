@@ -783,6 +783,11 @@ void MainWindow::update_project_explorer()
             SLOT(slot_project_modified()));
 
         connect(
+            //@NOTE we probably need an argument to know which stage was altered
+            m_project_explorer, SIGNAL(signal_post_processing_stage_modified()),
+            SLOT(slot_post_processing_stage_modified()));
+
+        connect(
             m_project_explorer, SIGNAL(signal_frame_modified()),
             SLOT(slot_frame_modified()));
     }
@@ -1607,6 +1612,13 @@ void MainWindow::slot_project_modified()
     m_project_manager.set_project_dirty_flag();
 
     update_window_title();
+}
+
+void MainWindow::slot_post_processing_stage_modified()
+{
+    assert(m_project_manager.is_project_open());
+
+    //@TODO get the modified stage and render it to a copy of the frame
 }
 
 void MainWindow::slot_toggle_project_file_monitoring(const bool checked)

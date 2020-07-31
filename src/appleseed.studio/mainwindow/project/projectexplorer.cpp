@@ -118,6 +118,11 @@ ProjectExplorer::ProjectExplorer(
     connect(
         &m_project_builder, SIGNAL(signal_frame_modified()),
         SIGNAL(signal_frame_modified()));
+
+    //@INCOMPLETE
+    connect(
+        &m_project_builder, SIGNAL(signal_post_processing_stage_modified()),
+        SIGNAL(signal_post_processing_stage_modified()));
 }
 
 ProjectExplorer::~ProjectExplorer()
