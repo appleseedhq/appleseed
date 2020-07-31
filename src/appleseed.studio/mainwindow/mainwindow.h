@@ -257,7 +257,7 @@ class MainWindow
     void slot_pack_project_as();
     void slot_close_project();
     void slot_project_modified();
-    void slot_post_processing_stage_modified(); //@INCOMPLETE
+    void slot_post_processing_stage_modified(const QString& stage_name);
 
     // Project file monitoring.
     void slot_toggle_project_file_monitoring(const bool checked);

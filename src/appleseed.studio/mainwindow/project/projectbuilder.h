@@ -110,8 +110,7 @@ class ProjectBuilder
   signals:
     void signal_project_modified() const;
     void signal_frame_modified() const;
-    //@INCOMPLETE check if a param is required
-    void signal_post_processing_stage_modified() const;
+    void signal_post_processing_stage_modified(const QString& stage_name) const;
 
   public slots:
     void slot_notify_project_modification() const;
@@ -330,7 +329,7 @@ inline renderer::PostProcessingStage* ProjectBuilder::edit_entity(
 
     //@TODO create a slot_notify_post_processing_stage_modification()
     // then apply the changes into a copy of the frame for preview
-    emit signal_post_processing_stage_modified();
+    emit signal_post_processing_stage_modified(QString::fromStdString(new_model));
     slot_notify_project_modification();
 
     return new_entity_ptr;

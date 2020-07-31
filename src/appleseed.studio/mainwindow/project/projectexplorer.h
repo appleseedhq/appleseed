@@ -87,7 +87,7 @@ class ProjectExplorer
   signals:
     void signal_project_modified() const;
     void signal_frame_modified() const;
-    void signal_post_processing_stage_modified() const; //@INCOMPLETE
+    void signal_post_processing_stage_modified(const QString& stage_name) const;
 
   private:
     QTreeWidget*                    m_tree_widget;

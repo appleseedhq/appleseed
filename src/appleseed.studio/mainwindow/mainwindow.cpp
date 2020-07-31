@@ -784,8 +784,8 @@ void MainWindow::update_project_explorer()
 
         connect(
             //@NOTE we probably need an argument to know which stage was altered
-            m_project_explorer, SIGNAL(signal_post_processing_stage_modified()),
-            SLOT(slot_post_processing_stage_modified()));
+            m_project_explorer, SIGNAL(signal_post_processing_stage_modified(const QString&)),
+            SLOT(slot_post_processing_stage_modified(const QString&)));
 
         connect(
             m_project_explorer, SIGNAL(signal_frame_modified()),
@@ -1614,11 +1614,59 @@ void MainWindow::slot_project_modified()
     update_window_title();
 }
 
-void MainWindow::slot_post_processing_stage_modified()
+void MainWindow::slot_post_processing_stage_modified(const QString& stage_name)
 {
     assert(m_project_manager.is_project_open());
 
+#if 0
     //@TODO get the modified stage and render it to a copy of the frame
+    PostProcessingStageFactoryRegistrar factory_registrar;
+
+    auto factory = factory_registrar.lookup(stage_name.toStdString().c_str());
+    const ParamArray empty_param_array;
+
+    auto_release_ptr<PostProcessingStage> stage(
+        factory->create((std::string("__") + stage_name.toStdString()).c_str(), empty_param_array));
+
+    // Apply post-processing stage.
+    Project* project = m_project_manager.get_project();
+    assert(project != nullptr);
+
+    Frame* frame = project->get_frame();
+    assert(frame != nullptr);
+
+    //@FIXME create a copy of the frame
+    apply_post_processing_stage(stage.ref(), *frame);
+#endif
+
+    Project* project = m_project_manager.get_project();
+    assert(project != nullptr);
+
+    Frame* frame = project->get_frame();
+    assert(frame != nullptr);
+
+    if (!frame->post_processing_stages().empty())
+    {
+        // Make a temporary copy of the frame.
+        // Render info, AOVs and other data are not copied.
+        // todo: creating a frame with denoising enabled is very expensive, see benchmark_frame.cpp.
+        auto_release_ptr<Frame> working_frame =
+            FrameFactory::create(
+                (std::string(frame->get_name()) + "_copy").c_str(),
+                frame->get_parameters().remove_path("denoiser"));
+        working_frame->image().copy_from(frame->image());
+
+        // Preview the post-processing stage changes.
+        for (PostProcessingStage& stage : frame->post_processing_stages())
+        {
+            auto model_str = stage.get_model();
+            auto name_str = stage.get_name();
+            //@INCOMPLETE make sure this is applying the new (i.e. changed)
+            // settings.. otherwise we'd need to pass it through the signal
+            if (model_str == stage_name)
+                apply_post_processing_stage(stage, working_frame.ref());
+        }
+    }
 }
 
 void MainWindow::slot_toggle_project_file_monitoring(const bool checked)
