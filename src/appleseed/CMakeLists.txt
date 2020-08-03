@@ -1986,6 +1986,8 @@ source_group ("renderer\\modeling\\object" FILES
 )
 
 set (renderer_modeling_postprocessingstage_sources
+    renderer/modeling/postprocessingstage/chromaticaberrationpostprocessingstage.cpp
+    renderer/modeling/postprocessingstage/chromaticaberrationpostprocessingstage.h
     renderer/modeling/postprocessingstage/colormappostprocessingstage.cpp
     renderer/modeling/postprocessingstage/colormappostprocessingstage.h
     renderer/modeling/postprocessingstage/ipostprocessingstagefactory.cpp
