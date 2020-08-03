@@ -783,7 +783,6 @@ void MainWindow::update_project_explorer()
             SLOT(slot_project_modified()));
 
         connect(
-            //@NOTE we probably need an argument to know which stage was altered
             m_project_explorer, SIGNAL(signal_post_processing_stage_modified(const QString&)),
             SLOT(slot_post_processing_stage_modified(const QString&)));
 
@@ -1614,30 +1613,11 @@ void MainWindow::slot_project_modified()
     update_window_title();
 }
 
-void MainWindow::slot_post_processing_stage_modified(const QString& stage_name)
+void MainWindow::slot_post_processing_stage_modified(const QString& stage_model)
 {
     assert(m_project_manager.is_project_open());
 
-#if 0
-    //@TODO get the modified stage and render it to a copy of the frame
-    PostProcessingStageFactoryRegistrar factory_registrar;
-
-    auto factory = factory_registrar.lookup(stage_name.toStdString().c_str());
-    const ParamArray empty_param_array;
-
-    auto_release_ptr<PostProcessingStage> stage(
-        factory->create((std::string("__") + stage_name.toStdString()).c_str(), empty_param_array));
-
-    // Apply post-processing stage.
-    Project* project = m_project_manager.get_project();
-    assert(project != nullptr);
-
-    Frame* frame = project->get_frame();
-    assert(frame != nullptr);
-
-    //@FIXME create a copy of the frame
-    apply_post_processing_stage(stage.ref(), *frame);
-#endif
+    //@REFACTOR most of this is copy-pasted from apply_false_colors_settings
 
     Project* project = m_project_manager.get_project();
     assert(project != nullptr);
@@ -1656,14 +1636,10 @@ void MainWindow::slot_post_processing_stage_modified(const QString& stage_name)
                 frame->get_parameters().remove_path("denoiser"));
         working_frame->image().copy_from(frame->image());
 
-        // Preview the post-processing stage changes.
+        // Preview the post-processing stage that was modified.
         for (PostProcessingStage& stage : frame->post_processing_stages())
         {
-            auto model_str = stage.get_model();
-            auto name_str = stage.get_name();
-            //@INCOMPLETE make sure this is applying the new (i.e. changed)
-            // settings.. otherwise we'd need to pass it through the signal
-            if (model_str == stage_name)
+            if (stage.get_model() == stage_model)
                 apply_post_processing_stage(stage, working_frame.ref());
         }
     }
@@ -1793,6 +1769,8 @@ void MainWindow::slot_pause_or_resume_rendering(const bool checked)
     update_pause_resume_checkbox(checked);
 }
 
+//@CLEANUP it may make more sense to remove this altogether, if simply
+// previewing effects when stage values are changed is a good solution
 void MainWindow::slot_post_process_rendering()
 {
     Project* project = m_project_manager.get_project();
@@ -1809,8 +1787,7 @@ void MainWindow::slot_post_process_rendering()
         auto_release_ptr<Frame> working_frame =
             FrameFactory::create(
                 (std::string(frame->get_name()) + "_copy").c_str(),
-                frame->get_parameters()
-                    .remove_path("denoiser"));
+                frame->get_parameters().remove_path("denoiser"));
         working_frame->image().copy_from(frame->image());
 
         RENDERER_LOG_INFO("previewing post-processing stage:");

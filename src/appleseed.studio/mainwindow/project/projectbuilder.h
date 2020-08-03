@@ -110,7 +110,7 @@ class ProjectBuilder
   signals:
     void signal_project_modified() const;
     void signal_frame_modified() const;
-    void signal_post_processing_stage_modified(const QString& stage_name) const;
+    void signal_post_processing_stage_modified(const QString& stage_model) const;
 
   public slots:
     void slot_notify_project_modification() const;
@@ -319,18 +319,13 @@ inline renderer::PostProcessingStage* ProjectBuilder::edit_entity(
         create_entity<renderer::PostProcessingStage>(values));
     renderer::PostProcessingStage* new_entity_ptr = new_entity.get();
 
-    auto old_model = old_entity->get_model();
-    auto new_model = new_entity->get_model();
-
-    assert(old_model == new_model);
-
     renderer::EntityTraits<renderer::PostProcessingStage>::remove_entity(old_entity, parent);
     renderer::EntityTraits<renderer::PostProcessingStage>::insert_entity(new_entity, parent);
 
-    //@TODO create a slot_notify_post_processing_stage_modification()
-    // then apply the changes into a copy of the frame for preview
-    emit signal_post_processing_stage_modified(QString::fromStdString(new_model));
     slot_notify_project_modification();
+
+    // Signal the modified stage, so that it can be previewed.
+    emit signal_post_processing_stage_modified(QString::fromUtf8(new_entity_ptr->get_model()));
 
     return new_entity_ptr;
 }
