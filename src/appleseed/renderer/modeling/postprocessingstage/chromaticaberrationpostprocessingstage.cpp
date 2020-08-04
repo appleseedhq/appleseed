@@ -59,6 +59,9 @@ namespace
     const char* Model = "chromatic_aberration_post_processing_stage";
 
     //@TODO add default parameters
+    constexpr float DefaultRefractiveIndexRed = 1.0f;
+    constexpr float DefaultRefractiveIndexGreen = 1.015f;
+    constexpr float DefaultRefractiveIndexBlue = 1.03f;
 
     class ChromaticAberrationPostProcessingStage
       : public PostProcessingStage
@@ -90,6 +93,9 @@ namespace
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
             //@TODO init parameters with m_params.get_optional
+            m_refractive_index_red = m_params.get_optional("refractive_index_red", DefaultRefractiveIndexRed, context);
+            m_refractive_index_green = m_params.get_optional("refractive_index_green", DefaultRefractiveIndexGreen, context);
+            m_refractive_index_blue = m_params.get_optional("refractive_index_blue", DefaultRefractiveIndexBlue, context);
 
             return true;
         }
@@ -101,10 +107,70 @@ namespace
             // ref.: https://www.shadertoy.com/view/XssGz8
             //       https://www.shadertoy.com/view/MtXXDr
             //       https://github.com/keijiro/KinoFringe
+
+            const CanvasProperties& props = frame.image().properties();
+
+            Image& image = frame.image();
+
+            const Vector3f normal(0.0, 0.0, -1.0);
+
+            for (std::size_t y = 0; y < props.m_canvas_height; ++y)
+            {
+                for (std::size_t x = 0; x < props.m_canvas_width; ++x)
+                {
+                    // Pixel coordinate normalized to be in the [-1, 1] range.
+                    const Vector2f coord(
+                        static_cast<float>(2 * x - props.m_canvas_width),
+                        static_cast<float>(2 * y - props.m_canvas_height));
+
+                    //
+                    // Port of byungyoonc's "Physical Chromatic Aberration" ShaderToy.
+                    //
+                    // Reference:
+                    //
+                    //   https://www.shadertoy.com/view/MtXXDr
+                    //
+
+                    const Vector3f incident = normalize(Vector3f(coord.x, coord.y, 1.0f));
+
+                    Vector3f refraction_red, refraction_green, refraction_blue;
+                    refract(incident, normal, m_refractive_index_red, refraction_red);
+                    refract(incident, normal, m_refractive_index_green, refraction_green);
+                    refract(incident, normal, m_refractive_index_blue, refraction_blue);
+
+                    refraction_red /= refraction_red.z;
+                    refraction_green /= refraction_green.z;
+                    refraction_blue /= refraction_blue.z;
+
+                    // Sampling coordinates normalized to be in the [0, 1] range.
+                    const Vector2f coord_red(0.5f * (refraction_red.x + 1.0f), 0.5f * (refraction_red.y + 1.0f));
+                    const Vector2f coord_green(0.5f * (refraction_green.x + 1.0f), 0.5f * (refraction_green.y + 1.0f));
+                    const Vector2f coord_blue(0.5f * (refraction_blue.x + 1.0f), 0.5f * (refraction_blue.y + 1.0f));
+
+                    Color3f sample_red, sample_green, sample_blue;
+                    image.get_pixel(
+                        std::min(static_cast<std::size_t>(x * coord_red.x + 0.5f), props.m_canvas_width - 1),
+                        std::min(static_cast<std::size_t>(y * coord_red.y + 0.5f), props.m_canvas_height - 1),
+                        sample_red);
+                    image.get_pixel(
+                        std::min(static_cast<std::size_t>(x * coord_green.x + 0.5f), props.m_canvas_width - 1),
+                        std::min(static_cast<std::size_t>(y * coord_green.y + 0.5f), props.m_canvas_height - 1),
+                        sample_green);
+                    image.get_pixel(
+                        std::min(static_cast<std::size_t>(x * coord_blue.x + 0.5f), props.m_canvas_width - 1),
+                        std::min(static_cast<std::size_t>(y * coord_blue.y + 0.5f), props.m_canvas_height - 1),
+                        sample_blue);
+
+                    image.set_pixel(x, y, Color3f(sample_red.r, sample_green.g, sample_blue.b));
+                }
+            }
         }
 
       private:
         //@TODO add parameters
+        float m_refractive_index_red;
+        float m_refractive_index_green;
+        float m_refractive_index_blue;
     };
 }
 
@@ -138,6 +204,53 @@ DictionaryArray ChromaticAberrationPostProcessingStageFactory::get_input_metadat
     add_common_input_metadata(metadata);
 
     //@TODO expose parameters
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "refractive_index_red")
+            .insert("label", "Refractive Index (Red)")
+            .insert("type", "numeric")
+            .insert("min",
+                    Dictionary()
+                        .insert("value", "0.0")
+                        .insert("type", "hard"))
+            .insert("max",
+                    Dictionary()
+                        .insert("value", "2.0")
+                        .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "1.0")); // DefaultRefractiveIndexRed
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "refractive_index_green")
+            .insert("label", "Refractive Index (Green)")
+            .insert("type", "numeric")
+            .insert("min",
+                    Dictionary()
+                        .insert("value", "0.0")
+                        .insert("type", "hard"))
+            .insert("max",
+                    Dictionary()
+                        .insert("value", "2.0")
+                        .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "1.0")); // DefaultRefractiveIndexGreen
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "refractive_index_blue")
+            .insert("label", "Refractive Index (Blue)")
+            .insert("type", "numeric")
+            .insert("min",
+                    Dictionary()
+                        .insert("value", "0.0")
+                        .insert("type", "hard"))
+            .insert("max",
+                    Dictionary()
+                        .insert("value", "2.0")
+                        .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "1.0")); // DefaultRefractiveIndexBlue
 
     return metadata;
 }
