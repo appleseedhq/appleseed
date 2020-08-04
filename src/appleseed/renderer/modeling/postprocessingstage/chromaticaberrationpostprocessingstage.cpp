@@ -59,9 +59,47 @@ namespace
     const char* Model = "chromatic_aberration_post_processing_stage";
 
     //@TODO add default parameters
-    constexpr float DefaultRefractiveIndexRed = 1.0f;
-    constexpr float DefaultRefractiveIndexGreen = 1.015f;
-    constexpr float DefaultRefractiveIndexBlue = 1.03f;
+    constexpr float DefaultAxialStrength = 0.8f;
+    constexpr float DefaultAxialShift = 0.3f;
+    constexpr float DefaultLateralShift = 0.3f;
+
+    // Poisson disk sample points
+#define AXIAL_SAMPLE_LOW 1
+#if AXIAL_SAMPLE_LOW
+    constexpr std::size_t SAMPLE_NUM = 8;
+    constexpr float POISSON_SAMPLES[2 * SAMPLE_NUM] =
+    {
+         0.373838022357f,   0.662882019975f,
+        -0.335774814282f,  -0.940070127794f,
+        -0.9115721822f,     0.324130702404f,
+         0.837294074715f,  -0.504677167232f,
+        -0.0500874221246f, -0.0917990757772f,
+        -0.358644570242f,   0.906381100284f,
+         0.961200130218f,   0.219135111748f,
+        -0.896666615007f,  -0.440304757692f
+    };
+#else
+    constexpr std::size_t SAMPLE_NUM = 8;
+    constexpr float POISSON_SAMPLES[2 * SAMPLE_NUM] =
+    {
+         0.0984258332809f,   0.918808284462f,
+         0.00259138629413f, -0.999838959623f,
+        -0.987959729023f,   -0.00429660140761f,
+         0.981234239267f,   -0.140666219895f,
+        -0.0212157973013f,  -0.0443286928994f,
+        -0.652058534734f,    0.695078086985f,
+        -0.68090417832f,    -0.681862769398f,
+         0.779643686501f,    0.603399060386f,
+         0.67941165083f,    -0.731372789969f,
+         0.468821477499f,   -0.251621416756f,
+         0.278991228738f,    0.39302189329f,
+        -0.191188273806f,   -0.527976638433f,
+        -0.464789669525f,    0.216311272754f,
+        -0.559833960421f,   -0.256176089172f,
+         0.65988403582f,     0.170056284903f,
+        -0.170289189543f,    0.551561042407f
+    };
+#endif
 
     class ChromaticAberrationPostProcessingStage
       : public PostProcessingStage
@@ -92,85 +130,103 @@ namespace
         {
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
-            //@TODO init parameters with m_params.get_optional
-            m_refractive_index_red = m_params.get_optional("refractive_index_red", DefaultRefractiveIndexRed, context);
-            m_refractive_index_green = m_params.get_optional("refractive_index_green", DefaultRefractiveIndexGreen, context);
-            m_refractive_index_blue = m_params.get_optional("refractive_index_blue", DefaultRefractiveIndexBlue, context);
+            m_axial_strength  = m_params.get_optional("axial_strength", DefaultAxialStrength, context);
+            m_axial_shift  = m_params.get_optional("axial_shift", DefaultAxialShift, context);
+            m_lateral_shift  = m_params.get_optional("lateral_shift", DefaultLateralShift, context);
 
             return true;
         }
 
+        // Vector3f poisson_filter(const Vector2f& uv, const float aspect_ratio)
+        // {
+        //     Vector3f acc(0.0f);
+        //     for (std::size_t i = 0; i < SAMPLE_NUM; ++i)
+        //     {
+        //         Vector2f displacement(POISSON_SAMPLES[i] * 0.02f * m_axial_shift);
+        //         displacement.x *= aspect_ratio;
+        //         acc += tex2D(_MainTex, uv + displacement).rgb;
+        //     }
+        //     return acc / SAMPLE_NUM;
+        // }
+
         void execute(Frame& frame, const std::size_t thread_count) const override
         {
-            //@TODO apply the effect :)
-
-            // ref.: https://www.shadertoy.com/view/XssGz8
-            //       https://www.shadertoy.com/view/MtXXDr
-            //       https://github.com/keijiro/KinoFringe
-
             const CanvasProperties& props = frame.image().properties();
 
             Image& image = frame.image();
 
-            const Vector3f normal(0.0, 0.0, -1.0);
+            const float width = static_cast<float>(props.m_canvas_width);
+            const float height = static_cast<float>(props.m_canvas_height);
+
+            const float aspect_ratio = width / height;
+            const float aspect_ratio_rcp = height / width;
 
             for (std::size_t y = 0; y < props.m_canvas_height; ++y)
             {
                 for (std::size_t x = 0; x < props.m_canvas_width; ++x)
                 {
-                    // Pixel coordinate normalized to be in the [-1, 1] range.
+                    //
+                    // Port of Keijiro Takahashi's chromatic aberration image effect for Unity.
+                    // Simulates the two types of chromatic aberration (CA) of lenses:
+                    //
+                    //   * Axial (Longitudinal) CA: introduces purple finges around strong highlights
+                    //   * Transverse (Lateral) CA: distorts color planes in the edge region of the screen
+                    //
+                    // References:
+                    //
+                    //   https://github.com/keijiro/KinoFringe/
+                    //   https://en.wikipedia.org/wiki/Chromatic_aberration#Types
+                    //
+
+                    // Pixel coordinate normalized to be in the [-1/2, 1/2] range vertically.
                     const Vector2f coord(
-                        static_cast<float>(2 * x - props.m_canvas_width),
-                        static_cast<float>(2 * y - props.m_canvas_height));
+                        (static_cast<float>(x) - 0.5f * width) / width * aspect_ratio_rcp,
+                        (static_cast<float>(y) - 0.5f * height) / height);
 
-                    //
-                    // Port of byungyoonc's "Physical Chromatic Aberration" ShaderToy.
-                    //
-                    // Reference:
-                    //
-                    //   https://www.shadertoy.com/view/MtXXDr
-                    //
+                    // Defocus the red and blue planes (assume the green is in focus), to simulate "purple fringing".
+                    // Since this effect does not occur in the center of the image, and increases towards the edge, we weight it by r2.
+                    const float r2 = dot(coord, coord); // [0, 1/4]
+                    const float shift_amount = 0.02f * m_lateral_shift * r2; // 0.02 * [0, 1] * [0, 1/4] = [0, 0.005]
 
-                    const Vector3f incident = normalize(Vector3f(coord.x, coord.y, 1.0f));
+                    const float f_r = 1.0f - shift_amount; // [0.995, 1.0]
+                    const float f_b = 1.0f + shift_amount; // [1.0, 1.005]
 
-                    Vector3f refraction_red, refraction_green, refraction_blue;
-                    refract(incident, normal, m_refractive_index_red, refraction_red);
-                    refract(incident, normal, m_refractive_index_green, refraction_green);
-                    refract(incident, normal, m_refractive_index_blue, refraction_blue);
+                    // Pixel coordinates normalized to be in the [0, 1] range.
+                    const float u = x / width;
+                    const float v = y / height;
 
-                    refraction_red /= refraction_red.z;
-                    refraction_green /= refraction_green.z;
-                    refraction_blue /= refraction_blue.z;
+                    // Sample neighboring pixels colors to simulate lateral CA.
+                    Color4f pixel, pixel_r, pixel_b;
 
-                    // Sampling coordinates normalized to be in the [0, 1] range.
-                    const Vector2f coord_red(0.5f * (refraction_red.x + 1.0f), 0.5f * (refraction_red.y + 1.0f));
-                    const Vector2f coord_green(0.5f * (refraction_green.x + 1.0f), 0.5f * (refraction_green.y + 1.0f));
-                    const Vector2f coord_blue(0.5f * (refraction_blue.x + 1.0f), 0.5f * (refraction_blue.y + 1.0f));
+                    image.get_pixel(x, y, pixel);
 
-                    Color3f sample_red, sample_green, sample_blue;
                     image.get_pixel(
-                        std::min(static_cast<std::size_t>(x * coord_red.x + 0.5f), props.m_canvas_width - 1),
-                        std::min(static_cast<std::size_t>(y * coord_red.y + 0.5f), props.m_canvas_height - 1),
-                        sample_red);
-                    image.get_pixel(
-                        std::min(static_cast<std::size_t>(x * coord_green.x + 0.5f), props.m_canvas_width - 1),
-                        std::min(static_cast<std::size_t>(y * coord_green.y + 0.5f), props.m_canvas_height - 1),
-                        sample_green);
-                    image.get_pixel(
-                        std::min(static_cast<std::size_t>(x * coord_blue.x + 0.5f), props.m_canvas_width - 1),
-                        std::min(static_cast<std::size_t>(y * coord_blue.y + 0.5f), props.m_canvas_height - 1),
-                        sample_blue);
+                        // [-1/2, 1/2] * [0.995, 1.0] + 1/2 = [0, 1]
+                        static_cast<std::size_t>(width * ((u - 0.5f) * f_r + 0.5f)),
+                        static_cast<std::size_t>(height * ((v - 0.5f) * f_r + 0.5f)),
+                        pixel_r);
 
-                    image.set_pixel(x, y, Color3f(sample_red.r, sample_green.g, sample_blue.b));
+                    image.get_pixel(
+                        // [-1/2, 1/2] * [1.0, 1.005] + 1/2 = [0.0025, 1.0025]
+                        std::min(static_cast<std::size_t>(width * ((u - 0.5f) * f_b + 0.5f)), props.m_canvas_width),
+                        std::min(static_cast<std::size_t>(height * ((v - 0.5f) * f_b + 0.5f)), props.m_canvas_height),
+                        pixel_b);
+
+                    pixel.r = pixel_r.r;
+                    pixel.b = pixel_b.b;
+
+                    //@TODO axial CA
+
+                    image.set_pixel(x, y, pixel);
                 }
             }
+
         }
 
       private:
-        //@TODO add parameters
-        float m_refractive_index_red;
-        float m_refractive_index_green;
-        float m_refractive_index_blue;
+        float m_axial_strength;
+        float m_axial_shift;
+        float m_lateral_shift;
     };
 }
 
@@ -203,27 +259,14 @@ DictionaryArray ChromaticAberrationPostProcessingStageFactory::get_input_metadat
 
     add_common_input_metadata(metadata);
 
-    //@TODO expose parameters
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "refractive_index_red")
-            .insert("label", "Refractive Index (Red)")
-            .insert("type", "numeric")
-            .insert("min",
-                    Dictionary()
-                        .insert("value", "0.0")
-                        .insert("type", "hard"))
-            .insert("max",
-                    Dictionary()
-                        .insert("value", "2.0")
-                        .insert("type", "hard"))
-            .insert("use", "optional")
-            .insert("default", "1.0")); // DefaultRefractiveIndexRed
+    //
+    // Axial (Longitudinal) Chromatic Aberration.
+    //
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "refractive_index_green")
-            .insert("label", "Refractive Index (Green)")
+            .insert("name", "axial_strength")
+            .insert("label", "Axial Strength")
             .insert("type", "numeric")
             .insert("min",
                     Dictionary()
@@ -231,15 +274,15 @@ DictionaryArray ChromaticAberrationPostProcessingStageFactory::get_input_metadat
                         .insert("type", "hard"))
             .insert("max",
                     Dictionary()
-                        .insert("value", "2.0")
+                        .insert("value", "1.0")
                         .insert("type", "hard"))
             .insert("use", "optional")
-            .insert("default", "1.0")); // DefaultRefractiveIndexGreen
+            .insert("default", "0.8"));
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "refractive_index_blue")
-            .insert("label", "Refractive Index (Blue)")
+            .insert("name", "axial_shift")
+            .insert("label", "Axial Shift")
             .insert("type", "numeric")
             .insert("min",
                     Dictionary()
@@ -247,10 +290,30 @@ DictionaryArray ChromaticAberrationPostProcessingStageFactory::get_input_metadat
                         .insert("type", "hard"))
             .insert("max",
                     Dictionary()
-                        .insert("value", "2.0")
+                        .insert("value", "1.0")
                         .insert("type", "hard"))
             .insert("use", "optional")
-            .insert("default", "1.0")); // DefaultRefractiveIndexBlue
+            .insert("default", "0.3"));
+
+    //
+    // Transverse (Lateral) Chromatic Aberration.
+    //
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "lateral_shift")
+            .insert("label", "Lateral Shift")
+            .insert("type", "numeric")
+            .insert("min",
+                    Dictionary()
+                        .insert("value", "0.0")
+                        .insert("type", "hard"))
+            .insert("max",
+                    Dictionary()
+                        .insert("value", "1.0")
+                        .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "0.3"));
 
     return metadata;
 }
