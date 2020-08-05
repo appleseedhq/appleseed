@@ -1623,31 +1623,24 @@ void MainWindow::slot_project_modified()
 
 void MainWindow::slot_post_processing_stage_modified(const std::uint64_t stage_uid)
 {
-    assert(m_project_manager.is_project_open());
-
-    //@REFACTOR most of this is copy-pasted from apply_false_colors_settings
-
     Project* project = m_project_manager.get_project();
     assert(project != nullptr);
 
     Frame* frame = project->get_frame();
     assert(frame != nullptr);
 
-    if (!frame->post_processing_stages().empty())
+    auto_release_ptr<Frame> working_frame = make_temporary_frame_copy(*frame);
+
+    // Preview the post-processing stage that was modified.
+    for (PostProcessingStage& stage : frame->post_processing_stages())
     {
-        auto_release_ptr<Frame> working_frame = make_temporary_frame_copy(*frame);
-
-        // Preview the post-processing stage that was modified.
-        for (PostProcessingStage& stage : frame->post_processing_stages())
-        {
-            if (stage.get_uid() == stage_uid) {
-                apply_post_processing_stage(stage, working_frame.ref());
-                return;
-            }
+        if (stage.get_uid() == stage_uid) {
+            apply_post_processing_stage(stage, working_frame.ref());
+            return;
         }
-
-        assert(false);
     }
+
+    assert(false);
 }
 
 void MainWindow::slot_toggle_project_file_monitoring(const bool checked)
