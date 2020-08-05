@@ -120,8 +120,8 @@ ProjectExplorer::ProjectExplorer(
         SIGNAL(signal_frame_modified()));
 
     connect(
-        &m_project_builder, SIGNAL(signal_post_processing_stage_modified(const QString&)),
-        SIGNAL(signal_post_processing_stage_modified(const QString&)));
+        &m_project_builder, SIGNAL(signal_post_processing_stage_modified(const std::uint64_t)),
+        SIGNAL(signal_post_processing_stage_modified(const std::uint64_t)));
 }
 
 ProjectExplorer::~ProjectExplorer()

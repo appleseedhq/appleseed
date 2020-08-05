@@ -783,8 +783,8 @@ void MainWindow::update_project_explorer()
             SLOT(slot_project_modified()));
 
         connect(
-            m_project_explorer, SIGNAL(signal_post_processing_stage_modified(const QString&)),
-            SLOT(slot_post_processing_stage_modified(const QString&)));
+            m_project_explorer, SIGNAL(signal_post_processing_stage_modified(const std::uint64_t)),
+            SLOT(slot_post_processing_stage_modified(const std::uint64_t)));
 
         connect(
             m_project_explorer, SIGNAL(signal_frame_modified()),
@@ -1280,6 +1280,22 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
         m_render_tabs["RGB"]);
 }
 
+namespace
+{
+    auto_release_ptr<Frame> make_temporary_frame_copy(Frame& frame)
+    {
+        // Make a temporary copy of the frame.
+        // Render info, AOVs and other data are not copied.
+        // todo: creating a frame with denoising enabled is very expensive, see benchmark_frame.cpp.
+        auto_release_ptr<Frame> working_frame = FrameFactory::create(
+            (std::string(frame.get_name()) + "_copy").c_str(),
+            frame.get_parameters().remove_path("denoiser"));
+        working_frame->image().copy_from(frame.image());
+
+        return working_frame;
+    }
+}
+
 void MainWindow::apply_false_colors_settings()
 {
     Project* project = m_project_manager.get_project();
@@ -1293,6 +1309,9 @@ void MainWindow::apply_false_colors_settings()
 
     if (false_colors_enabled)
     {
+#if 0
+        auto_release_ptr<Frame> working_frame = make_temporary_frame_copy(frame);
+#else
         // Make a temporary copy of the frame.
         // Render info, AOVs and other data are not copied.
         // todo: creating a frame with denoising enabled is very expensive, see benchmark_frame.cpp.
@@ -1302,6 +1321,7 @@ void MainWindow::apply_false_colors_settings()
                 frame->get_parameters()
                     .remove_path("denoiser"));
         working_frame->image().copy_from(frame->image());
+#endif
 
         // Create post-processing stage.
         auto_release_ptr<PostProcessingStage> stage(
@@ -1613,7 +1633,7 @@ void MainWindow::slot_project_modified()
     update_window_title();
 }
 
-void MainWindow::slot_post_processing_stage_modified(const QString& stage_model)
+void MainWindow::slot_post_processing_stage_modified(const std::uint64_t stage_uid)
 {
     assert(m_project_manager.is_project_open());
 
@@ -1627,6 +1647,9 @@ void MainWindow::slot_post_processing_stage_modified(const QString& stage_model)
 
     if (!frame->post_processing_stages().empty())
     {
+#if 0
+        auto_release_ptr<Frame> working_frame = make_temporary_frame_copy(frame);
+#else
         // Make a temporary copy of the frame.
         // Render info, AOVs and other data are not copied.
         // todo: creating a frame with denoising enabled is very expensive, see benchmark_frame.cpp.
@@ -1635,11 +1658,12 @@ void MainWindow::slot_post_processing_stage_modified(const QString& stage_model)
                 (std::string(frame->get_name()) + "_copy").c_str(),
                 frame->get_parameters().remove_path("denoiser"));
         working_frame->image().copy_from(frame->image());
+#endif
 
         // Preview the post-processing stage that was modified.
         for (PostProcessingStage& stage : frame->post_processing_stages())
         {
-            if (stage.get_model() == stage_model)
+            if (stage.get_uid() == stage_uid)
                 apply_post_processing_stage(stage, working_frame.ref());
         }
     }

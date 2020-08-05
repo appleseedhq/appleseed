@@ -110,7 +110,8 @@ class ProjectBuilder
   signals:
     void signal_project_modified() const;
     void signal_frame_modified() const;
-    void signal_post_processing_stage_modified(const QString& stage_model) const;
+    // void signal_post_processing_stage_modified(const QString& stage_model) const; //@CLEANUP
+    void signal_post_processing_stage_modified(const std::uint64_t stage_uid) const;
 
   public slots:
     void slot_notify_project_modification() const;
@@ -324,8 +325,10 @@ inline renderer::PostProcessingStage* ProjectBuilder::edit_entity(
 
     slot_notify_project_modification();
 
+    //@TODO change the signal's param to quint64 and pass it the stage's UniqueID (std::uint64_t)
     // Signal the modified stage, so that it can be previewed.
-    emit signal_post_processing_stage_modified(QString::fromUtf8(new_entity_ptr->get_model()));
+    // emit signal_post_processing_stage_modified(QString::fromUtf8(new_entity_ptr->get_model())); //@CLEANUP
+    emit signal_post_processing_stage_modified(new_entity_ptr->get_uid());
 
     return new_entity_ptr;
 }
