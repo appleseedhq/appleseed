@@ -1309,19 +1309,7 @@ void MainWindow::apply_false_colors_settings()
 
     if (false_colors_enabled)
     {
-#if 0
-        auto_release_ptr<Frame> working_frame = make_temporary_frame_copy(frame);
-#else
-        // Make a temporary copy of the frame.
-        // Render info, AOVs and other data are not copied.
-        // todo: creating a frame with denoising enabled is very expensive, see benchmark_frame.cpp.
-        auto_release_ptr<Frame> working_frame =
-            FrameFactory::create(
-                (std::string(frame->get_name()) + "_copy").c_str(),
-                frame->get_parameters()
-                    .remove_path("denoiser"));
-        working_frame->image().copy_from(frame->image());
-#endif
+        auto_release_ptr<Frame> working_frame = make_temporary_frame_copy(*frame);
 
         // Create post-processing stage.
         auto_release_ptr<PostProcessingStage> stage(
@@ -1647,25 +1635,18 @@ void MainWindow::slot_post_processing_stage_modified(const std::uint64_t stage_u
 
     if (!frame->post_processing_stages().empty())
     {
-#if 0
-        auto_release_ptr<Frame> working_frame = make_temporary_frame_copy(frame);
-#else
-        // Make a temporary copy of the frame.
-        // Render info, AOVs and other data are not copied.
-        // todo: creating a frame with denoising enabled is very expensive, see benchmark_frame.cpp.
-        auto_release_ptr<Frame> working_frame =
-            FrameFactory::create(
-                (std::string(frame->get_name()) + "_copy").c_str(),
-                frame->get_parameters().remove_path("denoiser"));
-        working_frame->image().copy_from(frame->image());
-#endif
+        auto_release_ptr<Frame> working_frame = make_temporary_frame_copy(*frame);
 
         // Preview the post-processing stage that was modified.
         for (PostProcessingStage& stage : frame->post_processing_stages())
         {
-            if (stage.get_uid() == stage_uid)
+            if (stage.get_uid() == stage_uid) {
                 apply_post_processing_stage(stage, working_frame.ref());
+                return;
+            }
         }
+
+        assert(false);
     }
 }
 
@@ -1805,14 +1786,7 @@ void MainWindow::slot_post_process_rendering()
 
     if (!frame->post_processing_stages().empty())
     {
-        // Make a temporary copy of the frame.
-        // Render info, AOVs and other data are not copied.
-        // todo: creating a frame with denoising enabled is very expensive, see benchmark_frame.cpp.
-        auto_release_ptr<Frame> working_frame =
-            FrameFactory::create(
-                (std::string(frame->get_name()) + "_copy").c_str(),
-                frame->get_parameters().remove_path("denoiser"));
-        working_frame->image().copy_from(frame->image());
+        auto_release_ptr<Frame> working_frame = make_temporary_frame_copy(*frame);
 
         RENDERER_LOG_INFO("previewing post-processing stage:");
 
