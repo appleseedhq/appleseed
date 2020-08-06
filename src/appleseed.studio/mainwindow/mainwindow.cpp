@@ -407,7 +407,6 @@ void MainWindow::build_menus()
     connect(m_ui->action_rendering_start_final_rendering, SIGNAL(triggered()), SLOT(slot_start_final_rendering()));
     connect(m_ui->action_rendering_pause_resume_rendering, SIGNAL(toggled(bool)), SLOT(slot_pause_or_resume_rendering(const bool)));
     connect(m_ui->action_rendering_stop_rendering, SIGNAL(triggered()), &m_rendering_manager, SLOT(slot_abort_rendering()));
-    connect(m_ui->action_rendering_post_process_rendering, SIGNAL(triggered()), SLOT(slot_post_process_rendering()));
     connect(m_ui->action_rendering_rendering_settings, SIGNAL(triggered()), SLOT(slot_show_rendering_settings_window()));
 
     //
@@ -651,10 +650,6 @@ void MainWindow::build_toolbar()
     connect(m_action_stop_rendering, SIGNAL(triggered()), &m_rendering_manager, SLOT(slot_abort_rendering()));
     m_ui->main_toolbar->addAction(m_action_stop_rendering);
 
-    m_action_post_process_rendering = new QAction(load_icons("rendering_post_process"), combine_name_and_shortcut("Post Process Rendering", m_ui->action_rendering_post_process_rendering->shortcut()), this);
-    connect(m_action_post_process_rendering, SIGNAL(triggered()), SLOT(slot_post_process_rendering()));
-    m_ui->main_toolbar->addAction(m_action_post_process_rendering);
-
     m_action_rendering_settings = new QAction(load_icons("rendering_settings"), combine_name_and_shortcut("Rendering Settings...", m_ui->action_rendering_rendering_settings->shortcut()), this);
     connect(m_action_rendering_settings, SIGNAL(triggered()), SLOT(slot_show_rendering_settings_window()));
     m_ui->main_toolbar->addAction(m_action_rendering_settings);
@@ -868,12 +863,9 @@ void MainWindow::set_project_explorer_enabled(const bool is_enabled)
 
 void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const RenderingMode rendering_mode)
 {
-    const bool is_enabled_and_project_open = is_enabled && m_project_manager.is_project_open();
-    const bool is_not_rendering = rendering_mode == RenderingMode::NotRendering;
-
-    const bool allow_start = is_enabled_and_project_open && is_not_rendering;
-    const bool allow_stop = is_enabled_and_project_open && !is_not_rendering;
-    const bool allow_post_process = is_enabled_and_project_open && (m_rendering_manager.is_rendering_paused() || is_not_rendering);
+    const bool is_project_open = m_project_manager.is_project_open();
+    const bool allow_start = is_enabled && is_project_open && rendering_mode == RenderingMode::NotRendering;
+    const bool allow_stop = is_enabled && is_project_open && rendering_mode != RenderingMode::NotRendering;
 
     // Rendering -> Start Interactive Rendering.
     m_ui->action_rendering_start_interactive_rendering->setEnabled(allow_start);
@@ -891,10 +883,6 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const Rend
     m_ui->action_rendering_stop_rendering->setEnabled(allow_stop);
     m_action_stop_rendering->setEnabled(allow_stop);
 
-    // Rendering -> Post Process Rendering.
-    m_ui->action_rendering_post_process_rendering->setEnabled(allow_post_process);
-    m_action_post_process_rendering->setEnabled(allow_post_process);
-
     // Rendering -> Rendering Settings.
     m_ui->action_rendering_rendering_settings->setEnabled(allow_start);
     m_action_rendering_settings->setEnabled(allow_start);
@@ -910,15 +898,15 @@ void MainWindow::set_rendering_widgets_enabled(const bool is_enabled, const Rend
 
             // Clear frame.
             render_tab->set_clear_frame_button_enabled(
-                is_enabled_and_project_open && rendering_mode == RenderingMode::NotRendering);
+                is_enabled && is_project_open && rendering_mode == RenderingMode::NotRendering);
 
             // Set/clear rendering region.
             render_tab->set_render_region_buttons_enabled(
-                is_enabled_and_project_open && rendering_mode != RenderingMode::FinalRendering);
+                is_enabled && is_project_open && rendering_mode != RenderingMode::FinalRendering);
 
             // Scene picker.
             render_tab->get_scene_picking_handler()->set_enabled(
-                is_enabled_and_project_open && rendering_mode != RenderingMode::FinalRendering);
+                is_enabled && is_project_open && rendering_mode != RenderingMode::FinalRendering);
         }
     }
 }
@@ -1754,10 +1742,6 @@ void MainWindow::slot_pause_or_resume_rendering(const bool checked)
     {
         assert(!m_rendering_manager.is_rendering_paused());
         m_rendering_manager.pause_rendering();
-
-        //@CLEANUP enable/disable post process rendering preview.
-        m_ui->action_rendering_post_process_rendering->setEnabled(true);
-        m_action_post_process_rendering->setEnabled(true);
     }
     else
     {
@@ -1765,34 +1749,6 @@ void MainWindow::slot_pause_or_resume_rendering(const bool checked)
     }
 
     update_pause_resume_checkbox(checked);
-}
-
-//@CLEANUP it may make more sense to remove this altogether, if simply
-// previewing effects when stage values are changed is a good solution
-void MainWindow::slot_post_process_rendering()
-{
-    Project* project = m_project_manager.get_project();
-    assert(project != nullptr);
-
-    Frame* frame = project->get_frame();
-    assert(frame != nullptr);
-
-    if (!frame->post_processing_stages().empty())
-    {
-        auto_release_ptr<Frame> working_frame = make_temporary_frame_copy(*frame);
-
-        RENDERER_LOG_INFO("previewing post-processing stage:");
-
-        // Apply post-processing stages.
-        //@FIXME follow stage ordering, like in MasterRenderer::postprocess()
-        //@NOTE actually.. it might make more sense to only preview a single effect
-        // at a time (considering this is triggered when parameters are changed.. ?)
-        for (PostProcessingStage& stage : frame->post_processing_stages())
-        {
-            RENDERER_LOG_INFO("  \"%s\"", stage.get_path().c_str());
-            apply_post_processing_stage(stage, working_frame.ref());
-        }
-    }
 }
 
 void MainWindow::slot_rendering_end()
