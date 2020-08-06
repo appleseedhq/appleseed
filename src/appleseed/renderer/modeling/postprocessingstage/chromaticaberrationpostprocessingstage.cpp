@@ -64,7 +64,7 @@ namespace
     constexpr float DefaultLateralShift = 0.3f;
 
     // Poisson disk sample points
-#define AXIAL_SAMPLE_LOW 1
+#define AXIAL_SAMPLE_LOW 0
 #if AXIAL_SAMPLE_LOW
     constexpr std::size_t SAMPLE_NUM = 8;
     constexpr float POISSON_SAMPLES[2 * SAMPLE_NUM] =
@@ -79,7 +79,7 @@ namespace
         -0.896666615007f,  -0.440304757692f
     };
 #else
-    constexpr std::size_t SAMPLE_NUM = 8;
+    constexpr std::size_t SAMPLE_NUM = 16;
     constexpr float POISSON_SAMPLES[2 * SAMPLE_NUM] =
     {
          0.0984258332809f,   0.918808284462f,
@@ -137,17 +137,30 @@ namespace
             return true;
         }
 
-        // Vector3f poisson_filter(const Vector2f& uv, const float aspect_ratio)
-        // {
-        //     Vector3f acc(0.0f);
-        //     for (std::size_t i = 0; i < SAMPLE_NUM; ++i)
-        //     {
-        //         Vector2f displacement(POISSON_SAMPLES[i] * 0.02f * m_axial_shift);
-        //         displacement.x *= aspect_ratio;
-        //         acc += tex2D(_MainTex, uv + displacement).rgb;
-        //     }
-        //     return acc / SAMPLE_NUM;
-        // }
+        // The coordinates uv are assumed to be in the [0, 1] range.
+        Color3f sample_rgb_at(const Image& image, const Vector2f& uv) const
+        {
+            Color3f rgb_sample;
+
+            const std::size_t x = truncate<std::size_t>(image.properties().m_canvas_width * uv.x);
+            const std::size_t y = truncate<std::size_t>(image.properties().m_canvas_height * uv.y);
+
+            image.get_pixel(x, y, rgb_sample);
+
+            return rgb_sample;
+        }
+
+        Color3f poisson_filter(const Image& image, const Vector2f& uv, const float aspect_ratio) const
+        {
+            Color3f acc(0.0f);
+            for (std::size_t i = 0; i < SAMPLE_NUM; ++i)
+            {
+                Vector2f displacement(POISSON_SAMPLES[i] * 0.02f * m_axial_shift);
+                displacement.x *= aspect_ratio;
+                acc += sample_rgb_at(image, uv + displacement);
+            }
+            return acc / SAMPLE_NUM;
+        }
 
         void execute(Frame& frame, const std::size_t thread_count) const override
         {
@@ -155,11 +168,12 @@ namespace
 
             Image& image = frame.image();
 
-            const float width = static_cast<float>(props.m_canvas_width);
-            const float height = static_cast<float>(props.m_canvas_height);
+            const Vector2f resolution(
+                static_cast<float>(props.m_canvas_width),
+                static_cast<float>(props.m_canvas_height));
 
-            const float aspect_ratio = width / height;
-            const float aspect_ratio_rcp = height / width;
+            const float aspect_ratio = resolution.x / resolution.y;
+            const float aspect_ratio_rcp = resolution.y / resolution.x;
 
             for (std::size_t y = 0; y < props.m_canvas_height; ++y)
             {
@@ -178,44 +192,57 @@ namespace
                     //   https://en.wikipedia.org/wiki/Chromatic_aberration#Types
                     //
 
+                    Color4f pixel;
+                    image.get_pixel(x, y, pixel);
+
+                    // Pixel coordinates normalized to be in the [0, 1] range.
+                    const float u = (x + 0.5f) / resolution.x;
+                    const float v = (y + 0.5f) / resolution.y;
+
                     // Pixel coordinate normalized to be in the [-1/2, 1/2] range vertically.
-                    const Vector2f coord(
-                        (static_cast<float>(x) - 0.5f * width) / width * aspect_ratio_rcp,
-                        (static_cast<float>(y) - 0.5f * height) / height);
+                    const Vector2f spc((u - 0.5f) * aspect_ratio_rcp, (v - 0.5f)); //@NOTE spc = screen position centered (?)
+
+                    //
+                    // Lateral chromatic aberration.
+                    //
 
                     // Defocus the red and blue planes (assume the green is in focus), to simulate "purple fringing".
                     // Since this effect does not occur in the center of the image, and increases towards the edge, we weight it by r2.
-                    const float r2 = dot(coord, coord); // [0, 1/4]
+                    const float r2 = dot(spc, spc); // [0, 1/4]
                     const float shift_amount = 0.02f * m_lateral_shift * r2; // 0.02 * [0, 1] * [0, 1/4] = [0, 0.005]
 
                     const float f_r = 1.0f - shift_amount; // [0.995, 1.0]
                     const float f_b = 1.0f + shift_amount; // [1.0, 1.005]
 
-                    // Pixel coordinates normalized to be in the [0, 1] range.
-                    const float u = x / width;
-                    const float v = y / height;
-
                     // Sample neighboring pixels colors to simulate lateral CA.
-                    Color4f pixel, pixel_r, pixel_b;
-
-                    image.get_pixel(x, y, pixel);
+                    Color4f pixel_r, pixel_b;
 
                     image.get_pixel(
                         // [-1/2, 1/2] * [0.995, 1.0] + 1/2 = [0, 1]
-                        static_cast<std::size_t>(width * ((u - 0.5f) * f_r + 0.5f)),
-                        static_cast<std::size_t>(height * ((v - 0.5f) * f_r + 0.5f)),
+                        truncate<std::size_t>(resolution.x * ((u - 0.5f) * f_r + 0.5f)),
+                        truncate<std::size_t>(resolution.y * ((v - 0.5f) * f_r + 0.5f)),
                         pixel_r);
 
                     image.get_pixel(
                         // [-1/2, 1/2] * [1.0, 1.005] + 1/2 = [0.0025, 1.0025]
-                        std::min(static_cast<std::size_t>(width * ((u - 0.5f) * f_b + 0.5f)), props.m_canvas_width),
-                        std::min(static_cast<std::size_t>(height * ((v - 0.5f) * f_b + 0.5f)), props.m_canvas_height),
+                        std::min(truncate<std::size_t>(resolution.x * ((u - 0.5f) * f_b + 0.5f)), props.m_canvas_width - 1),
+                        std::min(truncate<std::size_t>(resolution.y * ((v - 0.5f) * f_b + 0.5f)), props.m_canvas_height - 1),
                         pixel_b);
 
                     pixel.r = pixel_r.r;
                     pixel.b = pixel_b.b;
 
-                    //@TODO axial CA
+                    //
+                    // Axial chromatic aberration.
+                    //
+
+                    if (m_axial_strength > 0.0f)
+                    {
+                        const Color3f blur = poisson_filter(image, Vector2f(u, v), aspect_ratio);
+                        const float delta = luminance(blur) - luminance(pixel.rgb());
+                        pixel.r = std::max(pixel.r, blur.r * delta * m_axial_strength);
+                        pixel.b = std::max(pixel.b, blur.b * delta * m_axial_strength);
+                    }
 
                     image.set_pixel(x, y, pixel);
                 }
