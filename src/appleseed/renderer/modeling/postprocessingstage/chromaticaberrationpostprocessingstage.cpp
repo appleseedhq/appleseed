@@ -58,7 +58,6 @@ namespace
 
     const char* Model = "chromatic_aberration_post_processing_stage";
 
-    constexpr float DefaultAnisotropy = 0.0f;
     constexpr float DefaultOffset = 0.0f;
     constexpr std::size_t DefaultMinShift = 0;
     constexpr std::size_t DefaultMaxShift = 4;
@@ -92,22 +91,11 @@ namespace
         {
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
-            m_anisotropy = m_params.get_optional("anisotropy", DefaultAnisotropy, context);
             m_offset = m_params.get_optional("offset", DefaultOffset, context);
             m_min_shift = m_params.get_optional("min_shift", DefaultMinShift, context);
             m_max_shift = m_params.get_optional("max_shift", DefaultMaxShift, context);
 
             return true;
-        }
-
-        Color3f fetch_at(const Image& image, const Vector2u& xy) const
-        {
-            Color3f fetch;
-            image.get_pixel(
-                clamp<std::size_t>(xy.x, 0, image.properties().m_canvas_width - 1),
-                clamp<std::size_t>(xy.y, 0, image.properties().m_canvas_height - 1),
-                fetch);
-            return fetch;
         }
 
         Color3f safe_sample_at(const Image& image, const std::size_t x, const std::size_t y) const
@@ -116,8 +104,8 @@ namespace
 
             // Clamp out of range coordinates.
             image.get_pixel(
-                clamp<std::size_t>(x, 0, image.properties().m_canvas_width - 1),
-                clamp<std::size_t>(y, 0, image.properties().m_canvas_height - 1),
+                std::min(x, image.properties().m_canvas_width - 1),
+                std::min(y, image.properties().m_canvas_height - 1),
                 sample);
 
             return sample;
@@ -137,9 +125,18 @@ namespace
             {
                 for (std::size_t x = 0; x < props.m_canvas_width; ++x)
                 {
+                    //
+                    // Simulates transverse (lateral) chromatic aberration of lenses.
+                    //
+                    // References:
+                    //
+                    //   https://en.wikipedia.org/wiki/Chromatic_aberration#Types
+                    //   https://github.com/keijiro/KinoFringe/
+                    //
+
                     // Pixel coordinate normalized to be in the [-1, 1] range vertically.
                     const Vector2f coord(
-                        (2.0f * x - resolution.x) / lerp(resolution.y, resolution.x, m_anisotropy),
+                        (2.0f * x - resolution.x) / resolution.y,
                         (2.0f * y - resolution.y) / resolution.y);
 
                     // Increase color shifting (linearly) towards the edges of the frame.
@@ -149,8 +146,7 @@ namespace
                         round<std::size_t>(
                             mix(static_cast<float>(m_min_shift), static_cast<float>(m_max_shift), radial_intensity));
 
-                    // Compute the final color by sampling from the original image with slightly different
-                    // shifts for each component, to simulate transverse (lateral) chromatic aberration.
+                    // Sample the original pixel coordinate with slightly different shifts for each color component.
                     const Color3f color(
                         safe_sample_at(image, x, y).r,
                         safe_sample_at(image, x + shift_amount, y + shift_amount).g,
@@ -163,7 +159,6 @@ namespace
         }
 
       private:
-        float m_anisotropy;
         float m_offset;
         std::size_t m_min_shift;
         std::size_t m_max_shift;
@@ -198,22 +193,6 @@ DictionaryArray ChromaticAberrationPostProcessingStageFactory::get_input_metadat
     DictionaryArray metadata;
 
     add_common_input_metadata(metadata);
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "anisotropy")
-            .insert("label", "Anisotropy")
-            .insert("type", "numeric")
-            .insert("min",
-                    Dictionary()
-                        .insert("value", "0.0")
-                        .insert("type", "hard"))
-            .insert("max",
-                    Dictionary()
-                        .insert("value", "1.0")
-                        .insert("type", "hard"))
-            .insert("use", "optional")
-            .insert("default", "0.0"));
 
     metadata.push_back(
         Dictionary()
