@@ -38,6 +38,7 @@
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/fresnel.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
+#include "renderer/modeling/bsdf/microfacetbrdfwrapper.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -95,6 +96,7 @@ namespace
     };
 
     const char* Model = "blinn_brdf";
+    const char* MicrofacetModel = "microfacet_normal_mapping_blinn_brdf";
 
     class BlinnBRDFImpl
       : public BSDF
@@ -226,6 +228,7 @@ namespace
     };
 
     typedef BSDFWrapper<BlinnBRDFImpl> BlinnBRDF;
+    typedef MicrofacetBRDFWrapper<BlinnBRDFImpl> MicrofacetBlinnBRDF;
 }
 
 
@@ -289,6 +292,30 @@ auto_release_ptr<BSDF> BlinnBRDFFactory::create(
     const ParamArray&   params) const
 {
     return auto_release_ptr<BSDF>(new BlinnBRDF(name, params));
+}
+
+//
+// MicrofacetBlinnBRDFFactory class implementation.
+//
+
+const char* MicrofacetBlinnBRDFFactory::get_model() const
+{
+    return MicrofacetModel;
+}
+
+Dictionary MicrofacetBlinnBRDFFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+            .insert("name", MicrofacetModel)
+            .insert("label", "Microfacet Blinn BRDF");
+}
+
+auto_release_ptr<BSDF> MicrofacetBlinnBRDFFactory::create(
+    const char*         name,
+    const ParamArray&   params) const
+{
+    return auto_release_ptr<BSDF>(new MicrofacetBlinnBRDF(name, params));
 }
 
 }   // namespace renderer

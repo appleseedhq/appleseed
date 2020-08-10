@@ -1,0 +1,9 @@
+
+surface test_emission(
+    float Kl = 1,
+    color Cl = 1,
+    color Cs = 0)
+{
+    if (raytype("light"))
+        Ci = Kl * Cl * emission();
+}

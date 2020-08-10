@@ -62,6 +62,8 @@ closure color as_oren_nayar(
 
 closure color as_sheen(normal N) BUILTIN;
 
+closure color as_microfacet_sheen(normal N) BUILTIN;
+
 closure color as_glossy(
     normal      N,
     vector      T,
@@ -70,6 +72,18 @@ closure color as_glossy(
     float       ior
     // keyword arguments:
     //   float "energy_compensation" = 0
+    //   float "microfacet_normal_mapping" = 0
+    ) BUILTIN;
+
+closure color as_microfacet_glossy(
+    normal      N,
+    vector      T,
+    float       roughness,
+    float       anisotropic,
+    float       ior
+    // keyword arguments:
+    //   float "energy_compensation" = 0
+    //   float "microfacet_normal_mapping" = 0
     ) BUILTIN;
 
 closure color as_blinn(
@@ -77,7 +91,24 @@ closure color as_blinn(
     float       exponent,
     float       ior) BUILTIN;
 
+closure color as_microfacet_blinn(
+    normal      N,
+    float       exponent,
+    float       ior) BUILTIN;
+
 closure color as_metal(
+    normal      N,
+    vector      T,
+    color       normal_reflectance,
+    color       edge_tint,
+    float       edge_tint_weight,
+    float       roughness,
+    float       anisotropic
+    // keyword arguments:
+    //   float "energy_compensation" = 0
+    ) BUILTIN;
+
+closure color as_microfacet_metal(
     normal      N,
     vector      T,
     color       normal_reflectance,
@@ -138,6 +169,16 @@ closure color as_hair(
     float       alpha) BUILTIN;
 
 closure color as_plastic(
+    normal      N,
+    color       specular_color,
+    float       specular_weight,
+    float       specular_roughness,
+    float       ior,
+    color       diffuse_color,
+    float       diffuse_weight,
+    float       scattering) BUILTIN;
+
+closure color as_microfacet_plastic(
     normal      N,
     color       specular_color,
     float       specular_weight,

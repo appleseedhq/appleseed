@@ -38,6 +38,7 @@
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/fresnel.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
+#include "renderer/modeling/bsdf/microfacetbrdfwrapper.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -82,6 +83,7 @@ namespace
     //
 
     const char* Model = "plastic_brdf";
+    const char* MicrofacetModel = "microfacet_normal_mapping_plastic_brdf";
 
     class PlasticBRDFImpl
       : public BSDF
@@ -438,6 +440,7 @@ namespace
     };
 
     typedef BSDFWrapper<PlasticBRDFImpl> PlasticBRDF;
+    typedef MicrofacetBRDFWrapper<PlasticBRDFImpl> MicrofacetPlasticBRDF;
 }
 
 
@@ -571,6 +574,30 @@ auto_release_ptr<BSDF> PlasticBRDFFactory::create(
     const ParamArray&   params) const
 {
     return auto_release_ptr<BSDF>(new PlasticBRDF(name, params));
+}
+
+//
+// MicrofacetPlasticBRDFFactory class implementation.
+//
+
+const char* MicrofacetPlasticBRDFFactory::get_model() const
+{
+    return MicrofacetModel;
+}
+
+Dictionary MicrofacetPlasticBRDFFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+            .insert("name", MicrofacetModel)
+            .insert("label", "Microfacet Plastic BRDF");
+}
+
+auto_release_ptr<BSDF> MicrofacetPlasticBRDFFactory::create(
+    const char*         name,
+    const ParamArray&   params) const
+{
+    return auto_release_ptr<BSDF>(new MicrofacetPlasticBRDF(name, params));
 }
 
 }   // namespace renderer

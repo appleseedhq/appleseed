@@ -1,0 +1,27 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.10.3
+# options: -o ../tests/test scenes/basis modifiers/_shaders/as_microfacet_glossy_surface.oso
+shader as_microfacet_glossy_surface	%meta{string,help,"Microfacet normal mapping glossy surface shader"} 
+param	vector	Normal	0 0 0		%read{1,1} %write{0,0} %initexpr
+param	vector	Tn	0 0 0		%meta{int,lockgeom,0} %meta{string,help,"Tangent"} %meta{string,label,"Tangent"}  %read{1,1} %write{2147483647,-1}
+param	float	Reflectance	0.800000012		%meta{float,min,0} %meta{float,max,1}  %read{2,2} %write{2147483647,-1}
+param	color	Color	1 1 1		%meta{string,help,"Color"}  %read{2,2} %write{2147483647,-1}
+param	float	Ior	1.5		%meta{string,help,"Index of refraction"} %meta{int,divider,1}  %read{1,1} %write{2147483647,-1}
+param	float	Roughness	0.100000001		%meta{string,help,"Surface roughness"} %meta{float,min,0.00100000005} %meta{float,max,1}  %read{1,1} %write{2147483647,-1}
+param	float	Anisotropic	0		%meta{string,help,"Anisotropy"} %meta{float,min,-1} %meta{float,max,1}  %read{1,1} %write{2147483647,-1}
+oparam	closure color	BRDF			%read{2147483647,-1} %write{3,3}
+global	normal	N	%read{0,0} %write{2147483647,-1}
+temp	closure color	$tmp1	%read{3,3} %write{1,1}
+const	string	$const1	"as_microfacet_glossy"		%read{1,1} %write{2147483647,-1}
+temp	color	$tmp2	%read{3,3} %write{2,2}
+code Normal
+# ../tests/test scenes/basis modifiers/_shaders/as_microfacet_glossy_surface.osl:34
+#     vector               Normal = N,
+	assign		Normal N 	%filename{"../tests/test scenes/basis modifiers/_shaders/as_microfacet_glossy_surface.osl"} %line{34} %argrw{"wr"}
+code ___main___
+# ../tests/test scenes/basis modifiers/_shaders/as_microfacet_glossy_surface.osl:70
+#     BRDF = Color * Reflectance * as_microfacet_glossy(
+	closure		$tmp1 $const1 Normal Tn Roughness Anisotropic Ior 	%filename{"../tests/test scenes/basis modifiers/_shaders/as_microfacet_glossy_surface.osl"} %line{70} %argrw{"wrrrrrr"}
+	mul		$tmp2 Color Reflectance 	%argrw{"wrr"}
+	mul		BRDF $tmp1 $tmp2 	%argrw{"wrr"}
+	end

@@ -36,6 +36,7 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
+#include "renderer/modeling/bsdf/microfacetbrdfwrapper.h"
 
 // appleseed.foundation headers.
 #include "foundation/containers/dictionary.h"
@@ -66,6 +67,7 @@ namespace
     //
 
     const char* Model = "lambertian_brdf";
+    const char* MicrofacetModel = "microfacet_normal_mapping_lambertian_brdf";
 
     class LambertianBRDFImpl
       : public BSDF
@@ -175,6 +177,7 @@ namespace
     };
 
     typedef BSDFWrapper<LambertianBRDFImpl> LambertianBRDF;
+    typedef MicrofacetBRDFWrapper<LambertianBRDFImpl> MicrofacetGlossyBRDF;
 }
 
 
@@ -234,6 +237,30 @@ auto_release_ptr<BSDF> LambertianBRDFFactory::create(
     const ParamArray&   params) const
 {
     return auto_release_ptr<BSDF>(new LambertianBRDF(name, params));
+}
+
+//
+// MicrofacetLambertianBRDFFactory class implementation.
+//
+
+const char* MicrofacetLambertianBRDFFactory::get_model() const
+{
+    return MicrofacetModel;
+}
+
+Dictionary MicrofacetLambertianBRDFFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+            .insert("name", MicrofacetModel)
+            .insert("label", "Microfacet Glossy BRDF");
+}
+
+auto_release_ptr<BSDF> MicrofacetLambertianBRDFFactory::create(
+    const char*         name,
+    const ParamArray&   params) const
+{
+    return auto_release_ptr<BSDF>(new MicrofacetGlossyBRDF(name, params));
 }
 
 }   // namespace renderer

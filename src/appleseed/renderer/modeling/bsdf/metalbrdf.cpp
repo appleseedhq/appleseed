@@ -38,6 +38,7 @@
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/fresnel.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
+#include "renderer/modeling/bsdf/microfacetbrdfwrapper.h"
 #include "renderer/modeling/bsdf/specularhelper.h"
 #include "renderer/utility/paramarray.h"
 
@@ -82,6 +83,7 @@ namespace
     //
 
     const char* Model = "metal_brdf";
+    const char* MicrofacetModel = "microfacet_normal_mapping_metal_brdf";
 
     class MetalBRDFImpl
       : public BSDF
@@ -309,6 +311,7 @@ namespace
     };
 
     typedef BSDFWrapper<MetalBRDFImpl> MetalBRDF;
+    typedef MicrofacetBRDFWrapper<MetalBRDFImpl> MicrofacetMetalBRDF;
 }
 
 
@@ -454,6 +457,30 @@ auto_release_ptr<BSDF> MetalBRDFFactory::create(
     const ParamArray&   params) const
 {
     return auto_release_ptr<BSDF>(new MetalBRDF(name, params));
+}
+
+//
+// MicrofacetMetalBRDFFactory class implementation.
+//
+
+const char* MicrofacetMetalBRDFFactory::get_model() const
+{
+    return MicrofacetModel;
+}
+
+Dictionary MicrofacetMetalBRDFFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+            .insert("name", MicrofacetModel)
+            .insert("label", "Microfacet Metal BRDF");
+}
+
+auto_release_ptr<BSDF> MicrofacetMetalBRDFFactory::create(
+    const char*         name,
+    const ParamArray&   params) const
+{
+    return auto_release_ptr<BSDF>(new MicrofacetMetalBRDF(name, params));
 }
 
 }   // namespace renderer

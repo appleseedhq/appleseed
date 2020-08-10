@@ -58,6 +58,7 @@ APPLESEED_DECLARE_INPUT_VALUES(LambertianBRDFInputValues)
 {
     Spectrum    m_reflectance;              // diffuse reflectance (albedo, technically)
     float       m_reflectance_multiplier;
+    float       m_microfacet_normal_mapping;
 };
 
 
@@ -80,6 +81,26 @@ class APPLESEED_DLLSYMBOL LambertianBRDFFactory
 
     // Return metadata for the inputs of this BSDF model.
     foundation::DictionaryArray get_input_metadata() const override;
+
+    // Create a new BSDF instance.
+    foundation::auto_release_ptr<BSDF> create(
+        const char*         name,
+        const ParamArray&   params) const override;
+};
+
+//
+// Microfacet Lambertian BRDF factory.
+//
+
+class APPLESEED_DLLSYMBOL MicrofacetLambertianBRDFFactory
+  : public LambertianBRDFFactory
+{
+  public:
+    // Return a string identifying this BSDF model.
+    const char* get_model() const override;
+
+    // Return metadata for this BSDF model.
+    foundation::Dictionary get_model_metadata() const override;
 
     // Create a new BSDF instance.
     foundation::auto_release_ptr<BSDF> create(

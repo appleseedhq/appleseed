@@ -1634,6 +1634,7 @@ set (renderer_modeling_bsdf_sources
     renderer/modeling/bsdf/metalbrdf.h
     renderer/modeling/bsdf/microfacethelper.cpp
     renderer/modeling/bsdf/microfacethelper.h
+    renderer/modeling/bsdf/microfacetbrdfwrapper.h
     renderer/modeling/bsdf/nullbsdf.h
     renderer/modeling/bsdf/orennayarbrdf.cpp
     renderer/modeling/bsdf/orennayarbrdf.h
