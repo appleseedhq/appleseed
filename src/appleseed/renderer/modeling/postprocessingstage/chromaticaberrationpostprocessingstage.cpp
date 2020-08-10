@@ -58,48 +58,10 @@ namespace
 
     const char* Model = "chromatic_aberration_post_processing_stage";
 
-    //@TODO add default parameters
-    constexpr float DefaultAxialStrength = 0.8f;
-    constexpr float DefaultAxialShift = 0.3f;
-    constexpr float DefaultLateralShift = 0.3f;
-
-    // Poisson disk sample points
-#define AXIAL_SAMPLE_LOW 0
-#if AXIAL_SAMPLE_LOW
-    constexpr std::size_t SAMPLE_NUM = 8;
-    constexpr float POISSON_SAMPLES[2 * SAMPLE_NUM] =
-    {
-         0.373838022357f,   0.662882019975f,
-        -0.335774814282f,  -0.940070127794f,
-        -0.9115721822f,     0.324130702404f,
-         0.837294074715f,  -0.504677167232f,
-        -0.0500874221246f, -0.0917990757772f,
-        -0.358644570242f,   0.906381100284f,
-         0.961200130218f,   0.219135111748f,
-        -0.896666615007f,  -0.440304757692f
-    };
-#else
-    constexpr std::size_t SAMPLE_NUM = 16;
-    constexpr float POISSON_SAMPLES[2 * SAMPLE_NUM] =
-    {
-         0.0984258332809f,   0.918808284462f,
-         0.00259138629413f, -0.999838959623f,
-        -0.987959729023f,   -0.00429660140761f,
-         0.981234239267f,   -0.140666219895f,
-        -0.0212157973013f,  -0.0443286928994f,
-        -0.652058534734f,    0.695078086985f,
-        -0.68090417832f,    -0.681862769398f,
-         0.779643686501f,    0.603399060386f,
-         0.67941165083f,    -0.731372789969f,
-         0.468821477499f,   -0.251621416756f,
-         0.278991228738f,    0.39302189329f,
-        -0.191188273806f,   -0.527976638433f,
-        -0.464789669525f,    0.216311272754f,
-        -0.559833960421f,   -0.256176089172f,
-         0.65988403582f,     0.170056284903f,
-        -0.170289189543f,    0.551561042407f
-    };
-#endif
+    constexpr float DefaultAnisotropy = 0.0f;
+    constexpr float DefaultOffset = 0.0f;
+    constexpr std::size_t DefaultMinShift = 0;
+    constexpr std::size_t DefaultMaxShift = 4;
 
     class ChromaticAberrationPostProcessingStage
       : public PostProcessingStage
@@ -130,36 +92,35 @@ namespace
         {
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
-            m_axial_strength  = m_params.get_optional("axial_strength", DefaultAxialStrength, context);
-            m_axial_shift  = m_params.get_optional("axial_shift", DefaultAxialShift, context);
-            m_lateral_shift  = m_params.get_optional("lateral_shift", DefaultLateralShift, context);
+            m_anisotropy = m_params.get_optional("anisotropy", DefaultAnisotropy, context);
+            m_offset = m_params.get_optional("offset", DefaultOffset, context);
+            m_min_shift = m_params.get_optional("min_shift", DefaultMinShift, context);
+            m_max_shift = m_params.get_optional("max_shift", DefaultMaxShift, context);
 
             return true;
         }
 
-        // The coordinates uv are assumed to be in the [0, 1] range.
-        Color3f sample_rgb_at(const Image& image, const Vector2f& uv) const
+        Color3f fetch_at(const Image& image, const Vector2u& xy) const
         {
-            Color3f rgb_sample;
-
-            const std::size_t x = truncate<std::size_t>(image.properties().m_canvas_width * uv.x);
-            const std::size_t y = truncate<std::size_t>(image.properties().m_canvas_height * uv.y);
-
-            image.get_pixel(x, y, rgb_sample);
-
-            return rgb_sample;
+            Color3f fetch;
+            image.get_pixel(
+                clamp<std::size_t>(xy.x, 0, image.properties().m_canvas_width - 1),
+                clamp<std::size_t>(xy.y, 0, image.properties().m_canvas_height - 1),
+                fetch);
+            return fetch;
         }
 
-        Color3f poisson_filter(const Image& image, const Vector2f& uv, const float aspect_ratio_rcp) const
+        Color3f safe_sample_at(const Image& image, const std::size_t x, const std::size_t y) const
         {
-            Color3f acc(0.0f);
-            for (std::size_t i = 0; i < SAMPLE_NUM; ++i)
-            {
-                Vector2f displacement(POISSON_SAMPLES[i] * 0.02f * m_axial_shift);
-                displacement.x *= aspect_ratio_rcp;
-                acc += sample_rgb_at(image, uv + displacement);
-            }
-            return acc / SAMPLE_NUM;
+            Color3f sample;
+
+            // Clamp out of range coordinates.
+            image.get_pixel(
+                clamp<std::size_t>(x, 0, image.properties().m_canvas_width - 1),
+                clamp<std::size_t>(y, 0, image.properties().m_canvas_height - 1),
+                sample);
+
+            return sample;
         }
 
         void execute(Frame& frame, const std::size_t thread_count) const override
@@ -176,88 +137,36 @@ namespace
             {
                 for (std::size_t x = 0; x < props.m_canvas_width; ++x)
                 {
-                    //
-                    // Port of Keijiro Takahashi's chromatic aberration image effect for Unity.
-                    // Simulates the two types of chromatic aberration (CA) of lenses:
-                    //
-                    //   * Axial (Longitudinal) CA: introduces purple finges around strong highlights
-                    //   * Transverse (Lateral) CA: distorts color planes in the edge region of the screen
-                    //
-                    // References:
-                    //
-                    //   https://github.com/keijiro/KinoFringe/
-                    //   https://en.wikipedia.org/wiki/Chromatic_aberration#Types
-                    //
-
-                    Color4f pixel;
-                    image.get_pixel(x, y, pixel);
-
-                    // Pixel coordinate normalized to be in the [-1/2, 1/2] range vertically.
+                    // Pixel coordinate normalized to be in the [-1, 1] range vertically.
                     const Vector2f coord(
-                        (x - 0.5f * resolution.x) / resolution.y,
-                        (y - 0.5f * resolution.y) / resolution.y);
+                        (2.0f * x - resolution.x) / lerp(resolution.y, resolution.x, m_anisotropy),
+                        (2.0f * y - resolution.y) / resolution.y);
 
-                    const float r2 = dot(coord, coord); // [0, 1/4] vertically
+                    // Increase color shifting (linearly) towards the edges of the frame.
+                    const float radial_intensity = norm(coord) - m_offset;
 
-                    //
-                    // Lateral chromatic aberration.
-                    //
+                    const std::size_t shift_amount =
+                        round<std::size_t>(
+                            mix(static_cast<float>(m_min_shift), static_cast<float>(m_max_shift), radial_intensity));
 
-                    // Defocus the red and blue planes (assume the green is in focus), to simulate "purple fringing".
-                    // Since this effect does not occur in the center of the image, and increases towards the edge, we weight it by r2.
-                    const float shift_amount = 0.02f * m_lateral_shift * r2; // 0.02 * [0, 1] * [0, 1/4] = [0, 0.005]
+                    // Compute the final color by sampling from the original image with slightly different
+                    // shifts for each component, to simulate transverse (lateral) chromatic aberration.
+                    const Color3f color(
+                        safe_sample_at(image, x, y).r,
+                        safe_sample_at(image, x + shift_amount, y + shift_amount).g,
+                        safe_sample_at(image, x + 2 * shift_amount, y + 2 * shift_amount).b);
 
-                    const float f_r = 1.0f - shift_amount; // [0.995, 1.0] vertically
-                    const float f_b = 1.0f + shift_amount; // [1.0, 1.005] vertically
-
-                    // Sample neighboring pixels colors to simulate lateral CA.
-                    Color4f pixel_r, pixel_b;
-
-                    // aberr.x = textureLod(iChannel0, vec2(0.5)+centerToUv*0.995,0.0).x;
-                    // aberr.y = textureLod(iChannel0, vec2(0.5)+centerToUv*0.997, 0.0).y;
-                    // aberr.z = textureLod(iChannel0, vec2(0.5)+centerToUv, 0.0).z;
-
-                    image.get_pixel(
-                        //std::min(truncate<std::size_t>(resolution.x * lerp(0.5f, x / resolution.x, f_r)), props.m_canvas_width - 1),
-                        //std::min(truncate<std::size_t>(resolution.y * lerp(0.5f, y / resolution.y, f_r)), props.m_canvas_height - 1),
-                        std::min(truncate<std::size_t>(resolution.x * (0.5f + (x / resolution.x - 0.5f) * 0.995f)), props.m_canvas_width - 1),
-                        std::min(truncate<std::size_t>(resolution.y * (0.5f + (y / resolution.y - 0.5f) * 0.995f)), props.m_canvas_height - 1),
-                        pixel_r);
-
-                    image.get_pixel(
-                        //std::min(truncate<std::size_t>(resolution.x * lerp(0.5f, x / resolution.x, f_b)), props.m_canvas_width - 1),
-                        //std::min(truncate<std::size_t>(resolution.y * lerp(0.5f, y / resolution.y, f_b)), props.m_canvas_height - 1),
-                        std::min(truncate<std::size_t>(resolution.x * (0.5f + (x / resolution.x - 0.5f) * 0.997f)), props.m_canvas_width - 1),
-                        std::min(truncate<std::size_t>(resolution.y * (0.5f + (y / resolution.y - 0.5f) * 0.997f)), props.m_canvas_height - 1),
-                        pixel_b);
-
-                    pixel.r = pixel_r.r;
-                    pixel.b = pixel_b.b;
-
-#if 0
-                    //
-                    // Axial chromatic aberration.
-                    //
-
-                    if (m_axial_strength > 0.0f)
-                    {
-                        const Color3f blur = poisson_filter(image, Vector2f(u, v), resolution.y / resolution.x);
-                        const float delta = luminance(blur) - luminance(pixel.rgb());
-                        pixel.r = std::max(pixel.r, blur.r * delta * m_axial_strength);
-                        pixel.b = std::max(pixel.b, blur.b * delta * m_axial_strength);
-                    }
-#endif
-
-                    image.set_pixel(x, y, pixel);
+                    image.set_pixel(x, y, color);
                 }
             }
 
         }
 
       private:
-        float m_axial_strength;
-        float m_axial_shift;
-        float m_lateral_shift;
+        float m_anisotropy;
+        float m_offset;
+        std::size_t m_min_shift;
+        std::size_t m_max_shift;
     };
 }
 
@@ -290,14 +199,10 @@ DictionaryArray ChromaticAberrationPostProcessingStageFactory::get_input_metadat
 
     add_common_input_metadata(metadata);
 
-    //
-    // Axial (Longitudinal) Chromatic Aberration.
-    //
-
     metadata.push_back(
         Dictionary()
-            .insert("name", "axial_strength")
-            .insert("label", "Axial Strength")
+            .insert("name", "anisotropy")
+            .insert("label", "Anisotropy")
             .insert("type", "numeric")
             .insert("min",
                     Dictionary()
@@ -308,12 +213,12 @@ DictionaryArray ChromaticAberrationPostProcessingStageFactory::get_input_metadat
                         .insert("value", "1.0")
                         .insert("type", "hard"))
             .insert("use", "optional")
-            .insert("default", "0.8"));
+            .insert("default", "0.0"));
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "axial_shift")
-            .insert("label", "Axial Shift")
+            .insert("name", "offset")
+            .insert("label", "Offset")
             .insert("type", "numeric")
             .insert("min",
                     Dictionary()
@@ -324,27 +229,39 @@ DictionaryArray ChromaticAberrationPostProcessingStageFactory::get_input_metadat
                         .insert("value", "1.0")
                         .insert("type", "hard"))
             .insert("use", "optional")
-            .insert("default", "0.3"));
-
-    //
-    // Transverse (Lateral) Chromatic Aberration.
-    //
+            .insert("default", "0.0"));
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "lateral_shift")
-            .insert("label", "Lateral Shift")
-            .insert("type", "numeric")
+            .insert("name", "min_shift")
+            .insert("label", "Min Shift")
+            .insert("type", "integer")
             .insert("min",
                     Dictionary()
-                        .insert("value", "0.0")
+                        .insert("value", "0")
                         .insert("type", "hard"))
             .insert("max",
                     Dictionary()
-                        .insert("value", "1.0")
+                        .insert("value", "5")
                         .insert("type", "hard"))
             .insert("use", "optional")
-            .insert("default", "0.3"));
+            .insert("default", "0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "max_shift")
+            .insert("label", "Max Shift")
+            .insert("type", "integer")
+            .insert("min",
+                    Dictionary()
+                        .insert("value", "0")
+                        .insert("type", "hard"))
+            .insert("max",
+                    Dictionary()
+                        .insert("value", "15")
+                        .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "4"));
 
     return metadata;
 }
