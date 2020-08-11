@@ -100,10 +100,10 @@ void ChromaticAberrationApplier::apply(
     {
         for (std::size_t x = 0; x < tile_width; ++x)
         {
-            const Vector2f pixel_coord = static_cast<Vector2f>(Vector2u(x, y) + tile_offset);
+            const Vector2u pixel_coord = Vector2u(x, y) + tile_offset;
 
             // Pixel coordinate normalized to be in the [-1, 1] range vertically.
-            const Vector2f coord((2.0f * pixel_coord - resolution) / resolution.y);
+            const Vector2f coord((2.0f * static_cast<Vector2f>(pixel_coord) - resolution) / resolution.y);
 
             // Increase color shifting (linearly) towards the edges of the frame.
             const float radial_intensity = norm(coord) - m_offset;
