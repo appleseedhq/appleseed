@@ -33,13 +33,11 @@
 
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
+#include "foundation/image/image.h"
 #include "foundation/math/vector.h"
 
 // Standard headers.
 #include <cstddef>
-
-// Forward declarations.
-namespace foundation    { class Image; }
 
 namespace renderer
 {
@@ -85,7 +83,7 @@ class ChromaticAberrationApplier
     const float                     m_offset;
     const std::size_t               m_min_shift;
     const std::size_t               m_max_shift;
-    const foundation::Image&        m_src_image;
+    const foundation::Image         m_src_image;
 
     foundation::Color3f sample_at(
         const std::size_t           pixel_x,

@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/frame/frame.h"
+#include "renderer/modeling/postprocessingstage/effect/chromaticaberrationapplier.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
 
 // appleseed.foundation headers.
@@ -98,64 +99,19 @@ namespace
             return true;
         }
 
-        Color3f safe_sample_at(const Image& image, const std::size_t x, const std::size_t y) const
-        {
-            Color3f sample;
-
-            // Clamp out of range coordinates.
-            image.get_pixel(
-                std::min(x, image.properties().m_canvas_width - 1),
-                std::min(y, image.properties().m_canvas_height - 1),
-                sample);
-
-            return sample;
-        }
-
         void execute(Frame& frame, const std::size_t thread_count) const override
         {
             const CanvasProperties& props = frame.image().properties();
 
             Image& image = frame.image();
 
-            const Vector2f resolution(
-                static_cast<float>(props.m_canvas_width),
-                static_cast<float>(props.m_canvas_height));
+            const ChromaticAberrationApplier chromatic_aberration(
+                image,
+                m_offset,
+                m_min_shift,
+                m_max_shift);
 
-            for (std::size_t y = 0; y < props.m_canvas_height; ++y)
-            {
-                for (std::size_t x = 0; x < props.m_canvas_width; ++x)
-                {
-                    //
-                    // Simulates transverse (lateral) chromatic aberration of lenses.
-                    //
-                    // References:
-                    //
-                    //   https://en.wikipedia.org/wiki/Chromatic_aberration#Types
-                    //   https://github.com/keijiro/KinoFringe/
-                    //
-
-                    // Pixel coordinate normalized to be in the [-1, 1] range vertically.
-                    const Vector2f coord(
-                        (2.0f * x - resolution.x) / resolution.y,
-                        (2.0f * y - resolution.y) / resolution.y);
-
-                    // Increase color shifting (linearly) towards the edges of the frame.
-                    const float radial_intensity = norm(coord) - m_offset;
-
-                    const std::size_t shift_amount =
-                        round<std::size_t>(
-                            mix(static_cast<float>(m_min_shift), static_cast<float>(m_max_shift), radial_intensity));
-
-                    // Sample the original pixel coordinate with slightly different shifts for each color component.
-                    const Color3f color(
-                        safe_sample_at(image, x, y).r,
-                        safe_sample_at(image, x + shift_amount, y + shift_amount).g,
-                        safe_sample_at(image, x + 2 * shift_amount, y + 2 * shift_amount).b);
-
-                    image.set_pixel(x, y, color);
-                }
-            }
-
+            chromatic_aberration.apply_on_tiles(image, thread_count);
         }
 
       private:
