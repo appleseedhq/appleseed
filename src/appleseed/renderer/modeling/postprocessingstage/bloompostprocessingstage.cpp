@@ -64,7 +64,7 @@ namespace renderer
 // Initialize the two image pyramids used for blurring (through down/up sampling).
 //
 // Both have level_count images, with pixel format and channel count given by max_level_props,
-// that also specifies the dimensions of their first elements, which get subsequently halved.
+// that also specifies the dimensions of their first elements (which get subsequently halved).
 //
 
 void init_blur_pyramids(
@@ -244,7 +244,7 @@ namespace
 
             // Compute how many downsampling iterations we can do before a buffer has a side smaller than 2 pixels.
             const float max_iterations = std::log2(min_pyramid_dimension / 2.0f);
-            const std::size_t iterations = clamp<std::size_t>(m_iterations, 1, static_cast<std::size_t>(max_iterations));
+            const std::size_t iterations = clamp<std::size_t>(m_iterations, 1, truncate<std::size_t>(max_iterations));
 
             if (iterations < m_iterations)
             {
@@ -334,7 +334,7 @@ namespace
 
             const AdditiveBlendApplier additive_blend(
                 bloom_target,
-                m_debug_blur ? 1.0f : m_intensity,
+                m_intensity,
                 m_debug_blur ? 0.0f : 1.0f);
             additive_blend.apply_on_tiles(image, thread_count);
         }
@@ -364,7 +364,7 @@ namespace
 
             const AdditiveBlendApplier additive_blend(
                 bloom_target,
-                m_debug_blur ? 1.0f : m_intensity,
+                m_intensity,
                 m_debug_blur ? 0.0f : 1.0f);
             additive_blend.apply_on_tiles(image, thread_count);
         }
