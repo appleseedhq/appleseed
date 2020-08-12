@@ -36,4 +36,5 @@
 #include "renderer/modeling/postprocessingstage/postprocessingstagefactoryregistrar.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstagetraits.h"
 #include "renderer/modeling/postprocessingstage/renderstamppostprocessingstage.h"
+#include "renderer/modeling/postprocessingstage/tonemappostprocessingstage.h"
 #include "renderer/modeling/postprocessingstage/vignettepostprocessingstage.h"
