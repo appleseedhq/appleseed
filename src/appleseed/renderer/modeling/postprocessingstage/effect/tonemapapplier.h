@@ -135,6 +135,7 @@ class AcesNarkowiczApplier
     explicit AcesNarkowiczApplier(
         const float     exposure_bias);
 
+    // Default values.
     static constexpr float DefaultExposureBias = 0.8f;
 
   private:
@@ -189,6 +190,7 @@ class FilmicPiecewiseApplier
         const float     shoulder_length,    // in F stops
         const float     shoulder_angle);    // 0..1 ratio
 
+    // Default values.
     static constexpr float DefaultToeStrength = 0.0f;
     static constexpr float DefaultToeLength = 0.5f;
     static constexpr float DefaultShoulderStrength = 0.0f;
@@ -248,7 +250,7 @@ class FilmicUnchartedApplier
 
     //
     // Note: below are the default values from the original presentation (slides 141-142) [1].
-    // John Hable later changed the values of A, B and E slightly, on a follow up blog post [2].
+    // John Hable later changed the values of A, B and E slightly, on a follow-up blog post [2].
     // Also, MJP uses different values for A, B, C, D and W on his implementation of Hable's operator [3].
     //
     // References:
@@ -258,6 +260,7 @@ class FilmicUnchartedApplier
     //   [3] https://github.com/TheRealMJP/BakingLab/blob/master/BakingLab/ToneMapping.hlsl#L73
     //
 
+    // Default values.
     static constexpr float DefaultA = 0.22f;
     static constexpr float DefaultB = 0.30f;
     static constexpr float DefaultC = 0.10f;
@@ -295,6 +298,7 @@ class ReinhardApplier
     explicit ReinhardApplier(
         const bool      use_luminance);
 
+    // Default values.
     static constexpr bool DefaultUseLuminance = true;
 
   private:
@@ -317,6 +321,7 @@ class ReinhardExtendedApplier
         const float     max_white,
         const bool      use_luminance);
 
+    // Default values.
     static constexpr float DefaultMaxWhite = 1.0f;
     static constexpr bool DefaultUseLuminance = true;
 

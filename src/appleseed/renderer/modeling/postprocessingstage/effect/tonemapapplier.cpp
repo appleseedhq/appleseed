@@ -85,7 +85,7 @@ void ToneMapApplier::apply(
 }
 
 //
-// DontToneMapApplier class implementation.
+// LinearApplier class implementation.
 //
 
 LinearApplier::LinearApplier()
@@ -100,6 +100,8 @@ void LinearApplier::tone_map(Color3f& color) const
 //
 // AcesNarkowiczApplier class implementation.
 //
+
+constexpr float AcesNarkowiczApplier::DefaultExposureBias;
 
 AcesNarkowiczApplier::AcesNarkowiczApplier(
     const float     exposure_bias)
@@ -202,6 +204,12 @@ void FilmicHejlApplier::tone_map(Color3f& color) const
 //
 // FilmicPiecewiseApplier class implementation.
 //
+
+constexpr float FilmicPiecewiseApplier::DefaultToeStrength;
+constexpr float FilmicPiecewiseApplier::DefaultToeLength;
+constexpr float FilmicPiecewiseApplier::DefaultShoulderStrength;
+constexpr float FilmicPiecewiseApplier::DefaultShoulderLength;
+constexpr float FilmicPiecewiseApplier::DefaultShoulderAngle;
 
 FilmicPiecewiseApplier::FilmicPiecewiseApplier(
     const float     toe_strength,
@@ -364,6 +372,15 @@ void FilmicPiecewiseApplier::tone_map(Color3f& color) const
 // FilmicUnchartedApplier class implementation.
 //
 
+constexpr float FilmicUnchartedApplier::DefaultA;
+constexpr float FilmicUnchartedApplier::DefaultB;
+constexpr float FilmicUnchartedApplier::DefaultC;
+constexpr float FilmicUnchartedApplier::DefaultD;
+constexpr float FilmicUnchartedApplier::DefaultE;
+constexpr float FilmicUnchartedApplier::DefaultF;
+constexpr float FilmicUnchartedApplier::DefaultW;
+constexpr float FilmicUnchartedApplier::DefaultExposureBias;
+
 FilmicUnchartedApplier::FilmicUnchartedApplier(
     const float     A,
     const float     B,
@@ -421,6 +438,8 @@ void FilmicUnchartedApplier::tone_map(Color3f& color) const
 // ReinhardApplier class implementation.
 //
 
+constexpr bool ReinhardApplier::DefaultUseLuminance;
+
 ReinhardApplier::ReinhardApplier(const bool use_luminance)
   : m_use_luminance(use_luminance)
 {
@@ -457,6 +476,9 @@ void ReinhardApplier::tone_map(Color3f& color) const
 //
 // ReinhardExtendedApplier class implementation.
 //
+
+constexpr float ReinhardExtendedApplier::DefaultMaxWhite;
+constexpr bool ReinhardExtendedApplier::DefaultUseLuminance;
 
 ReinhardExtendedApplier::ReinhardExtendedApplier(
     const float max_white,
