@@ -225,8 +225,8 @@ struct MasterRenderer::Impl
             // Insert rendering time into frame's render info.
             render_info.insert("render_time", m_project.get_rendering_timer().get_seconds());
 
-            // Don't proceed further if rendering failed.
-            if (result.m_status == RenderingResult::Failed)
+            // Don't proceed further if rendering failed or aborted.
+            if (result.m_status != RenderingResult::Succeeded)
             {
                 controller.on_rendering_abort();
                 return result;
@@ -241,12 +241,7 @@ struct MasterRenderer::Impl
             // Insert post-processing time into frame's render info.
             render_info.insert("post_processing_time", stopwatch.get_seconds());
 
-            switch (result.m_status)
-            {
-              case RenderingResult::Succeeded: controller.on_rendering_success(); break;
-              case RenderingResult::Aborted: controller.on_rendering_abort(); break;
-              assert_otherwise;
-            }
+            controller.on_rendering_success();
         }
         catch (const std::bad_alloc&)
         {
