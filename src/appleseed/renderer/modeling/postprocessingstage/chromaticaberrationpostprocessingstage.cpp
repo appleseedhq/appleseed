@@ -59,9 +59,8 @@ namespace
 
     const char* Model = "chromatic_aberration_post_processing_stage";
 
-    constexpr float DefaultOffset = 0.0f;
-    constexpr std::size_t DefaultMinShift = 0;
-    constexpr std::size_t DefaultMaxShift = 4;
+    constexpr float DefaultStrength = 0.4f;
+    constexpr std::size_t DefaultSampleCount = 8;
 
     class ChromaticAberrationPostProcessingStage
       : public PostProcessingStage
@@ -92,11 +91,38 @@ namespace
         {
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
-            m_offset = m_params.get_optional("offset", DefaultOffset, context);
-            m_min_shift = m_params.get_optional("min_shift", DefaultMinShift, context);
-            m_max_shift = m_params.get_optional("max_shift", DefaultMaxShift, context);
+            m_strength = m_params.get_optional("strength", DefaultStrength, context);
+            m_sample_count = m_params.get_optional("quality", DefaultSampleCount, context);
 
             return true;
+        }
+
+        Color3f spectrum_offset(const float t) const
+        {
+            //
+            // Linearly interpolates blur-weights from red to green to blue.
+            //
+            // References:
+            //
+            //    https://www.shadertoy.com/view/XssGz8
+            //    https://www.shadertoy.com/view/MdsyDX
+            //
+
+            const float t0 = 3.0f * t - 1.5f;
+
+            return
+                Color3f(
+                    saturate(-t0),
+                    saturate(1.0f - std::abs(t0)),
+                    saturate(+t0));
+        }
+
+        Vector2f radial_distort(const Vector2f& uv, const float amount) const
+        {
+            const Vector2f radius(uv - Vector2f(0.5f));
+
+            // Increase distortion towards the image edges.
+            return uv + radius * dot(radius, radius) * amount;
         }
 
         void execute(Frame& frame, const std::size_t thread_count) const override
@@ -105,19 +131,66 @@ namespace
 
             Image& image = frame.image();
 
-            const ChromaticAberrationApplier chromatic_aberration(
-                image,
-                m_offset,
-                m_min_shift,
-                m_max_shift);
+            const Vector2f resolution(
+                static_cast<float>(props.m_canvas_width),
+                static_cast<float>(props.m_canvas_height));
 
+            const auto sample_at =
+                [&resolution, image](const Vector2f uv) -> Color3f
+                {
+                    // Remap uv to image coordinates, clamping out of range values.
+                    const float fx = clamp(uv.x * resolution.x, 0.0f, resolution.x - 1.0f);
+                    const float fy = clamp(uv.y * resolution.y, 0.0f, resolution.y - 1.0f);
+
+                    Color3f sample;
+                    image.get_pixel(truncate<std::size_t>(fx), truncate<std::size_t>(fy), sample);
+
+                    return sample;
+                };
+
+            for (std::size_t y = 0; y < props.m_canvas_height; ++y)
+            {
+                for (std::size_t x = 0; x < props.m_canvas_width; ++x)
+                {
+                    const float fx = static_cast<float>(x) + 0.5f;
+                    const float fy = static_cast<float>(y) + 0.5f;
+
+                    // Pixel coordinate normalized to be in the [0, 1] range.
+                    const Vector2f uv(fx / resolution.x, fy / resolution.y);
+
+                    //
+                    // Reference:
+                    //
+                    //   http://loopit.dk/rendering_inside.pdf (slides 19-20)
+                    //
+
+                    Color3f color_sum(0.0f);
+                    Color3f weight_sum(0.0f);
+
+                    for (std::size_t i = 0; i < m_sample_count; ++i)
+                    {
+                        const float t = static_cast<float>(i) / (m_sample_count - 1.0f);
+
+                        const Color3f weight = spectrum_offset(t);
+                        weight_sum += weight;
+
+                        const Vector2f d_uv(radial_distort(uv, 0.6f * m_strength * t));
+                        color_sum += weight * sample_at(d_uv);
+                    }
+
+                    image.set_pixel(x, y, color_sum / weight_sum);
+                }
+            }
+
+            /*
+            const ChromaticAberrationApplier chromatic_aberration(...);
             chromatic_aberration.apply_on_tiles(image, thread_count);
+            */
         }
 
       private:
-        float m_offset;
-        std::size_t m_min_shift;
-        std::size_t m_max_shift;
+        float m_strength;
+        std::size_t m_sample_count;
     };
 }
 
@@ -152,8 +225,8 @@ DictionaryArray ChromaticAberrationPostProcessingStageFactory::get_input_metadat
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "offset")
-            .insert("label", "Offset")
+            .insert("name", "strength")
+            .insert("label", "Strength")
             .insert("type", "numeric")
             .insert("min",
                     Dictionary()
@@ -164,39 +237,23 @@ DictionaryArray ChromaticAberrationPostProcessingStageFactory::get_input_metadat
                         .insert("value", "1.0")
                         .insert("type", "hard"))
             .insert("use", "optional")
-            .insert("default", "0.0"));
+            .insert("default", "0.4"));
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "min_shift")
-            .insert("label", "Min Shift")
+            .insert("name", "quality")
+            .insert("label", "Quality")
             .insert("type", "integer")
             .insert("min",
                     Dictionary()
-                        .insert("value", "0")
+                        .insert("value", "3")
                         .insert("type", "hard"))
             .insert("max",
                     Dictionary()
-                        .insert("value", "5")
+                        .insert("value", "24")
                         .insert("type", "hard"))
             .insert("use", "optional")
-            .insert("default", "0"));
-
-    metadata.push_back(
-        Dictionary()
-            .insert("name", "max_shift")
-            .insert("label", "Max Shift")
-            .insert("type", "integer")
-            .insert("min",
-                    Dictionary()
-                        .insert("value", "0")
-                        .insert("type", "hard"))
-            .insert("max",
-                    Dictionary()
-                        .insert("value", "15")
-                        .insert("type", "hard"))
-            .insert("use", "optional")
-            .insert("default", "4"));
+            .insert("default", "8"));
 
     return metadata;
 }
