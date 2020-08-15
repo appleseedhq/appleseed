@@ -157,9 +157,6 @@
             <object name="Teapot001" model="mesh_object">
                 <parameter name="filename" value="Teapot001.binarymesh" />
             </object>
-            <object name="Teapot002" model="mesh_object">
-                <parameter name="filename" value="Teapot002.binarymesh" />
-            </object>
             <object name="Teapot003" model="mesh_object">
                 <parameter name="filename" value="Teapot003.binarymesh" />
             </object>
