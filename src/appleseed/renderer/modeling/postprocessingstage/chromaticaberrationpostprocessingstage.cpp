@@ -60,7 +60,7 @@ namespace
     const char* Model = "chromatic_aberration_post_processing_stage";
 
     constexpr float DefaultStrength = 0.4f;
-    constexpr std::size_t DefaultSampleCount = 8;
+    constexpr std::size_t DefaultFringing = 1;
 
     class ChromaticAberrationPostProcessingStage
       : public PostProcessingStage
@@ -92,7 +92,7 @@ namespace
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
             m_strength = m_params.get_optional("strength", DefaultStrength, context);
-            m_sample_count = m_params.get_optional("quality", DefaultSampleCount, context);
+            m_sample_count = 2 + m_params.get_optional("fringing", DefaultFringing, context); // >= 3
 
             return true;
         }
@@ -102,9 +102,8 @@ namespace
             //
             // Linearly interpolates blur-weights from red to green to blue.
             //
-            // References:
+            // Reference:
             //
-            //    https://www.shadertoy.com/view/XssGz8
             //    https://www.shadertoy.com/view/MdsyDX
             //
 
@@ -159,9 +158,10 @@ namespace
                     const Vector2f uv(fx / resolution.x, fy / resolution.y);
 
                     //
-                    // Reference:
+                    // References:
                     //
-                    //   http://loopit.dk/rendering_inside.pdf (slides 19-20)
+                    //    http://loopit.dk/rendering_inside.pdf (slides 19-20)
+                    //    https://www.shadertoy.com/view/XssGz8
                     //
 
                     Color3f color_sum(0.0f);
@@ -241,19 +241,19 @@ DictionaryArray ChromaticAberrationPostProcessingStageFactory::get_input_metadat
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "quality")
-            .insert("label", "Quality")
+            .insert("name", "fringing")
+            .insert("label", "Fringing")
             .insert("type", "integer")
             .insert("min",
                     Dictionary()
-                        .insert("value", "3")
+                        .insert("value", "1")
                         .insert("type", "hard"))
             .insert("max",
                     Dictionary()
-                        .insert("value", "24")
-                        .insert("type", "hard"))
+                        .insert("value", "20")
+                        .insert("type", "soft"))
             .insert("use", "optional")
-            .insert("default", "8"));
+            .insert("default", "6"));
 
     return metadata;
 }
