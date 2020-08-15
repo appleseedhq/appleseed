@@ -44,13 +44,15 @@ namespace renderer
 
 ChromaticAberrationApplier::ChromaticAberrationApplier(
     const Image&        src_image,
-    const float         offset,
-    const std::size_t   min_shift,
-    const std::size_t   max_shift)
-  : m_offset(offset)
-  , m_min_shift(min_shift)
-  , m_max_shift(max_shift)
+    const float         strength,
+    const std::size_t   sample_count)
+  : m_strength(strength)
+  , m_sample_count(sample_count)
   , m_src_image(src_image)
+  , m_resolution(
+        Vector2f(
+            static_cast<float>(src_image.properties().m_canvas_width),
+            static_cast<float>(src_image.properties().m_canvas_height)))
 {
 }
 
@@ -59,20 +61,59 @@ void ChromaticAberrationApplier::release()
     delete this;
 }
 
-Color3f ChromaticAberrationApplier::sample_at(
-    const std::size_t pixel_x,
-    const std::size_t pixel_y) const
+Color3f ChromaticAberrationApplier::sample_at(const Vector2f& uv) const
 {
-    Color3f sample;
+    // Remap uv to image coordinates, clamping out of range values.
+    const float fx = clamp(uv.x * m_resolution.x, 0.0f, m_resolution.x - 1.0f);
+    const float fy = clamp(uv.y * m_resolution.y, 0.0f, m_resolution.y - 1.0f);
 
-    // Clamp out of range coordinates.
-    m_src_image.get_pixel(
-        std::min(pixel_x, m_src_image.properties().m_canvas_width - 1),
-        std::min(pixel_y, m_src_image.properties().m_canvas_height - 1),
-        sample);
+    Color3f sample;
+    m_src_image.get_pixel(truncate<std::size_t>(fx), truncate<std::size_t>(fy), sample);
 
     return sample;
 }
+
+namespace
+{
+    Color3f spectrum_offset(const float t)
+    {
+        //
+        // Linearly interpolates blur-weights from red to green to blue:
+        //
+        //       0                           1
+        //       ^          green            ^
+        //   red |---------    .    ---------| blue
+        //       |         \  / \  /         |
+        //       |          \/   \/          |
+        //       |          /\   /\          |
+        //       |         /  \ /  \         |
+        //  cyan |=========----.----=========| yellow
+        //
+        //       |<----------- t ----------->|
+        //
+        // Reference:
+        //
+        //    https://www.shadertoy.com/view/MdsyDX
+        //
+
+        const float t0 = 3.0f * t - 1.5f;
+
+        return
+            Color3f(
+                saturate(-t0),
+                saturate(1.0f - std::abs(t0)),
+                saturate(+t0));
+    }
+
+    Vector2f radial_distort(const Vector2f& uv, const float amount)
+    {
+        const Vector2f radius(uv - Vector2f(0.5f));
+
+        // Increase distortion towards the image edges.
+        return uv + radius * dot(radius, radius) * amount;
+    }
+}
+
 
 void ChromaticAberrationApplier::apply(
     Image&              image,
@@ -80,10 +121,6 @@ void ChromaticAberrationApplier::apply(
     const std::size_t   tile_y) const
 {
     const CanvasProperties& props = image.properties();
-
-    const Vector2f resolution(
-        static_cast<float>(props.m_canvas_width),
-        static_cast<float>(props.m_canvas_height));
 
     assert(tile_x < props.m_tile_count_x);
     assert(tile_y < props.m_tile_count_y);
@@ -99,25 +136,34 @@ void ChromaticAberrationApplier::apply(
     {
         for (std::size_t x = 0; x < tile_width; ++x)
         {
-            const Vector2u pixel_coord = Vector2u(x, y) + tile_offset;
+            const float fx = static_cast<float>(x + tile_offset.x) + 0.5f;
+            const float fy = static_cast<float>(y + tile_offset.y) + 0.5f;
 
-            // Pixel coordinate normalized to be in the [-1, 1] range vertically.
-            const Vector2f coord((2.0f * static_cast<Vector2f>(pixel_coord) - resolution) / resolution.y);
+            // Pixel coordinate normalized to be in the [0, 1] range.
+            const Vector2f uv(fx / m_resolution.x, fy / m_resolution.y);
 
-            // Increase color shifting (linearly) towards the edges of the frame.
-            const float radial_intensity = norm(coord) - m_offset;
+            //
+            // References:
+            //
+            //    http://loopit.dk/rendering_inside.pdf (slides 19-20)
+            //    https://www.shadertoy.com/view/XssGz8
+            //
 
-            const std::size_t shift_amount =
-                round<std::size_t>(
-                    mix(static_cast<float>(m_min_shift), static_cast<float>(m_max_shift), radial_intensity));
+            Color3f color_sum(0.0f);
+            Color3f weight_sum(0.0f);
 
-            // Sample the original pixel coordinate with slightly different shifts for each color component.
-            const Color3f color(
-                sample_at(pixel_coord.x + 0 * shift_amount, pixel_coord.y + 0 * shift_amount).r,
-                sample_at(pixel_coord.x + 1 * shift_amount, pixel_coord.y + 1 * shift_amount).g,
-                sample_at(pixel_coord.x + 2 * shift_amount, pixel_coord.y + 2 * shift_amount).b);
+            for (std::size_t i = 0; i < m_sample_count; ++i)
+            {
+                const float t = static_cast<float>(i) / (m_sample_count - 1.0f);
 
-            tile.set_pixel(x, y, color);
+                const Color3f weight = spectrum_offset(t);
+                weight_sum += weight;
+
+                const Vector2f shifted_uv(radial_distort(uv, 0.6f * m_strength * t));
+                color_sum += weight * sample_at(shifted_uv);
+            }
+
+            tile.set_pixel(x, y, color_sum / weight_sum);
         }
     }
 }

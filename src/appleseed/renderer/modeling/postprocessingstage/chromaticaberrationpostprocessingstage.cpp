@@ -97,95 +97,17 @@ namespace
             return true;
         }
 
-        Color3f spectrum_offset(const float t) const
-        {
-            //
-            // Linearly interpolates blur-weights from red to green to blue.
-            //
-            // Reference:
-            //
-            //    https://www.shadertoy.com/view/MdsyDX
-            //
-
-            const float t0 = 3.0f * t - 1.5f;
-
-            return
-                Color3f(
-                    saturate(-t0),
-                    saturate(1.0f - std::abs(t0)),
-                    saturate(+t0));
-        }
-
-        Vector2f radial_distort(const Vector2f& uv, const float amount) const
-        {
-            const Vector2f radius(uv - Vector2f(0.5f));
-
-            // Increase distortion towards the image edges.
-            return uv + radius * dot(radius, radius) * amount;
-        }
-
         void execute(Frame& frame, const std::size_t thread_count) const override
         {
-            const CanvasProperties& props = frame.image().properties();
-
             Image& image = frame.image();
 
-            const Vector2f resolution(
-                static_cast<float>(props.m_canvas_width),
-                static_cast<float>(props.m_canvas_height));
+            // Apply the effect onto each image tile, in parallel.
+            const ChromaticAberrationApplier chromatic_aberration(
+                image,
+                m_strength,
+                m_sample_count);
 
-            const auto sample_at =
-                [&resolution, image](const Vector2f uv) -> Color3f
-                {
-                    // Remap uv to image coordinates, clamping out of range values.
-                    const float fx = clamp(uv.x * resolution.x, 0.0f, resolution.x - 1.0f);
-                    const float fy = clamp(uv.y * resolution.y, 0.0f, resolution.y - 1.0f);
-
-                    Color3f sample;
-                    image.get_pixel(truncate<std::size_t>(fx), truncate<std::size_t>(fy), sample);
-
-                    return sample;
-                };
-
-            for (std::size_t y = 0; y < props.m_canvas_height; ++y)
-            {
-                for (std::size_t x = 0; x < props.m_canvas_width; ++x)
-                {
-                    const float fx = static_cast<float>(x) + 0.5f;
-                    const float fy = static_cast<float>(y) + 0.5f;
-
-                    // Pixel coordinate normalized to be in the [0, 1] range.
-                    const Vector2f uv(fx / resolution.x, fy / resolution.y);
-
-                    //
-                    // References:
-                    //
-                    //    http://loopit.dk/rendering_inside.pdf (slides 19-20)
-                    //    https://www.shadertoy.com/view/XssGz8
-                    //
-
-                    Color3f color_sum(0.0f);
-                    Color3f weight_sum(0.0f);
-
-                    for (std::size_t i = 0; i < m_sample_count; ++i)
-                    {
-                        const float t = static_cast<float>(i) / (m_sample_count - 1.0f);
-
-                        const Color3f weight = spectrum_offset(t);
-                        weight_sum += weight;
-
-                        const Vector2f d_uv(radial_distort(uv, 0.6f * m_strength * t));
-                        color_sum += weight * sample_at(d_uv);
-                    }
-
-                    image.set_pixel(x, y, color_sum / weight_sum);
-                }
-            }
-
-            /*
-            const ChromaticAberrationApplier chromatic_aberration(...);
             chromatic_aberration.apply_on_tiles(image, thread_count);
-            */
         }
 
       private:

@@ -46,13 +46,13 @@ namespace renderer
 //
 // Chromatic aberration applier.
 //
-// Simulates transverse (lateral) chromatic aberration of lenses by resampling
-// pixels with a slight shift for each color channel, to introduce color fringing.
+// Simulates transverse (lateral) chromatic aberration of lenses by sampling pixels
+// with slightly different shifts for each color channel, to introduce color fringing.
 //
-// Reference:
+// References:
 //
+//   http://loopit.dk/rendering_inside.pdf (slides 19-20)
 //   https://en.wikipedia.org/wiki/Chromatic_aberration#Types
-//   https://github.com/keijiro/KinoFringe/
 //
 
 class ChromaticAberrationApplier
@@ -66,9 +66,8 @@ class ChromaticAberrationApplier
         const foundation::Image&    src_image,
 
         // Settings.
-        const float                 offset,
-        const std::size_t           min_shift,
-        const std::size_t           max_shift);
+        const float                 strength,
+        const std::size_t           sample_count);
 
     // Delete this instance.
     void release() override;
@@ -80,14 +79,14 @@ class ChromaticAberrationApplier
         const std::size_t           tile_y) const override;
 
   private:
-    const float                     m_offset;
-    const std::size_t               m_min_shift;
-    const std::size_t               m_max_shift;
+    const float                     m_strength;
+    const std::size_t               m_sample_count;
     const foundation::Image         m_src_image;
+    const foundation::Vector2f      m_resolution;
 
+    // Samples a pixel from m_src_image given uv coordinates in the [0, 1] range.
     foundation::Color3f sample_at(
-        const std::size_t           pixel_x,
-        const std::size_t           pixel_y) const;
+        const foundation::Vector2f& uv) const;
 };
 
 }   // namespace renderer
