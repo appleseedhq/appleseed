@@ -99,6 +99,10 @@ namespace
 
         void execute(Frame& frame, const std::size_t thread_count) const override
         {
+            // Skip vignetting if the effect strength is zero.
+            if (m_strength == 0.0f)
+                return;
+
             Image& image = frame.image();
 
             // Apply the effect onto each image tile, in parallel.

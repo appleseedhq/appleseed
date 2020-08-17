@@ -66,8 +66,9 @@ class ChromaticAberrationApplier
         const foundation::Image&    src_image,
 
         // Settings.
-        const float                 strength,
-        const std::size_t           sample_count);
+        const float                 strength,       // controls intensity by (cubically) increasing distortion towards the edges
+        const std::size_t           sample_count);  // 3 = classic "three color split" (red, green, blue), while higher values use
+                                                    // more colors, leading to a "rainbow-like" effect (see the first reference above)
 
     // Delete this instance.
     void release() override;

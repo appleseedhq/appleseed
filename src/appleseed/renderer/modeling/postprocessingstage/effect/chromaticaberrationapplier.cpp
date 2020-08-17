@@ -75,21 +75,22 @@ Color3f ChromaticAberrationApplier::sample_at(const Vector2f& uv) const
 
 namespace
 {
-    Color3f spectrum_offset(const float t)
+    Color3f hue_offset(const float t)
     {
         //
         // Linearly interpolates blur-weights from red to green to blue:
         //
-        //       0                           1
-        //       ^          green            ^
-        //   red |---------    .    ---------| blue
-        //       |         \  / \  /         |
-        //       |          \/   \/          |
-        //       |          /\   /\          |
-        //       |         /  \ /  \         |
-        //  cyan |=========----.----=========| yellow
+        //      0|<------------ t ------------>|1
         //
-        //       |<----------- t ----------->|
+        //       red          green         blue
+        //       |---------     .     ---------|
+        //       |         \   / \   /         |
+        //       |          \./   \./          |
+        //       |          / \   / \          |
+        //       |         /   \ /   \         |
+        //       |=========-----.-----=========|
+        //                   ^     ^
+        //    red+green = yellow  cyan = green+blue
         //
         // Reference:
         //
@@ -156,7 +157,7 @@ void ChromaticAberrationApplier::apply(
             {
                 const float t = static_cast<float>(i) / (m_sample_count - 1.0f);
 
-                const Color3f weight = spectrum_offset(t);
+                const Color3f weight = hue_offset(t);
                 weight_sum += weight;
 
                 const Vector2f shifted_uv(radial_distort(uv, 0.6f * m_strength * t));
