@@ -67,6 +67,7 @@ Color3f ChromaticAberrationApplier::sample_at(const Vector2f& uv) const
     const float fx = clamp(uv.x * m_resolution.x, 0.0f, m_resolution.x - 1.0f);
     const float fy = clamp(uv.y * m_resolution.y, 0.0f, m_resolution.y - 1.0f);
 
+    // Sample pixel colors from the original image.
     Color3f sample;
     m_src_image.get_pixel(truncate<std::size_t>(fx), truncate<std::size_t>(fy), sample);
 
@@ -137,6 +138,7 @@ void ChromaticAberrationApplier::apply(
     {
         for (std::size_t x = 0; x < tile_width; ++x)
         {
+            // Compute the pixel coordinate in relation to the image.
             const float fx = static_cast<float>(x + tile_offset.x) + 0.5f;
             const float fy = static_cast<float>(y + tile_offset.y) + 0.5f;
 
@@ -144,10 +146,13 @@ void ChromaticAberrationApplier::apply(
             const Vector2f uv(fx / m_resolution.x, fy / m_resolution.y);
 
             //
+            // Simulate lateral chromatic aberration.
+            //
             // References:
             //
-            //    http://loopit.dk/rendering_inside.pdf (slides 19-20)
-            //    https://www.shadertoy.com/view/XssGz8
+            //   https://www.shadertoy.com/view/XssGz8
+            //   http://loopit.dk/rendering_inside.pdf (slides 19-20)
+            //   https://en.wikipedia.org/wiki/Chromatic_aberration#Types
             //
 
             Color3f color_sum(0.0f);

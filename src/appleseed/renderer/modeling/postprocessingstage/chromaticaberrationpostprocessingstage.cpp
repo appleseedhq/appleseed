@@ -99,19 +99,17 @@ namespace
 
         void execute(Frame& frame, const std::size_t thread_count) const override
         {
-            // Skip vignetting if the effect strength is zero.
+            // Skip chromatic aberration if strength is zero.
             if (m_strength == 0.0f)
                 return;
 
-            Image& image = frame.image();
-
             // Apply the effect onto each image tile, in parallel.
             const ChromaticAberrationApplier chromatic_aberration(
-                image,
+                frame.image(),
                 m_strength,
                 m_sample_count);
 
-            chromatic_aberration.apply_on_tiles(image, thread_count);
+            chromatic_aberration.apply_on_tiles(frame.image(), thread_count);
         }
 
       private:
