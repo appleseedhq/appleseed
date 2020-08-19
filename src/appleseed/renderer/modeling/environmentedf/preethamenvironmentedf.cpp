@@ -83,9 +83,6 @@ namespace
 
     const char* Model = "preetham_environment_edf";
 
-    // The smallest valid turbidity value.
-    const float BaseTurbidity = 2.0f;
-
     class PreethamEnvironmentEDF
       : public EnvironmentEDF
     {
@@ -143,7 +140,6 @@ namespace
             {
                 // Apply turbidity multiplier and bias.
                 m_uniform_values.m_turbidity *= m_uniform_values.m_turbidity_multiplier;
-                m_uniform_values.m_turbidity += BaseTurbidity;
 
                 // Precompute the coefficients of the luminance and chromaticity distribution functions.
                 compute_x_coefficients(m_uniform_values.m_turbidity, m_uniform_x_coeffs);
@@ -418,7 +414,6 @@ namespace
 
                 // Apply turbidity multiplier and bias.
                 turbidity *= m_uniform_values.m_turbidity_multiplier;
-                turbidity += BaseTurbidity;
 
                 // Compute the coefficients of the luminance and chromaticity distribution functions.
                 float Y_coeffs[5], x_coeffs[5], y_coeffs[5];
@@ -464,11 +459,11 @@ namespace
             luminance *= m_uniform_values.m_luminance_multiplier;
 
             // Compute the final sky radiance.
+            constexpr float StepLambda = 10.0f;
             radiance *=
-                  luminance                                         // start with computed luminance
-                / sum_value(radiance * XYZCMFCIE19312Deg[1])        // normalize to unit luminance
-                * (1.0f / 683.0f)                                   // convert lumens to Watts
-                * RcpPi<float>();                                   // convert irradiance to radiance
+                luminance                                                   // start with computed luminance
+                / sum_value(radiance * XYZCMFCIE19312Deg[1] * StepLambda)   // normalize to unit luminance
+                * (1.0f / 683.0f);                                          // convert lumens to Watts
         }
 
         Vector3f shift(Vector3f v) const

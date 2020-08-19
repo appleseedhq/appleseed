@@ -40,7 +40,6 @@
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/sourceinputs.h"
 #include "renderer/modeling/light/sunlight.h"
-#include "renderer/modeling/light/Hosek_sun.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
@@ -89,9 +88,6 @@ namespace
     //
 
     const char* Model = "hosek_environment_edf";
-
-    // The smallest valid turbidity value.
-    const float BaseTurbidity = 2.0f;
 
     class HosekEnvironmentEDF
       : public EnvironmentEDF
@@ -151,7 +147,6 @@ namespace
             {
                 // Apply turbidity multiplier and bias.
                 m_uniform_values.m_turbidity *= m_uniform_values.m_turbidity_multiplier;
-                m_uniform_values.m_turbidity += BaseTurbidity;
 
                 compute_coefficients(
                     m_uniform_values.m_turbidity,
@@ -435,7 +430,6 @@ namespace
 
                 // Apply turbidity multiplier and bias.
                 turbidity *= m_uniform_values.m_turbidity_multiplier;
-                turbidity += BaseTurbidity;
 
                 // Compute the coefficients of the radiance distribution function and the master luminance value.
                 float coeffs[3 * 9], master_Y[3];
@@ -478,11 +472,11 @@ namespace
             luminance *= m_uniform_values.m_luminance_multiplier;
 
             // Compute the final sky radiance.
+            constexpr float StepLambda = 10.0f;
             radiance *=
-                  luminance                                         // start with computed luminance
-                / sum_value(radiance * XYZCMFCIE19312Deg[1])        // normalize to unit luminance
-                * (1.0f / 683.0f)                                   // convert lumens to Watts
-                * RcpPi<float>();                                   // convert irradiance to radiance
+                luminance                                                   // start with computed luminance
+                / sum_value(radiance * XYZCMFCIE19312Deg[1] * StepLambda)   // normalize to unit luminance
+                * (1.0f / 683.0f);                                          // convert lumens to Watts
         }
 
         Vector3f shift(Vector3f v) const

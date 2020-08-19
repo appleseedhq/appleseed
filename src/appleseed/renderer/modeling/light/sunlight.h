@@ -49,21 +49,18 @@ namespace renderer      { class EnvironmentEDF; }
 namespace renderer
 {
 
-
 //
 // Physically-based Sun light.
 //
+
 
 class SunLight
   :public Light
 {
   public:
     SunLight(
-        const char* name,
-        const ParamArray& params);
-
-    void release() override;
-    const char* get_model() const override;
+        const char*                         name,
+        const ParamArray&                   params);
 
     bool on_frame_begin(
         const Project&                      project,
@@ -79,6 +76,7 @@ class SunLight
         foundation::Vector3d&               outgoing,
         Spectrum&                           value,
         float&                              probability) const override;
+
     void sample(
         const ShadingContext&               shading_context,
         const foundation::Transformd&       light_transform,
@@ -88,6 +86,7 @@ class SunLight
         foundation::Vector3d&               outgoing,
         Spectrum&                           value,
         float&                              probability) const override;
+
     void sample(
         const ShadingContext&               shading_context,
         const foundation::Transformd&       light_transform,
@@ -102,11 +101,20 @@ class SunLight
         const foundation::Vector3d&         target,
         const foundation::Vector3d&         position) const override;
 
-    void evaluate(
+    virtual void evaluate(
         const foundation::Vector3d&         outgoing,
-        Spectrum&                           value);
+        Spectrum&                           value) const;
 
-  private:
+  protected:
+    float SunLight::compute_limb_darkening(const float squared_distance_to_center) const;
+
+    virtual void compute_sun_radiance(
+        const foundation::Vector3d&         outgoing,
+        const float                         turbidity,
+        const float                         radiance_multiplier,
+        foundation::RegularSpectrum31f&     radiance,
+        const float                         squared_distance_to_center = 0) const = 0;
+
     APPLESEED_DECLARE_INPUT_VALUES(InputValues)
     {
         float           m_turbidity;                // atmosphere turbidity
@@ -120,67 +128,31 @@ class SunLight
     double                  m_scene_radius;             // world space
     double                  m_safe_scene_diameter;      // world space
     float                   m_sun_solid_angle;          // Sun's solid angle, in steradians
+    float                   m_sun_size;
 
     InputValues             m_values;
 
-    foundation::RegularSpectrum31f  m_k1;
-    foundation::RegularSpectrum31f  m_k2;
-
+  private:
     void apply_env_edf_overrides(EnvironmentEDF* env_edf);
 
-    void precompute_constants();
-
-    void compute_sun_radiance(
-        const foundation::Vector3d&         outgoing,
-        const float                         turbidity,
-        const float                         radiance_multiplier,
-        foundation::RegularSpectrum31f&     radiance,
-        const float                         distance_to_center = 0.0f) const;
-
     void sample_disk(
-        const foundation::Transformd&       light_transform,
-        const foundation::Vector2d&         s,
-        const foundation::Vector3d&         disk_center,
-        const double                        disk_radius,
-        foundation::Vector3d&               position,
-        foundation::Vector3d&               outgoing,
-        Spectrum&                           value,
-        float&                              probability) const;
+        const foundation::Transformd&   light_transform,
+        const foundation::Vector2d&     s,
+        const foundation::Vector3d&     disk_center,
+        const double                    disk_radius,
+        foundation::Vector3d&           position,
+        foundation::Vector3d&           outgoing,
+        Spectrum&                       value,
+        float&                          probability) const;
+
     void sample_sun_surface(
-        const foundation::Transformd&       light_transform,
-        const foundation::Vector3d&         target_point,
-        const foundation::Vector2d&         s,
-        foundation::Vector3d&               position,
-        foundation::Vector3d&               outgoing,
-        Spectrum&                           value,
-        float&                              probability) const;
-};
-
-
-//
-// Sun light factory.
-//
-
-class APPLESEED_DLLSYMBOL SunLightFactory
-  : public ILightFactory
-{
-  public:
-    // Delete this instance.
-    void release() override;
-
-    // Return a string identifying this light model.
-    const char* get_model() const override;
-
-    // Return metadata for this light model.
-    foundation::Dictionary get_model_metadata() const override;
-
-    // Return metadata for the inputs of this light model.
-    foundation::DictionaryArray get_input_metadata() const override;
-
-    // Create a new light instance.
-    foundation::auto_release_ptr<Light> create(
-        const char*         name,
-        const ParamArray&   params) const override;
+        const foundation::Transformd&   light_transform,
+        const foundation::Vector3d&     target_point,
+        const foundation::Vector2d&     s,
+        foundation::Vector3d&           position,
+        foundation::Vector3d&           outgoing,
+        Spectrum&                       value,
+        float&                          probability) const;
 };
 
 }   // namespace renderer
