@@ -185,7 +185,7 @@ class HosekSunLight
         const float             turbidity,
         const float             sun_theta) const
     {
-        const float clamped_turbidity = clamp(turbidity, 1.0f, 10.0f) - 1.0f;
+        const float clamped_turbidity = clamp(turbidity, 1.0f, 10.0f);
         int turbidity_low = truncate<int>(clamped_turbidity) - 1;
         float turbidity_frac = clamped_turbidity - static_cast<float>(turbidity_low + 1);
 

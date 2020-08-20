@@ -164,8 +164,6 @@ class LightingConditions
     APPLESEED_SIMD4_ALIGN Color4f   m_cmf_reflectance[32];      // precomputed normalized values of (cmf[0], cmf[1], cmf[2]) * illuminant
     APPLESEED_SIMD4_ALIGN Color4f   m_cmf_illuminance[32];      // precomputed normalized values of cmf
 
-    float m_illuminance_normalizer;
-
     LightingConditions();                                       // leaves the object uninitialized
 
     LightingConditions(

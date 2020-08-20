@@ -409,8 +409,8 @@ void SunLight::sample_sun_surface(
         + sun_radius * p[1] * basis.get_tangent_v();
 
     outgoing = normalize(target_point - position);
-    Vector2d test = static_cast<double>(m_sun_size) * p;
-    double squared_distance_to_center = test[0] * test[0] + test[1] * test[1];
+    Vector2d xy = static_cast<double>(m_sun_size) * p;
+    double squared_distance_to_center = xy[0] * xy[0] + xy[1] * xy[1];
 
 
     RegularSpectrum31f radiance;
