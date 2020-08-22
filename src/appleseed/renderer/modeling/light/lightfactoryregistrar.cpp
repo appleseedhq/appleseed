@@ -33,13 +33,13 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entityfactoryregistrar.h"
 #include "renderer/modeling/light/directionallight.h"
+#include "renderer/modeling/light/HosekSun.h"
 #include "renderer/modeling/light/lighttraits.h"
 #include "renderer/modeling/light/maxomnilight.h"
 #include "renderer/modeling/light/maxspotlight.h"
 #include "renderer/modeling/light/pointlight.h"
-#include "renderer/modeling/light/spotlight.h"
-#include "renderer/modeling/light/HosekSun.h"
 #include "renderer/modeling/light/PreethamSun.h"
+#include "renderer/modeling/light/spotlight.h"
 
 // appleseed.foundation headers.
 #include "foundation/memory/autoreleaseptr.h"

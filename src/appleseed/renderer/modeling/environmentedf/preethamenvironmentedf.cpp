@@ -227,8 +227,13 @@ namespace
             else radiance.set(0.0f);
 
             value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
-            value += sun_value;
             probability = shifted_outgoing.y > 0.0f ? shifted_outgoing.y * RcpPi<float>() : 0.0f;
+            if (sun_value != Spectrum(0.0f))
+            {
+                probability *= sun_value.illuminance_to_ciexyz(g_std_lighting_conditions)[1]
+                    / value.illuminance_to_ciexyz(g_std_lighting_conditions)[1];
+                value += sun_value;
+            }
             assert(probability >= 0.0f);
         }
 

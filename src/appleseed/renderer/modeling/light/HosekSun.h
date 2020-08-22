@@ -36,8 +36,6 @@
 #include "foundation/memory/autoreleaseptr.h"
 #include "foundation/platform/compiler.h"
 
-#include "renderer/modeling/light/sunLight.h"
-
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 

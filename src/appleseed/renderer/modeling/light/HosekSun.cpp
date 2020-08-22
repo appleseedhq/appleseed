@@ -66,199 +66,193 @@ using namespace foundation;
 namespace renderer
 {
 
-    namespace
-    {
-        //
-        // Hosek & Wilkie model data.
-        //
-
-        #include "renderer\modeling\light\ArHosekSkyModelData_Spectral.h"
-
-
-        //
-        // Hosek Sun light.
-        //
-        // References:
-        //
-        //   http://cgg.mff.cuni.cz/projects/SkylightModelling/
-        //
-
-        const char* Model = "Hosek_sun_light";
-
-        constexpr float SolidAngleSun = 6.807e-5f;
-    }
-class HosekSunLight
-    :public SunLight
+namespace
 {
-  public:
-    HosekSunLight(
-        const char*                 name,
-        const ParamArray&           params)
-        : SunLight(name, params)
+    //
+    // Hosek & Wilkie model data.
+    //
+    
+    #include "renderer\modeling\light\ArHosekSkyModelData_Spectral.h"
+    
+    
+    //
+    // Hosek Sun light.
+    //
+    // References:
+    //
+    //   http://cgg.mff.cuni.cz/projects/SkylightModelling/
+    //
+    
+    const char* Model = "Hosek_sun_light";
+    
+    constexpr float SolidAngleSun = 6.807e-5f;
+            
+    class HosekSunLight
+        :public SunLight
     {
-    }
-
-    void release() override
-    {
-        delete this;
-    }
-
-    const char* get_model() const override
-    {
-        return Model;
-    }
-
-    bool on_frame_begin(
-        const Project&          project,
-        const BaseGroup*        parent,
-        OnFrameBeginRecorder&   recorder,
-        IAbortSwitch*           abort_switch) override
-    {
-        if (!SunLight::on_frame_begin(project, parent, recorder, abort_switch))
-            return false;
-
-        return true;
-    }
-
-  private:
-    void compute_sun_radiance(
-        const Vector3d&         outgoing,
-        const float             turbidity,
-        const float             radiance_multiplier,
-        RegularSpectrum31f&     radiance,
-        const float             squared_distance_to_center = 0) const override
-    {
-        const float cos_theta = -static_cast<float>(outgoing.y);
-        const float sun_theta = std::acos(cos_theta);
-
-        compute_coefficients(
-            radiance,
-            turbidity,
-            sun_theta);
-
-        float limb_darkening = compute_limb_darkening(squared_distance_to_center);
-
-        // Compute the attenuated radiance of the Sun.
-        for (size_t i = 0; i < 31; ++i)
+      public:
+        HosekSunLight(
+            const char*                 name,
+            const ParamArray&           params)
+            : SunLight(name, params)
         {
-            radiance[i] *=
-                limb_darkening *
-                radiance_multiplier *
-                SolidAngleSun;
         }
-    }
-
-    float compute_coefficients2(
-        int                     turbidity,
-        int                     wl,
-        float                   elevation) const
-    {
-        constexpr int Pieces = 45;
-        constexpr int Order = 4;
-
-        int pos =
-            (int)(pow(2.0f * elevation / Pi<float>(), 1.0f / 3.0f) * Pieces); // floor
-
-        if (pos > 44) pos = 44;
-
-        const float break_x =
-            pow(((float)pos / (float)Pieces), 3.0f) * (HalfPi<float>());
-
-        const double* coefs =
-            solarDatasets[wl] + (Order * Pieces * turbidity + Order * (pos + 1) - 1);
-
-        float res = 0.0f;
-        const float x = elevation - break_x;
-        float x_exp = 1.0f;
-
-        for (int i = 0; i < Order; ++i)
+    
+        void release() override
         {
-            res += x_exp * static_cast<float>(*coefs--);
-            x_exp *= x;
+            delete this;
         }
-
-        return res;
-    }
-
-    void compute_coefficients(
-        RegularSpectrum31f&     radiance,
-        const float             turbidity,
-        const float             sun_theta) const
-    {
-        const float clamped_turbidity = clamp(turbidity, 1.0f, 10.0f);
-        int turbidity_low = truncate<int>(clamped_turbidity) - 1;
-        float turbidity_frac = clamped_turbidity - static_cast<float>(turbidity_low + 1);
-
-        // Compute solar elevation.
-        const float eta = HalfPi<float>() - sun_theta;
-
-        if (turbidity_low == 9)
+    
+        const char* get_model() const override
         {
-            turbidity_low = 8;
-            turbidity_frac = 1.0f;
+            return Model;
         }
-
-        int i = 0;
-        for (float wavelength = 400.0f; wavelength <= 700.0f; wavelength += 10.0f, i++)
+    
+        bool on_frame_begin(
+            const Project&          project,
+            const BaseGroup*        parent,
+            OnFrameBeginRecorder&   recorder,
+            IAbortSwitch*           abort_switch) override
         {
-            int    wl_low = (int)((wavelength - 320.0f) / 40.0f);
-            float wl_frac =  fmod(wavelength, 40.0f) / 40.0f;
-
-            if (wl_low == 10)
+            if (!SunLight::on_frame_begin(project, parent, recorder, abort_switch))
+                return false;
+    
+            return true;
+        }
+    
+      private:
+        void compute_sun_radiance(
+            const Vector3d&         outgoing,
+            const float             turbidity,
+            const float             radiance_multiplier,
+            RegularSpectrum31f&     radiance,
+            const float             squared_distance_to_center = 0) const override
+        {
+            const float cos_theta = -static_cast<float>(outgoing.y);
+            const float sun_theta = std::acos(cos_theta);
+    
+            compute_coefficients(
+                radiance,
+                turbidity,
+                sun_theta);
+    
+            float limb_darkening = compute_limb_darkening(squared_distance_to_center);
+    
+            // Compute the attenuated radiance of the Sun.
+            for (size_t i = 0; i < 31; ++i)
             {
-                wl_low = 9;
-                wl_frac = 1.0f;
+                radiance[i] *=
+                    limb_darkening *
+                    radiance_multiplier *
+                    SolidAngleSun;
             }
-
-            radiance[i] =
-                (1.0f - turbidity_frac) *
-                ((1.0f - wl_frac) * compute_coefficients2(turbidity_low, wl_low, eta)
-                    + wl_frac * compute_coefficients2(turbidity_low, wl_low + 1, eta))
-                + turbidity_frac *
-                ((1.0f - wl_frac) * compute_coefficients2(turbidity_low + 1, wl_low, eta)
-                    + wl_frac * compute_coefficients2(turbidity_low + 1 , wl_low + 1, eta));
         }
-    }
-};
+    
+        float compute_coefficients2(
+            int                     turbidity,
+            int                     wl,
+            float                   elevation) const
+        {
+            constexpr int Pieces = 45;
+            constexpr int Order = 4;
+    
+            int pos =
+                (int)(pow(2.0f * elevation / Pi<float>(), 1.0f / 3.0f) * Pieces); // floor
+    
+            if (pos > 44) pos = 44;
+    
+            const float break_x =
+                pow(((float)pos / (float)Pieces), 3.0f) * (HalfPi<float>());
+    
+            const double* coefs =
+                solarDatasets[wl] + (Order * Pieces * turbidity + Order * (pos + 1) - 1);
+    
+            float res = 0.0f;
+            const float x = elevation - break_x;
+            float x_exp = 1.0f;
+    
+            for (int i = 0; i < Order; ++i)
+            {
+                res += x_exp * static_cast<float>(*coefs--);
+                x_exp *= x;
+            }
+    
+            return res;
+        }
+    
+        void compute_coefficients(
+            RegularSpectrum31f&     radiance,
+            const float             turbidity,
+            const float             sun_theta) const
+        {
+            const float clamped_turbidity = clamp(turbidity, 1.0f, 10.0f);
+            int turbidity_low = truncate<int>(clamped_turbidity) - 1;
+            float turbidity_frac = clamped_turbidity - static_cast<float>(turbidity_low + 1);
+    
+            // Compute solar elevation.
+            const float eta = HalfPi<float>() - sun_theta;
+    
+            if (turbidity_low == 9)
+            {
+                turbidity_low = 8;
+                turbidity_frac = 1.0f;
+            }
+    
+            int i = 0;
+            for (float wavelength = 400.0f; wavelength <= 700.0f; wavelength += 10.0f, i++)
+            {
+                int    wl_low = (int)((wavelength - 320.0f) / 40.0f);
+                float wl_frac =  fmod(wavelength, 40.0f) / 40.0f;
+    
+                if (wl_low == 10)
+                {
+                    wl_low = 9;
+                    wl_frac = 1.0f;
+                }
+    
+                radiance[i] =
+                    (1.0f - turbidity_frac) *
+                    ((1.0f - wl_frac) * compute_coefficients2(turbidity_low, wl_low, eta)
+                        + wl_frac * compute_coefficients2(turbidity_low, wl_low + 1, eta))
+                    + turbidity_frac *
+                    ((1.0f - wl_frac) * compute_coefficients2(turbidity_low + 1, wl_low, eta)
+                        + wl_frac * compute_coefficients2(turbidity_low + 1 , wl_low + 1, eta));
+            }
+        }
+    };
+}
+    
+//
+// HosekSunLightFactory class implementation.
 
-    //
-    // HosekSunLightFactory class implementation.
-    //
+void HosekSunLightFactory::release()
+{
+    delete this;
 
-    void HosekSunLightFactory::release()
-    {
-        delete this;
-    }
+const char* HosekSunLightFactory::get_model() const
+{
+    return Model;
 
-    const char* HosekSunLightFactory::get_model() const
-    {
-        return Model;
-    }
+Dictionary HosekSunLightFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+        .insert("name", Model)
+        .insert("label", "Hosek Sun Light")
+        .insert("help", "Hosek's Physically-based sun light");
 
-    Dictionary HosekSunLightFactory::get_model_metadata() const
-    {
-        return
-            Dictionary()
-            .insert("name", Model)
-            .insert("label", "Hosek Sun Light")
-            .insert("help", "Hosek's Physically-based sun light");
-    }
+DictionaryArray HosekSunLightFactory::get_input_metadata() const
+{
+    DictionaryArray metada
+    add_common_sun_input_metadata(metadata);
+    add_common_input_metadata(metadat
+    return metadata;
 
-    DictionaryArray HosekSunLightFactory::get_input_metadata() const
-    {
-        DictionaryArray metadata;
-
-        add_common_sun_input_metadata(metadata);
-        add_common_input_metadata(metadata);
-
-        return metadata;
-    }
-
-    auto_release_ptr<Light> HosekSunLightFactory::create(
-        const char* name,
-        const ParamArray& params) const
-    {
-        return auto_release_ptr<Light>(new HosekSunLight(name, params));
-    }
+auto_release_ptr<Light> HosekSunLightFactory::create(
+    const char* name,
+    const ParamArray& params) const
+{
+    return auto_release_ptr<Light>(new HosekSunLight(name, params));
+}
 
 }   // namespace renderer

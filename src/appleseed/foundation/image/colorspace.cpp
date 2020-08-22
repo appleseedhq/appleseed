@@ -1485,7 +1485,7 @@ LightingConditions::LightingConditions(
     m_cmf_reflectance[31].set(0.0f);
 
     const float reflectance_normalizer = get_cmf_normalizer(m_cmf_reflectance);
-    // Adjust brightness for coherence with linear to rgb function.
+    // Adjust the brightness for coherence with linear_rgb_to_spectrum function.
     const float illuminance_normalizer = 1 / 100.0f;
 
     // Normalize color matching functions.

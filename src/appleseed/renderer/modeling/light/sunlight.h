@@ -106,7 +106,7 @@ class SunLight
         Spectrum&                           value) const;
 
   protected:
-    float SunLight::compute_limb_darkening(const float squared_distance_to_center) const;
+    float compute_limb_darkening(const float squared_distance_to_center) const;
 
     virtual void compute_sun_radiance(
         const foundation::Vector3d&         outgoing,

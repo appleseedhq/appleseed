@@ -10,16 +10,6 @@
         <parameter name="tile_ordering" value="spiral" />
     </parameters>
     <parameters name="ui">
-        <parameters name="file_dialog">
-            <parameters name="frames">
-                <parameter name="last_directory" value="C:\Users\joao_\OneDrive\Imagens" />
-                <parameter name="selected_filter" value="JPEG Files (*.jpg *.jpe *.jpeg *.jif *.jfif *.jfi)" />
-            </parameters>
-            <parameters name="projects">
-                <parameter name="last_directory" value="D:\appleseed-scenes" />
-                <parameter name="selected_filter" value="Plain Project Files (*.appleseed)" />
-            </parameters>
-        </parameters>
         <parameters name="render_region">
             <parameter name="triggers_rendering" value="true" />
         </parameters>
