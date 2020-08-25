@@ -260,6 +260,14 @@ namespace
             label->setFont(font);
         }
 
+        if (metadata.strings().exist("help"))
+        {
+            // Add tooltip if a help string has been set.
+            const std::string help = metadata.strings().get<std::string>("help");
+            if (!help.empty())
+                label->setToolTip(QString::fromStdString(help));
+        }
+
         return label;
     }
 

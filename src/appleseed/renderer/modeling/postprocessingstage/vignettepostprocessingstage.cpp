@@ -59,9 +59,8 @@ namespace
 
     const char* Model = "vignette_post_processing_stage";
 
-    static constexpr float DefaultIntensity = 0.5f;
-
-    static constexpr float DefaultAnisotropy = 0.0f;
+    constexpr float DefaultIntensity = 0.5f;
+    constexpr float DefaultAnisotropy = 0.0f;
 
     class VignettePostProcessingStage
       : public PostProcessingStage
@@ -170,6 +169,9 @@ DictionaryArray VignettePostProcessingStageFactory::get_input_metadata() const
                         .insert("value", "1.0")
                         .insert("type", "hard"))
             .insert("use", "optional")
+            .insert("help",
+                    "Strength of the vignetting effect\n"
+                    "(higher values lead to stronger darkening of the image edges)")
             .insert("default", "0.5"));
 
     metadata.push_back(
@@ -186,6 +188,9 @@ DictionaryArray VignettePostProcessingStageFactory::get_input_metadata() const
                         .insert("value", "1.0")
                         .insert("type", "hard"))
             .insert("use", "optional")
+            .insert("help",
+                    "Vignette's degree of deviation from a circle\n"
+                    "(0.0 = perfectly rounded, 1.0 = mimic the image aspect ratio)")
             .insert("default", "0.0"));
 
     return metadata;
