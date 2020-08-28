@@ -129,6 +129,22 @@ void BSDFWrapper<BSDFImpl, Cull>::sample(
     const int                           modes,
     BSDFSample&                         sample) const
 {
+    // OSLBSDF is containing children which are also wrapped by BSDFWrapper.
+    // Therefore, BSDFWRapper methods should be only applied to its children.
+    if (std::strcmp(BSDFImpl::get_model(), "osl_bsdf") == 0)
+    {
+        BSDFImpl::sample(
+            sampling_context,
+            data,
+            adjoint,
+            cosine_mult,
+            local_geometry,
+            outgoing,
+            modes,
+            sample);
+        return;
+    }
+
     assert(foundation::is_normalized(local_geometry.m_geometric_normal));
     assert(foundation::is_normalized(outgoing.get_value()));
 
@@ -206,6 +222,22 @@ float BSDFWrapper<BSDFImpl, Cull>::evaluate(
     const int                           modes,
     DirectShadingComponents&            value) const
 {
+    // OSLBSDF is containing children which are also wrapped by BSDFWrapper.
+    // Therefore, BSDFWRapper methods should be only applied to its children.
+    if (std::strcmp(BSDFImpl::get_model(), "osl_bsdf") == 0)
+    {
+        return 
+            BSDFImpl::evaluate(
+                data,
+                adjoint,
+                cosine_mult,
+                local_geometry,
+                outgoing,
+                incoming,
+                modes,
+                value);
+    }
+
     assert(foundation::is_normalized(local_geometry.m_geometric_normal));
     assert(foundation::is_normalized(outgoing));
     assert(foundation::is_normalized(incoming));
@@ -259,6 +291,20 @@ float BSDFWrapper<BSDFImpl, Cull>::evaluate_pdf(
     const foundation::Vector3f&         incoming,
     const int                           modes) const
 {
+    // OSLBSDF is containing children which are also wrapped by BSDFWrapper.
+    // Therefore, BSDFWRapper methods should be only applied to its children.
+    if (std::strcmp(BSDFImpl::get_model(), "osl_bsdf") == 0)
+    {
+        return 
+            BSDFImpl::evaluate_pdf(
+                data,
+                adjoint,
+                local_geometry,
+                outgoing,
+                incoming,
+                modes);
+    }
+    
     assert(foundation::is_normalized(local_geometry.m_geometric_normal));
     assert(foundation::is_normalized(outgoing));
     assert(foundation::is_normalized(incoming));

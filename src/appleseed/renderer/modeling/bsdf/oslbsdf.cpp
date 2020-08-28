@@ -215,7 +215,7 @@ namespace
                     sampling_context,
                     c->get_closure_input_values(closure_index),
                     adjoint,
-                    false,
+                    cosine_mult,
                     closure_geometry,
                     outgoing,
                     modes,
@@ -251,7 +251,7 @@ namespace
                             .evaluate(
                                 c->get_closure_input_values(i),
                                 adjoint,
-                                false,
+                                cosine_mult,
                                 closure_geometry,
                                 outgoing.get_value(),
                                 sample.m_incoming.get_value(),
@@ -304,7 +304,7 @@ namespace
                             .evaluate(
                                 c->get_closure_input_values(i),
                                 adjoint,
-                                false,
+                                cosine_mult,
                                 closure_geometry,
                                 outgoing,
                                 incoming,
