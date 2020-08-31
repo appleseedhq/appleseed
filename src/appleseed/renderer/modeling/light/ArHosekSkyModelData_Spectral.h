@@ -100,7 +100,7 @@ This file contains the coefficient data for the spectral version of the model.
 */
 
 // uses Apr 26 dataset
-
+/*
 double dataset320[] =
 {
     // albedo 0, turbidity 1
@@ -13858,7 +13858,7 @@ double* datasetsRad[] =
     datasetRad680,
     datasetRad720
 };
-
+*/
 // Uses Feb 9 dataset
 double solarDataset320[] =
 {
@@ -33718,7 +33718,7 @@ double* solarDatasets[] =
     solarDataset680,
     solarDataset720
 };
-
+/*
 double limbDarkeningDataset320[] =
 { 0.087657, 0.767174, 0.658123, -1.02953, 0.703297, -0.186735 };
 
@@ -33766,3 +33766,4 @@ double* limbDarkeningDatasets[] =
     limbDarkeningDataset680,
     limbDarkeningDataset720
 };
+*/

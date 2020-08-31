@@ -37,7 +37,7 @@
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/light/lighttarget.h"
-#include "renderer/modeling/light/sunLight.h"
+#include "renderer/modeling/light/sunlight.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/scene.h"
 
@@ -64,29 +64,29 @@ using namespace foundation;
 namespace renderer
 {
 
-    namespace
-    {
-        //
-        // Physically-based Sun light.
-        //
-        // References:
-        //
-        //   http://www.cs.utah.edu/~shirley/papers/sunsky/sunsky.pdf
-        //   http://ompf2.com/viewtopic.php?f=3&t=33
-        //
+namespace
+{
+    //
+    // Physically-based Sun light.
+    //
+    // References:
+    //
+    //   http://www.cs.utah.edu/~shirley/papers/sunsky/sunsky.pdf
+    //   http://ompf2.com/viewtopic.php?f=3&t=33
+    //
 
-        const char* Model = "Preetham_sun_light";
+    const char* Model = "Preetham_sun_light";
 
-        constexpr float SolidAngleSun = 6.807e-5f;
-    }
+    constexpr float SolidAngleSun = 6.807e-5f;
+
 
     class PreethamSunLight
         :public SunLight
     {
       public:
         PreethamSunLight(
-            const char*                 name,
-            const ParamArray&           params)
+            const char* name,
+            const ParamArray& params)
             : SunLight(name, params)
         {
         }
@@ -102,10 +102,10 @@ namespace renderer
         }
 
         bool on_frame_begin(
-            const Project&              project,
-            const BaseGroup*            parent,
-            OnFrameBeginRecorder&       recorder,
-            IAbortSwitch*               abort_switch) override
+            const Project& project,
+            const BaseGroup* parent,
+            OnFrameBeginRecorder& recorder,
+            IAbortSwitch* abort_switch) override
         {
             if (!SunLight::on_frame_begin(project, parent, recorder, abort_switch))
                 return false;
@@ -115,16 +115,16 @@ namespace renderer
             return true;
         }
 
-    private:
+      private:
 
         RegularSpectrum31f  m_k1;
         RegularSpectrum31f  m_k2;
 
         void PreethamSunLight::compute_sun_radiance(
-            const Vector3d&             outgoing,
+            const Vector3d& outgoing,
             const float                 turbidity,
             const float                 radiance_multiplier,
-            RegularSpectrum31f&         radiance,
+            RegularSpectrum31f& radiance,
             const float                 squared_distance_to_center = 0.0f) const override
         {
             // Compute the relative optical mass.
@@ -234,7 +234,7 @@ namespace renderer
                     tau_a[i] *
                     tau_o[i] *
 #ifdef COMPUTE_REDUNDANT
-                    tau_g[i] *      // always 1.0
+                        tau_g[i] *      // always 1.0
 #endif
                     tau_wa[i] *
                     limb_darkening *
@@ -253,45 +253,45 @@ namespace renderer
                 m_k2[i] = std::pow(g_light_wavelengths_um[i], -Alpha);
         }
     };
+}
+//
+// PreethamSunLightFactory class implementation.
+//
 
-    //
-    // PreethamSunLightFactory class implementation.
-    //
+void PreethamSunLightFactory::release()
+{
+    delete this;
+}
 
-    void PreethamSunLightFactory::release()
-    {
-        delete this;
-    }
+const char* PreethamSunLightFactory::get_model() const
+{
+    return Model;
+}
 
-    const char* PreethamSunLightFactory::get_model() const
-    {
-        return Model;
-    }
+Dictionary PreethamSunLightFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+        .insert("name", Model)
+        .insert("label", "Preetham sun Light")
+        .insert("help", "Preetham's Physically-based sun light");
+}
 
-    Dictionary PreethamSunLightFactory::get_model_metadata() const
-    {
-        return
-            Dictionary()
-            .insert("name", Model)
-            .insert("label", "Preetham sun Light")
-            .insert("help", "Preetham's Physically-based sun light");
-    }
+DictionaryArray PreethamSunLightFactory::get_input_metadata() const
+{
+    DictionaryArray metadata;
 
-    DictionaryArray PreethamSunLightFactory::get_input_metadata() const
-    {
-        DictionaryArray metadata;
+    add_common_sun_input_metadata(metadata);
+    add_common_input_metadata(metadata);
 
-        add_common_sun_input_metadata(metadata);
-        add_common_input_metadata(metadata);
+    return metadata;
+}
 
-        return metadata;
-    }
-
-    auto_release_ptr<Light> PreethamSunLightFactory::create(
-        const char* name,
-        const ParamArray& params) const
-    {
-        return auto_release_ptr<Light>(new PreethamSunLight(name, params));
-    }
+auto_release_ptr<Light> PreethamSunLightFactory::create(
+    const char* name,
+    const ParamArray& params) const
+{
+    return auto_release_ptr<Light>(new PreethamSunLight(name, params));
+}
 
 }   // namespace renderer

@@ -57,9 +57,9 @@
 #include <cstddef>
 
 // Forward declarations.
-namespace foundation { class IAbortSwitch; }
-namespace renderer { class Assembly; }
-namespace renderer { class ShadingContext; }
+namespace foundation    { class IAbortSwitch; }
+namespace renderer      { class Assembly; }
+namespace renderer      { class ShadingContext; }
 
 using namespace foundation;
 
@@ -72,9 +72,8 @@ namespace
     // Hosek & Wilkie model data.
     //
     
-    #include "renderer\modeling\light\ArHosekSkyModelData_Spectral.h"
-    
-    
+    #include "renderer/modeling/light/ArHosekSkyModelData_Spectral.h"
+
     //
     // Hosek Sun light.
     //
@@ -228,10 +227,12 @@ namespace
 void HosekSunLightFactory::release()
 {
     delete this;
+}
 
 const char* HosekSunLightFactory::get_model() const
 {
     return Model;
+}
 
 Dictionary HosekSunLightFactory::get_model_metadata() const
 {
@@ -240,13 +241,17 @@ Dictionary HosekSunLightFactory::get_model_metadata() const
         .insert("name", Model)
         .insert("label", "Hosek Sun Light")
         .insert("help", "Hosek's Physically-based sun light");
+}
 
 DictionaryArray HosekSunLightFactory::get_input_metadata() const
 {
-    DictionaryArray metada
+    DictionaryArray metadata;
+
     add_common_sun_input_metadata(metadata);
-    add_common_input_metadata(metadat
+    add_common_input_metadata(metadata);
+
     return metadata;
+}
 
 auto_release_ptr<Light> HosekSunLightFactory::create(
     const char* name,
