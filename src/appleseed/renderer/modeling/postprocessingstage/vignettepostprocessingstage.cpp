@@ -190,7 +190,7 @@ DictionaryArray VignettePostProcessingStageFactory::get_input_metadata() const
             .insert("use", "optional")
             .insert("help",
                     "Vignette's degree of deviation from a circle\n"
-                    "(0.0 = perfectly rounded, 1.0 = mimic the image aspect ratio)")
+                    "(0.0 = perfectly rounded, 1.0 = mimics the image aspect ratio)")
             .insert("default", "0.0"));
 
     return metadata;
