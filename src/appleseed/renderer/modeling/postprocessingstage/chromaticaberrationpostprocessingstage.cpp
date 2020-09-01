@@ -60,7 +60,7 @@ namespace
     const char* Model = "chromatic_aberration_post_processing_stage";
 
     constexpr float DefaultStrength = 0.4f;
-    constexpr std::size_t DefaultFringing = 1;
+    constexpr std::size_t DefaultSampleCount = 3;
 
     class ChromaticAberrationPostProcessingStage
       : public PostProcessingStage
@@ -92,7 +92,7 @@ namespace
             const OnFrameBeginMessageContext context("post-processing stage", this);
 
             m_strength = m_params.get_optional("strength", DefaultStrength, context);
-            m_sample_count = 2 + m_params.get_optional("fringing", DefaultFringing, context); // >= 3
+            m_sample_count = 2 + m_params.get_optional("fringe_smoothness", DefaultSampleCount - 2, context); // >= 3
 
             return true;
         }
@@ -165,8 +165,8 @@ DictionaryArray ChromaticAberrationPostProcessingStageFactory::get_input_metadat
 
     metadata.push_back(
         Dictionary()
-            .insert("name", "fringing")
-            .insert("label", "Fringing")
+            .insert("name", "fringe_smoothness")
+            .insert("label", "Fringe Smoothness")
             .insert("type", "integer")
             .insert("min",
                     Dictionary()
