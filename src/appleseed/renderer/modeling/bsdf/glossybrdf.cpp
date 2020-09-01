@@ -313,7 +313,7 @@ namespace
         }
     };
 
-    typedef BSDFWrapper<GlossyBRDFImpl> GlossyBRDF; 
+    typedef BSDFWrapper<GlossyBRDFImpl> GlossyBRDF;
     typedef MicrofacetBRDFWrapper<GlossyBRDFImpl> MicrofacetGlossyBRDF;
 }
 

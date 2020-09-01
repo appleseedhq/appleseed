@@ -58,7 +58,6 @@ APPLESEED_DECLARE_INPUT_VALUES(LambertianBRDFInputValues)
 {
     Spectrum    m_reflectance;              // diffuse reflectance (albedo, technically)
     float       m_reflectance_multiplier;
-    float       m_microfacet_normal_mapping;
 };
 
 

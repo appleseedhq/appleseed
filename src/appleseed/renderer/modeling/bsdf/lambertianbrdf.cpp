@@ -177,7 +177,7 @@ namespace
     };
 
     typedef BSDFWrapper<LambertianBRDFImpl> LambertianBRDF;
-    typedef MicrofacetBRDFWrapper<LambertianBRDFImpl> MicrofacetGlossyBRDF;
+    typedef MicrofacetBRDFWrapper<LambertianBRDFImpl> MicrofacetLambertianBRDF;
 }
 
 
@@ -253,14 +253,14 @@ Dictionary MicrofacetLambertianBRDFFactory::get_model_metadata() const
     return
         Dictionary()
             .insert("name", MicrofacetModel)
-            .insert("label", "Microfacet Glossy BRDF");
+            .insert("label", "Microfacet Lambertian BRDF");
 }
 
 auto_release_ptr<BSDF> MicrofacetLambertianBRDFFactory::create(
     const char*         name,
     const ParamArray&   params) const
 {
-    return auto_release_ptr<BSDF>(new MicrofacetGlossyBRDF(name, params));
+    return auto_release_ptr<BSDF>(new MicrofacetLambertianBRDF(name, params));
 }
 
 }   // namespace renderer
