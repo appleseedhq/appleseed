@@ -92,8 +92,8 @@ namespace
             m_glossy_brdf = create_and_register_bsdf(GlossyID, "glossy_brdf");
             m_hair_bsdf = create_and_register_bsdf(HairID, "hair_bsdf");
             m_metal_brdf = create_and_register_bsdf(MetalID, "metal_brdf");
-            m_microfacet_glossy_brdf = create_and_register_bsdf(MicrofacetGlossyID, "microfacet_normal_mapping_glossy_brdf");
             m_microfacet_blinn_brdf = create_and_register_bsdf(MicrofacetBlinnID, "microfacet_normal_mapping_blinn_brdf");
+            m_microfacet_glossy_brdf = create_and_register_bsdf(MicrofacetGlossyID, "microfacet_normal_mapping_glossy_brdf");
             m_microfacet_metal_brdf = create_and_register_bsdf(MicrofacetMetalID, "microfacet_normal_mapping_metal_brdf");
             m_microfacet_plastic_brdf = create_and_register_bsdf(MicrofacetPlasticID, "microfacet_normal_mapping_plastic_brdf");
             m_microfacet_sheen_brdf = create_and_register_bsdf(MicrofacetSheenID, "microfacet_normal_mapping_sheen_brdf");
@@ -416,8 +416,8 @@ namespace
         auto_release_ptr<BSDF>      m_glossy_layer_bsdf;
         auto_release_ptr<BSDF>      m_hair_bsdf;
         auto_release_ptr<BSDF>      m_metal_brdf;
-        auto_release_ptr<BSDF>      m_microfacet_glossy_brdf;
         auto_release_ptr<BSDF>      m_microfacet_blinn_brdf;
+        auto_release_ptr<BSDF>      m_microfacet_glossy_brdf;
         auto_release_ptr<BSDF>      m_microfacet_metal_brdf;
         auto_release_ptr<BSDF>      m_microfacet_plastic_brdf;
         auto_release_ptr<BSDF>      m_microfacet_sheen_brdf;
