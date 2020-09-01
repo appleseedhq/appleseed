@@ -160,20 +160,20 @@ class Logger:
     def fail_rendering(self, rendering_time, message):
         self.__print_result(format_duration(rendering_time), message, colorama.Fore.RED)
 
-    def __print_scene(self, scene, color=colorama.Fore.RESET):
+    def __print_scene(self, scene, color=colorama.Fore.RESET + colorama.Style.NORMAL):
         scene = remove_prefix(scene, "./")
         scene = remove_prefix(scene, ".\\")
         if len(scene) > self.SCENE_COLUMN_WIDTH:
             scene = scene[:self.SCENE_COLUMN_WIDTH - 3] + "..."
         print("| {0}{1}{2} | ".format(color,
                                       scene.ljust(self.SCENE_COLUMN_WIDTH),
-                                      colorama.Fore.RESET), end='')
+                                      colorama.Fore.RESET + colorama.Style.NORMAL), end='')
 
-    def __print_result(self, time, message, color=colorama.Fore.RESET):
+    def __print_result(self, time, message, color=colorama.Fore.RESET + colorama.Style.NORMAL):
         print("{0} | {1}{2}{3} |".format(time.rjust(self.TIME_COLUMN_WIDTH),
                                          color,
                                          message.rjust(self.RESULT_COLUMN_WIDTH),
-                                         colorama.Fore.RESET))
+                                         colorama.Fore.RESET + colorama.Style.NORMAL))
 
 
 # --------------------------------------------------------------------------------------------------
