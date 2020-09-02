@@ -61,23 +61,6 @@ class APPLESEED_DLLSYMBOL ProjectFileWriter
         const char*     filepath,
         const int       options = Defaults,
         const char*     extra_comments = nullptr);
-
-  private:
-    // Write a project to disk as a plain project file.
-    // Returns true on success, false otherwise.
-    static bool write_plain_project_file(
-        Project&        project,
-        const char*     filepath,
-        const int       options,
-        const char*     comments);
-
-    // Write a project file to disk as a packed project file.
-    // Returns true on success, false otherwise.
-    static bool write_packed_project_file(
-        Project&        project,
-        const char*     filepath,
-        const int       options,
-        const char*     extra_comments);
 };
 
 }   // namespace renderer

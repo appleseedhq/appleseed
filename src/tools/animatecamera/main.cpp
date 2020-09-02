@@ -201,9 +201,8 @@ namespace
 
             // Read the master project file.
             const char* project_filepath = g_cl.m_filenames.values()[0].c_str();
-            ProjectFileReader reader;
             auto_release_ptr<Project> project(
-                reader.read(
+                ProjectFileReader::read(
                     project_filepath,
                     schema_filepath.string().c_str()));
 

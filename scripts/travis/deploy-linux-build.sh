@@ -45,6 +45,7 @@ touch build_report.txt
 echo "web url=$TRAVIS_BUILD_WEB_URL" >> build_report.txt
 echo "job url=$TRAVIS_JOB_WEB_URL" >> build_report.txt
 echo "commit=$TRAVIS_COMMIT" >> build_report.txt
+echo "commit url=https://github.com/appleseedhq/appleseed/commit/$TRAVIS_COMMIT" >> build_report.txt
 echo "commit message=$TRAVIS_COMMIT_MESSAGE" >> build_report.txt
 echo "job id=$TRAVIS_JOB_ID" >> build_report.txt
 echo "job name=$TRAVIS_JOB_NAME" >> build_report.txt
@@ -63,14 +64,21 @@ echo "Deploy travis build on the server..."
 # Add server public key to known hosts.
 echo $DEPLOY_SSH_KEY >> $HOME/.ssh/known_hosts
 
-# Send build to server.
+# Remove previous build from server.
 export SSHPASS=$DEPLOY_PASSWORD
+sshpass -e ssh $DEPLOY_USER@$DEPLOY_URL rm -rf $DEPLOY_FOLDER
+
+# Send new build to the server.
 sshpass -e rsync \
-    -raz --stats --no-perms --no-owner --no-group \
-    --exclude 'src' \
-    --exclude 'docs' \
-    --exclude 'cmake' \
-    ./* \
+    --recursive \
+    --archive \
+    --compress \
+    --stats \
+    --no-perms --no-owner --no-group \
+    build_report.txt \
+    prebuilt-linux-deps \
+    sandbox \
+    scripts \
     $DEPLOY_USER@$DEPLOY_URL:$DEPLOY_FOLDER
 
 echo "travis_fold:end:deploy"

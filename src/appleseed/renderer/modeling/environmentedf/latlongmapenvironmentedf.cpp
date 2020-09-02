@@ -168,9 +168,9 @@ namespace
           , m_importance_map_height(0)
           , m_probability_scale(0.0f)
         {
-            m_inputs.declare("radiance", InputFormatSpectralIlluminance);
-            m_inputs.declare("radiance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("exposure", InputFormatFloat, "0.0");
+            m_inputs.declare("radiance", InputFormat::SpectralIlluminance);
+            m_inputs.declare("radiance_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("exposure", InputFormat::Float, "0.0");
 
             m_phi_shift = deg_to_rad(m_params.get_optional<float>("horizontal_shift", 0.0f));
             m_theta_shift = deg_to_rad(m_params.get_optional<float>("vertical_shift", 0.0f));

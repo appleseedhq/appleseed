@@ -31,16 +31,20 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/frame/frame.h"
+#include "renderer/modeling/postprocessingstage/effect/vignetteapplier.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
 
 // appleseed.foundation headers.
 #include "foundation/containers/dictionary.h"
 #include "foundation/image/canvasproperties.h"
-#include "foundation/image/color.h"
 #include "foundation/image/image.h"
 #include "foundation/math/scalar.h"
 #include "foundation/math/vector.h"
 #include "foundation/utility/api/specializedapiarrays.h"
+
+// Standard headers.
+#include <cstddef>
+#include <memory>
 
 using namespace foundation;
 
@@ -94,45 +98,27 @@ namespace
             return true;
         }
 
-        void execute(Frame& frame) const override
+        void execute(Frame& frame, const std::size_t thread_count) const override
         {
+            // Skip vignetting if the intensity is zero.
+            if (m_intensity == 0.0f)
+                return;
+
             const CanvasProperties& props = frame.image().properties();
-            const Vector2f resolution(static_cast<float>(props.m_canvas_width), static_cast<float>(props.m_canvas_height));
-            const Vector2f normalization_factor(lerp(resolution.y, resolution.x, m_anisotropy), resolution.y);
 
-            Image& image = frame.image();
-
-            for (std::size_t y = 0; y < props.m_canvas_height; ++y)
+            // Initialize effect-specific context and settings.
+            const VignetteParams effect_params
             {
-                for (std::size_t x = 0; x < props.m_canvas_width; ++x)
-                {
-                    // Pixel coordinate normalized to be in the [-1, 1] range vertically.
-                    const Vector2f coord = (2.0f * Vector2f(static_cast<float>(x), static_cast<float>(y)) - resolution) / normalization_factor;
+                static_cast<float>(props.m_canvas_width),
+                static_cast<float>(props.m_canvas_height),
+                m_intensity,
+                m_anisotropy
+            };
 
-                    //
-                    // Port of Keijiro Takahashi's natural vignetting effect for Unity.
-                    // Recreates natural illumination falloff, which is approximated by the "cosine fourth" law of illumination falloff.
-                    //
-                    // References:
-                    //
-                    //   https://github.com/keijiro/KinoVignette
-                    //   https://en.wikipedia.org/wiki/Vignetting#Natural_vignetting
-                    //
+            // Apply the effect onto each image tile, in parallel.
+            const VignetteApplier effect_applier(effect_params);
 
-                    const float linear_radial_falloff = norm(coord) * m_intensity;
-                    const float quadratic_radial_falloff = linear_radial_falloff * linear_radial_falloff + 1.0f;
-
-                    // Inversely proportional to the fourth power of the distance from the pixel to the image center.
-                    const float inverse_biquadratic_radial_falloff = 1.0f / (quadratic_radial_falloff * quadratic_radial_falloff);
-
-                    Color4f pixel;
-                    image.get_pixel(x, y, pixel);
-
-                    pixel.rgb() *= inverse_biquadratic_radial_falloff;
-
-                    image.set_pixel(x, y, pixel);
-                }
-            }
+            effect_applier.apply_on_tiles(frame.image(), thread_count);
         }
 
       private:

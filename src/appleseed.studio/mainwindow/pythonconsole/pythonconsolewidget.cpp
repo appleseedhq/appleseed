@@ -255,7 +255,7 @@ void PythonConsoleWidget::wheelEvent(QWheelEvent* event)
 {
     if (QApplication::keyboardModifiers().testFlag(Qt::ControlModifier))
     {
-        const int new_font_size = font().pointSize() - event->delta() / 120;
+        const int new_font_size = font().pointSize() - event->angleDelta().y() / 120;
 
         QFont new_font = m_output->font();
         new_font.setPointSize(new_font_size);

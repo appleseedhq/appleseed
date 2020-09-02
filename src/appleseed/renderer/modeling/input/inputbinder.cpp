@@ -556,7 +556,7 @@ bool InputBinder::try_bind_scene_entity_to_input(
     const char*                     param_value,
     InputArray::iterator&           input)
 {
-    if (input.format() == InputFormatEntity)
+    if (input.format() == InputFormat::Entity)
     {
         #define BIND(symbol, collection)                        \
             case symbol:                                        \
@@ -637,7 +637,7 @@ bool InputBinder::try_bind_assembly_entity_to_input(
     const char*                     param_value,
     InputArray::iterator&           input)
 {
-    if (input.format() == InputFormatEntity)
+    if (input.format() == InputFormat::Entity)
     {
         #define BIND(symbol, collection)                        \
             case symbol:                                        \
@@ -720,7 +720,7 @@ void InputBinder::bind_color_to_input(
     const ColorEntity* color_entity = colors.get_by_name(param_value);
     assert(color_entity);
 
-    input.bind(new ColorSource(*color_entity));
+    input.bind(new ColorSource(*color_entity, input.format()));
 }
 
 void InputBinder::bind_texture_instance_to_input(

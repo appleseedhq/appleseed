@@ -74,7 +74,7 @@ namespace
             ShadingResult&              shading_result) override
         {
             shading_result.m_aovs[m_index].rgb() =
-                shading_components.m_emission.to_rgb(g_std_lighting_conditions);
+                shading_components.m_emission.illuminance_to_rgb(g_std_lighting_conditions);
 
             shading_result.m_aovs[m_index].a = shading_result.m_main.a;
         }

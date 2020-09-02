@@ -354,7 +354,10 @@ bool RendererServices::transform_points(
     if (to == g_NDC_ustr || to == g_raster_ustr)
     {
         if (from == g_world_ustr || from == g_common_ustr || from == g_shader_ustr)
-            memcpy(Pout, Pin, npoints * sizeof(OSL::Vec3));
+        {
+            for (int i = 0; i < npoints; ++i)
+                Pout[i] = Pin[i];
+        }
         else if (from == g_object_ustr)
         {
             // Convert from object to world.

@@ -491,9 +491,8 @@ namespace
             / "project.xsd";
 
         // Load the project from disk.
-        ProjectFileReader reader;
         return
-            reader.read(
+            ProjectFileReader::read(
                 project_filepath.c_str(),
                 schema_filepath.string().c_str());
     }

@@ -2000,6 +2000,12 @@ set (renderer_modeling_postprocessingstage_sources
     renderer/modeling/postprocessingstage/renderstamppostprocessingstage.h
     renderer/modeling/postprocessingstage/vignettepostprocessingstage.cpp
     renderer/modeling/postprocessingstage/vignettepostprocessingstage.h
+    renderer/modeling/postprocessingstage/effect/imageeffectapplier.cpp
+    renderer/modeling/postprocessingstage/effect/imageeffectapplier.h
+    renderer/modeling/postprocessingstage/effect/imageeffectjob.cpp
+    renderer/modeling/postprocessingstage/effect/imageeffectjob.h
+    renderer/modeling/postprocessingstage/effect/vignetteapplier.cpp
+    renderer/modeling/postprocessingstage/effect/vignetteapplier.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_postprocessingstage_sources}
@@ -2028,6 +2034,10 @@ set (renderer_modeling_project_sources
     renderer/modeling/project/projecttracker.cpp
     renderer/modeling/project/projecttracker.h
     renderer/modeling/project/renderingtimer.h
+    renderer/modeling/project/xmlprojectfilereader.cpp
+    renderer/modeling/project/xmlprojectfilereader.h
+    renderer/modeling/project/xmlprojectfilewriter.cpp
+    renderer/modeling/project/xmlprojectfilewriter.h
 )
 list (APPEND appleseed_sources
     ${renderer_modeling_project_sources}

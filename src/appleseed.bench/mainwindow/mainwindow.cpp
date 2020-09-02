@@ -334,13 +334,16 @@ void MainWindow::build_system_description()
     m_ui->label_threads_value->setText(QString::number(m_system_info.get_cpu_thread_count()));
     m_ui->label_l1_data_cache_value->setText(
         QString("%1 x %2")
-            .arg(m_system_info.get_cpu_core_count())
+            .arg(System::get_l1_data_cache_count())
             .arg(QString::fromStdString(pretty_size(System::get_l1_data_cache_size(), 0))));
     m_ui->label_l2_cache_value->setText(
         QString("%1 x %2")
-            .arg(m_system_info.get_cpu_core_count())
+            .arg(System::get_l2_cache_count())
             .arg(QString::fromStdString(pretty_size(System::get_l2_cache_size(), 0))));
-    m_ui->label_l3_cache_value->setText(QString::fromStdString(pretty_size(System::get_l3_cache_size(), 0)));
+    m_ui->label_l3_cache_value->setText(
+        QString("%1 x %2")
+            .arg(System::get_l3_cache_count())
+            .arg(QString::fromStdString(pretty_size(System::get_l3_cache_size(), 0))));
     m_ui->label_physical_memory_value->setText(QString::fromStdString(pretty_size(System::get_total_physical_memory_size())));
     m_ui->label_virtual_memory_value->setText(QString::fromStdString(pretty_size(System::get_total_virtual_memory_size())));
     m_ui->label_operating_system_value->setText(m_system_info.get_os_id());

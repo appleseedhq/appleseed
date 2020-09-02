@@ -51,9 +51,8 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
 {
     TEST_CASE(ParsingOfConfigurationBlocks)
     {
-        ProjectFileReader reader;
         auto_release_ptr<Project> project =
-            reader.read(
+            ProjectFileReader::read(
                 "unit tests/inputs/test_projectfilereader_configurationblocks.appleseed",
                 "../../../schemas/project.xsd",             // path relative to input file
                 ProjectFileReader::OmitProjectFileUpdate);  // don't update the project as this causes the output to differ from the input
@@ -82,10 +81,8 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
 
         try
         {
-            ProjectFileReader reader;
-
             auto_release_ptr<Project> project =
-                reader.read(
+                ProjectFileReader::read(
                     "unit tests/inputs/test_projectfilereader_validpackedproject.appleseedz",
                     "../../../../schemas/project.xsd");     // path relative to input file
 
@@ -109,10 +106,8 @@ TEST_SUITE(Renderer_Modeling_Project_ProjectFileReader)
 
         try
         {
-            ProjectFileReader reader;
-
             auto_release_ptr<Project> project =
-                reader.read(
+                ProjectFileReader::read(
                     "unit tests/inputs/test_projectfilereader_invalidpackedproject.appleseedz",
                     "../../../../schemas/project.xsd");     // path relative to input file
 

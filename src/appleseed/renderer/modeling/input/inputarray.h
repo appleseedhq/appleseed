@@ -53,14 +53,14 @@ namespace renderer
 // Input formats.
 //
 
-enum InputFormat
+enum class InputFormat
 {
-    InputFormatFloat,
-    InputFormatSpectralReflectance,
-    InputFormatSpectralIlluminance,
-    InputFormatSpectralReflectanceWithAlpha,
-    InputFormatSpectralIlluminanceWithAlpha,
-    InputFormatEntity
+    Float,
+    SpectralReflectance,
+    SpectralIlluminance,
+    SpectralReflectanceWithAlpha,
+    SpectralIlluminanceWithAlpha,
+    Entity
 };
 
 

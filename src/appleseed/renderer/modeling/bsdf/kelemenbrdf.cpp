@@ -139,11 +139,11 @@ namespace
             const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::Diffuse | ScatteringMode::Glossy, params)
         {
-            m_inputs.declare("matte_reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("matte_reflectance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("specular_reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("specular_reflectance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("roughness", InputFormatFloat);
+            m_inputs.declare("matte_reflectance", InputFormat::SpectralReflectance);
+            m_inputs.declare("matte_reflectance_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("specular_reflectance", InputFormat::SpectralReflectance);
+            m_inputs.declare("specular_reflectance_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("roughness", InputFormat::Float);
         }
 
         ~KelemenBRDFImpl() override

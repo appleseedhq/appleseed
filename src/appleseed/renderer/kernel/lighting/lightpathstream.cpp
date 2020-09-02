@@ -107,7 +107,7 @@ void LightPathStream::hit_reflector(const PathVertex& vertex)
     HitReflectorData data;
     data.m_object_instance = &vertex.m_shading_point->get_object_instance();
     data.m_vertex_position = Vector3f(vertex.get_point());
-    data.m_path_throughput = vertex.m_throughput.to_rgb(g_std_lighting_conditions);
+    data.m_path_throughput = vertex.m_throughput.illuminance_to_rgb(g_std_lighting_conditions);
     m_hit_reflector_data.push_back(data);
 }
 
@@ -126,8 +126,8 @@ void LightPathStream::hit_emitter(
     HitEmitterData data;
     data.m_object_instance = &vertex.m_shading_point->get_object_instance();
     data.m_vertex_position = Vector3f(vertex.get_point());
-    data.m_path_throughput = vertex.m_throughput.to_rgb(g_std_lighting_conditions);
-    data.m_emitted_radiance = emitted_radiance.to_rgb(g_std_lighting_conditions);
+    data.m_path_throughput = vertex.m_throughput.illuminance_to_rgb(g_std_lighting_conditions);
+    data.m_emitted_radiance = emitted_radiance.illuminance_to_rgb(g_std_lighting_conditions);
     m_hit_emitter_data.push_back(data);
 }
 
@@ -147,8 +147,8 @@ void LightPathStream::sampled_emitting_shape(
         shape.get_assembly_instance()->get_assembly().object_instances().get_by_index(
             shape.get_object_instance_index());
     data.m_vertex_position = Vector3f(emission_position);
-    data.m_material_value = material_value.to_rgb(g_std_lighting_conditions);
-    data.m_emitted_radiance = emitted_radiance.to_rgb(g_std_lighting_conditions);
+    data.m_material_value = material_value.reflectance_to_rgb(g_std_lighting_conditions);
+    data.m_emitted_radiance = emitted_radiance.illuminance_to_rgb(g_std_lighting_conditions);
     m_sampled_emitter_data.push_back(data);
 }
 
@@ -166,8 +166,8 @@ void LightPathStream::sampled_non_physical_light(
     SampledEmitterData data;
     data.m_entity = &light;
     data.m_vertex_position = Vector3f(emission_position);
-    data.m_material_value = material_value.to_rgb(g_std_lighting_conditions);
-    data.m_emitted_radiance = emitted_radiance.to_rgb(g_std_lighting_conditions);
+    data.m_material_value = material_value.reflectance_to_rgb(g_std_lighting_conditions);
+    data.m_emitted_radiance = emitted_radiance.illuminance_to_rgb(g_std_lighting_conditions);
     m_sampled_emitter_data.push_back(data);
 }
 
@@ -185,8 +185,8 @@ void LightPathStream::sampled_environment(
     SampledEnvData data;
     data.m_environment_edf = &environment_edf;
     data.m_emission_direction = emission_direction;
-    data.m_material_value = material_value.to_rgb(g_std_lighting_conditions);
-    data.m_emitted_radiance = emitted_radiance.to_rgb(g_std_lighting_conditions);
+    data.m_material_value = material_value.reflectance_to_rgb(g_std_lighting_conditions);
+    data.m_emitted_radiance = emitted_radiance.illuminance_to_rgb(g_std_lighting_conditions);
     m_sampled_env_data.push_back(data);
 }
 

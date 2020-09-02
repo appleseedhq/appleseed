@@ -224,6 +224,7 @@ void CDF<Item, Weight>::prepare()
         m_densities[i] = Weight(1.0);
         if (m_items[i].second > Weight(0.0))
             break;
+        assert(i > 0);
     }
 
     assert(m_densities.size() == m_items.size());

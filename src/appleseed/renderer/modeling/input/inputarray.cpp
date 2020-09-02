@@ -93,25 +93,25 @@ namespace
         {
             switch (m_format)
             {
-              case InputFormatFloat:
+              case InputFormat::Float:
                 size = align_to<float>(size);
                 size += sizeof(float);
                 break;
 
-              case InputFormatSpectralReflectance:
-              case InputFormatSpectralIlluminance:
+              case InputFormat::SpectralReflectance:
+              case InputFormat::SpectralIlluminance:
                 size = align_to<Spectrum>(size);
                 size += sizeof(Spectrum);
                 break;
 
-              case InputFormatSpectralReflectanceWithAlpha:
-              case InputFormatSpectralIlluminanceWithAlpha:
+              case InputFormat::SpectralReflectanceWithAlpha:
+              case InputFormat::SpectralIlluminanceWithAlpha:
                 size = align_to<Spectrum>(size);
                 size += sizeof(Spectrum);
                 size += sizeof(Alpha);
                 break;
 
-              case InputFormatEntity:
+              case InputFormat::Entity:
                 // Nothing to do.
                 break;
 
@@ -128,7 +128,7 @@ namespace
         {
             switch (m_format)
             {
-              case InputFormatFloat:
+              case InputFormat::Float:
                 {
                     ptr = align_to<float>(ptr);
                     float* out_scalar = reinterpret_cast<float*>(ptr);
@@ -141,7 +141,7 @@ namespace
                 }
                 break;
 
-              case InputFormatSpectralReflectance:
+              case InputFormat::SpectralReflectance:
                 {
                     ptr = align_to<Spectrum>(ptr);
                     Spectrum* out_spectrum = reinterpret_cast<Spectrum*>(ptr);
@@ -156,7 +156,7 @@ namespace
                 }
                 break;
 
-              case InputFormatSpectralIlluminance:
+              case InputFormat::SpectralIlluminance:
                 {
                     ptr = align_to<Spectrum>(ptr);
                     Spectrum* out_spectrum = reinterpret_cast<Spectrum*>(ptr);
@@ -171,7 +171,7 @@ namespace
                 }
                 break;
 
-              case InputFormatSpectralReflectanceWithAlpha:
+              case InputFormat::SpectralReflectanceWithAlpha:
                 {
                     ptr = align_to<Spectrum>(ptr);
                     Spectrum* out_spectrum = reinterpret_cast<Spectrum*>(ptr);
@@ -193,7 +193,7 @@ namespace
                 }
                 break;
 
-              case InputFormatSpectralIlluminanceWithAlpha:
+              case InputFormat::SpectralIlluminanceWithAlpha:
                 {
                     ptr = align_to<Spectrum>(ptr);
                     Spectrum* out_spectrum = reinterpret_cast<Spectrum*>(ptr);
@@ -215,7 +215,7 @@ namespace
                 }
                 break;
 
-              case InputFormatEntity:
+              case InputFormat::Entity:
                 // Nothing to do.
                 break;
 
@@ -229,7 +229,7 @@ namespace
         {
             switch (m_format)
             {
-              case InputFormatFloat:
+              case InputFormat::Float:
                 {
                     ptr = align_to<float>(ptr);
                     float* out_scalar = reinterpret_cast<float*>(ptr);
@@ -242,7 +242,7 @@ namespace
                 }
                 break;
 
-              case InputFormatSpectralReflectance:
+              case InputFormat::SpectralReflectance:
                 {
                     ptr = align_to<Spectrum>(ptr);
                     Spectrum* out_spectrum = reinterpret_cast<Spectrum*>(ptr);
@@ -257,7 +257,7 @@ namespace
                 }
                 break;
 
-              case InputFormatSpectralIlluminance:
+              case InputFormat::SpectralIlluminance:
                 {
                     ptr = align_to<Spectrum>(ptr);
                     Spectrum* out_spectrum = reinterpret_cast<Spectrum*>(ptr);
@@ -272,7 +272,7 @@ namespace
                 }
                 break;
 
-              case InputFormatSpectralReflectanceWithAlpha:
+              case InputFormat::SpectralReflectanceWithAlpha:
                 {
                     ptr = align_to<Spectrum>(ptr);
                     Spectrum* out_spectrum = reinterpret_cast<Spectrum*>(ptr);
@@ -294,7 +294,7 @@ namespace
                 }
                 break;
 
-              case InputFormatSpectralIlluminanceWithAlpha:
+              case InputFormat::SpectralIlluminanceWithAlpha:
                 {
                     ptr = align_to<Spectrum>(ptr);
                     Spectrum* out_spectrum = reinterpret_cast<Spectrum*>(ptr);
@@ -316,7 +316,7 @@ namespace
                 }
                 break;
 
-              case InputFormatEntity:
+              case InputFormat::Entity:
                 // Nothing to do.
                 break;
 

@@ -171,7 +171,7 @@ namespace
     {
         return std::accumulate(retAp.begin(), retAp.end(), 0.0f, [](float s, const Spectrum& ap)
         {
-            return s + luminance(ap.to_rgb(g_std_lighting_conditions));
+            return s + luminance(ap.illuminance_to_rgb(g_std_lighting_conditions));
         });
     }
 
@@ -187,26 +187,36 @@ namespace
         std::array<Spectrum, 4>&    ret)
     {
 
-        // R(Primary Specular).
-        const float cosGammaO = std::sqrt(std::max(0.0f, 1.0f - h * h));
-        const float cosTheta = cosGammaO * cos_theta_o;
+        // R (Primary Specular).
+        const float cos_gamma_o = std::sqrt(std::max(0.0f, 1.0f - h * h));
+        const float cos_theta = cos_gamma_o * cos_theta_o;
         float f;
-        fresnel_reflectance_dielectric(f, 1.0f / eta, cosTheta);
-        ret[0] = Spectrum(f);
+        fresnel_reflectance_dielectric(f, 1.0f / eta, cos_theta);
+        ret[0].set(f);
 
-        // TT(Transmitted component).
-        ret[1] = (1.0f - f) * (1.0f - f) * T;
+        Spectrum Tf = T;
+        Tf *= f;
 
-        // TRT(Total internally reflected component).
-        ret[2] = ret[1] * T * f;
+        Spectrum one_minus_Tf(1.0f);
+        one_minus_Tf -= Tf;
+
+        // TT (Transmitted component).
+        ret[1] = T;
+        ret[1] *= square(1.0f - f);
+
+        // TRT (Total internally reflected component).
+        ret[2] = ret[1];
+        ret[2] *= Tf;
 
         // Higher orders of scattering.
-        ret[3] = ret[2] * f * T / (Spectrum(1.0f) - T * f);
+        ret[3] = ret[2];
+        ret[3] *= Tf;
+        ret[3] /= one_minus_Tf;
 
     }
 
     //
-    // Method to compute a discrete pdf based on the attenuation function.
+    // Method to compute a discrete PDF based on the attenuation function.
     //
 
     void attenuation_pdf(
@@ -216,13 +226,12 @@ namespace
         const Spectrum&         T,
         std::array<float, 4>&   ret)
     {
-
         std::array<Spectrum, 4> retAp;
         attenuation(cos_theta_o, eta, h, T, retAp);
 
         const float sumY = sum_luminance(retAp);
         for (int i = 0; i <= 3; i++)
-            ret[i] = luminance(retAp[i].to_rgb(g_std_lighting_conditions)) / sumY;
+            ret[i] = luminance(retAp[i].illuminance_to_rgb(g_std_lighting_conditions)) / sumY;
     }
 
     //
@@ -443,13 +452,13 @@ namespace
             const ParamArray&           params)
           : BSDF(name, AllBSDFTypes, ScatteringMode::Glossy, params)
         {
-            m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("melanin", InputFormatFloat, "0.3");
-            m_inputs.declare("melanin_redness", InputFormatFloat, "0.0");
-            m_inputs.declare("eta", InputFormatFloat, "1.55");
-            m_inputs.declare("beta_M", InputFormatFloat, "0.3");
-            m_inputs.declare("beta_N", InputFormatFloat, "0.3");
-            m_inputs.declare("alpha", InputFormatFloat, "2.0");
+            m_inputs.declare("reflectance", InputFormat::SpectralReflectance);
+            m_inputs.declare("melanin", InputFormat::Float, "0.3");
+            m_inputs.declare("melanin_redness", InputFormat::Float, "0.0");
+            m_inputs.declare("eta", InputFormat::Float, "1.55");
+            m_inputs.declare("beta_M", InputFormat::Float, "0.3");
+            m_inputs.declare("beta_N", InputFormat::Float, "0.3");
+            m_inputs.declare("alpha", InputFormat::Float, "2.0");
         }
 
         void release() override

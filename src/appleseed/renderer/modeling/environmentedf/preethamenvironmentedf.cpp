@@ -94,14 +94,14 @@ namespace
             const ParamArray&       params)
           : EnvironmentEDF(name, params)
         {
-            m_inputs.declare("sun_theta", InputFormatFloat);
-            m_inputs.declare("sun_phi", InputFormatFloat);
-            m_inputs.declare("turbidity", InputFormatFloat);
-            m_inputs.declare("turbidity_multiplier", InputFormatFloat, "2.0");
-            m_inputs.declare("luminance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("luminance_gamma", InputFormatFloat, "1.0");
-            m_inputs.declare("saturation_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("horizon_shift", InputFormatFloat, "0.0");
+            m_inputs.declare("sun_theta", InputFormat::Float);
+            m_inputs.declare("sun_phi", InputFormat::Float);
+            m_inputs.declare("turbidity", InputFormat::Float);
+            m_inputs.declare("turbidity_multiplier", InputFormat::Float, "2.0");
+            m_inputs.declare("luminance_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("luminance_gamma", InputFormat::Float, "1.0");
+            m_inputs.declare("saturation_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("horizon_shift", InputFormat::Float, "0.0");
         }
 
         void release() override

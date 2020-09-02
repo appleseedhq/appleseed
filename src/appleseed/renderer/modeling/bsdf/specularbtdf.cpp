@@ -72,14 +72,14 @@ namespace
             const ParamArray&           params)
           : BSDF(name, Transmissive, ScatteringMode::Specular, params)
         {
-            m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("transmittance", InputFormatSpectralReflectance);
-            m_inputs.declare("transmittance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("fresnel_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("ior", InputFormatFloat);
-            m_inputs.declare("volume_density", InputFormatFloat, "0.0");
-            m_inputs.declare("volume_scale", InputFormatFloat, "1.0");
+            m_inputs.declare("reflectance", InputFormat::SpectralReflectance);
+            m_inputs.declare("reflectance_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("transmittance", InputFormat::SpectralReflectance);
+            m_inputs.declare("transmittance_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("fresnel_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("ior", InputFormat::Float);
+            m_inputs.declare("volume_density", InputFormat::Float, "0.0");
+            m_inputs.declare("volume_scale", InputFormat::Float, "1.0");
         }
 
         void release() override

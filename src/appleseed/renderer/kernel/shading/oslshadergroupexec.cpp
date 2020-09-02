@@ -186,8 +186,7 @@ Color3f OSLShaderGroupExec::execute_background(
     assert(m_osl_shading_context);
     assert(m_osl_thread_info);
 
-    OSL::ShaderGlobals sg;
-    memset(&sg, 0, sizeof(OSL::ShaderGlobals));
+    OSL::ShaderGlobals sg = {};
     sg.I = outgoing;
     sg.renderer = m_osl_shading_system.renderer();
     sg.raytype = VisibilityFlags::CameraRay;

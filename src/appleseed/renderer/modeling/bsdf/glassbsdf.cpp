@@ -155,19 +155,19 @@ namespace
             const ParamArray&           params)
           : BSDF(name, AllBSDFTypes, ScatteringMode::Glossy, params)
         {
-            m_inputs.declare("surface_transmittance", InputFormatSpectralReflectance);
-            m_inputs.declare("surface_transmittance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("reflection_tint", InputFormatSpectralReflectance, "1.0");
-            m_inputs.declare("refraction_tint", InputFormatSpectralReflectance, "1.0");
-            m_inputs.declare("roughness", InputFormatFloat, "0.15");
-            m_inputs.declare("anisotropy", InputFormatFloat, "0.0");
-            m_inputs.declare("ior", InputFormatFloat, "1.5");
-            m_inputs.declare("volume_transmittance", InputFormatSpectralReflectance, "1.0");
-            m_inputs.declare("volume_transmittance_distance", InputFormatFloat, "0.0");
-            m_inputs.declare("volume_absorption", InputFormatSpectralReflectance, "0.0");
-            m_inputs.declare("volume_density", InputFormatFloat, "0.0");
-            m_inputs.declare("volume_scale", InputFormatFloat, "1.0");
-            m_inputs.declare("energy_compensation", InputFormatFloat, "0.0");
+            m_inputs.declare("surface_transmittance", InputFormat::SpectralReflectance);
+            m_inputs.declare("surface_transmittance_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("reflection_tint", InputFormat::SpectralReflectance, "1.0");
+            m_inputs.declare("refraction_tint", InputFormat::SpectralReflectance, "1.0");
+            m_inputs.declare("roughness", InputFormat::Float, "0.15");
+            m_inputs.declare("anisotropy", InputFormat::Float, "0.0");
+            m_inputs.declare("ior", InputFormat::Float, "1.5");
+            m_inputs.declare("volume_transmittance", InputFormat::SpectralReflectance, "1.0");
+            m_inputs.declare("volume_transmittance_distance", InputFormat::Float, "0.0");
+            m_inputs.declare("volume_absorption", InputFormat::SpectralReflectance, "0.0");
+            m_inputs.declare("volume_density", InputFormat::Float, "0.0");
+            m_inputs.declare("volume_scale", InputFormat::Float, "1.0");
+            m_inputs.declare("energy_compensation", InputFormat::Float, "0.0");
         }
 
         void release() override

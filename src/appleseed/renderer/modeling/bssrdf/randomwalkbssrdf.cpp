@@ -99,22 +99,22 @@ namespace
             const ParamArray&       params)
           : BSSRDF(name, params)
         {
-            m_inputs.declare("weight", InputFormatFloat, "1.0");
-            m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("mfp", InputFormatSpectralReflectance);
-            m_inputs.declare("mfp_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("ior", InputFormatFloat);
-            m_inputs.declare("fresnel_weight", InputFormatFloat, "1.0");
-            m_inputs.declare("volume_anisotropy", InputFormatFloat, "0.0");
-            m_inputs.declare("surface_roughness", InputFormatFloat, "0.01");
+            m_inputs.declare("weight", InputFormat::Float, "1.0");
+            m_inputs.declare("reflectance", InputFormat::SpectralReflectance);
+            m_inputs.declare("reflectance_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("mfp", InputFormat::SpectralReflectance);
+            m_inputs.declare("mfp_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("ior", InputFormat::Float);
+            m_inputs.declare("fresnel_weight", InputFormat::Float, "1.0");
+            m_inputs.declare("volume_anisotropy", InputFormat::Float, "0.0");
+            m_inputs.declare("surface_roughness", InputFormat::Float, "0.01");
 
             const std::string lambertian_brdf_name = std::string(name) + "_lambertian_brdf";
             m_lambertian_brdf = LambertianBRDFFactory().create(lambertian_brdf_name.c_str(), ParamArray());
             m_lambertian_brdf_data.m_reflectance.set(1.0f);
             m_lambertian_brdf_data.m_reflectance_multiplier = 1.0f;
 
-            m_glass_bsdf = create_glass_bsdf(name, "ggx");
+            m_glass_bsdf = create_glass_bsdf(name);
         }
 
         void release() override
@@ -452,17 +452,14 @@ namespace
         bool                        m_use_glass_bsdf;
         auto_release_ptr<BSDF>      m_glass_bsdf;
 
-        static auto_release_ptr<BSDF> create_glass_bsdf(
-            const char*             bssrdf_name,
-            const char*             mdf_name)
+        static auto_release_ptr<BSDF> create_glass_bsdf(const char* bssrdf_name)
         {
-            const std::string glass_bsdf_name = std::string(bssrdf_name) + "_glass_bsdf_" + mdf_name;
+            const std::string glass_bsdf_name = std::string(bssrdf_name) + "_glass_bsdf";
 
             auto_release_ptr<BSDF> bsdf =
                 GlassBSDFFactory().create(
                     glass_bsdf_name.c_str(),
                     ParamArray()
-                        .insert("mdf", mdf_name)
                         .insert("volume_parameterization", "transmittance"));
 
             return bsdf;
