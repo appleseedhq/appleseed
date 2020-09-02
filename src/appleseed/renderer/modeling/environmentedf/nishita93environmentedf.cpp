@@ -333,22 +333,6 @@ namespace renderer
                 }
             }
 
-            RegularSpectrum31f GetSunIrradiance(double altitude, double sun_zenith) const {
-                double rayleigh_length;
-                double mie_length;
-
-                GetOpticalLengths(EarthRadius + altitude, cos(sun_zenith), &rayleigh_length, &mie_length);
-
-                RegularSpectrum31f optical_depth = RayleighScattering() * RegularSpectrum31f(rayleigh_length) + MieExtinction() * RegularSpectrum31f(mie_length);
-
-                float depths[31];
-                for (int i = 0; i < 31; i++) {
-                    depths[i] = exp(-optical_depth[i]);
-                }
-
-                RegularSpectrum31f transmittance = RegularSpectrum31f::from_array(depths);
-                return transmittance * SolarSpectrum();
-            }
 
             // Returns the Spectral radiance for a point in sky, where the viewer is
             // 'altitude' meter in altitude, the sun is 'sun_zenith' rad below the zenith, the viewer looks at a point
@@ -386,7 +370,7 @@ namespace renderer
 
                     double rayleigh_density = exp(-h_i / RayleighScaleHeight);
                     double mie_density = exp(-h_i / MieScaleHeight);
-
+                   
                     double distance_to_sphere = DistanceToSphere(r, rmu, r_i);
                     double half_segment_length = (distance_to_sphere - distance_to_previous_sphere) * 0.5;
 
