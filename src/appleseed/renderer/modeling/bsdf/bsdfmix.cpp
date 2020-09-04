@@ -175,7 +175,7 @@ namespace
                 sampling_context,
                 values->m_child_inputs[bsdf_index],
                 adjoint,
-                false,                  // do not multiply by |cos(incoming, normal)|
+                cosine_mult,
                 local_geometry,
                 outgoing,
                 modes,
@@ -217,7 +217,7 @@ namespace
                     ? m_bsdf[0]->evaluate(
                           values->m_child_inputs[0],
                           adjoint,
-                          false,                // do not multiply by |cos(incoming, normal)|
+                          cosine_mult,
                           local_geometry,
                           outgoing,
                           incoming,
@@ -232,7 +232,7 @@ namespace
                     ? m_bsdf[1]->evaluate(
                           values->m_child_inputs[1],
                           adjoint,
-                          false,                // do not multiply by |cos(incoming, normal)|
+                          cosine_mult,
                           local_geometry,
                           outgoing,
                           incoming,

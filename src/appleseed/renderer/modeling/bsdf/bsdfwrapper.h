@@ -129,9 +129,12 @@ void BSDFWrapper<BSDFImpl, Cull>::sample(
     const int                           modes,
     BSDFSample&                         sample) const
 {
-    // OSLBSDF is containing children which are also wrapped by BSDFWrapper.
+    // OSLBSDF, MIXBSDF and BLENDBSDF are containing children which are
+    // also wrapped by BSDFWrapper.
     // Therefore, BSDFWRapper methods should be only applied to its children.
-    if (std::strcmp(BSDFImpl::get_model(), "osl_bsdf") == 0)
+    if (std::strcmp(BSDFImpl::get_model(), "osl_bsdf") == 0 ||
+        std::strcmp(BSDFImpl::get_model(), "bsdf_mix") == 0 ||
+        std::strcmp(BSDFImpl::get_model(), "bsdf_blend") == 0)
     {
         BSDFImpl::sample(
             sampling_context,
@@ -222,9 +225,12 @@ float BSDFWrapper<BSDFImpl, Cull>::evaluate(
     const int                           modes,
     DirectShadingComponents&            value) const
 {
-    // OSLBSDF is containing children which are also wrapped by BSDFWrapper.
+    // OSLBSDF, MIXBSDF and BLENDBSDF are containing children which are
+    // also wrapped by BSDFWrapper.
     // Therefore, BSDFWRapper methods should be only applied to its children.
-    if (std::strcmp(BSDFImpl::get_model(), "osl_bsdf") == 0)
+    if (std::strcmp(BSDFImpl::get_model(), "osl_bsdf") == 0 ||
+        std::strcmp(BSDFImpl::get_model(), "bsdf_mix") == 0 ||
+        std::strcmp(BSDFImpl::get_model(), "bsdf_blend") == 0)
     {
         return 
             BSDFImpl::evaluate(
@@ -291,9 +297,12 @@ float BSDFWrapper<BSDFImpl, Cull>::evaluate_pdf(
     const foundation::Vector3f&         incoming,
     const int                           modes) const
 {
-    // OSLBSDF is containing children which are also wrapped by BSDFWrapper.
+    // OSLBSDF, MIXBSDF and BLENDBSDF are containing children which are
+    // also wrapped by BSDFWrapper.
     // Therefore, BSDFWRapper methods should be only applied to its children.
-    if (std::strcmp(BSDFImpl::get_model(), "osl_bsdf") == 0)
+    if (std::strcmp(BSDFImpl::get_model(), "osl_bsdf") == 0 ||
+        std::strcmp(BSDFImpl::get_model(), "bsdf_mix") == 0 ||
+        std::strcmp(BSDFImpl::get_model(), "bsdf_blend") == 0)
     {
         return 
             BSDFImpl::evaluate_pdf(
