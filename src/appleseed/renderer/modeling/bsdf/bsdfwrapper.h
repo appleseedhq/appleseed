@@ -129,7 +129,7 @@ void BSDFWrapper<BSDFImpl, Cull>::sample(
     const int                           modes,
     BSDFSample&                         sample) const
 {
-    // OSLBSDF, MIXBSDF and BLENDBSDF are containing children which are
+    // OSLBSDF, BSDFBlend and BSDFMix are containing children which are
     // also wrapped by BSDFWrapper.
     // Therefore, BSDFWRapper methods should be only applied to its children.
     if (std::strcmp(BSDFImpl::get_model(), "osl_bsdf") == 0 ||
@@ -225,7 +225,7 @@ float BSDFWrapper<BSDFImpl, Cull>::evaluate(
     const int                           modes,
     DirectShadingComponents&            value) const
 {
-    // OSLBSDF, MIXBSDF and BLENDBSDF are containing children which are
+    // OSLBSDF, BSDFBlend and BSDFMix are containing children which are
     // also wrapped by BSDFWrapper.
     // Therefore, BSDFWRapper methods should be only applied to its children.
     if (std::strcmp(BSDFImpl::get_model(), "osl_bsdf") == 0 ||
@@ -297,7 +297,7 @@ float BSDFWrapper<BSDFImpl, Cull>::evaluate_pdf(
     const foundation::Vector3f&         incoming,
     const int                           modes) const
 {
-    // OSLBSDF, MIXBSDF and BLENDBSDF are containing children which are
+    // OSLBSDF, BSDFBlend and BSDFMix are containing children which are
     // also wrapped by BSDFWrapper.
     // Therefore, BSDFWRapper methods should be only applied to its children.
     if (std::strcmp(BSDFImpl::get_model(), "osl_bsdf") == 0 ||
