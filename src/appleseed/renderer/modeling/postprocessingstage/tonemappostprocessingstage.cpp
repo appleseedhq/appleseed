@@ -118,15 +118,12 @@ namespace
             const char*             name,
             const ParamArray&       params)
           : PostProcessingStage(name, params)
-          , m_tone_map(nullptr)
+          , m_tone_map()
         {
         }
 
         void release() override
         {
-            if (m_tone_map != nullptr)
-                delete m_tone_map;
-
             delete this;
         }
 
@@ -158,15 +155,15 @@ namespace
                 const float exposure_bias =
                     m_params.get_optional("aces_narkowicz_exposure_bias", AcesNarkowiczApplier::DefaultExposureBias, context);
 
-                m_tone_map = new AcesNarkowiczApplier(exposure_bias);
+                m_tone_map.reset(new AcesNarkowiczApplier(exposure_bias));
             }
             else if (tone_map_operator == AcesUnreal.id)
             {
-                m_tone_map = new AcesUnrealApplier();
+                m_tone_map.reset(new AcesUnrealApplier());
             }
             else if (tone_map_operator == FilmicHejl.id)
             {
-                m_tone_map = new FilmicHejlApplier();
+                m_tone_map.reset(new FilmicHejlApplier());
             }
             else if (tone_map_operator == FilmicUncharted.id)
             {
@@ -187,7 +184,7 @@ namespace
                 const float exposure_bias =
                     m_params.get_optional("filmic_uncharted_exposure_bias", FilmicUnchartedApplier::DefaultExposureBias, context);
 
-                m_tone_map = new FilmicUnchartedApplier(A, B, C, D, E, F, W, exposure_bias);
+                m_tone_map.reset(new FilmicUnchartedApplier(A, B, C, D, E, F, W, exposure_bias));
             }
             else if (tone_map_operator == FilmicPiecewise.id)
             {
@@ -202,14 +199,14 @@ namespace
                 const float shoulder_angle =
                     m_params.get_optional("filmic_piecewise_shoulder_angle", FilmicPiecewiseApplier::DefaultShoulderAngle, context);
 
-                m_tone_map = new FilmicPiecewiseApplier(toe_strength, toe_length, shoulder_strength, shoulder_length, shoulder_angle);
+                m_tone_map.reset(new FilmicPiecewiseApplier(toe_strength, toe_length, shoulder_strength, shoulder_length, shoulder_angle));
             }
             else if (tone_map_operator == Reinhard.id)
             {
                 const bool use_luminance =
                     m_params.get_optional("reinhard_use_luminance", ReinhardApplier::DefaultUseLuminance, context);
 
-                m_tone_map = new ReinhardApplier(use_luminance);
+                m_tone_map.reset(new ReinhardApplier(use_luminance));
             }
             else if (tone_map_operator == ReinhardExtended.id)
             {
@@ -218,13 +215,13 @@ namespace
                 const bool use_luminance =
                     m_params.get_optional("reinhard_extended_use_luminance", ReinhardExtendedApplier::DefaultUseLuminance, context);
 
-                m_tone_map = new ReinhardExtendedApplier(max_white, use_luminance);
+                m_tone_map.reset(new ReinhardExtendedApplier(max_white, use_luminance));
             }
             else
             {
                 assert(tone_map_operator == Linear.id);
 
-                m_tone_map = new LinearApplier();
+                m_tone_map.reset(new LinearApplier());
             }
 
             return true;
@@ -247,8 +244,8 @@ namespace
         }
 
       private:
-        ToneMapApplier*     m_tone_map;
-        bool                m_clamp_colors;
+        std::unique_ptr<ToneMapApplier>     m_tone_map;
+        bool                                m_clamp_colors;
     };
 }
 
