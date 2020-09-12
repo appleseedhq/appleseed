@@ -96,6 +96,7 @@ class LocalSampleAccumulationBuffer
 
     LockType                                    m_lock;
     std::vector<foundation::AccumulatorTile*>   m_levels;
+    std::vector<foundation::AccumulatorTile*>   m_read_levels;
     std::vector<foundation::Vector2f>           m_level_scales;
     boost::atomic<std::int32_t>*                m_remaining_pixels;
     boost::atomic<std::uint32_t>                m_active_level;
