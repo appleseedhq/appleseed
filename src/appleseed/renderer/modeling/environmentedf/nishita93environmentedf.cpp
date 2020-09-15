@@ -31,34 +31,19 @@
 #include "nishita93environmentedf.h"
 
 // appleseed.renderer headers.
-#include "renderer/global/globaltypes.h"
-#include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/environmentedf/environmentedf.h"
-#include "renderer/modeling/environmentedf/sphericalcoordinates.h"
-#include "renderer/modeling/input/inputarray.h"
-#include "renderer/modeling/input/source.h"
-#include "renderer/modeling/input/sourceinputs.h"
-#include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
-#include "foundation/containers/dictionary.h"
-#include "foundation/image/color.h"
-#include "foundation/image/colorspace.h"
-#include "foundation/image/regularspectrum.h"
-#include "foundation/math/fastmath.h"
+#include "foundation/math/ray.h"
 #include "foundation/math/sampling/mappings.h"
-#include "foundation/math/scalar.h"
-#include "foundation/math/transform.h"
-#include "foundation/math/vector.h"
-#include "foundation/platform/compiler.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 
 // Standard headers.
-#include <algorithm>
 #include <cassert>
 #include <cmath>
-#include <cstddef>
+
+#include "physicalsky.h"
 
 // Forward declarations.
 namespace foundation { class IAbortSwitch; }
@@ -72,13 +57,13 @@ namespace renderer
     namespace
     {
 
-//
-// An environment EDF implementing the Nishita93 day sky model.
-//
-// Reference:
-//
-//   http://nishitalab.org/user/nis/cdrom/sig93_nis.pdf
-//
+        //
+        // An environment EDF implementing the Nishita93 day sky model.
+        //
+        // Reference:
+        //
+        //   http://nishitalab.org/user/nis/cdrom/sig93_nis.pdf
+        //
 
         const char* Model = "nishita93_environment_edf";
 
@@ -91,9 +76,15 @@ namespace renderer
                 const ParamArray&       params)
                 : EnvironmentEDF(name, params)
             {
-                m_inputs.declare("sun_theta", InputFormat::Float);
-                m_inputs.declare("sun_phi", InputFormat::Float);
+                m_inputs.declare("sun_theta", InputFormat::Float, "45.0");
+                m_inputs.declare("sun_phi", InputFormat::Float, "0.0");
+                m_inputs.declare("sun_intensity_multiplier", InputFormat::Float, "1.0");
+                m_inputs.declare("elevation", InputFormat::Float, "0.0");
+                m_inputs.declare("air_molecule_density", InputFormat::Float, "1.0");
+                m_inputs.declare("dust_molecule_density", InputFormat::Float, "1.0");
+                m_inputs.declare("haze", InputFormat::Float, "0.8");
                 m_inputs.declare("horizon_shift", InputFormat::Float, "0.0");
+                m_inputs.declare("sun_angular_diameter", InputFormat::Float, "0.545");
             }
 
             void release() override
@@ -118,12 +109,20 @@ namespace renderer
                 // Evaluate uniform values.
                 m_inputs.evaluate_uniforms(&m_uniform_values);
 
-                // Compute the sun direction.
+                // Set user input values from user interface.
                 m_sun_theta = deg_to_rad(m_uniform_values.m_sun_theta);
                 m_sun_phi = deg_to_rad(m_uniform_values.m_sun_phi);
-                m_sun_dir = Vector3f::make_unit_vector(m_sun_theta, m_sun_phi);
+                m_sun_intensity_multiplier = m_uniform_values.m_sun_intensity_multiplier;
+                m_elevation = m_uniform_values.m_elevation;
+                m_air_molecule_density = m_uniform_values.m_air_molecule_density;
+                m_dust_molecule_density = m_uniform_values.m_dust_molecule_density;
+                m_haze = m_uniform_values.m_haze;
+                m_sun_angular_diameter = deg_to_rad(m_uniform_values.m_sun_angular_diameter);
 
-                // Precompute nishitas lookup table for optical depths
+                // Compute the sun direction.
+                sun_dir = Vector3f::make_unit_vector(m_sun_theta, m_sun_phi);
+
+                // Precompute nishitas lookup table for optical depths.
                 precompute_optical_depths();
 
                 return true;
@@ -144,9 +143,7 @@ namespace renderer
                 const Vector3f shifted_outgoing = shift(local_outgoing);
 
                 RegularSpectrum31f radiance;
-                if (shifted_outgoing.y > 0.0f)
-                    compute_sky_radiance(shading_context, shifted_outgoing, radiance);
-                else radiance.set(0.0f);
+                compute_sky_radiance(shading_context, shifted_outgoing, radiance);
 
                 value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
                 probability = shifted_outgoing.y > 0.0f ? shifted_outgoing.y * RcpPi<float>() : 0.0f;
@@ -166,9 +163,7 @@ namespace renderer
                 const Vector3f shifted_outgoing = shift(local_outgoing);
 
                 RegularSpectrum31f radiance;
-                if (shifted_outgoing.y > 0.0f)
-                    compute_sky_radiance(shading_context, shifted_outgoing, radiance);
-                else radiance.set(0.0f);
+                compute_sky_radiance(shading_context, shifted_outgoing, radiance);
 
                 value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
             }
@@ -187,9 +182,7 @@ namespace renderer
                 const Vector3f shifted_outgoing = shift(local_outgoing);
 
                 RegularSpectrum31f radiance;
-                if (shifted_outgoing.y > 0.0f)
-                    compute_sky_radiance(shading_context, shifted_outgoing, radiance);
-                else radiance.set(0.0f);
+                compute_sky_radiance(shading_context, shifted_outgoing, radiance);
 
                 value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
                 probability = shifted_outgoing.y > 0.0f ? shifted_outgoing.y * RcpPi<float>() : 0.0f;
@@ -215,20 +208,34 @@ namespace renderer
         private:
             APPLESEED_DECLARE_INPUT_VALUES(InputValues)
             {
-                float   m_sun_theta;                    // sun zenith angle in degrees, 0=zenith
-                float   m_sun_phi;                      // degrees
+                float   m_sun_theta;                    // Angle (deg) between sun and zenith, 0=zenith
+                float   m_sun_phi;                      // Angle (deg) between sun and north, 0=north
+                float   m_sun_intensity_multiplier;     // Increases or decreases the returned radiance values
+                float   m_elevation;                    // Elevation of camera above earth surface (m)   
+                float   m_air_molecule_density;         // Multiplier of air molecule density, affecting rayleigh scattering
+                float   m_dust_molecule_density;        // Multiplier of dust molecule density, affecting mie scattering
+                float   m_haze;                         // u parameter for Cornette phase function used for Mie scattering
                 float   m_horizon_shift;
+                float   m_sun_angular_diameter;         // Rays with angle (rad) +- sun_angular_diameter will return sun radiance directly
             };
 
             InputValues                 m_uniform_values;
 
-            float                       m_sun_theta;    // sun zenith angle in radians, 0=zenith
-            float                       m_sun_phi;      // radians
-            Vector3f                    m_sun_dir;
+            float                       m_sun_theta;    // Angle (rad) between sun and zenith, 0=zenith
+            float                       m_sun_phi;      // Angle (rad) between sun and north, 0=north
+            Vector3f                    sun_dir;        // Vector pointing into the direction of the sun
 
-            // Fills a 3D precomputation table with optical depths value along the sun direction
+            float                       m_sun_intensity_multiplier;         // Increases or decreases the returned radiance values
+            float                       m_elevation;                        // Elevation of camera above earth surface (m)    
+            float                       m_air_molecule_density;             // Multiplier of air molecule density, affecting rayleigh scattering
+            float                       m_dust_molecule_density;            // Multiplier of dust molecule density, affecting mie scattering
+            float                       m_haze;                             // u parameter for Cornette phase function used for Mie scattering
+            float                       m_sun_angular_diameter;             // Rays with angle (rad) +- sun_angular_diameter will return sun radiance directly
+
+            // Fills a 3D precomputation table with optical depths value along the sun direction.
             void precompute_optical_depths() {
-
+                precompute_mie_g(m_haze);
+                precompute_shells();
             }
 
             // Compute the sky radiance along a given direction.
@@ -237,9 +244,36 @@ namespace renderer
                 const Vector3f&         outgoing,
                 RegularSpectrum31f&     radiance) const
             {
-                
+
+                // Position of the camera at least 1.2 meters above earth radius to avoid numerical errors.
+                Vector3f camera_position = Vector3f(0.0f, earth_radius + 1.2f + m_elevation, 0.0f);
+                Ray3f ray = Ray3f(camera_position, outgoing);
+
+                // If the outoing vector points to the sun, return suns spectrum.
+                float sun_angular_radius = m_sun_angular_diameter / 2.0f;
+                float is_sun = norm(outgoing - sun_dir) < sun_angular_radius;
+                if (is_sun) {
+                    sun_disk(
+                        ray,
+                        m_air_molecule_density,     // Air molecule density (Rayleigh scattering)
+                        m_dust_molecule_density,    // Dust molecule density (Mie scattering)
+                        sun_angular_radius,
+                        radiance
+                    );
+                    return;
+                }
+
                 // Compute the final sky radiance.
-                radiance *= RegularSpectrum31f(0.8f);
+                single_scattering(
+                    ray,
+                    sun_dir,                    // Sun direction
+                    m_air_molecule_density,     // Air molecule density (Rayleigh scattering)
+                    m_dust_molecule_density,    // Dust molecule density (Mie scattering)
+                    radiance
+                );
+                radiance *=
+                      m_uniform_values.m_sun_intensity_multiplier     // Multiply sun intensity
+                    * Pi<float>();
             }
 
             Vector3f shift(Vector3f v) const
@@ -254,7 +288,6 @@ namespace renderer
     //
     // Nishita93EnvironmentEDFFactory class implementation.
     //
-
     void Nishita93EnvironmentEDFFactory::release()
     {
         delete this;
@@ -278,7 +311,135 @@ namespace renderer
     {
         DictionaryArray metadata;
 
-        add_common_sky_input_metadata(metadata);
+        metadata.push_back(
+            Dictionary()
+            .insert("name", "sun_theta")
+            .insert("label", "Sun Theta Angle")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                .insert("value", "0.0")
+                .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                .insert("value", "100.0")
+                .insert("type", "hard"))
+            .insert("use", "required")
+            .insert("default", "45.0")
+            .insert("help", "Sun polar (vertical) angle in degrees"));
+
+        metadata.push_back(
+            Dictionary()
+            .insert("name", "sun_phi")
+            .insert("label", "Sun Phi Angle")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                .insert("value", "-360.0")
+                .insert("type", "soft"))
+            .insert("max",
+                Dictionary()
+                .insert("value", "360.0")
+                .insert("type", "soft"))
+            .insert("use", "required")
+            .insert("default", "0.0")
+            .insert("help", "Sun azimuthal (horizontal) angle in degrees"));
+
+        metadata.push_back(
+            Dictionary()
+            .insert("name", "sun_intensity_multiplier")
+            .insert("label", "Sun intensity multiplier")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                .insert("value", "0.0")
+                .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                .insert("value", "10.0")
+                .insert("type", "soft"))
+            .insert("use", "optional")
+            .insert("default", "1.0")
+            .insert("help", "Multiplies sun intensity with constant factor"));
+
+        metadata.push_back(
+            Dictionary()
+            .insert("name", "air_molecule_density")
+            .insert("label", "Air Molecule Density")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                .insert("value", "0.0")
+                .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                .insert("value", "5.0")
+                .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "1.0")
+            .insert("help", "Air molecule density affect Rayleigh scattering (blueness of sky)"));
+
+        metadata.push_back(
+            Dictionary()
+            .insert("name", "dust_molecule_density")
+            .insert("label", "Dust Molecule Density")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                .insert("value", "0.0")
+                .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                .insert("value", "5.0")
+                .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "1.0")
+            .insert("help", "Dust molecule density affect Mie scattering (turbidity)"));
+
+        metadata.push_back(
+            Dictionary()
+            .insert("name", "haze")
+            .insert("label", "Haze in the atmosphere")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                .insert("value", "0.7")
+                .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                .insert("value", "0.85")
+                .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "0.8")
+            .insert("help", "Haze changes effect of dust particles on sunlight"));
+
+        metadata.push_back(
+            Dictionary()
+            .insert("name", "elevation")
+            .insert("label", "Elevation")
+            .insert("type", "text")
+            .insert("use", "optional")
+            .insert("default", "0")
+            .insert("help", "Elevates camera above earths surface"));
+
+        metadata.push_back(
+            Dictionary()
+            .insert("name", "sun_angular_diameter")
+            .insert("label", "Sun Size")
+            .insert("type", "text")
+            .insert("use", "optional")
+            .insert("default", "0.545")
+            .insert("help", "Angular diameter of sun disk, make 0 to hide sun"));
+
+        metadata.push_back(
+            Dictionary()
+            .insert("name", "horizon_shift")
+            .insert("label", "Horizon Shift")
+            .insert("type", "text")
+            .insert("use", "optional")
+            .insert("default", "0.0")
+            .insert("help", "Shift the horizon vertically"));
+
         add_common_input_metadata(metadata);
 
         return metadata;
