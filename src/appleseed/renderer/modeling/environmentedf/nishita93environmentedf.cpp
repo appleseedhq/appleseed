@@ -123,7 +123,7 @@ namespace renderer
                 sun_dir = Vector3f::make_unit_vector(m_sun_theta, m_sun_phi);
 
                 // Precompute nishitas lookup table for optical depths.
-                precompute_optical_depths();
+                sky_precomputations();
 
                 return true;
             }
@@ -233,9 +233,10 @@ namespace renderer
             float                       m_sun_angular_diameter;             // Rays with angle (rad) +- sun_angular_diameter will return sun radiance directly
 
             // Fills a 3D precomputation table with optical depths value along the sun direction.
-            void precompute_optical_depths() {
+            void sky_precomputations() {
                 precompute_mie_g(m_haze);
                 precompute_shells();
+                precompute_optical_depths(sun_dir);
             }
 
             // Compute the sky radiance along a given direction.

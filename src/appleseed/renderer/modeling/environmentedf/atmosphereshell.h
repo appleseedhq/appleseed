@@ -47,6 +47,7 @@ static const Vector3f earth_center = Vector3f(0.0f, 0.0f, 0.0f);            // C
 
 static const float rayleigh_scale = 7994.0f;                                // Rayleigh scale height H0 (m).
 static const float mie_scale = 1200.0f;                                     // Mie scale height H0 (m).
+static const float a = expf(-(atmosphere_radius - earth_radius) / rayleigh_scale) - 1.0f;
 
 
 // Density of rayleigh particles at height (m) above the earths surface.
@@ -54,9 +55,6 @@ static float get_rayleigh_density(float height);
 
 // Density of mie particles at height (m) above the earths surface.
 static float get_mie_density(float height);
-
-// Determine height (m) of shell.
-float find_shell_radius(int shell_index);
 
 // Class representing a shell around the earth with constant rayleigh/mie particle density.
 class shell {
@@ -92,6 +90,12 @@ protected:
 
 };
 
+// Determine height (m) of shell.
+float find_shell_radius(int shell_index);
+
+// Returns index of shell that matches best. A return value of 4.2 suggest that the distance to shell 4 is 20% and shell 5 is 80%.
+float find_shell_index(float shell_radius, shell shells[]);
+
 // Intersection of ray with a shell after a distance.
 struct intersection {
 
@@ -108,4 +112,3 @@ bool sort_intersections(intersection i, intersection j);
 
 static const int n_shells = 64;                                             // Number of atmospheric shells around the earth
 static shell shells[n_shells + 1];                                          // Precomputed atmospheric shells with constant particle density
-

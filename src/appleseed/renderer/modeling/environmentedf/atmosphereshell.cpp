@@ -51,14 +51,6 @@ static float get_mie_density(float height)
     return expf((-height + earth_radius) / mie_scale);
 }
 
-float find_shell_radius(int shell_index)
-{
-    const float a = exp(-(atmosphere_radius - earth_radius) / rayleigh_scale) - 1.0f;
-    float x = static_cast<float>(shell_index) / (n_shells);
-    return earth_radius - rayleigh_scale * log(a * x + 1.0f);
-}
-
-
 shell::shell() {}
 
 shell::shell(int i) : index(i), center(earth_center) {
@@ -94,21 +86,40 @@ size_t shell::intersection_distances_outside(Ray3f ray, intersection intersectio
     return n_distances;
 }
 
-
-
 void shell::densities() {
-    const float previous_radius = find_shell_radius(index - 1);
+    const float previous_radius = find_shell_radius(index-1);
     const float shell_center_height = (radius + previous_radius) / 2.0f;
     rayleigh_density = get_rayleigh_density(shell_center_height);
     mie_density = get_mie_density(shell_center_height);
 }
 
+float find_shell_radius(int shell_index)
+{
+    if (shell_index < 0) {
+        return earth_radius;
+    }
+    float x = static_cast<float>(shell_index) / static_cast<float>(n_shells - 1);
+    return earth_radius - rayleigh_scale * logf(a * x + 1.0f);
+}
 
+float find_shell_index(float shell_radius, shell shells[])
+{
+    // This is a shitty implementation! This can for sure be done numerically.
+    for (int i = 0; i < n_shells; i++) {
+        float radius_s1 = shells[i].radius;
+        float radius_s2 = shells[i + 1].radius;
+        float dist_s1 = radius_s1 - shell_radius;
+        float dist_s2 = radius_s2 - shell_radius;
+        if (dist_s1 <= 0 && dist_s2 > 0) {
+            return static_cast<float>(i) + ((shell_radius - radius_s1) / (radius_s2 - radius_s1));
+        }
+    }
+    return n_shells;
+}
 
 intersection::intersection() : distance(0) {}
 
 intersection::intersection(float d, shell* s) : distance(d), involved_shell(s) {}
-
 
 bool sort_intersections(intersection i, intersection j) {
     return i.distance < j.distance;

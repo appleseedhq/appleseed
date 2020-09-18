@@ -33,15 +33,19 @@
 #include "foundation/math/vector.h"
 #include "foundation/image/regularspectrum.h"
 #include "foundation/math/ray.h"
+#include "foundation/math/distance.h"
 
 #include "atmosphereshell.h"
 
 using namespace foundation;
 
-static const int num_wavelengths = 31;                  // Number of wavelengths per spectrum (400nm to 700nm, delta=10nm)
-static const float mie_extinction_coeff = 2e-5f;        // Mie scattering coefficient
-static float mie_g;                                     // Mie assymetricity component g.
+static const int num_wavelengths = 31;                              // Number of wavelengths per spectrum (400nm to 700nm, delta=10nm)
+static const float mie_extinction_coeff = 2e-5f;                    // Mie scattering coefficient
+static float mie_g;                                                 // Mie assymetricity component g.
 
+static const int n_cylinders = 1028;                              // Number of cylinders for optical depth precomputation
+static const float cylinder_delta = (atmosphere_radius - n_cylinders)/ (n_cylinders - 1);
+static Vector2f optical_depths_table[n_shells+1][n_cylinders];    // Lookup table storing optical dephts into the direction of the sun.
 
 // Sun irradiance (W*m^-2*nm^-1) values at the top of the atmosphere.
 // Source: https://www.nrel.gov/grid/solar-resource/spectra.html, Table SMART MODTRAN ETR Spectra.
@@ -124,6 +128,12 @@ void precompute_mie_g(float haze);
 // Precomputes shell values with exponentially decreasing radius.
 void precompute_shells();
 
+// Precomputes optical dephts using n cylinders.
+void precompute_optical_depths(Vector3f sun_dir);
+
+// Finds best fitting optical depth from lookup table.
+Vector2f lookup_optical_depth(Ray3f ray);
+
 // Mie assymetricity value depending on atmospheric haze condition u, varies from 0.7 tp 0.85.
 inline float mie_assymetricity(float u);
 
@@ -135,6 +145,9 @@ float mie_phase(float angle, float haze);
 
 // Determines whether the light ray intersects with the earths surface.
 bool intersects_earth(Ray3f ray);
+
+// Determines whether a ray is below the earths surface.
+bool ray_inside_earth(Ray3f ray);
 
 // Determines the distance a ray travels before hitting the outer point of the atmosphere.
 float distance_to_atmosphere(Ray3f ray);

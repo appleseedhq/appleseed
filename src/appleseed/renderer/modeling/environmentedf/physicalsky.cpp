@@ -53,10 +53,58 @@ void precompute_mie_g(float haze) {
 
 void precompute_shells() {
     for (int i = 0; i < n_shells; i++) {
-        shells[i] = shell(i + 1);
+        shells[i] = shell(i);
     }
     // Outermost "shell" is deep space with infinite radius.
-    shells[n_shells] = shell(n_shells + 1, INFINITY, 0, 0);
+    shells[n_shells] = shell(n_shells, INFINITY, 0, 0);
+}
+
+void precompute_optical_depths(Vector3f sun_dir) {
+    float sqrt3 = sqrtf(3.0f);
+    Vector3f unit_vector = Vector3f(sqrt3);
+    Vector3f sun_dir_perpendicular = normalize(cross(sun_dir, unit_vector));
+
+    for (int n_cylinder = 0; n_cylinder < n_cylinders; n_cylinder++) {
+        float cylinder_radius = cylinder_delta * n_cylinder;
+        Ray3f cylinder_border = Ray3f(sun_dir_perpendicular * cylinder_radius, sun_dir);
+        for (int n_shell = 0; n_shell <= n_shells; n_shell++) {
+            if (n_shell == 63) {
+                bool debug = true;
+            }
+            if (shells[n_shell].ray_in_shell(cylinder_border)) {
+                intersection shell_cylinder_intersection = shells[n_shell].intersection_distance_inside(cylinder_border);
+                Vector3f intersection_point = cylinder_border.m_org + sun_dir * shell_cylinder_intersection.distance;
+                Ray3f intersection_ray = Ray3f(intersection_point, sun_dir);
+                Vector2f optical_depth = ray_optical_depth(intersection_ray);
+                optical_depths_table[n_shell][n_cylinder] = optical_depth;
+            }
+            else {
+                optical_depths_table[n_shell][n_cylinder] = Vector2f(-1.0f); // optical_depths_table[n_shell][n_cylinder-1];
+            }
+        }
+    }
+}
+
+Vector2f lookup_optical_depth(Ray3f ray) {
+    Vector3f sun_dir = ray.m_dir;
+    float radius = sqrtf(square_distance_point_line(ray.m_org, earth_center, sun_dir));
+
+    float cylinder_index_raw = radius / cylinder_delta;
+    int cylinder_index = static_cast<int>(cylinder_index_raw);
+    float second_cylinder_dominance = cylinder_index_raw - static_cast<float>(cylinder_index);
+    float first_cylinder_dominance = 1.0f - second_cylinder_dominance; 
+
+    float shell_index_raw = find_shell_index(norm(ray.m_org), shells);
+    int shell_index = static_cast<int>(shell_index_raw);
+    float second_shell_dominance = shell_index_raw - static_cast<float>(shell_index);
+    float first_shell_dominance = 1.0f - second_shell_dominance;
+
+    Vector2f avg_cylinder_depths_1 = optical_depths_table[shell_index][cylinder_index] * first_cylinder_dominance
+                                   + optical_depths_table[shell_index][cylinder_index + 1] * second_cylinder_dominance;
+    Vector2f avg_cylinder_depths_2 = optical_depths_table[shell_index+1][cylinder_index] * first_cylinder_dominance
+                                   + optical_depths_table[shell_index+1][cylinder_index + 1] * second_cylinder_dominance;
+    Vector2f looked_up_depth = avg_cylinder_depths_1 * first_shell_dominance + avg_cylinder_depths_2 * second_shell_dominance;
+    return looked_up_depth;
 }
 
 float rayleigh_phase(float angle)
@@ -84,6 +132,11 @@ bool intersects_earth(Ray3f ray)
     if (ray.m_dir.y >= 0)
         return false;
     return intersect_sphere_unit_direction(ray, earth_center, earth_radius);
+}
+
+bool ray_inside_earth(Ray3f ray)
+{
+    return (norm(ray.m_org) < earth_radius);
 }
 
 float distance_to_atmosphere(Ray3f ray) {
@@ -181,7 +234,7 @@ void single_scattering(
         Vector3f segment_middle_point = ray.m_org + (ray.m_dir * (passed_distance + half_segment_length));
 
         Ray3f scatter_ray = Ray3f(segment_middle_point, sun_dir);
-        if (!intersects_earth(scatter_ray)) {
+        if (!intersects_earth(scatter_ray) && !ray_inside_earth(scatter_ray)) {
             Vector2f ray_op_depth = ray_optical_depth(scatter_ray);
             float rayleigh_light_optical_depth = air_density * ray_op_depth.x;
             float mie_light_optical_depth = dust_density * ray_op_depth.y;
