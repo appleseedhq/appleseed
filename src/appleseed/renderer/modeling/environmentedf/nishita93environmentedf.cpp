@@ -233,9 +233,9 @@ namespace renderer
 
             // Fills a 3D precomputation table with optical depths value along the sun direction.
             void sky_precomputations() {
-                precompute_mie_g(m_haze);
-                precompute_shells();
-                precompute_optical_depths(sun_dir, m_air_molecule_density, m_dust_molecule_density);
+                nishita::precompute_mie_g(m_haze);
+                nishita::precompute_shells();
+                nishita::precompute_optical_depths(sun_dir, m_air_molecule_density, m_dust_molecule_density);
             }
 
             // Compute the sky radiance along a given direction.
@@ -253,7 +253,7 @@ namespace renderer
                 float sun_angular_radius = m_sun_angular_diameter / 2.0f;
                 float is_sun = norm(outgoing - sun_dir) < sun_angular_radius;
                 if (is_sun) {
-                    sun_disk(
+                    nishita::sun_disk(
                         ray,
                         m_air_molecule_density,     // Air molecule density (Rayleigh scattering)
                         m_dust_molecule_density,    // Dust molecule density (Mie scattering)
@@ -264,7 +264,7 @@ namespace renderer
                 }
 
                 // Compute the final sky radiance.
-                single_scattering(
+                nishita::single_scattering(
                     ray,
                     sun_dir,                    // Sun direction
                     m_air_molecule_density,     // Air molecule density (Rayleigh scattering)
@@ -272,8 +272,8 @@ namespace renderer
                     radiance
                 );
                 radiance *=
-                    m_uniform_values.m_sun_intensity_multiplier     // Multiply sun intensity
-                    * Pi<float>();
+                    m_uniform_values.m_sun_intensity_multiplier;     // Multiply sun intensity
+                    // * Pi<float>();
                     // * 1.5f;         // Since nishita93 underestimates radiance by 1/3 according to Bruneton.
             }
 

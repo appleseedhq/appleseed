@@ -38,16 +38,11 @@
 using namespace foundation;
 
 
-float sqr(float n)
-{
-    return n * n;
+void nishita::precompute_mie_g(float haze) {
+    nishita::mie_g = nishita::mie_assymetricity(haze);
 }
 
-void precompute_mie_g(float haze) {
-    mie_g = mie_assymetricity(haze);
-}
-
-void precompute_shells() {
+void nishita::precompute_shells() {
     for (int i = 0; i < shell::n_atmosphere_shells; i++) {
         shell::atmosphere_shells[i] = shell(i);
     }
@@ -55,13 +50,13 @@ void precompute_shells() {
     shell::atmosphere_shells[shell::n_atmosphere_shells] = shell(shell::n_atmosphere_shells, INFINITY, 0, 0);
 }
 
-void precompute_optical_depths(const Vector3f& sun_dir, float air_density, float dust_density) {
+void nishita::precompute_optical_depths(const Vector3f& sun_dir, float air_density, float dust_density) {
     float sqrt3 = sqrtf(3.0f);
     Vector3f unit_vector = Vector3f(sqrt3);
     Vector3f sun_dir_perpendicular = normalize(cross(sun_dir, unit_vector));
 
-    for (int n_cylinder = 0; n_cylinder < n_cylinders; n_cylinder++) {
-        float cylinder_radius = cylinder_delta * n_cylinder;
+    for (int n_cylinder = 0; n_cylinder < nishita::n_cylinders; n_cylinder++) {
+        float cylinder_radius = nishita::cylinder_delta * n_cylinder;
         Ray3f cylinder_border = Ray3f(sun_dir_perpendicular * cylinder_radius, sun_dir);
         for (int n_shell = 0; n_shell <= shell::n_atmosphere_shells; n_shell++) {
             if (shell::atmosphere_shells[n_shell].ray_in_shell(cylinder_border)) {
@@ -69,78 +64,56 @@ void precompute_optical_depths(const Vector3f& sun_dir, float air_density, float
                 Vector3f intersection_point = cylinder_border.m_org + sun_dir * shell_cylinder_intersection.distance;
                 Ray3f intersection_ray = Ray3f(intersection_point, sun_dir);
 
-                const sky::opticaldepth optical_depth = ray_optical_depth(intersection_ray, air_density, dust_density);
-                optical_depths_table[n_shell][n_cylinder] = optical_depth;
+                const sky::opticaldepth optical_depth = nishita::ray_optical_depth(intersection_ray, air_density, dust_density);
+                nishita::optical_depths_table[n_shell][n_cylinder] = optical_depth;
             }
             else {
-                optical_depths_table[n_shell][n_cylinder] = sky::opticaldepth();
+                nishita::optical_depths_table[n_shell][n_cylinder] = sky::opticaldepth();
             }
         }
     }
 }
 
-sky::opticaldepth lookup_optical_depth(const Ray3f& ray) {
-    Vector3f sun_dir = ray.m_dir;
-    float radius = sqrtf(square_distance_point_line(ray.m_org, earth_center, sun_dir));
-
-    float cylinder_index_raw = radius / cylinder_delta;
-    int cylinder_index = static_cast<int>(cylinder_index_raw);
-    float second_cylinder_dominance = cylinder_index_raw - static_cast<float>(cylinder_index);
-    float first_cylinder_dominance = 1.0f - second_cylinder_dominance; 
-
-    float shell_index_raw = shell::find_index(norm(ray.m_org));
-    int shell_index = static_cast<int>(shell_index_raw);
-    float second_shell_dominance = shell_index_raw - static_cast<float>(shell_index);
-    float first_shell_dominance = 1.0f - second_shell_dominance;
-
-    sky::opticaldepth avg_cylinder_depths_1 = optical_depths_table[shell_index][cylinder_index] * first_cylinder_dominance
-                                            + optical_depths_table[shell_index][cylinder_index + 1] * second_cylinder_dominance;
-    sky::opticaldepth avg_cylinder_depths_2 = optical_depths_table[shell_index+1][cylinder_index] * first_cylinder_dominance
-                                            + optical_depths_table[shell_index+1][cylinder_index + 1] * second_cylinder_dominance;
-    sky::opticaldepth looked_up_depth = avg_cylinder_depths_1 * first_shell_dominance + avg_cylinder_depths_2 * second_shell_dominance;
-    return looked_up_depth;
-}
-
-float rayleigh_phase(float angle)
+float nishita::rayleigh_phase(float angle)
 {
-    const float angle_squared = sqr(angle);
+    const float angle_squared = angle * angle;
     return 3.0f / (16.0f * Pi<float>()) * (1.0f + angle_squared);
 }
 
-float mie_assymetricity(float u)
+float nishita::mie_assymetricity(float u)
 {
     const float x = 5.0f / 9.0f * u + 125.0f / 729.0f * powf(u, 3.0f) +
-        powf(64.0f / 27.0f - 325.0f / 243.0f * sqr(u) + 1250.0f / 2187.0f * powf(u, 4), 1.0f / 2.0f);
-    return 5.0f / 9.0f * u - (4.0f / 3.0f - 25.0f / 81.0f * sqr(u)) * powf(x, -1.0f / 3.0f) + powf(x, 1.0f / 3.0f);
+        powf(64.0f / 27.0f - 325.0f / 243.0f * (u * u) + 1250.0f / 2187.0f * powf(u, 4), 1.0f / 2.0f);
+    return 5.0f / 9.0f * u - (4.0f / 3.0f - 25.0f / 81.0f * (u * u)) * powf(x, -1.0f / 3.0f) + powf(x, 1.0f / 3.0f);
 }
 
-float mie_phase(float angle)
+float nishita::mie_phase(float angle)
 {
-    const static float mie_g_sqr = sqr(mie_g);
+    const static float mie_g_sqr = (nishita::mie_g * nishita::mie_g);
     return 3.0f / (8.0f * Pi<float>()) * (1.0f - mie_g_sqr) / (2.0f + mie_g_sqr) *
         (1.0f + angle * angle) / powf(1.0f + mie_g_sqr - 2.0f * mie_g * angle, 3.0f / 2.0f);
 }
 
-bool intersects_earth(const Ray3f& ray)
+bool nishita::intersects_earth(const Ray3f& ray)
 {
     if (ray.m_dir.y >= 0)
         return false;
     return intersect_sphere_unit_direction(ray, earth_center, earth_radius);
 }
 
-bool ray_inside_earth(const Ray3f& ray)
+bool nishita::ray_inside_earth(const Ray3f& ray)
 {
     return (norm(ray.m_org) < earth_radius);
 }
 
-float distance_to_atmosphere(const Ray3f& ray) {
+float nishita::distance_to_atmosphere(const Ray3f& ray) {
     const float radius_sqr = earth_radius * earth_radius;
     float b = -2.0f * dot(ray.m_dir, -ray.m_org);
     float c = square_norm(ray.m_org) - radius_sqr;
     return (-b + sqrtf(b * b - 4.0f * c)) / 2.0f;
 }
 
-sky::opticaldepth ray_optical_depth(const Ray3f& ray, float air_density, float dust_density)
+sky::opticaldepth nishita::ray_optical_depth(const Ray3f& ray, float air_density, float dust_density)
 {
     shell::intersection intersections[shell::n_atmosphere_shells * 2];
     int n_intersections = shell::find_intersections(ray, intersections);
@@ -164,7 +137,29 @@ sky::opticaldepth ray_optical_depth(const Ray3f& ray, float air_density, float d
     return optical_depth;
 }
 
-void single_scattering(
+sky::opticaldepth nishita::lookup_optical_depth(const Ray3f& ray) {
+    Vector3f sun_dir = ray.m_dir;
+    float radius = sqrtf(square_distance_point_line(ray.m_org, earth_center, sun_dir));
+
+    float cylinder_index_raw = radius / nishita::cylinder_delta;
+    int cylinder_index = static_cast<int>(cylinder_index_raw);
+    float second_cylinder_dominance = cylinder_index_raw - static_cast<float>(cylinder_index);
+    float first_cylinder_dominance = 1.0f - second_cylinder_dominance;
+
+    float shell_index_raw = shell::find_index(norm(ray.m_org));
+    int shell_index = static_cast<int>(shell_index_raw);
+    float second_shell_dominance = shell_index_raw - static_cast<float>(shell_index);
+    float first_shell_dominance = 1.0f - second_shell_dominance;
+
+    sky::opticaldepth avg_cylinder_depths_1 = nishita::optical_depths_table[shell_index][cylinder_index] * first_cylinder_dominance
+        + nishita::optical_depths_table[shell_index][cylinder_index + 1] * second_cylinder_dominance;
+    sky::opticaldepth avg_cylinder_depths_2 = nishita::optical_depths_table[shell_index + 1][cylinder_index] * first_cylinder_dominance
+        + nishita::optical_depths_table[shell_index + 1][cylinder_index + 1] * second_cylinder_dominance;
+    sky::opticaldepth looked_up_depth = avg_cylinder_depths_1 * first_shell_dominance + avg_cylinder_depths_2 * second_shell_dominance;
+    return looked_up_depth;
+}
+
+void nishita::single_scattering(
     const Ray3f& ray,
     const Vector3f& sun_dir,
     float air_density,
@@ -198,8 +193,8 @@ void single_scattering(
 
         Ray3f scatter_ray = Ray3f(segment_middle_point, sun_dir);
         if (!intersects_earth(scatter_ray) && !ray_inside_earth(scatter_ray)) {
-            // sky::opticaldepth ligh_optical_depth = ray_optical_depth(scatter_ray, air_density, dust_density);
-            sky::opticaldepth ligh_optical_depth = lookup_optical_depth(scatter_ray);
+            sky::opticaldepth ligh_optical_depth = ray_optical_depth(scatter_ray, air_density, dust_density);
+            // sky::opticaldepth ligh_optical_depth = lookup_optical_depth(scatter_ray);
             sky::opticaldepth total_optical_depth = optical_depth + ligh_optical_depth;
 
             /*
@@ -213,20 +208,20 @@ void single_scattering(
             spectrum += attenuation * total_reduction * sun_irradiance_spectrum * segment_length;
             */
             
-            for (int wl = 0; wl < num_wavelengths; wl++) {
-                float rayleigh_extinction_density = total_optical_depth.rayleigh * rayleigh_coeff[wl];
-                float mie_extinction_density = total_optical_depth.mie * 1.11f * mie_extinction_coeff;
+            for (int wl = 0; wl < nishita::num_wavelengths; wl++) {
+                float rayleigh_extinction_density = total_optical_depth.rayleigh * nishita::rayleigh_coeff[wl];
+                float mie_extinction_density = total_optical_depth.mie * 1.11f * nishita::mie_extinction_coeff;
                 float total_extinction_density = rayleigh_extinction_density + mie_extinction_density;
                 float attenuation = expf(-total_extinction_density);
 
-                float rayleigh_scattering_density = rayleigh_mulecule_density * rayleigh_coeff[wl];
-                float mie_scattering_density = mie_molecule_density * mie_extinction_coeff;
+                float rayleigh_scattering_density = rayleigh_mulecule_density * nishita::rayleigh_coeff[wl];
+                float mie_scattering_density = mie_molecule_density * nishita::mie_extinction_coeff;
 
                 float rayleigh_reduction = rayleigh_phase_function * rayleigh_scattering_density;
                 float mie_reduction = mie_phase_function * mie_scattering_density;
                 float total_reduction = rayleigh_reduction + mie_reduction;
 
-                spectrum[wl] += attenuation * total_reduction * sun_irradiance[wl] * segment_length;
+                spectrum[wl] += attenuation * total_reduction * nishita::sun_irradiance[wl] * segment_length;
             }
             
         }
@@ -236,7 +231,7 @@ void single_scattering(
 }
 
 
-void sun_disk(
+void nishita::sun_disk(
     const Ray3f& ray,
     float air_density,
     float dust_density,
@@ -252,10 +247,10 @@ void sun_disk(
     float mie_optical_depht = optical_depth.mie;
     float solid_angle = Pi<float>() * (1.0f - cosf(sun_radius));
 
-    for (int i = 0; i < num_wavelengths; i++) {
-        float rayleigh_transmittance = rayleigh_coeff[i] * rayleigh_optical_depht * air_density;
-        float mie_transmittance = 1.11f * mie_extinction_coeff * mie_optical_depht * dust_density;
+    for (int i = 0; i < nishita::num_wavelengths; i++) {
+        float rayleigh_transmittance = nishita::rayleigh_coeff[i] * rayleigh_optical_depht * air_density;
+        float mie_transmittance = 1.11f * nishita::mie_extinction_coeff * mie_optical_depht * dust_density;
         float total_transmittance = rayleigh_transmittance + mie_transmittance;
-        spectrum[i] = (sun_irradiance[i] / solid_angle) * expf(-total_transmittance);
+        spectrum[i] = (nishita::sun_irradiance[i] / solid_angle) * expf(-total_transmittance);
     }
 }
