@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2020 Joel Barmettler, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -236,7 +235,7 @@ namespace renderer
             void sky_precomputations() {
                 precompute_mie_g(m_haze);
                 precompute_shells();
-                precompute_optical_depths(sun_dir);
+                precompute_optical_depths(sun_dir, m_air_molecule_density, m_dust_molecule_density);
             }
 
             // Compute the sky radiance along a given direction.
@@ -273,8 +272,9 @@ namespace renderer
                     radiance
                 );
                 radiance *=
-                      m_uniform_values.m_sun_intensity_multiplier     // Multiply sun intensity
+                    m_uniform_values.m_sun_intensity_multiplier     // Multiply sun intensity
                     * Pi<float>();
+                    // * 1.5f;         // Since nishita93 underestimates radiance by 1/3 according to Bruneton.
             }
 
             Vector3f shift(Vector3f v) const
