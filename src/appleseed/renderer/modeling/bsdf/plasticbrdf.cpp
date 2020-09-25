@@ -215,7 +215,7 @@ namespace
                 wi = sample_hemisphere_cosine(Vector2f(s[0], s[1]));
 
                 const float probability = wi.y * RcpPi<float>() * (1.0f - specular_probability);
-                assert(probability > 0.0f);
+                assert(probability >= 0.0f);
 
                 if (probability > 1.0e-6f)
                 {
