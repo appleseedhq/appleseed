@@ -1998,12 +1998,18 @@ set (renderer_modeling_postprocessingstage_sources
     renderer/modeling/postprocessingstage/postprocessingstagetraits.h
     renderer/modeling/postprocessingstage/renderstamppostprocessingstage.cpp
     renderer/modeling/postprocessingstage/renderstamppostprocessingstage.h
+    renderer/modeling/postprocessingstage/tonemappostprocessingstage.cpp
+    renderer/modeling/postprocessingstage/tonemappostprocessingstage.h
     renderer/modeling/postprocessingstage/vignettepostprocessingstage.cpp
     renderer/modeling/postprocessingstage/vignettepostprocessingstage.h
+    renderer/modeling/postprocessingstage/effect/clampcolorsapplier.cpp
+    renderer/modeling/postprocessingstage/effect/clampcolorsapplier.h
     renderer/modeling/postprocessingstage/effect/imageeffectapplier.cpp
     renderer/modeling/postprocessingstage/effect/imageeffectapplier.h
     renderer/modeling/postprocessingstage/effect/imageeffectjob.cpp
     renderer/modeling/postprocessingstage/effect/imageeffectjob.h
+    renderer/modeling/postprocessingstage/effect/tonemapapplier.cpp
+    renderer/modeling/postprocessingstage/effect/tonemapapplier.h
     renderer/modeling/postprocessingstage/effect/vignetteapplier.cpp
     renderer/modeling/postprocessingstage/effect/vignetteapplier.h
 )
