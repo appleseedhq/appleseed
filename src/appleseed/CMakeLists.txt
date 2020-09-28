@@ -2006,6 +2006,15 @@ set (renderer_modeling_postprocessingstage_sources
     renderer/modeling/postprocessingstage/tonemappostprocessingstage.h
     renderer/modeling/postprocessingstage/vignettepostprocessingstage.cpp
     renderer/modeling/postprocessingstage/vignettepostprocessingstage.h
+)
+list (APPEND appleseed_sources
+    ${renderer_modeling_postprocessingstage_sources}
+)
+source_group ("renderer\\modeling\\postprocessingstage" FILES
+    ${renderer_modeling_postprocessingstage_sources}
+)
+
+set (renderer_modeling_postprocessingstage_effect_sources
     renderer/modeling/postprocessingstage/effect/additiveblendapplier.cpp
     renderer/modeling/postprocessingstage/effect/additiveblendapplier.h
     renderer/modeling/postprocessingstage/effect/brightpassapplier.cpp
@@ -2014,38 +2023,24 @@ set (renderer_modeling_postprocessingstage_sources
     renderer/modeling/postprocessingstage/effect/chromaticaberrationapplier.h
     renderer/modeling/postprocessingstage/effect/clampcolorsapplier.cpp
     renderer/modeling/postprocessingstage/effect/clampcolorsapplier.h
-    renderer/modeling/postprocessingstage/effect/downsampleapplier.cpp
-    renderer/modeling/postprocessingstage/effect/downsampleapplier.h
-    renderer/modeling/postprocessingstage/effect/resampleapplier.cpp
-    renderer/modeling/postprocessingstage/effect/resampleapplier.h
-    renderer/modeling/postprocessingstage/effect/downsampleapplier.cpp
-    renderer/modeling/postprocessingstage/effect/downsampleapplier.h
-    renderer/modeling/postprocessingstage/effect/downsamplex2applier.cpp
-    renderer/modeling/postprocessingstage/effect/downsamplex2applier.h
     renderer/modeling/postprocessingstage/effect/imageeffectapplier.cpp
     renderer/modeling/postprocessingstage/effect/imageeffectapplier.h
     renderer/modeling/postprocessingstage/effect/imageeffectjob.cpp
     renderer/modeling/postprocessingstage/effect/imageeffectjob.h
     renderer/modeling/postprocessingstage/effect/resampleapplier.cpp
     renderer/modeling/postprocessingstage/effect/resampleapplier.h
-    renderer/modeling/postprocessingstage/effect/tonemapapplier.cpp
-    renderer/modeling/postprocessingstage/effect/tonemapapplier.h
-    renderer/modeling/postprocessingstage/effect/upsampleapplier.cpp
-    renderer/modeling/postprocessingstage/effect/upsampleapplier.h
-    renderer/modeling/postprocessingstage/effect/upsampleapplier.cpp
-    renderer/modeling/postprocessingstage/effect/upsampleapplier.h
-    renderer/modeling/postprocessingstage/effect/upsamplex2applier.cpp
-    renderer/modeling/postprocessingstage/effect/upsamplex2applier.h
     renderer/modeling/postprocessingstage/effect/resamplex2applier.cpp
     renderer/modeling/postprocessingstage/effect/resamplex2applier.h
+    renderer/modeling/postprocessingstage/effect/tonemapapplier.cpp
+    renderer/modeling/postprocessingstage/effect/tonemapapplier.h
     renderer/modeling/postprocessingstage/effect/vignetteapplier.cpp
     renderer/modeling/postprocessingstage/effect/vignetteapplier.h
 )
 list (APPEND appleseed_sources
-    ${renderer_modeling_postprocessingstage_sources}
+    ${renderer_modeling_postprocessingstage_effect_sources}
 )
-source_group ("renderer\\modeling\\postprocessingstage" FILES
-    ${renderer_modeling_postprocessingstage_sources}
+source_group ("renderer\\modeling\\postprocessingstage\\effect" FILES
+    ${renderer_modeling_postprocessingstage_effect_sources}
 )
 
 set (renderer_modeling_project_sources
