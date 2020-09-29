@@ -43,7 +43,7 @@ namespace nishita {
 
     static const int num_wavelengths = 31;                                     // Number of wavelengths per spectrum (400nm to 700nm, delta=10nm)
     static float mie_g;                                                        // Mie assymetricity component g.
-    static const int n_cylinders = 1028;                                       // Number of cylinders for optical depth precomputation
+    static const int n_cylinders = 1024;                                       // Number of cylinders for optical depth precomputation
 
     // Lookup table storing optical dephts into the direction of the sun.
     static sky::opticaldepth optical_depths_table[shell::n_atmosphere_shells + 1][n_cylinders];
@@ -149,6 +149,7 @@ namespace nishita {
 
     // Determines whether the light ray intersects with the earths surface.
     bool intersects_earth(const Ray3f& ray);
+    bool intersects_earth(const Ray3f& ray, float& distance);
 
     // Determines whether a ray is below the earths surface.
     bool ray_inside_earth(const Ray3f& ray);
@@ -169,6 +170,7 @@ namespace nishita {
         const Vector3f& sun_dir,
         float air_density,
         float dust_density,
+        bool is_precomputed,
         RegularSpectrum31f& spectrum);
 
     // Returns the irradiance spectrum of the sun for rays pointing directgly at the sun.

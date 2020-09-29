@@ -59,6 +59,10 @@ void nishita::precompute_optical_depths(const Vector3f& sun_dir, float air_densi
         float cylinder_radius = nishita::cylinder_delta * n_cylinder;
         Ray3f cylinder_border = Ray3f(sun_dir_perpendicular * cylinder_radius, sun_dir);
         for (int n_shell = 0; n_shell <= shell::n_atmosphere_shells; n_shell++) {
+            if (n_shell == 0 && n_cylinder == 1018) {
+                bool debug = true;
+
+            }
             if (shell::atmosphere_shells[n_shell].ray_in_shell(cylinder_border)) {
                 shell::intersection shell_cylinder_intersection = shell::atmosphere_shells[n_shell].intersection_distance_inside(cylinder_border);
                 Vector3f intersection_point = cylinder_border.m_org + sun_dir * shell_cylinder_intersection.distance;
@@ -68,7 +72,7 @@ void nishita::precompute_optical_depths(const Vector3f& sun_dir, float air_densi
                 nishita::optical_depths_table[n_shell][n_cylinder] = optical_depth;
             }
             else {
-                nishita::optical_depths_table[n_shell][n_cylinder] = sky::opticaldepth();
+                nishita::optical_depths_table[n_shell][n_cylinder] = nishita::optical_depths_table[n_shell][n_cylinder-1];
             }
         }
     }
@@ -99,6 +103,13 @@ bool nishita::intersects_earth(const Ray3f& ray)
     if (ray.m_dir.y >= 0)
         return false;
     return intersect_sphere_unit_direction(ray, earth_center, earth_radius);
+}
+
+bool nishita::intersects_earth(const Ray3f& ray, float& distance)
+{
+    if (ray.m_dir.y >= 0)
+        return false;
+    return intersect_sphere_unit_direction(ray, earth_center, earth_radius, distance);
 }
 
 bool nishita::ray_inside_earth(const Ray3f& ray)
@@ -156,7 +167,7 @@ sky::opticaldepth nishita::lookup_optical_depth(const Ray3f& ray) {
     sky::opticaldepth avg_cylinder_depths_2 = nishita::optical_depths_table[shell_index + 1][cylinder_index] * first_cylinder_dominance
         + nishita::optical_depths_table[shell_index + 1][cylinder_index + 1] * second_cylinder_dominance;
     sky::opticaldepth looked_up_depth = avg_cylinder_depths_1 * first_shell_dominance + avg_cylinder_depths_2 * second_shell_dominance;
-    return looked_up_depth;
+    return nishita::optical_depths_table[shell_index][cylinder_index];
 }
 
 void nishita::single_scattering(
@@ -164,13 +175,16 @@ void nishita::single_scattering(
     const Vector3f& sun_dir,
     float air_density,
     float dust_density,
+    bool is_precomputed,
     RegularSpectrum31f& spectrum)
 {
     spectrum.set(0.0f);
 
+    float distance_to_earth_intersection = 0.0f;
+    bool earth_intersection = intersects_earth(ray, distance_to_earth_intersection);
+
     shell::intersection intersections[shell::n_atmosphere_shells * 2];
     int n_intersections = shell::find_intersections(ray, intersections);
-    float passed_distance = 0.0f;
 
     sky::opticaldepth optical_depth(0.0f, 0.0f, air_density, dust_density);
 
@@ -178,55 +192,44 @@ void nishita::single_scattering(
     float rayleigh_phase_function = rayleigh_phase(angle);
     float mie_phase_function = mie_phase(angle);
 
+    float passed_distance = 0;
+
     for (int i = 0; i < n_intersections; i++) {
 
         shell::intersection ith_intersection = intersections[i];
         float segment_length = ith_intersection.distance - passed_distance;
+        passed_distance = ith_intersection.distance;
         float half_segment_length = segment_length / 2.0f;
+
+        float distance_to_scatterpoint = (ith_intersection.distance - half_segment_length);
+
+        Vector3f segment_middle_point = ray.m_org + (ray.m_dir * distance_to_scatterpoint);
+        Ray3f scatter_ray = Ray3f(segment_middle_point, sun_dir);
+
+        if (earth_intersection && distance_to_scatterpoint > distance_to_earth_intersection || intersects_earth(scatter_ray))
+            break;
 
         float rayleigh_mulecule_density = ith_intersection.involved_shell->rayleigh_density;
         float mie_molecule_density = ith_intersection.involved_shell->mie_density;
 
         optical_depth.increase(segment_length, rayleigh_mulecule_density, mie_molecule_density);
 
-        Vector3f segment_middle_point = ray.m_org + (ray.m_dir * (passed_distance + half_segment_length));
+        sky::opticaldepth ligh_optical_depth;
 
-        Ray3f scatter_ray = Ray3f(segment_middle_point, sun_dir);
-        if (!intersects_earth(scatter_ray) && !ray_inside_earth(scatter_ray)) {
-            sky::opticaldepth ligh_optical_depth = ray_optical_depth(scatter_ray, air_density, dust_density);
-            // sky::opticaldepth ligh_optical_depth = lookup_optical_depth(scatter_ray);
-            sky::opticaldepth total_optical_depth = optical_depth + ligh_optical_depth;
+        if (is_precomputed) 
+            ligh_optical_depth = lookup_optical_depth(scatter_ray);
+        else 
+            ligh_optical_depth = ray_optical_depth(scatter_ray, air_density, dust_density);
 
-            /*
-            const RegularSpectrum31f total_extinction_density = rayleigh_coeff_spectrum * total_optical_depth.rayleigh + mie_coeff_spectrum * 1.11f * total_optical_depth.mie;
+        sky::opticaldepth total_optical_depth = optical_depth + ligh_optical_depth;
+        const RegularSpectrum31f total_extinction_density = rayleigh_coeff_spectrum * total_optical_depth.rayleigh + mie_coeff_spectrum * total_optical_depth.mie;
 
-            float attenuations[num_wavelengths];
-            for (int wl = 0; wl < num_wavelengths; wl++) { attenuations[wl] = expf(-total_extinction_density[wl]); }
-            const RegularSpectrum31f attenuation = RegularSpectrum31f::from_array(attenuations);
+        float attenuations[num_wavelengths];
+        for (int wl = 0; wl < num_wavelengths; wl++) { attenuations[wl] = expf(-total_extinction_density[wl]); }
+        const RegularSpectrum31f attenuation = RegularSpectrum31f::from_array(attenuations);
 
-            const RegularSpectrum31f total_reduction = rayleigh_phase_function * rayleigh_mulecule_density * rayleigh_coeff_spectrum + mie_phase_function * mie_molecule_density * mie_coeff_spectrum;
-            spectrum += attenuation * total_reduction * sun_irradiance_spectrum * segment_length;
-            */
-            
-            for (int wl = 0; wl < nishita::num_wavelengths; wl++) {
-                float rayleigh_extinction_density = total_optical_depth.rayleigh * nishita::rayleigh_coeff[wl];
-                float mie_extinction_density = total_optical_depth.mie * 1.11f * nishita::mie_extinction_coeff;
-                float total_extinction_density = rayleigh_extinction_density + mie_extinction_density;
-                float attenuation = expf(-total_extinction_density);
-
-                float rayleigh_scattering_density = rayleigh_mulecule_density * nishita::rayleigh_coeff[wl];
-                float mie_scattering_density = mie_molecule_density * nishita::mie_extinction_coeff;
-
-                float rayleigh_reduction = rayleigh_phase_function * rayleigh_scattering_density;
-                float mie_reduction = mie_phase_function * mie_scattering_density;
-                float total_reduction = rayleigh_reduction + mie_reduction;
-
-                spectrum[wl] += attenuation * total_reduction * nishita::sun_irradiance[wl] * segment_length;
-            }
-            
-        }
-
-        passed_distance = ith_intersection.distance;
+        const RegularSpectrum31f total_reduction = rayleigh_phase_function * rayleigh_mulecule_density * rayleigh_coeff_spectrum + mie_phase_function * mie_molecule_density * mie_coeff_spectrum;
+        spectrum += attenuation * total_reduction * sun_irradiance_spectrum * segment_length;
     }
 }
 

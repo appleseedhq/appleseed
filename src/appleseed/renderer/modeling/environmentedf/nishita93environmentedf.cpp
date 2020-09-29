@@ -117,6 +117,7 @@ namespace renderer
                 m_dust_molecule_density = m_uniform_values.m_dust_molecule_density;
                 m_haze = m_uniform_values.m_haze;
                 m_sun_angular_diameter = deg_to_rad(m_uniform_values.m_sun_angular_diameter);
+                m_precompute = m_params.get_optional<bool>("precompute", true);
 
                 // Compute the sun direction.
                 sun_dir = Vector3f::make_unit_vector(m_sun_theta, m_sun_phi);
@@ -230,12 +231,14 @@ namespace renderer
             float                       m_dust_molecule_density;            // Multiplier of dust molecule density, affecting mie scattering
             float                       m_haze;                             // u parameter for Cornette phase function used for Mie scattering
             float                       m_sun_angular_diameter;             // Rays with angle (rad) +- sun_angular_diameter will return sun radiance directly
+            bool                        m_precompute;                       // Use 2D lookup table to precompute sky optical depths.
 
             // Fills a 3D precomputation table with optical depths value along the sun direction.
             void sky_precomputations() {
                 nishita::precompute_mie_g(m_haze);
                 nishita::precompute_shells();
-                nishita::precompute_optical_depths(sun_dir, m_air_molecule_density, m_dust_molecule_density);
+                if (m_precompute)
+                    nishita::precompute_optical_depths(sun_dir, m_air_molecule_density, m_dust_molecule_density);
             }
 
             // Compute the sky radiance along a given direction.
@@ -269,12 +272,12 @@ namespace renderer
                     sun_dir,                    // Sun direction
                     m_air_molecule_density,     // Air molecule density (Rayleigh scattering)
                     m_dust_molecule_density,    // Dust molecule density (Mie scattering)
+                    m_precompute,               // Use precomputed lookup table
                     radiance
                 );
                 radiance *=
-                    m_uniform_values.m_sun_intensity_multiplier;     // Multiply sun intensity
-                    // * Pi<float>();
-                    // * 1.5f;         // Since nishita93 underestimates radiance by 1/3 according to Bruneton.
+                    m_uniform_values.m_sun_intensity_multiplier     // Multiply sun intensity
+                    * 1.5f;         // Since nishita93 underestimates radiance by 1/3 according to Bruneton.
             }
 
             Vector3f shift(Vector3f v) const
@@ -440,6 +443,15 @@ namespace renderer
             .insert("use", "optional")
             .insert("default", "0.0")
             .insert("help", "Shift the horizon vertically"));
+
+        metadata.push_back(
+            Dictionary()
+            .insert("name", "precompute")
+            .insert("label", "Precalculate sky")
+            .insert("type", "boolean")
+            .insert("use", "optional")
+            .insert("default", "true")
+            .insert("help", "If enabled, precalculations make sky fast but slightly less accurate"));
 
         add_common_input_metadata(metadata);
 
