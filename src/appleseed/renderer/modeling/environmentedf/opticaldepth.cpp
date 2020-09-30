@@ -29,17 +29,24 @@
 #include "opticaldepth.h"
 
 sky::opticaldepth::opticaldepth() {
-    sky::opticaldepth(0.0f, 0.0f);
+    sky::opticaldepth(0.0f, 0.0f, 0.0f);
 }
 
-sky::opticaldepth::opticaldepth(float r, float m) {
-    sky::opticaldepth(r, m, 0.0f, 0.0f);
+sky::opticaldepth::opticaldepth(float r, float m, float o) {
+    sky::opticaldepth(r, m, o, 1.0f, 1.0f, 1.0f);
 }
 
-sky::opticaldepth::opticaldepth(float r, float m, float ad, float dd) : rayleigh(r), mie(m), air_density(ad), dust_density(dd) { }
+sky::opticaldepth::opticaldepth(float r, float m, float o, float ad, float dd, float od) :
+    rayleigh(r),
+    mie(m),
+    ozone(o),
+    air_particle_density(ad),
+    dust_particle_density(dd),
+    ozone_particle_density(od) { }
 
-void sky::opticaldepth::increase(float segment_length, float rayleigh_density, float mie_density) {
-    rayleigh += segment_length * rayleigh_density * air_density;
-    mie += segment_length * mie_density * dust_density;
+void sky::opticaldepth::increase(float segment_length, float rayleigh_density, float mie_density, float ozone_density) {
+    rayleigh += segment_length * rayleigh_density * air_particle_density;
+    mie += segment_length * mie_density * dust_particle_density;
+    ozone += segment_length * ozone_density * ozone_particle_density;
 }
 

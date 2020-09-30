@@ -81,6 +81,7 @@ namespace renderer
                 m_inputs.declare("elevation", InputFormat::Float, "0.0");
                 m_inputs.declare("air_molecule_density", InputFormat::Float, "1.0");
                 m_inputs.declare("dust_molecule_density", InputFormat::Float, "1.0");
+                m_inputs.declare("ozone_molecule_density", InputFormat::Float, "1.0");
                 m_inputs.declare("haze", InputFormat::Float, "0.8");
                 m_inputs.declare("horizon_shift", InputFormat::Float, "0.0");
                 m_inputs.declare("sun_angular_diameter", InputFormat::Float, "0.545");
@@ -115,6 +116,7 @@ namespace renderer
                 m_elevation = m_uniform_values.m_elevation;
                 m_air_molecule_density = m_uniform_values.m_air_molecule_density;
                 m_dust_molecule_density = m_uniform_values.m_dust_molecule_density;
+                m_ozone_molecule_density = m_uniform_values.m_ozone_molecule_density;
                 m_haze = m_uniform_values.m_haze;
                 m_sun_angular_diameter = deg_to_rad(m_uniform_values.m_sun_angular_diameter);
                 m_precompute = m_params.get_optional<bool>("precompute", true);
@@ -214,6 +216,7 @@ namespace renderer
                 float   m_elevation;                    // Elevation of camera above earth surface (m)   
                 float   m_air_molecule_density;         // Multiplier of air molecule density, affecting rayleigh scattering
                 float   m_dust_molecule_density;        // Multiplier of dust molecule density, affecting mie scattering
+                float   m_ozone_molecule_density;       // Multiplier of ozone molecule density, affecting ozone scattering
                 float   m_haze;                         // u parameter for Cornette phase function used for Mie scattering
                 float   m_horizon_shift;
                 float   m_sun_angular_diameter;         // Rays with angle (rad) +- sun_angular_diameter will return sun radiance directly
@@ -229,6 +232,7 @@ namespace renderer
             float                       m_elevation;                        // Elevation of camera above earth surface (m)    
             float                       m_air_molecule_density;             // Multiplier of air molecule density, affecting rayleigh scattering
             float                       m_dust_molecule_density;            // Multiplier of dust molecule density, affecting mie scattering
+            float                       m_ozone_molecule_density;           // Multiplier of ozone molecule density, affecting ozone scattering
             float                       m_haze;                             // u parameter for Cornette phase function used for Mie scattering
             float                       m_sun_angular_diameter;             // Rays with angle (rad) +- sun_angular_diameter will return sun radiance directly
             bool                        m_precompute;                       // Use 2D lookup table to precompute sky optical depths.
@@ -238,7 +242,7 @@ namespace renderer
                 nishita::precompute_mie_g(m_haze);
                 nishita::precompute_shells();
                 if (m_precompute)
-                    nishita::precompute_optical_depths(sun_dir, m_air_molecule_density, m_dust_molecule_density);
+                    nishita::precompute_optical_depths(sun_dir, m_air_molecule_density, m_dust_molecule_density, m_ozone_molecule_density);
             }
 
             // Compute the sky radiance along a given direction.
@@ -256,14 +260,16 @@ namespace renderer
                 float sun_angular_radius = m_sun_angular_diameter / 2.0f;
                 float is_sun = norm(outgoing - sun_dir) < sun_angular_radius;
                 if (is_sun) {
-                    nishita::sun_disk(
+                    const bool sun_hit = nishita::sun_disk(
                         ray,
                         m_air_molecule_density,     // Air molecule density (Rayleigh scattering)
                         m_dust_molecule_density,    // Dust molecule density (Mie scattering)
+                        m_ozone_molecule_density,   // Ozone molecule density (Ozone scattering)
                         sun_angular_radius,
                         radiance
                     );
-                    return;
+                    if (sun_hit)
+                        return;
                 }
 
                 // Compute the final sky radiance.
@@ -272,6 +278,7 @@ namespace renderer
                     sun_dir,                    // Sun direction
                     m_air_molecule_density,     // Air molecule density (Rayleigh scattering)
                     m_dust_molecule_density,    // Dust molecule density (Mie scattering)
+                    m_ozone_molecule_density,   // Ozone molecule density (Ozone scattering)
                     m_precompute,               // Use precomputed lookup table
                     radiance
                 );
@@ -399,6 +406,23 @@ namespace renderer
             .insert("use", "optional")
             .insert("default", "1.0")
             .insert("help", "Dust molecule density affect Mie scattering (turbidity)"));
+
+        metadata.push_back(
+            Dictionary()
+            .insert("name", "ozone_molecule_density")
+            .insert("label", "OIzone Molecule Density")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                .insert("value", "0.0")
+                .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                .insert("value", "5.0")
+                .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "1.0")
+            .insert("help", "Ozone molecules effect the sky color at twilight"));
 
         metadata.push_back(
             Dictionary()

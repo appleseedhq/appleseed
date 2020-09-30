@@ -34,28 +34,30 @@ namespace sky {
     public:
         float rayleigh;
         float mie;
+        float ozone;
 
         opticaldepth();
-        opticaldepth(float r, float m);
-        opticaldepth(float r, float m, float ad, float dd);
+        opticaldepth(float r, float m, float o);
+        opticaldepth(float r, float m, float o, float ad, float dd, float od);
 
-        void increase(float segment_length, float rayleigh_density, float mie_density);
+        void increase(float segment_length, float rayleigh_density, float mie_density, float ozone_density);
 
         inline sky::opticaldepth operator+(const sky::opticaldepth& rod) {
-            return sky::opticaldepth(rayleigh + rod.rayleigh, mie + rod.mie, air_density, dust_density);
+            return sky::opticaldepth(rayleigh + rod.rayleigh, mie + rod.mie, ozone + rod.ozone, air_particle_density, dust_particle_density, ozone_particle_density);
         }
 
         inline sky::opticaldepth operator-(const sky::opticaldepth& rod) {
-            return sky::opticaldepth(rayleigh - rod.rayleigh, mie - rod.mie, air_density, dust_density);
+            return sky::opticaldepth(rayleigh - rod.rayleigh, mie - rod.mie, ozone - rod.ozone, air_particle_density, dust_particle_density, ozone_particle_density);
         }
 
         inline sky::opticaldepth operator*(float i) {
-            return sky::opticaldepth(rayleigh * i, mie * i, air_density, dust_density);
+            return sky::opticaldepth(rayleigh * i, mie * i, ozone * i, air_particle_density, dust_particle_density, ozone_particle_density);
         }
 
     protected:
-        float air_density;
-        float dust_density;
+        float air_particle_density;
+        float dust_particle_density;
+        float ozone_particle_density;
     };
 
 };

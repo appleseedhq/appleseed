@@ -47,12 +47,19 @@ const Vector3f earth_center(0.0f, 0.0f, 0.0f);                       // Central 
 const float rayleigh_scale = 7994.0f;                                // Rayleigh scale height H0 (m).
 const float mie_scale = 1200.0f;                                     // Mie scale height H0 (m).
 
+const float ozone_start = 10000.0f;                                 // Height at beginning of ozone layer in atmosphere (m).
+const float ozone_peak = 32000.0f;                                  // Height at peak density of ozone in atmosphere (m).
+
 // Density of rayleigh particles at height (m) above the earths surface.
 float get_rayleigh_density(float height);
 
 // Density of mie particles at height (m) above the earths surface.
 float get_mie_density(float height);
 
+// Density of ozone particles (m) above the earths surface.
+// Raising linearly between ozone_start (km) and ozone_peak (km), then falling of exponentially after ozone_peak (km).
+// Source: https://ozonewatch.gsfc.nasa.gov/facts/ozone.html
+float get_ozone_density(float height);
 
 //
 // Class representing a shell around the earth with constant rayleigh/mie particle density.
@@ -84,6 +91,7 @@ public:
     float radius;                       // Radius (m) of shell around earth
     float rayleigh_density;             // Constant density of aerosol particles withing shell
     float mie_density;                  // Constant density of dust particles within shell
+    float ozone_density;                // Constant density of ozone particles within shell
 
     shell();
 
@@ -91,7 +99,7 @@ public:
     shell(int i);
 
     // Predefine all shell values.
-    shell(int i, float r, float rd, float md);
+    shell(int i, float r, float rd, float md, float od);
 
     // Determines whether a given light ray origins inside of the shell.
     bool ray_in_shell(const Ray3f& ray) const;

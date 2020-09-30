@@ -47,6 +47,16 @@ static float get_mie_density(float height)
     return expf((-height + earth_radius) / mie_scale);
 }
 
+static float get_ozone_density(float height)
+{
+    float total_height = height + earth_radius;
+    if (total_height < ozone_start)
+        return 0.0f;
+    if (total_height < ozone_peak)
+        return (ozone_start / ozone_peak) * (total_height - ozone_start);
+    return expf((-total_height - ozone_peak) / ozone_start);
+}
+
 const int shell::n_atmosphere_shells;
 shell shell::atmosphere_shells[shell::n_atmosphere_shells + 1];
 
@@ -58,11 +68,12 @@ shell::shell(int i) : index(i)
     densities();
 }
 
-shell::shell(int i, float r, float rd, float md) :
+shell::shell(int i, float r, float rd, float md, float od) :
     index(i),
     radius(r),
     rayleigh_density(rd),
-    mie_density(md) {}
+    mie_density(md),
+    ozone_density(od) {}
 
 bool shell::ray_in_shell(const Ray3f& ray) const
 {
@@ -94,6 +105,7 @@ void shell::densities()
     const float shell_center_height = (radius + previous_radius) / 2.0f;
     rayleigh_density = get_rayleigh_density(shell_center_height);
     mie_density = get_mie_density(shell_center_height);
+    ozone_density = get_ozone_density(shell_center_height);
 }
 
 float shell::find_radius(int shell_index)
