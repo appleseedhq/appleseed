@@ -32,11 +32,10 @@
 #include "renderer/modeling/postprocessingstage/effect/imageeffectapplier.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/job.h"
+#include "foundation/math/vector.h"
 
 // Standard headers.
 #include <cstddef>
-#include <vector>
 
 // Forward declarations.
 namespace foundation    { class Image; }
@@ -44,45 +43,39 @@ namespace foundation    { class Image; }
 namespace renderer
 {
 
+
 //
-// Image effect applier job.
+// Bright-pass applier.
+//
+// Filters out pixels with brightness lower than the given threshold.
+// Using soft_threshold values greater than 0 softens the transition
+// between regions that are converted to black and those that aren't.
 //
 
-class ImageEffectJob
-  : public foundation::IJob
+class BrightPassApplier
+  : public ImageEffectApplier
 {
   public:
     // Constructor.
-    ImageEffectJob(
-        const ImageEffectApplier&   effect_applier,
-        foundation::Image&          image,
-        const std::size_t           tile_x,
-        const std::size_t           tile_y);
+    explicit BrightPassApplier(
 
-    // Execute the job.
-    void execute(const std::size_t  thread_index);
+        // Settings.
+        const float         threshold,
+        const float         soft_threshold);    // 0 = hard threshold (i.e. abrupt split between bright/dark pixels)
+                                                // 1 = soft threshold (i.e. gradual boundary between bright/dark pixels)
+
+    // Delete this instance.
+    void release() override;
+
+    // Filter out dark pixels on a given tile.
+    void apply(
+        foundation::Image&  image,
+        const std::size_t   tile_x,
+        const std::size_t   tile_y) const override;
 
   private:
-    const ImageEffectApplier&       m_effect_applier;
-    foundation::Image&              m_image;
-    const std::size_t               m_tile_x;
-    const std::size_t               m_tile_y;
-};
-
-
-//
-// Creates jobs to apply an image effect to a complete image.
-//
-
-class ImageEffectJobFactory
-{
-  public:
-    typedef std::vector<ImageEffectJob*> EffectJobVector;
-
-    // Create effect jobs for a given image.
-    EffectJobVector create(
-        foundation::Image&          image,
-        const ImageEffectApplier&   effect_applier) const;
+    const float             m_threshold;
+    const float             m_knee;
 };
 
 }   // namespace renderer

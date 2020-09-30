@@ -32,11 +32,10 @@
 #include "renderer/modeling/postprocessingstage/effect/imageeffectapplier.h"
 
 // appleseed.foundation headers.
-#include "foundation/utility/job.h"
+#include "foundation/math/vector.h"
 
 // Standard headers.
 #include <cstddef>
-#include <vector>
 
 // Forward declarations.
 namespace foundation    { class Image; }
@@ -44,45 +43,45 @@ namespace foundation    { class Image; }
 namespace renderer
 {
 
+
 //
-// Image effect applier job.
+// Image color blending applier.
+//
+// Blends the colors of a given image's tile with the matching tile of src_image,
+// using the specified weight factors to compute a weighted average between them, i.e.:
+//
+//   "image.tile(x, y) = dst_weight * image.tile(x, y) + src_weight * src_image.tile(x, y)"
+//
+// Note that, for this, both images must share the same layout.
 //
 
-class ImageEffectJob
-  : public foundation::IJob
+class AdditiveBlendApplier
+  : public ImageEffectApplier
 {
   public:
     // Constructor.
-    ImageEffectJob(
-        const ImageEffectApplier&   effect_applier,
+    explicit AdditiveBlendApplier(
+
+        // Context.
+        const foundation::Image&    src_image,
+
+        // Settings.
+        const float                 src_weight = 1.0f,
+        const float                 dst_weight = 1.0f);
+
+    // Delete this instance.
+    void release() override;
+
+    // Blend colors of the given tile with the corresponding tile of src_image.
+    void apply(
         foundation::Image&          image,
         const std::size_t           tile_x,
-        const std::size_t           tile_y);
-
-    // Execute the job.
-    void execute(const std::size_t  thread_index);
+        const std::size_t           tile_y) const override;
 
   private:
-    const ImageEffectApplier&       m_effect_applier;
-    foundation::Image&              m_image;
-    const std::size_t               m_tile_x;
-    const std::size_t               m_tile_y;
-};
-
-
-//
-// Creates jobs to apply an image effect to a complete image.
-//
-
-class ImageEffectJobFactory
-{
-  public:
-    typedef std::vector<ImageEffectJob*> EffectJobVector;
-
-    // Create effect jobs for a given image.
-    EffectJobVector create(
-        foundation::Image&          image,
-        const ImageEffectApplier&   effect_applier) const;
+    const float                     m_src_weight;
+    const float                     m_dst_weight;
+    const foundation::Image&        m_src_image;
 };
 
 }   // namespace renderer

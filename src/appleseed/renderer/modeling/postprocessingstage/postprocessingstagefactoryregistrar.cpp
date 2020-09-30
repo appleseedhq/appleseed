@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entityfactoryregistrar.h"
+#include "renderer/modeling/postprocessingstage/bloompostprocessingstage.h"
 #include "renderer/modeling/postprocessingstage/chromaticaberrationpostprocessingstage.h"
 #include "renderer/modeling/postprocessingstage/colormappostprocessingstage.h"
 #include "renderer/modeling/postprocessingstage/ipostprocessingstagefactory.h"
@@ -62,6 +63,7 @@ PostProcessingStageFactoryRegistrar::PostProcessingStageFactoryRegistrar(const S
   : impl(new Impl())
 {
     // Register built-in factories.
+    impl->register_factory(auto_release_ptr<FactoryType>(new BloomPostProcessingStageFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new ChromaticAberrationPostProcessingStageFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new ColorMapPostProcessingStageFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new RenderStampPostProcessingStageFactory()));

@@ -29,60 +29,43 @@
 #pragma once
 
 // appleseed.renderer headers.
-#include "renderer/modeling/postprocessingstage/effect/imageeffectapplier.h"
+#include "renderer/modeling/postprocessingstage/ipostprocessingstagefactory.h"
 
-// appleseed.foundation headers.
-#include "foundation/utility/job.h"
-
-// Standard headers.
-#include <cstddef>
-#include <vector>
+// appleseed.main headers.
+#include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace foundation    { class Image; }
+namespace foundation    { class Dictionary; }
+namespace foundation    { class DictionaryArray; }
+namespace renderer      { class ParamArray; }
 
 namespace renderer
 {
 
 //
-// Image effect applier job.
+// A post-processing stage that adds bloom to the frame.
 //
 
-class ImageEffectJob
-  : public foundation::IJob
+class APPLESEED_DLLSYMBOL BloomPostProcessingStageFactory
+  : public IPostProcessingStageFactory
 {
   public:
-    // Constructor.
-    ImageEffectJob(
-        const ImageEffectApplier&   effect_applier,
-        foundation::Image&          image,
-        const std::size_t           tile_x,
-        const std::size_t           tile_y);
+    // Delete this instance.
+    void release() override;
 
-    // Execute the job.
-    void execute(const std::size_t  thread_index);
+    // Return a string identifying this stage model.
+    const char* get_model() const override;
 
-  private:
-    const ImageEffectApplier&       m_effect_applier;
-    foundation::Image&              m_image;
-    const std::size_t               m_tile_x;
-    const std::size_t               m_tile_y;
-};
+    // Return metadata for this stage model.
+    foundation::Dictionary get_model_metadata() const override;
 
+    // Return metadata for the inputs of this stage model.
+    foundation::DictionaryArray get_input_metadata() const override;
 
-//
-// Creates jobs to apply an image effect to a complete image.
-//
-
-class ImageEffectJobFactory
-{
-  public:
-    typedef std::vector<ImageEffectJob*> EffectJobVector;
-
-    // Create effect jobs for a given image.
-    EffectJobVector create(
-        foundation::Image&          image,
-        const ImageEffectApplier&   effect_applier) const;
+    // Create a new stage instance.
+    foundation::auto_release_ptr<PostProcessingStage> create(
+        const char*         name,
+        const ParamArray&   params) const override;
 };
 
 }   // namespace renderer

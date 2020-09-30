@@ -57,7 +57,7 @@ class ImageEffectApplier
     // Apply this effect on a given image, in parallel, by scheduling a job for each tile.
     void apply_on_tiles(
         foundation::Image&      image,
-        const std::size_t       thread_count = 1) const;
+        const std::size_t       thread_count) const;
 };
 
 }   // namespace renderer

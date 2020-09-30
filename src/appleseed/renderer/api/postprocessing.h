@@ -29,6 +29,7 @@
 #pragma once
 
 // API headers.
+#include "renderer/modeling/postprocessingstage/bloompostprocessingstage.h"
 #include "renderer/modeling/postprocessingstage/chromaticaberrationpostprocessingstage.h"
 #include "renderer/modeling/postprocessingstage/colormappostprocessingstage.h"
 #include "renderer/modeling/postprocessingstage/ipostprocessingstagefactory.h"

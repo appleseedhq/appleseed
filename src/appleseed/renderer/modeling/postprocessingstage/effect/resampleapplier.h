@@ -33,6 +33,8 @@
 
 // appleseed.foundation headers.
 #include "foundation/math/vector.h"
+#include "foundation/image/color.h"
+#include "foundation/image/image.h"
 
 // Standard headers.
 #include <cstddef>
@@ -43,39 +45,59 @@ namespace foundation    { class Image; }
 namespace renderer
 {
 
+
 //
-// Vignette post-processing effect applier.
+// Image resampling applier.
+//
+// Fills an image's tiles given a source image as reference (src_image).
+//
+// Two different sampling filters are used, depending on the specified SamplingMode:
+//   * DOWN: Assumes we want to shrink src_image into the given image
+//   * UP: Assumes we want to enlarge src_image onto the given image
+//
+// References on image resizing/rescaling and resampling:
+//
+//   http://www.imagemagick.org/Usage/resize/#resize
+//   http://www.imagemagick.org/Usage/filter/#filter
+//   http://www.imagemagick.org/Usage/filter/nicolas/#detailed
+//   https://en.wikipedia.org/wiki/Image_scaling#Mathematical
 //
 
-class VignetteApplier
+class ResampleApplier
   : public ImageEffectApplier
 {
   public:
+    typedef enum { DOWN, UP }       SamplingMode;
+
     // Constructor.
-    explicit VignetteApplier(
+    explicit ResampleApplier(
 
         // Context.
-        const float             frame_width,
-        const float             frame_height,
+        const foundation::Image&    src_image,
 
         // Settings.
-        const float             intensity,
-        const float             anisotropy);    // 0 = no anisotropy (i.e. perfectly rounded)
-                                                // 1 = full anisotropy (i.e. respect the frame's aspect ratio)
+        const SamplingMode          mode);
 
     // Delete this instance.
     void release() override;
 
-    // Apply the vignette effect to a given tile.
+    // Fill the given image tile by sampling from src_image pixels.
     void apply(
-        foundation::Image&      image,
-        const std::size_t       tile_x,
-        const std::size_t       tile_y) const override;
+        foundation::Image&          image,
+        const std::size_t           tile_x,
+        const std::size_t           tile_y) const override;
 
   private:
-    const float                 m_intensity;
-    const foundation::Vector2f  m_resolution;
-    const foundation::Vector2f  m_vignette_resolution;
+    const SamplingMode              m_mode;
+    const std::size_t               m_src_width;
+    const std::size_t               m_src_height;
+    const std::size_t               m_border_size;
+    const foundation::Image         m_src_image_with_border;
+
+    // Sample m_src_image_with_border at coordinates (fx, fy), based on m_mode.
+    const foundation::Color3f sample(
+        const float                 fx,
+        const float                 fy) const;
 };
 
 }   // namespace renderer
