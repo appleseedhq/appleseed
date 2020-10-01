@@ -59,10 +59,6 @@ void nishita::precompute_optical_depths(const Vector3f& sun_dir, float air_parti
         float cylinder_radius = nishita::cylinder_delta * n_cylinder;
         Ray3f cylinder_border = Ray3f(sun_dir_perpendicular * cylinder_radius, sun_dir);
         for (int n_shell = 0; n_shell <= shell::n_atmosphere_shells; n_shell++) {
-            if (n_shell == 0 && n_cylinder == 1018) {
-                bool debug = true;
-
-            }
             if (shell::atmosphere_shells[n_shell].ray_in_shell(cylinder_border)) {
                 shell::intersection shell_cylinder_intersection = shell::atmosphere_shells[n_shell].intersection_distance_inside(cylinder_border);
                 Vector3f intersection_point = cylinder_border.m_org + sun_dir * shell_cylinder_intersection.distance;
@@ -168,7 +164,7 @@ sky::opticaldepth nishita::lookup_optical_depth(const Ray3f& ray) {
     sky::opticaldepth avg_cylinder_depths_2 = nishita::optical_depths_table[shell_index + 1][cylinder_index] * first_cylinder_dominance
         + nishita::optical_depths_table[shell_index + 1][cylinder_index + 1] * second_cylinder_dominance;
     sky::opticaldepth looked_up_depth = avg_cylinder_depths_1 * first_shell_dominance + avg_cylinder_depths_2 * second_shell_dominance;
-    return nishita::optical_depths_table[shell_index][cylinder_index];
+    return looked_up_depth;
 }
 
 void nishita::single_scattering(
