@@ -230,7 +230,7 @@ void nishita::single_scattering(
         const RegularSpectrum31f attenuation = RegularSpectrum31f::from_array(attenuations);
 
         const RegularSpectrum31f total_reduction = rayleigh_phase_function * rayleigh_density * rayleigh_coeff_spectrum + mie_phase_function * mie_density * mie_coeff_spectrum;
-        spectrum += attenuation * total_reduction * sun_irradiance_spectrum * segment_length;
+        spectrum += attenuation * total_reduction * nishita::sun_radiance_spectrum * segment_length;
     }
 }
 
@@ -258,6 +258,6 @@ bool nishita::sun_disk(
     float attenuations[num_wavelengths];
     for (int wl = 0; wl < num_wavelengths; wl++) { attenuations[wl] = expf(-total_transmittance[wl]); }
 
-    spectrum = nishita::sun_irradiance_spectrum / solid_angle * RegularSpectrum31f::from_array(attenuations);
+    spectrum = nishita::sun_radiance_spectrum / solid_angle * RegularSpectrum31f::from_array(attenuations);
     return true;
 }

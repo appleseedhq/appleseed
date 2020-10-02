@@ -57,40 +57,40 @@ namespace nishita {
 
     // Sun irradiance (W*m^-2*nm^-1) values at the top of the atmosphere.
     // Source: https://www.nrel.gov/grid/solar-resource/spectra.html, Table SMART MODTRAN ETR Spectra.
-    const float sun_irradiance[num_wavelengths] = {
-            2.11275f,   // 400 nm
-            2.58882f,   // 410 nm
-            2.58291f,   // 420 nm
-            2.42323f,   // 430 nm
-            2.67605f,   // 440 nm
-            2.96583f,   // 450 nm
-            3.05454f,   // 460 nm
-            3.00575f,   // 470 nm
-            3.06637f,   // 480 nm
-            2.88304f,   // 490 nm
-            2.87121f,   // 500 nm
-            2.78250f,   // 510 nm
-            2.71006f,   // 520 nm
-            2.72336f,   // 530 nm
-            2.63613f,   // 540 nm
-            2.55038f,   // 550 nm
-            2.50602f,   // 560 nm
-            2.53116f,   // 570 nm
-            2.53559f,   // 580 nm
-            2.51342f,   // 590 nm
-            2.46315f,   // 600 nm
-            2.41732f,   // 610 nm
-            2.36853f,   // 620 nm
-            2.32121f,   // 630 nm
-            2.28277f,   // 640 nm
-            2.23398f,   // 650 nm
-            2.19702f,   // 660 nm
-            2.15267f,   // 670 nm
-            2.10979f,   // 680 nm
-            2.07283f,   // 690 nm
-            2.02404f,   // 700 nm
+    const float sun_radiance[num_wavelengths] = {
+            2.11275f,   // 400nm
+            2.58882f,   // 410nm
+            2.58291f,   // 420nm
+            2.42323f,   // 430nm
+            2.67605f,   // 440nm
+            2.96583f,   // 450nm
+            3.05454f,   // 460nm
+            3.00575f,   // 470nm
+            3.06637f,   // 480nm
+            2.88304f,   // 490nm
+            2.87121f,   // 500nm
+            2.78250f,   // 510nm
+            2.71006f,   // 520nm
+            2.72336f,   // 530nm
+            2.63613f,   // 540nm
+            2.55038f,   // 550nm
+            2.50602f,   // 560nm
+            2.53116f,   // 570nm
+            2.53559f,   // 580nm
+            2.51342f,   // 590nm
+            2.46315f,   // 600nm
+            2.41732f,   // 610nm
+            2.36853f,   // 620nm
+            2.32121f,   // 630nm
+            2.28277f,   // 640nm
+            2.23398f,   // 650nm
+            2.19702f,   // 650nm
+            2.15267f,   // 670nm
+            2.10979f,   // 680nm
+            2.07283f,   // 690nm
+            2.02404f    // 700nm
     };
-    const RegularSpectrum31f sun_irradiance_spectrum = RegularSpectrum31f::from_array(sun_irradiance);
+    const RegularSpectrum31f sun_radiance_spectrum = RegularSpectrum31f::from_array(sun_radiance);
 
     // Rayleigh scattering coefficients (m^-1) from Rudolf Penndorf (1957) Table 3.
     // Source: https://doi.org/10.1364/JOSA.47.000176.
