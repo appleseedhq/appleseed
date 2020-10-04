@@ -1270,14 +1270,17 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
 
 namespace
 {
-    auto_release_ptr<Frame> make_temporary_frame_copy(Frame& frame)
+    auto_release_ptr<Frame> make_temporary_frame_copy(const Frame& frame)
     {
+        // todo: creating a frame with denoising enabled is very expensive, see benchmark_frame.cpp.
+        ParamArray params_copy(frame.get_parameters());
+        params_copy.remove_path("denoiser");
+
         // Make a temporary copy of the frame.
         // Render info, AOVs and other data are not copied.
-        // todo: creating a frame with denoising enabled is very expensive, see benchmark_frame.cpp.
-        auto_release_ptr<Frame> working_frame = FrameFactory::create(
-            (std::string(frame.get_name()) + "_copy").c_str(),
-            frame.get_parameters().remove_path("denoiser"));
+        auto_release_ptr<Frame> working_frame =
+            FrameFactory::create((std::string(frame.get_name()) + "_copy").c_str(), params_copy);
+
         working_frame->image().copy_from(frame.image());
 
         return working_frame;
