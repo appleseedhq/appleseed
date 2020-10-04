@@ -324,8 +324,33 @@ inline renderer::PostProcessingStage* ProjectBuilder::edit_entity(
 
     slot_notify_project_modification();
 
+    // @Note: we need to know whether or not to emit the signal. For this,
+    // we can either:
+    //   * change the `PostProcessingStage` class to have a `bool` flag (not good)
+    //   * pass this flag in its `params`, so that we can retrieve it here (maybe?)
+    //   * pass the flag through `values` instead (not sure if it'd be better or not)
+    //
+    // @Fixme: if the flag was true and is now false, the effect needs to be "unapplied"!
+
+#if 0
+    // @Note: using this to be able to inspect Dictionary values in Visual Studio.. :(
+    bool preview_enabled = false;
+    for (const auto& str : values.strings())
+    {
+        const auto key = std::string(str.key());
+        const auto value = std::string(str.value());
+        if (key == "real_time_preview")
+            preview_enabled = true;
+        if (value == "real_time_preview")
+            preview_enabled = true;
+    }
+#else
+    const bool preview_enabled = new_entity_ptr->get_parameters().get_required<bool>("real_time_preview");
+#endif
+
     // Signal the modified stage, so that it can be previewed.
-    emit signal_post_processing_stage_modified(new_entity_ptr->get_uid());
+    if (preview_enabled)
+        emit signal_post_processing_stage_modified(new_entity_ptr->get_uid());
 
     return new_entity_ptr;
 }
