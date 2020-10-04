@@ -49,12 +49,7 @@ static float get_mie_density(float height)
 
 static float get_ozone_density(float height)
 {
-    float total_height = height + earth_radius;
-    if (total_height < ozone_start)
-        return 0.0f;
-    if (total_height < ozone_peak)
-        return (ozone_start / ozone_peak) * (total_height - ozone_start);
-    return expf((-total_height - ozone_peak) / ozone_start);
+    return (ozone_ground + ozone_ground * expf(-ozone_peak / ozone_start)) / (1 + expf(((height - earth_radius) - ozone_peak)/ozone_start));
 }
 
 const int shell::n_atmosphere_shells;
