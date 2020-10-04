@@ -47,9 +47,9 @@ const Vector3f earth_center(0.0f, 0.0f, 0.0f);                       // Central 
 const float rayleigh_scale = 7994.0f;                                // Rayleigh scale height H0 (m).
 const float mie_scale = 1200.0f;                                     // Mie scale height H0 (m).
 
-const float ozone_ground = 0.4;                                      // Total amount of ozone on the ground
-const float ozone_start = 5000.0f;                                   // Height at beginning of ozone layer in atmosphere (m).
-const float ozone_peak = 20000.0f;                                   // Height at peak density of ozone in atmosphere (m).
+const float ozone_ground = 0.4f;                                      // Total amount of ozone on the ground
+const float ozone_start = 10000.0f;                                   // Height at beginning of ozone layer in atmosphere (m).
+const float ozone_peak = 32000.0f;                                    // Height at peak density of ozone in atmosphere (m).
 
 // Density of rayleigh particles at height (m) above the earths surface.
 float get_rayleigh_density(float height);
