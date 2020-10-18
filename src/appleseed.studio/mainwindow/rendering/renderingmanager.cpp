@@ -113,7 +113,7 @@ namespace
             const MasterRenderer::RenderingResult rendering_result =
                 m_master_renderer.render(m_renderer_controller);
 
-            if (rendering_result.m_status != MasterRenderer::RenderingResult::Succeeded)
+            if (rendering_result.m_status == MasterRenderer::RenderingResult::Failed)
                 emit signal_rendering_failed();
 
             RENDERER_LOG_DEBUG("master renderer thread is ending...");

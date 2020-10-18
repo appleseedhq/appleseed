@@ -110,10 +110,12 @@ class APPLESEED_DLLSYMBOL Scene
     void update_asset_paths(const foundation::StringDictionary& mappings) override;
 
     // Expand all procedural assemblies in the scene.
+    // todo: should return one of { Success, Failed, Abort }.
     bool expand_procedural_assemblies(
         const Project&              project,
         foundation::IAbortSwitch*   abort_switch = nullptr);
 
+    // todo: should return one of { Success, Failed, Abort }.
     bool on_render_begin(
         const Project&              project,
         const BaseGroup*            parent,
@@ -124,6 +126,7 @@ class APPLESEED_DLLSYMBOL Scene
         const Project&              project,
         const BaseGroup*            parent) override;
 
+    // todo: should return one of { Success, Failed, Abort }.
     bool on_frame_begin(
         const Project&              project,
         const BaseGroup*            parent,

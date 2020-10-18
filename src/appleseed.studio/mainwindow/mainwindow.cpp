@@ -1719,6 +1719,7 @@ void MainWindow::slot_pause_or_resume_rendering(const bool checked)
 
 void MainWindow::slot_rendering_end()
 {
+    // todo: ideally we wouldn't apply false colors when aborting a final render.
     apply_false_colors_settings();
 
     update_workspace();
