@@ -275,8 +275,7 @@ class MainWindow
         const bool      successful);
     void slot_pause_or_resume_rendering(
         const bool      checked);
-    void slot_rendering_end(
-        const bool      failed);
+    void slot_rendering_end();
     void slot_camera_changed();
 
     // Diagnostics.

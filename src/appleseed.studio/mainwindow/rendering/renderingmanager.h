@@ -150,7 +150,7 @@ class RenderingManager
     void clear_sticky_actions();
 
   signals:
-    void signal_rendering_end(const bool failed);
+    void signal_rendering_end();
 
   public slots:
     void slot_abort_rendering();

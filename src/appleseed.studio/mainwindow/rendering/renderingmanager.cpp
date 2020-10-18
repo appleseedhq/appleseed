@@ -113,7 +113,7 @@ namespace
             const MasterRenderer::RenderingResult rendering_result =
                 m_master_renderer.render(m_renderer_controller);
 
-            if (rendering_result.m_status != MasterRenderer::RenderingResult::Succeeded)
+            if (rendering_result.m_status == MasterRenderer::RenderingResult::Failed)
                 emit signal_rendering_failed();
 
             RENDERER_LOG_DEBUG("master renderer thread is ending...");
@@ -178,11 +178,11 @@ RenderingManager::RenderingManager(StatusBar& status_bar)
 
     connect(
         &m_renderer_controller, &QtRendererController::signal_rendering_success,
-        this, [this] { this->signal_rendering_end(false); });
+        this, &RenderingManager::signal_rendering_end);
 
     connect(
         &m_renderer_controller, &QtRendererController::signal_rendering_abort,
-        this, [this] { this->signal_rendering_end(false); });
+        this, &RenderingManager::signal_rendering_end);
 }
 
 RenderingManager::~RenderingManager()
@@ -240,7 +240,7 @@ void RenderingManager::start_rendering(
 
     connect(
         static_cast<MasterRendererThread*>(m_master_renderer_thread.get()), &MasterRendererThread::signal_rendering_failed,
-        this, [this] { this->signal_rendering_end(true); });
+        this, &RenderingManager::signal_rendering_end);
 
     connect(
         static_cast<MasterRendererThread*>(m_master_renderer_thread.get()), &MasterRendererThread::finished,

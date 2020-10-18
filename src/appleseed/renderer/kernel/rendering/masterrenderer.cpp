@@ -240,20 +240,17 @@ struct MasterRenderer::Impl
         }
         catch (const std::bad_alloc&)
         {
-            renderer_controller.on_rendering_abort();
             RENDERER_LOG_ERROR("rendering failed (ran out of memory).");
             result.m_status = RenderingResult::Failed;
         }
 #ifdef NDEBUG
         catch (const std::exception& e)
         {
-            renderer_controller.on_rendering_abort();
             RENDERER_LOG_ERROR("rendering failed (%s).", e.what());
             result.m_status = RenderingResult::Failed;
         }
         catch (...)
         {
-            renderer_controller.on_rendering_abort();
             RENDERER_LOG_ERROR("rendering failed (unknown exception).");
             result.m_status = RenderingResult::Failed;
         }
@@ -298,17 +295,11 @@ struct MasterRenderer::Impl
 
             // Expand procedural assemblies before scene entities inputs are bound.
             if (!m_project.get_scene()->expand_procedural_assemblies(m_project, &abort_switch))
-            {
-                renderer_controller.on_rendering_abort();
-                return RenderingResult::Aborted;
-            }
+                return RenderingResult::Failed; // todo: depends on whether the abort switch was triggered or not
 
             // Bind scene entities inputs.
             if (!bind_scene_entities_inputs())
-            {
-                renderer_controller.on_rendering_abort();
-                return RenderingResult::Aborted;
-            }
+                return RenderingResult::Failed;
 
             const IRendererController::Status status = initialize_and_render_frame(renderer_controller);
 
