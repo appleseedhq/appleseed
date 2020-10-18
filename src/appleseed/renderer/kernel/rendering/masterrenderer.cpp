@@ -211,12 +211,13 @@ struct MasterRenderer::Impl
 
         try
         {
-            // Render.
-            result.m_status =
-                do_render(
+            IRendererController& controller =
                     m_serial_renderer_controller != nullptr
                         ? *m_serial_renderer_controller
-                        : renderer_controller);
+                        : renderer_controller;
+
+            // Render.
+            result.m_status = do_render(controller);
 
             // Retrieve frame's render info. Note that the frame entity may have been replaced during rendering.
             ParamArray& render_info = m_project.get_frame()->render_info();
@@ -224,9 +225,14 @@ struct MasterRenderer::Impl
             // Insert rendering time into frame's render info.
             render_info.insert("render_time", m_project.get_rendering_timer().get_seconds());
 
-            // Don't proceed further if rendering failed.
+            // Don't proceed further if rendering failed or aborted.
             if (result.m_status != RenderingResult::Succeeded)
+            {
+                if (result.m_status == RenderingResult::Aborted)
+                    controller.on_rendering_abort();
+
                 return result;
+            }
 
             // Post-process.
             RenderingTimer stopwatch;
@@ -237,6 +243,8 @@ struct MasterRenderer::Impl
             // Insert post-processing time into frame's render info.
             render_info.insert("post_processing_time", stopwatch.get_seconds());
             RENDERER_LOG_INFO("post-processing time: %s.", pretty_time(stopwatch.get_seconds()).c_str());
+
+            controller.on_rendering_success();
         }
         catch (const std::bad_alloc&)
         {
@@ -306,11 +314,9 @@ struct MasterRenderer::Impl
             switch (status)
             {
               case IRendererController::TerminateRendering:
-                renderer_controller.on_rendering_success();
                 return RenderingResult::Succeeded;
 
               case IRendererController::AbortRendering:
-                renderer_controller.on_rendering_abort();
                 return RenderingResult::Aborted;
 
               case IRendererController::ReinitializeRendering:
