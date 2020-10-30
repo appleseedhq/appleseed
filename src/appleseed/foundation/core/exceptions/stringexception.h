@@ -76,7 +76,7 @@ inline StringException::StringException(const char* what)
 
 inline StringException::StringException(const char* what, const char* s)
 {
-    char buf[sizeof(m_what) + sizeof(m_string) + 2];
+    char buf[sizeof(m_what) - 1];
     portable_snprintf(buf, sizeof(buf), "%s: %s", what, s);
     set_what(buf);
 
