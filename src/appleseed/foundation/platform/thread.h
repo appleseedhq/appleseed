@@ -295,7 +295,7 @@ class APPLESEED_DLLSYMBOL ThreadFlag
 // Spinlock class implementation.
 //
 
-inline Spinlock::Spinlock() : m_sp{BOOST_DETAIL_SPINLOCK_INIT}
+inline Spinlock::Spinlock() : m_sp BOOST_DETAIL_SPINLOCK_INIT
 {
 }
 
