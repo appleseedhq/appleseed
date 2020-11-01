@@ -42,6 +42,14 @@
 #include "boost/python/detail/wrap_python.hpp"  // has to be first, to avoid redefinition warnings
 #include "boost/python.hpp"
 
+// wrap_python.hpp undefines _DEBUG and then redefines it without assigning it value of 1
+// In OSL 1.11.8 osl/platform.h header uses the syntax "#if _DEBUG" which assumes
+// that _DEBUG is not an empty macro, otherwise the header can't be compiled
+#ifdef _DEBUG
+  #undef _DEBUG
+  #define _DEBUG 1
+#endif
+
 #if defined _MSC_VER
     __pragma(warning(pop))
 #endif
