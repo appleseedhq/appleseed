@@ -257,7 +257,7 @@ void LocalSampleAccumulationBuffer::develop_to_frame(
 #endif
 
     // Copy tile first so the critical section can end before doing the expensive develop_to_tile.
-    const std::uint32_t active_level = m_active_level.value(); // Ensure the same active_level is used for both arrays.
+    const std::uint32_t active_level = m_active_level; // Ensure the same active_level is used for both arrays.
     const AccumulatorTile& level = *m_levels[active_level];
     AccumulatorTile& read_level = *m_read_levels[active_level];    
     read_level.copy_from(level);
