@@ -310,8 +310,19 @@ namespace
         }
     };
 
+    class MetalBRDFImplMicrofacet 
+      : public MetalBRDFImpl
+    {
+        using MetalBRDFImpl::MetalBRDFImpl;
+
+        const char* get_model() const override
+        {
+            return MicrofacetModel;
+        }
+    };
+
     typedef BSDFWrapper<MetalBRDFImpl> MetalBRDF;
-    typedef MicrofacetBRDFWrapper<MetalBRDFImpl> MicrofacetMetalBRDF;
+    typedef MicrofacetBRDFWrapper<MetalBRDFImplMicrofacet> MicrofacetMetalBRDF;
 }
 
 
