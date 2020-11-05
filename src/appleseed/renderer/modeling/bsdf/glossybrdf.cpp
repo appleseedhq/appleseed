@@ -313,8 +313,19 @@ namespace
         }
     };
 
+    class MicrofacetGlossyBRDFImpl 
+        : public GlossyBRDFImpl
+    {
+        using GlossyBRDFImpl::GlossyBRDFImpl;
+
+        const char* get_model() const override
+        {
+            return MicrofacetModel;
+        }
+    };
+
     typedef BSDFWrapper<GlossyBRDFImpl> GlossyBRDF;
-    typedef MicrofacetBRDFWrapper<GlossyBRDFImpl> MicrofacetGlossyBRDF;
+    typedef MicrofacetBRDFWrapper<MicrofacetGlossyBRDFImpl> MicrofacetGlossyBRDF;
 }
 
 

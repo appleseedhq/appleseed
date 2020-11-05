@@ -310,7 +310,7 @@ namespace
         }
     };
 
-    class MetalBRDFImplMicrofacet 
+    class MicrofacetMetalBRDFImpl 
       : public MetalBRDFImpl
     {
         using MetalBRDFImpl::MetalBRDFImpl;
@@ -322,7 +322,7 @@ namespace
     };
 
     typedef BSDFWrapper<MetalBRDFImpl> MetalBRDF;
-    typedef MicrofacetBRDFWrapper<MetalBRDFImplMicrofacet> MicrofacetMetalBRDF;
+    typedef MicrofacetBRDFWrapper<MicrofacetMetalBRDFImpl> MicrofacetMetalBRDF;
 }
 
 

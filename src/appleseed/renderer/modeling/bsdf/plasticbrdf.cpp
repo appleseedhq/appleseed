@@ -439,8 +439,19 @@ namespace
         }
     };
 
+    class MicrofacetPlasticBRDFImpl
+        : public PlasticBRDFImpl
+    {
+        using PlasticBRDFImpl::PlasticBRDFImpl;
+
+        const char* get_model() const override
+        {
+            return MicrofacetModel;
+        }
+    };
+
     typedef BSDFWrapper<PlasticBRDFImpl> PlasticBRDF;
-    typedef MicrofacetBRDFWrapper<PlasticBRDFImpl> MicrofacetPlasticBRDF;
+    typedef MicrofacetBRDFWrapper<MicrofacetPlasticBRDFImpl> MicrofacetPlasticBRDF;
 }
 
 

@@ -174,8 +174,19 @@ namespace
         typedef SheenBRDFInputValues InputValues;
     };
 
+    class MicrofacetSheenBRDFImpl
+        : public SheenBRDFImpl
+    {
+        using SheenBRDFImpl::SheenBRDFImpl;
+
+        const char* get_model() const override
+        {
+            return MicrofacetModel;
+        }
+    };
+
     typedef BSDFWrapper<SheenBRDFImpl> SheenBRDF;
-    typedef MicrofacetBRDFWrapper<SheenBRDFImpl> MicrofacetSheenBRDF;
+    typedef MicrofacetBRDFWrapper<MicrofacetSheenBRDFImpl> MicrofacetSheenBRDF;
 }
 
 

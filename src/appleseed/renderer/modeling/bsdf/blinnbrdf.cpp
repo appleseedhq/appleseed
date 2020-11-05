@@ -227,8 +227,19 @@ namespace
         typedef BlinnBRDFInputValues InputValues;
     };
 
+    class MicrofacetBlinnBRDFImpl
+        : public BlinnBRDFImpl
+    {
+        using BlinnBRDFImpl::BlinnBRDFImpl;
+
+        const char* get_model() const override
+        {
+            return MicrofacetModel;
+        }
+    };
+
     typedef BSDFWrapper<BlinnBRDFImpl> BlinnBRDF;
-    typedef MicrofacetBRDFWrapper<BlinnBRDFImpl> MicrofacetBlinnBRDF;
+    typedef MicrofacetBRDFWrapper<MicrofacetBlinnBRDFImpl> MicrofacetBlinnBRDF;
 }
 
 

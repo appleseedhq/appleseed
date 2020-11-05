@@ -176,8 +176,19 @@ namespace
         }
     };
 
+    class MicrofacetLambertianBRDFImpl
+        : public LambertianBRDFImpl
+    {
+        using LambertianBRDFImpl::LambertianBRDFImpl;
+
+        const char* get_model() const override
+        {
+            return MicrofacetModel;
+        }
+    };
+
     typedef BSDFWrapper<LambertianBRDFImpl> LambertianBRDF;
-    typedef MicrofacetBRDFWrapper<LambertianBRDFImpl> MicrofacetLambertianBRDF;
+    typedef MicrofacetBRDFWrapper<MicrofacetLambertianBRDFImpl> MicrofacetLambertianBRDF;
 }
 
 
