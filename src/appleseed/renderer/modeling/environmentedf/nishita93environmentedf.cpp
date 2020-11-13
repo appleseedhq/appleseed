@@ -410,7 +410,7 @@ namespace renderer
         metadata.push_back(
             Dictionary()
             .insert("name", "ozone_molecule_density")
-            .insert("label", "OIzone Molecule Density")
+            .insert("label", "Ozone Molecule Density")
             .insert("type", "numeric")
             .insert("min",
                 Dictionary()
