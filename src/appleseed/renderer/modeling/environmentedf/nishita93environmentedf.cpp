@@ -435,7 +435,7 @@ namespace renderer
                 .insert("type", "hard"))
             .insert("max",
                 Dictionary()
-                .insert("value", "0.85")
+                .insert("value", "0.8")
                 .insert("type", "hard"))
             .insert("use", "optional")
             .insert("default", "0.8")

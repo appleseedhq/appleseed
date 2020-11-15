@@ -121,7 +121,6 @@ float shell::find_radius(int shell_index)
 
 float shell::find_index(float shell_radius)
 {
-    // This is a shitty implementation! This can for sure be done numerically.
     for (int i = 0; i < shell::n_atmosphere_shells; i++) {
         float radius_s1 = shell::atmosphere_shells[i].radius;
         float radius_s2 = shell::atmosphere_shells[i + 1].radius;
