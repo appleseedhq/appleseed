@@ -71,7 +71,7 @@ brew info python@2
 
 brew upgrade boost
 brew upgrade qt
-brew install boost-python embree llvm@6 lz4 openimageio openvdb xerces-c zlib
+brew install boost-python embree llvm@9 lz4 openimageio openvdb xerces-c zlib
 
 mkdir -p $HOME/Library/Python/2.7/lib/python/site-packages
 echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' \
@@ -90,7 +90,7 @@ echo "Building OSL..."
 git clone https://github.com/imageworks/OpenShadingLanguage.git
 pushd OpenShadingLanguage
 
-git checkout Release-1.10.3
+git checkout Release-1.11.9.0
 
 mkdir build
 cd build
