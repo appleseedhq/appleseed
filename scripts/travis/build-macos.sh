@@ -102,7 +102,7 @@ cmake \
     -DENABLERTTI=ON \
     -DUSE_LIBCPLUSPLUS=ON \
     -DUSE_QT=OFF \
-    -DLLVM_DIRECTORY=/usr/local/opt/llvm@6/ \
+    -DLLVM_DIRECTORY=/usr/local/opt/llvm@9/ \
     -DCMAKE_INSTALL_PREFIX=$THISDIR \
     ..
 
