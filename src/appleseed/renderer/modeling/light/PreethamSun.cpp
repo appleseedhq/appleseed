@@ -120,7 +120,7 @@ namespace
         RegularSpectrum31f  m_k1;
         RegularSpectrum31f  m_k2;
 
-        void PreethamSunLight::compute_sun_radiance(
+        void compute_sun_radiance(
             const Vector3d& outgoing,
             const float                 turbidity,
             const float                 radiance_multiplier,
