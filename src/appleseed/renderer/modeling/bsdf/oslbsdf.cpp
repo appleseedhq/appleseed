@@ -39,7 +39,6 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
-#include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/glossylayerbsdf.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
 #include "renderer/modeling/scene/assembly.h"
@@ -69,11 +68,11 @@ namespace
     // OSL closure tree -> appleseed BSDFs adapter.
     //
 
-    class OSLBSDFImpl
+    class OSLBSDF
       : public BSDF
     {
       public:
-        OSLBSDFImpl(
+        OSLBSDF(
             const char*                 name,
             const ParamArray&           params)
           : BSDF(name, AllBSDFTypes, ScatteringMode::All, params)
@@ -215,7 +214,7 @@ namespace
                     sampling_context,
                     c->get_closure_input_values(closure_index),
                     adjoint,
-                    false,
+                    cosine_mult,
                     closure_geometry,
                     outgoing,
                     modes,
@@ -251,7 +250,7 @@ namespace
                             .evaluate(
                                 c->get_closure_input_values(i),
                                 adjoint,
-                                false,
+                                cosine_mult,
                                 closure_geometry,
                                 outgoing.get_value(),
                                 sample.m_incoming.get_value(),
@@ -304,7 +303,7 @@ namespace
                             .evaluate(
                                 c->get_closure_input_values(i),
                                 adjoint,
-                                false,
+                                cosine_mult,
                                 closure_geometry,
                                 outgoing,
                                 incoming,
@@ -468,8 +467,6 @@ namespace
             return *bsdf;
         }
     };
-
-    typedef BSDFWrapper<OSLBSDFImpl, false> OSLBSDF;
 }
 
 

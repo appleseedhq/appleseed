@@ -36,7 +36,6 @@
 #include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/bsdf/bsdf.h"
-#include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -72,11 +71,11 @@ namespace
 
     const char* Model = "bsdf_blend";
 
-    class BSDFBlendImpl
+    class BSDFBlend
       : public BSDF
     {
       public:
-        BSDFBlendImpl(
+        BSDFBlend(
             const char*                 name,
             const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::All, params)
@@ -169,7 +168,7 @@ namespace
                 sampling_context,
                 values->m_child_inputs[bsdf_index],
                 adjoint,
-                false,                  // do not multiply by |cos(incoming, normal)|
+                cosine_mult,
                 local_geometry,
                 outgoing,
                 modes,
@@ -201,7 +200,7 @@ namespace
                     ? m_bsdf[0]->evaluate(
                           values->m_child_inputs[0],
                           adjoint,
-                          false,                // do not multiply by |cos(incoming, normal)|
+                          cosine_mult,
                           local_geometry,
                           outgoing,
                           incoming,
@@ -216,7 +215,7 @@ namespace
                     ? m_bsdf[1]->evaluate(
                           values->m_child_inputs[1],
                           adjoint,
-                          false,                // do not multiply by |cos(incoming, normal)|
+                          cosine_mult,
                           local_geometry,
                           outgoing,
                           incoming,
@@ -296,8 +295,6 @@ namespace
 
         const BSDF* m_bsdf[2];
     };
-
-    typedef BSDFWrapper<BSDFBlendImpl, false> BSDFBlend;
 }
 
 
