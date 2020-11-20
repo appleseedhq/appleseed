@@ -39,7 +39,6 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
-#include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/glossylayerbsdf.h"
 #include "renderer/modeling/bsdf/ibsdffactory.h"
 #include "renderer/modeling/scene/assembly.h"

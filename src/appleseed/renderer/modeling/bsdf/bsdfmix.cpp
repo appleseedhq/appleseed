@@ -36,7 +36,6 @@
 #include "renderer/kernel/shading/directshadingcomponents.h"
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/modeling/bsdf/bsdf.h"
-#include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
