@@ -310,9 +310,10 @@ namespace
         }
     };
 
-    class MicrofacetMetalBRDFImpl 
+    class MicrofacetMetalBRDFImpl
       : public MetalBRDFImpl
     {
+      public:
         using MetalBRDFImpl::MetalBRDFImpl;
 
         const char* get_model() const override

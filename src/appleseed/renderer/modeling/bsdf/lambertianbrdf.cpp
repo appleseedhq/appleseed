@@ -177,8 +177,9 @@ namespace
     };
 
     class MicrofacetLambertianBRDFImpl
-        : public LambertianBRDFImpl
+      : public LambertianBRDFImpl
     {
+      public:
         using LambertianBRDFImpl::LambertianBRDFImpl;
 
         const char* get_model() const override

@@ -175,8 +175,9 @@ namespace
     };
 
     class MicrofacetSheenBRDFImpl
-        : public SheenBRDFImpl
+      : public SheenBRDFImpl
     {
+      public:
         using SheenBRDFImpl::SheenBRDFImpl;
 
         const char* get_model() const override

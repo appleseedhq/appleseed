@@ -313,9 +313,10 @@ namespace
         }
     };
 
-    class MicrofacetGlossyBRDFImpl 
-        : public GlossyBRDFImpl
+    class MicrofacetGlossyBRDFImpl
+      : public GlossyBRDFImpl
     {
+      public:
         using GlossyBRDFImpl::GlossyBRDFImpl;
 
         const char* get_model() const override

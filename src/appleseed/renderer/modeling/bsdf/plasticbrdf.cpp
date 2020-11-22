@@ -440,8 +440,9 @@ namespace
     };
 
     class MicrofacetPlasticBRDFImpl
-        : public PlasticBRDFImpl
+      : public PlasticBRDFImpl
     {
+      public:
         using PlasticBRDFImpl::PlasticBRDFImpl;
 
         const char* get_model() const override

@@ -228,8 +228,9 @@ namespace
     };
 
     class MicrofacetBlinnBRDFImpl
-        : public BlinnBRDFImpl
+      : public BlinnBRDFImpl
     {
+      public:
         using BlinnBRDFImpl::BlinnBRDFImpl;
 
         const char* get_model() const override
