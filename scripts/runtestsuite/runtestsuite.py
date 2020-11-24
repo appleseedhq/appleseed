@@ -503,7 +503,7 @@ def render_test_scenes(script_directory, args):
 
     logger.end_table()
 
-    return rendered_scene_count, passing_scene_count, success, total_time,
+    return failures, success, total_time,
 
 
 # --------------------------------------------------------------------------------------------------
@@ -544,24 +544,20 @@ def main():
     utils.print_runtime_details("runtestsuite", VERSION, os.path.realpath(__file__), CURRENT_TIME)
     print_configuration(args.tool_path, appleseed_args)
 
-
-    rendered_scene_count, passing_scene_count, success, total_time = render_test_scenes(script_directory, args)
-
-    # success = 100.0 * passing_scene_count / rendered_scene_count if rendered_scene_count > 0 else 0.0
+    failures, success, total_time = render_test_scenes(script_directory, args)
 
     print()
     print("Results:")
     print("  Success Rate   : {0}{1:.2f} %{2}"
-          .format(colorama.Fore.RED if passing_scene_count < rendered_scene_count else colorama.Fore.GREEN,
+          .format(colorama.Fore.RED if failures[0] > 0 else colorama.Fore.GREEN,
                   success,
                   colorama.Fore.RESET))
     print("  Failures       : {0}{1} out of {2} test scene(s){3}"
-          .format(colorama.Fore.RED if passing_scene_count < rendered_scene_count else colorama.Fore.GREEN,
-                  rendered_scene_count - passing_scene_count,
-                  rendered_scene_count,
+          .format(colorama.Fore.RED if failures[0] > 0 else colorama.Fore.GREEN,
+                  failures[0],
+                  failures[1],
                   colorama.Fore.RESET))
     print("  Total Time     : {0}".format(format_duration(total_time)))
-
 
 if __name__ == "__main__":
     main()
