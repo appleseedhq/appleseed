@@ -184,6 +184,7 @@ class ReportWriter:
 
     def __init__(self, template_directory):
         self.header_template = load_file(os.path.join(template_directory, "header_template.html"))
+        self.stats_template = load_file(os.path.join(template_directory, "stats_template.html"))
         self.footer_template = load_file(os.path.join(template_directory, "footer_template.html"))
         self.simple_failure_template = load_file(os.path.join(template_directory, "simple_failure_template.html"))
         self.detailed_failure_template = load_file(os.path.join(template_directory, "detailed_failure_template.html"))
@@ -195,7 +196,8 @@ class ReportWriter:
         self.failures = 0
         self.all_commands = []
 
-    def close(self):
+    def close(self, total_time, success, failures):
+        self.__write_stats(total_time, success, failures)
         self.__write_footer()
         self.file.close()
 
@@ -251,6 +253,14 @@ class ReportWriter:
                                        'git-hash': git_hash,
                                        'git-title': git_title}))
         self.file.flush()
+    
+    def __write_stats(self, total_time, success, failures):
+        success_rate = "{0}%".format(success)
+        failures_str = "{0} out of {1} test scene(s)".format(failures[0], failures[1])
+        self.file.write(self.__render(self.stats_template,
+                                       {'total-time': format_duration(total_time),
+                                        'success-rate': success_rate,
+                                        'failures': failures_str}))
 
     def __write_footer(self):
         self.file.write(self.__render(self.footer_template, {}))
@@ -461,6 +471,8 @@ def render_test_scenes(script_directory, args):
     rendered_scene_count = 0
     passing_scene_count = 0
 
+    start_time = datetime.datetime.now()
+
     logger = Logger()
     logger.begin_table()
 
@@ -483,11 +495,15 @@ def render_test_scenes(script_directory, args):
                 if render_test_scene(args, logger, report_writer, dirpath, filename):
                     passing_scene_count += 1
 
-    report_writer.close()
+    end_time = datetime.datetime.now()
+    total_time = end_time - start_time
+    success = 100.0 * passing_scene_count / rendered_scene_count if rendered_scene_count > 0 else 0.0
+    failures = [rendered_scene_count - passing_scene_count, rendered_scene_count]
+    report_writer.close(total_time, success, failures)
 
     logger.end_table()
 
-    return rendered_scene_count, passing_scene_count
+    return rendered_scene_count, passing_scene_count, success, total_time,
 
 
 # --------------------------------------------------------------------------------------------------
@@ -528,11 +544,10 @@ def main():
     utils.print_runtime_details("runtestsuite", VERSION, os.path.realpath(__file__), CURRENT_TIME)
     print_configuration(args.tool_path, appleseed_args)
 
-    start_time = datetime.datetime.now()
-    rendered_scene_count, passing_scene_count = render_test_scenes(script_directory, args)
-    end_time = datetime.datetime.now()
 
-    success = 100.0 * passing_scene_count / rendered_scene_count if rendered_scene_count > 0 else 0.0
+    rendered_scene_count, passing_scene_count, success, total_time = render_test_scenes(script_directory, args)
+
+    # success = 100.0 * passing_scene_count / rendered_scene_count if rendered_scene_count > 0 else 0.0
 
     print()
     print("Results:")
@@ -545,7 +560,7 @@ def main():
                   rendered_scene_count - passing_scene_count,
                   rendered_scene_count,
                   colorama.Fore.RESET))
-    print("  Total Time     : {0}".format(format_duration(end_time - start_time)))
+    print("  Total Time     : {0}".format(format_duration(total_time)))
 
 
 if __name__ == "__main__":
