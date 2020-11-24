@@ -237,15 +237,19 @@ class ReportWriter:
 
     def __write_header(self, args):
         script_path = os.path.realpath(__file__)
+        git_hash =  subprocess.check_output(['git', 'rev-parse', 'HEAD'])
+        git_title = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
 
         self.file.write(self.__render(self.header_template,
                                       {'test-date': CURRENT_TIME,
                                        'python-version': utils.get_python_version(),
                                        'script-path': script_path,
-                                       'script-version': VERSION,
+                                       'script-version': "HELLO WORLD", #VERSION,
                                        'appleseed-binary-path': args.tool_path,
                                        'max-abs-diff-allowed': VALUE_THRESHOLD,
-                                       'max-diff-comps-count-allowed': MAX_DIFFERING_COMPONENTS}))
+                                       'max-diff-comps-count-allowed': MAX_DIFFERING_COMPONENTS,
+                                       'git-hash': git_hash,
+                                       'git-title': git_title}))
         self.file.flush()
 
     def __write_footer(self):
@@ -262,7 +266,9 @@ class ReportWriter:
             return 'copy /Y "{0}" "{1}"'.format(output_filepath, reference_filepath)
         else:
             return 'cp "{0}" "{1}"'.format(output_filepath, reference_filepath)
-
+    
+    def get_git_revision_hash():
+        return subprocess.check_output(['git', 'rev-parse', 'HEAD'])
 
 # --------------------------------------------------------------------------------------------------
 # Render a given project file.
