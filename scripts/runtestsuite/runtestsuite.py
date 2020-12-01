@@ -30,6 +30,7 @@
 from __future__ import division
 from __future__ import print_function
 import argparse
+from subprocess import CalledProcessError
 import colorama
 import datetime
 import os
@@ -117,6 +118,41 @@ def write_rgba_png_file(filepath, rows):
     with open(filepath, 'wb') as file:
         writer.write(file, rows)
 
+def git_installed(directory):
+    temp = 'git -C {0} --version'.format(directory)
+    print(temp)
+    return command_is_valid('git -C {0} --version'.format(directory))
+
+def under_git_control(directory):
+    return command_is_valid('git -C {0} rev-parse --is-inside-work-tree'.format(directory))
+
+def get_git_hash(directory):
+    return command_output('git -C {0} rev-parse HEAD'.format(directory))
+
+def get_git_title(directory):
+    return command_output('git -C {0} rev-parse --abbrev-ref HEAD'.format(directory))
+
+def command_output(command):
+    output = "N/A"
+    try:
+        output = subprocess.check_output(command.split())
+    except OSError:
+        pass
+    return output
+
+def command_is_valid(command):
+    is_valid = 1
+    try:
+        is_valid = subprocess.check_call(
+            command.split(),
+            stdin = subprocess.PIPE, 
+            stdout = open(os.devnull, 'wb'),
+            stderr = subprocess.STDOUT)
+    except (subprocess.CalledProcessError, OSError):
+        pass
+    
+    return is_valid == 0
+
 
 # --------------------------------------------------------------------------------------------------
 # Utility class to log progress.
@@ -188,6 +224,7 @@ class ReportWriter:
         self.footer_template = load_file(os.path.join(template_directory, "footer_template.html"))
         self.simple_failure_template = load_file(os.path.join(template_directory, "simple_failure_template.html"))
         self.detailed_failure_template = load_file(os.path.join(template_directory, "detailed_failure_template.html"))
+        self.template_directory = template_directory
 
     def open(self, args, filepath):
         self.args = args
@@ -196,8 +233,8 @@ class ReportWriter:
         self.failures = 0
         self.all_commands = []
 
-    def close(self, total_time, success_rate, failed_scene_count, rendered_scene_count):
-        self.__write_stats(total_time, success_rate, failed_scene_count, rendered_scene_count)
+    def close(self, total_time, success_rate, failures, rendered_scenes):
+        self.__write_stats(total_time, success_rate, failures, rendered_scenes)
         self.__write_footer()
         self.file.close()
 
@@ -239,8 +276,16 @@ class ReportWriter:
 
     def __write_header(self, args):
         script_path = os.path.realpath(__file__)
-        git_hash =  subprocess.check_output(['git', 'rev-parse', 'HEAD'])
-        git_title = subprocess.check_output(['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
+        git_hash = git_title = "N/A"
+
+        if git_installed(self.template_directory):
+            if under_git_control(self.template_directory):
+                git_hash = get_git_hash(self.template_directory)
+                git_title = get_git_title(self.template_directory)
+            else:
+                git_hash = git_title = "N/A (Directory not under git control)"
+        else:
+            git_hash = git_title = "N/A (Git not installed)"
 
         self.file.write(self.__render(self.header_template,
                                       {'test-date': CURRENT_TIME,
@@ -254,13 +299,13 @@ class ReportWriter:
                                        'git-title': git_title}))
         self.file.flush()
     
-    def __write_stats(self, total_time, success_rate, failed_scene_count, rendered_scene_count):
+    def __write_stats(self, total_time, success_rate, failures, rendered_scenes):
         success_rate = "{0}%".format(success_rate)
-        failed_scene_count = "{0} out of {1} test scene(s)".format(failed_scene_count, rendered_scene_count)
+        failures = "{0} out of {1} test scene(s)".format(failures, rendered_scenes)
         self.file.write(self.__render(self.stats_template,
                                        {'total-time': format_duration(total_time),
                                         'success-rate': success_rate,
-                                        'failures': failed_scene_count}))
+                                        'failures': failures}))
 
     def __write_footer(self):
         self.file.write(self.__render(self.footer_template, {}))
@@ -276,9 +321,6 @@ class ReportWriter:
             return 'copy /Y "{0}" "{1}"'.format(output_filepath, reference_filepath)
         else:
             return 'cp "{0}" "{1}"'.format(output_filepath, reference_filepath)
-    
-    def get_git_revision_hash():
-        return subprocess.check_output(['git', 'rev-parse', 'HEAD'])
 
 # --------------------------------------------------------------------------------------------------
 # Render a given project file.
@@ -468,7 +510,7 @@ def render_test_scene(args, logger, report_writer, project_directory, project_fi
 # --------------------------------------------------------------------------------------------------
 
 def render_test_scenes(script_directory, args):
-    rendered_scene_count = 0
+    rendered_scenes = 0
     passing_scene_count = 0
 
     start_time = datetime.datetime.now()
@@ -490,7 +532,7 @@ def render_test_scenes(script_directory, args):
                     logger.skip_rendering(os.path.join(dirpath, filename))
                     continue
 
-                rendered_scene_count += 1
+                rendered_scenes += 1
 
                 if render_test_scene(args, logger, report_writer, dirpath, filename):
                     passing_scene_count += 1
@@ -498,14 +540,14 @@ def render_test_scenes(script_directory, args):
     end_time = datetime.datetime.now()
     total_time = end_time - start_time
     
-    success_rate = 100.0 * passing_scene_count / rendered_scene_count if rendered_scene_count > 0 else 0.0   
-    failed_scene_count = rendered_scene_count - passing_scene_count
+    success_rate = 100.0 * passing_scene_count / rendered_scenes if rendered_scenes > 0 else 0.0   
+    failures = rendered_scenes - passing_scene_count
     
-    report_writer.close(total_time, success_rate, failed_scene_count, rendered_scene_count)
+    report_writer.close(total_time, success_rate, failures, rendered_scenes)
 
     logger.end_table()
 
-    return failed_scene_count, rendered_scene_count, success_rate, total_time,
+    return failures, rendered_scenes, success_rate, total_time,
 
 
 # --------------------------------------------------------------------------------------------------
@@ -546,18 +588,18 @@ def main():
     utils.print_runtime_details("runtestsuite", VERSION, os.path.realpath(__file__), CURRENT_TIME)
     print_configuration(args.tool_path, appleseed_args)
 
-    failed_scene_count, rendered_scene_count, success_rate, total_time = render_test_scenes(script_directory, args)
+    failures, rendered_scenes, success_rate, total_time = render_test_scenes(script_directory, args)
 
     print()
     print("Results:")
     print("  Success Rate   : {0}{1:.2f} %{2}"
-          .format(colorama.Fore.RED if failed_scene_count > 0 else colorama.Fore.GREEN,
+          .format(colorama.Fore.RED if failures > 0 else colorama.Fore.GREEN,
                   success_rate,
                   colorama.Fore.RESET))
     print("  Failures       : {0}{1} out of {2} test scene(s){3}"
-          .format(colorama.Fore.RED if failed_scene_count > 0 else colorama.Fore.GREEN,
-                  failed_scene_count,
-                  rendered_scene_count,
+          .format(colorama.Fore.RED if failures > 0 else colorama.Fore.GREEN,
+                  failures,
+                  rendered_scenes,
                   colorama.Fore.RESET))
     print("  Total Time     : {0}".format(format_duration(total_time)))
 
