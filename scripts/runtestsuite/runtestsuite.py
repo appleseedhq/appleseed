@@ -30,7 +30,6 @@
 from __future__ import division
 from __future__ import print_function
 import argparse
-from subprocess import CalledProcessError
 import colorama
 import datetime
 import os
