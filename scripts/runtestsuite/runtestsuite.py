@@ -497,8 +497,10 @@ def render_test_scenes(script_directory, args):
 
     end_time = datetime.datetime.now()
     total_time = end_time - start_time
-    success = 100.0 * passing_scene_count / rendered_scene_count if rendered_scene_count > 0 else 0.0
+    
+    success = 100.0 * passing_scene_count / rendered_scene_count if rendered_scene_count > 0 else 0.0   
     failures = [rendered_scene_count - passing_scene_count, rendered_scene_count]
+    
     report_writer.close(total_time, success, failures)
 
     logger.end_table()
