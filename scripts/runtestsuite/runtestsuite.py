@@ -196,8 +196,8 @@ class ReportWriter:
         self.failures = 0
         self.all_commands = []
 
-    def close(self, total_time, success, failures):
-        self.__write_stats(total_time, success, failures)
+    def close(self, total_time, success_rate, failed_scene_count, rendered_scene_count):
+        self.__write_stats(total_time, success_rate, failed_scene_count, rendered_scene_count)
         self.__write_footer()
         self.file.close()
 
@@ -246,7 +246,7 @@ class ReportWriter:
                                       {'test-date': CURRENT_TIME,
                                        'python-version': utils.get_python_version(),
                                        'script-path': script_path,
-                                       'script-version': "HELLO WORLD", #VERSION,
+                                       'script-version': VERSION,
                                        'appleseed-binary-path': args.tool_path,
                                        'max-abs-diff-allowed': VALUE_THRESHOLD,
                                        'max-diff-comps-count-allowed': MAX_DIFFERING_COMPONENTS,
@@ -254,13 +254,13 @@ class ReportWriter:
                                        'git-title': git_title}))
         self.file.flush()
     
-    def __write_stats(self, total_time, success, failures):
-        success_rate = "{0}%".format(success)
-        failures_str = "{0} out of {1} test scene(s)".format(failures[0], failures[1])
+    def __write_stats(self, total_time, success_rate, failed_scene_count, rendered_scene_count):
+        success_rate = "{0}%".format(success_rate)
+        failed_scene_count = "{0} out of {1} test scene(s)".format(failed_scene_count, rendered_scene_count)
         self.file.write(self.__render(self.stats_template,
                                        {'total-time': format_duration(total_time),
                                         'success-rate': success_rate,
-                                        'failures': failures_str}))
+                                        'failures': failed_scene_count}))
 
     def __write_footer(self):
         self.file.write(self.__render(self.footer_template, {}))
@@ -498,14 +498,14 @@ def render_test_scenes(script_directory, args):
     end_time = datetime.datetime.now()
     total_time = end_time - start_time
     
-    success = 100.0 * passing_scene_count / rendered_scene_count if rendered_scene_count > 0 else 0.0   
-    failures = [rendered_scene_count - passing_scene_count, rendered_scene_count]
+    success_rate = 100.0 * passing_scene_count / rendered_scene_count if rendered_scene_count > 0 else 0.0   
+    failed_scene_count = rendered_scene_count - passing_scene_count
     
-    report_writer.close(total_time, success, failures)
+    report_writer.close(total_time, success_rate, failed_scene_count, rendered_scene_count)
 
     logger.end_table()
 
-    return failures, success, total_time,
+    return failed_scene_count, rendered_scene_count, success_rate, total_time,
 
 
 # --------------------------------------------------------------------------------------------------
@@ -546,18 +546,18 @@ def main():
     utils.print_runtime_details("runtestsuite", VERSION, os.path.realpath(__file__), CURRENT_TIME)
     print_configuration(args.tool_path, appleseed_args)
 
-    failures, success, total_time = render_test_scenes(script_directory, args)
+    failed_scene_count, rendered_scene_count, success_rate, total_time = render_test_scenes(script_directory, args)
 
     print()
     print("Results:")
     print("  Success Rate   : {0}{1:.2f} %{2}"
-          .format(colorama.Fore.RED if failures[0] > 0 else colorama.Fore.GREEN,
-                  success,
+          .format(colorama.Fore.RED if failed_scene_count > 0 else colorama.Fore.GREEN,
+                  success_rate,
                   colorama.Fore.RESET))
     print("  Failures       : {0}{1} out of {2} test scene(s){3}"
-          .format(colorama.Fore.RED if failures[0] > 0 else colorama.Fore.GREEN,
-                  failures[0],
-                  failures[1],
+          .format(colorama.Fore.RED if failed_scene_count > 0 else colorama.Fore.GREEN,
+                  failed_scene_count,
+                  rendered_scene_count,
                   colorama.Fore.RESET))
     print("  Total Time     : {0}".format(format_duration(total_time)))
 
