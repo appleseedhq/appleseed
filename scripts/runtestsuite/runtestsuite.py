@@ -117,12 +117,25 @@ def write_rgba_png_file(filepath, rows):
     with open(filepath, 'wb') as file:
         writer.write(file, rows)
 
-def git_installed(directory):
-    temp = 'git -C {0} --version'.format(directory)
-    print(temp)
+def git_information(path):
+    git_hash = git_title = "N/A"
+
+    if is_git_installed(path) and is_git_repository(path):
+        hash = get_git_hash(path)
+        title = get_git_title(path)
+        if hash: git_hash = hash
+        if title: git_title = title
+    elif not is_git_installed(path):
+        git_hash = git_title = "N/A (Git not installed)"
+    else:
+        git_hash = git_title = "N/A (Directory not under git control)"
+        
+    return git_hash, git_title
+
+def is_git_installed(directory):
     return command_is_valid('git -C {0} --version'.format(directory))
 
-def under_git_control(directory):
+def is_git_repository(directory):
     return command_is_valid('git -C {0} rev-parse --is-inside-work-tree'.format(directory))
 
 def get_git_hash(directory):
@@ -132,25 +145,64 @@ def get_git_title(directory):
     return command_output('git -C {0} rev-parse --abbrev-ref HEAD'.format(directory))
 
 def command_output(command):
-    output = "N/A"
+    command_output = None
     try:
-        output = subprocess.check_output(command.split())
+        command_output = subprocess.check_output(command.split())
     except OSError:
         pass
-    return output
+    return command_output
 
 def command_is_valid(command):
-    is_valid = 1
     try:
-        is_valid = subprocess.check_call(
+        command_return = subprocess.check_call(
             command.split(),
             stdin = subprocess.PIPE, 
             stdout = open(os.devnull, 'wb'),
             stderr = subprocess.STDOUT)
+
+        return command_return == 0
     except (subprocess.CalledProcessError, OSError):
         pass
+
+    return False
+
+# --------------------------------------------------------------------------------------------------
+# Utility class to calculate successes vs failures
+# --------------------------------------------------------------------------------------------------
+
+class Results:
+    def __init__(self):
+        self.rendered = 0   
+        self.successes = 0
+        self.start_time = datetime.datetime.min
+        self.end_time = datetime.datetime.min
+
+    def increment_total(self):
+        self.rendered += 1
     
-    return is_valid == 0
+    def increment_successes(self):
+        self.successes += 1
+    
+    def start_timer(self):
+        self.start_time = datetime.datetime.now()
+    
+    def end_timer(self):
+        self.end_time = datetime.datetime.now()
+    
+    def success_count(self):
+        return self.successes
+    
+    def failure_count(self):
+        return self.rendered - self.successes
+    
+    def total_count(self):
+        return self.rendered
+
+    def success_rate(self):
+        return 100.0 * self.successes / self.rendered if self.rendered > 0 else 0.0
+
+    def total_time(self):
+        return format_duration(self.end_time - self.start_time)
 
 
 # --------------------------------------------------------------------------------------------------
@@ -232,8 +284,8 @@ class ReportWriter:
         self.failures = 0
         self.all_commands = []
 
-    def close(self, total_time, success_rate, failures, rendered_scenes):
-        self.__write_stats(total_time, success_rate, failures, rendered_scenes)
+    def close(self, results):
+        self.__write_stats(results)
         self.__write_footer()
         self.file.close()
 
@@ -275,16 +327,8 @@ class ReportWriter:
 
     def __write_header(self, args):
         script_path = os.path.realpath(__file__)
-        git_hash = git_title = "N/A"
 
-        if git_installed(self.template_directory):
-            if under_git_control(self.template_directory):
-                git_hash = get_git_hash(self.template_directory)
-                git_title = get_git_title(self.template_directory)
-            else:
-                git_hash = git_title = "N/A (Directory not under git control)"
-        else:
-            git_hash = git_title = "N/A (Git not installed)"
+        git_hash, git_title = git_information(self.template_directory)
 
         self.file.write(self.__render(self.header_template,
                                       {'test-date': CURRENT_TIME,
@@ -298,13 +342,17 @@ class ReportWriter:
                                        'git-title': git_title}))
         self.file.flush()
     
-    def __write_stats(self, total_time, success_rate, failures, rendered_scenes):
-        success_rate = "{0}%".format(success_rate)
-        failures = "{0} out of {1} test scene(s)".format(failures, rendered_scenes)
+    def __write_stats(self, results):
+        total_time_text = results.total_time()
+        success_rate_text = "{0}%".format(results.success_rate())
+        failures_text = "{0} out of {1} test scene(s)".format(
+            results.failure_count(), 
+            results.total_count())
+        
         self.file.write(self.__render(self.stats_template,
-                                       {'total-time': format_duration(total_time),
-                                        'success-rate': success_rate,
-                                        'failures': failures}))
+                                       {'total-time': total_time_text,
+                                        'success-rate': success_rate_text,
+                                        'failures': failures_text}))
 
     def __write_footer(self):
         self.file.write(self.__render(self.footer_template, {}))
@@ -320,7 +368,6 @@ class ReportWriter:
             return 'copy /Y "{0}" "{1}"'.format(output_filepath, reference_filepath)
         else:
             return 'cp "{0}" "{1}"'.format(output_filepath, reference_filepath)
-
 # --------------------------------------------------------------------------------------------------
 # Render a given project file.
 # --------------------------------------------------------------------------------------------------
@@ -509,10 +556,8 @@ def render_test_scene(args, logger, report_writer, project_directory, project_fi
 # --------------------------------------------------------------------------------------------------
 
 def render_test_scenes(script_directory, args):
-    rendered_scenes = 0
-    passing_scene_count = 0
-
-    start_time = datetime.datetime.now()
+    results = Results()
+    results.start_timer()
 
     logger = Logger()
     logger.begin_table()
@@ -531,22 +576,18 @@ def render_test_scenes(script_directory, args):
                     logger.skip_rendering(os.path.join(dirpath, filename))
                     continue
 
-                rendered_scenes += 1
+                results.increment_total()
 
                 if render_test_scene(args, logger, report_writer, dirpath, filename):
-                    passing_scene_count += 1
+                    results.increment_successes()
 
-    end_time = datetime.datetime.now()
-    total_time = end_time - start_time
-    
-    success_rate = 100.0 * passing_scene_count / rendered_scenes if rendered_scenes > 0 else 0.0   
-    failures = rendered_scenes - passing_scene_count
-    
-    report_writer.close(total_time, success_rate, failures, rendered_scenes)
+    results.end_timer()
+
+    report_writer.close(results)
 
     logger.end_table()
 
-    return failures, rendered_scenes, success_rate, total_time,
+    return results
 
 
 # --------------------------------------------------------------------------------------------------
@@ -587,20 +628,20 @@ def main():
     utils.print_runtime_details("runtestsuite", VERSION, os.path.realpath(__file__), CURRENT_TIME)
     print_configuration(args.tool_path, appleseed_args)
 
-    failures, rendered_scenes, success_rate, total_time = render_test_scenes(script_directory, args)
+    results = render_test_scenes(script_directory, args)
 
     print()
     print("Results:")
     print("  Success Rate   : {0}{1:.2f} %{2}"
-          .format(colorama.Fore.RED if failures > 0 else colorama.Fore.GREEN,
-                  success_rate,
+          .format(colorama.Fore.RED if results.failure_count() > 0 else colorama.Fore.GREEN,
+                  results.success_rate(),
                   colorama.Fore.RESET))
     print("  Failures       : {0}{1} out of {2} test scene(s){3}"
-          .format(colorama.Fore.RED if failures > 0 else colorama.Fore.GREEN,
-                  failures,
-                  rendered_scenes,
+          .format(colorama.Fore.RED if results.failure_count() > 0 else colorama.Fore.GREEN,
+                  results.failure_count(),
+                  results.total_count(),
                   colorama.Fore.RESET))
-    print("  Total Time     : {0}".format(format_duration(total_time)))
+    print("  Total Time     : {0}".format(results.total_time()))
 
 if __name__ == "__main__":
     main()
