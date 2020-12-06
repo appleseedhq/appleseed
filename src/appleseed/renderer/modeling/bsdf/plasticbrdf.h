@@ -101,6 +101,7 @@ class APPLESEED_DLLSYMBOL PlasticBRDFFactory
         const ParamArray&   params) const override;
 };
 
+
 //
 // Microfacet Plastic BSDF factory.
 //

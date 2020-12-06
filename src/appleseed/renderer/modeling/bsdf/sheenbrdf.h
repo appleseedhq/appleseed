@@ -86,6 +86,7 @@ class APPLESEED_DLLSYMBOL SheenBRDFFactory
         const ParamArray&   params) const override;
 };
 
+
 //
 // Microfacet Sheen BRDF factory.
 //

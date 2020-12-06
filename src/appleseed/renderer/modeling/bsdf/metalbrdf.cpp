@@ -37,8 +37,8 @@
 #include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/fresnel.h"
-#include "renderer/modeling/bsdf/microfacethelper.h"
 #include "renderer/modeling/bsdf/microfacetbrdfwrapper.h"
+#include "renderer/modeling/bsdf/microfacethelper.h"
 #include "renderer/modeling/bsdf/specularhelper.h"
 #include "renderer/utility/paramarray.h"
 
@@ -470,6 +470,7 @@ auto_release_ptr<BSDF> MetalBRDFFactory::create(
 {
     return auto_release_ptr<BSDF>(new MetalBRDF(name, params));
 }
+
 
 //
 // MicrofacetMetalBRDFFactory class implementation.

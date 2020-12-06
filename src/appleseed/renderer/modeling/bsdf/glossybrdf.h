@@ -99,6 +99,7 @@ class APPLESEED_DLLSYMBOL GlossyBRDFFactory
         const ParamArray&   params) const override;
 };
 
+
 //
 // Microfacet Glossy BRDF factory.
 //

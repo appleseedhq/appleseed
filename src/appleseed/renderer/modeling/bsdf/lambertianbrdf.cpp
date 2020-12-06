@@ -251,6 +251,7 @@ auto_release_ptr<BSDF> LambertianBRDFFactory::create(
     return auto_release_ptr<BSDF>(new LambertianBRDF(name, params));
 }
 
+
 //
 // MicrofacetLambertianBRDFFactory class implementation.
 //

@@ -62,7 +62,7 @@ class MicrofacetBRDFWrapper : public BSDFImpl
   public:
     using LocalGeometry = typename BSDFImpl::LocalGeometry;
 
-    MicrofacetBRDFWrapper() {}
+    MicrofacetBRDFWrapper() = default;
 
     MicrofacetBRDFWrapper(
         const char*                         name,
@@ -99,51 +99,51 @@ class MicrofacetBRDFWrapper : public BSDFImpl
   private:
     enum MicrofacetScattering {IPO, IPTO, ITPO};
 
-    float heaviside(const float     a) const
+    static float heaviside(const float a)
     {
-        return (a < 0.0f) ? 0.0f : 1.0f;
+        return a < 0.0f ? 0.0f : 1.0f;
     }
 
-    float abs_dot(
+    static float abs_dot(
         const foundation::Vector3f& a,
-        const foundation::Vector3f& b) const
+        const foundation::Vector3f& b)
     {
         return std::min(std::abs(foundation::dot(a, b)), 1.0f);
     }
 
-    float clamped_dot(
+    static float clamped_dot(
         const foundation::Vector3f& a,
-        const foundation::Vector3f& b) const
+        const foundation::Vector3f& b)
     {
         return std::max(foundation::dot(a, b), 0.0f);
     }
 
-    foundation::Vector3f reflect(
+    static foundation::Vector3f reflect(
         const foundation::Vector3f& a,
-        const foundation::Vector3f& b) const
+        const foundation::Vector3f& b)
     {
         return foundation::normalize(a - 2.0f * foundation::dot(a, b) * b);
     }
 
     // Replacement for cosine multiplier
     // from renderer/modeling/bsdf/bsdfwrapper.h.
-    float cosine_multiplier(
+    static float cosine_multiplier(
         const foundation::Vector3f& incoming,
         const foundation::Vector3f& n,
-        const float                 shadow_terminator_freq_mult) const
+        const float                 shadow_terminator_freq_mult)
     {
         return shift_cos_in_fast(
             abs_dot(incoming, n), shadow_terminator_freq_mult); // non-adjoint
     }
 
-    foundation::Vector3f build_tangent(
+    static foundation::Vector3f build_tangent(
         const foundation::Vector3f& original_shading_normal,
-        const foundation::Vector3f& perturbed_shading_normal) const
+        const foundation::Vector3f& perturbed_shading_normal)
     {
-        foundation::Basis3f original_shading_basis(original_shading_normal);
-        foundation::Vector3f local_perturbed_shading_normal =
+        const foundation::Basis3f original_shading_basis(original_shading_normal);
+        const foundation::Vector3f local_perturbed_shading_normal =
             original_shading_basis.transform_to_local(perturbed_shading_normal);
-        foundation::Vector3f local_tangent =
+        const foundation::Vector3f local_tangent =
             foundation::normalize(
                 foundation::Vector3f(
                     -local_perturbed_shading_normal.x,
@@ -152,78 +152,85 @@ class MicrofacetBRDFWrapper : public BSDFImpl
         return original_shading_basis.transform_to_parent(local_tangent);
     }
 
-    float projected_area(
+    static float projected_area(
         const foundation::Vector3f& wi,
         const foundation::Vector3f& wp,
         const foundation::Vector3f& wg,
-        const bool                  perturbed_facet) const
+        const bool                  perturbed_facet)
     {
-        foundation::Vector3f wt = build_tangent(wg, wp);
+        const foundation::Vector3f wt = build_tangent(wg, wp);
 
-        float wi_dot_wp = clamped_dot(wi, wp);
-        float wi_dot_wt = clamped_dot(wi, wt);
-        float wp_dot_wg = clamped_dot(wp, wg);
+        const float wi_dot_wp = clamped_dot(wi, wp);
+        const float wi_dot_wt = clamped_dot(wi, wt);
+        const float wp_dot_wg = clamped_dot(wp, wg);
 
         return perturbed_facet
-            ? (wi_dot_wp / wp_dot_wg)
-            : ((wi_dot_wt * std::sqrt(1.0f - std::pow(wp_dot_wg, 2.0f))) / wp_dot_wg);
+            ? wi_dot_wp / wp_dot_wg
+            : wi_dot_wt * std::sqrt(1.0f - wp_dot_wg * wp_dot_wg) / wp_dot_wg;
     }
 
-    float lambda(
+    static float lambda(
         const foundation::Vector3f& wi,
         const foundation::Vector3f& wp,
         const foundation::Vector3f& wg,
-        const bool                  perturbed_facet) const
+        const bool                  perturbed_facet)
     {
-        float ap_wi = projected_area(wi, wp, wg, true);
-        float at_wi = projected_area(wi, wp, wg, false);
+        const float ap_wi = projected_area(wi, wp, wg, true);
+        const float at_wi = projected_area(wi, wp, wg, false);
 
         return perturbed_facet ? ap_wi / (ap_wi + at_wi) : at_wi / (ap_wi + at_wi);
     }
 
-    float g1(
+    static float g1(
         const foundation::Vector3f& wi,
         const foundation::Vector3f& wp,
         const foundation::Vector3f& wg,
-        const bool                  perturbed_facet) const
+        const bool                  perturbed_facet)
     {
         if (foundation::dot(wi, wg) <= 0.0f)
             return 0.0f;
 
-        foundation::Vector3f wt = build_tangent(wg, wp);
+        const foundation::Vector3f wt = build_tangent(wg, wp);
         const float H = perturbed_facet
             ? heaviside(foundation::dot(wi, wp))
             : heaviside(foundation::dot(wi, wt));
 
-        float wi_dot_wg = clamped_dot(wi, wg);
-        float ap_wi = projected_area(wi, wp, wg, true);
-        float at_wi = projected_area(wi, wp, wg, false);
+        const float wi_dot_wg = clamped_dot(wi, wg);
+        const float ap_wi = projected_area(wi, wp, wg, true);
+        const float at_wi = projected_area(wi, wp, wg, false);
 
         return H * std::min(1.0f, wi_dot_wg / (ap_wi + at_wi));
     }
 
-    float microfacet_scattering_helper(
+    static float microfacet_scattering_helper(
         const foundation::Vector3f& incoming,
         const foundation::Vector3f& outgoing,
         const foundation::Vector3f& tangent,
         const foundation::Vector3f& original_shading_normal,
         const foundation::Vector3f& perturbed_shading_normal,
-        const MicrofacetScattering  microfacet_scattering) const
+        const MicrofacetScattering  microfacet_scattering)
     {
-        if (microfacet_scattering == MicrofacetScattering::IPO)
-            return lambda(outgoing, perturbed_shading_normal, original_shading_normal, true)
-                * g1(incoming, perturbed_shading_normal, original_shading_normal, true);
+        switch (microfacet_scattering)
+        {
+          case MicrofacetScattering::IPO:
+            return
+                lambda(outgoing, perturbed_shading_normal, original_shading_normal, true) *
+                g1(incoming, perturbed_shading_normal, original_shading_normal, true);
 
-        if (microfacet_scattering == MicrofacetScattering::IPTO)
-            return lambda(outgoing, perturbed_shading_normal, original_shading_normal, true)
-                * (1.0f - g1(reflect(incoming, tangent), perturbed_shading_normal, original_shading_normal, true))
-                * g1(incoming, perturbed_shading_normal, original_shading_normal, false);
+          case MicrofacetScattering::IPTO:
+            return
+                lambda(outgoing, perturbed_shading_normal, original_shading_normal, true) *
+                (1.0f - g1(reflect(incoming, tangent), perturbed_shading_normal, original_shading_normal, true)) *
+                g1(incoming, perturbed_shading_normal, original_shading_normal, false);
 
-        if (microfacet_scattering == MicrofacetScattering::ITPO)
-            return lambda(outgoing, perturbed_shading_normal, original_shading_normal, false)
-                * g1(incoming, perturbed_shading_normal, original_shading_normal, true);
+          case MicrofacetScattering::ITPO:
+            return
+                lambda(outgoing, perturbed_shading_normal, original_shading_normal, false) *
+                g1(incoming, perturbed_shading_normal, original_shading_normal, true);
 
-        return 1.0f; // no effect for non existing case
+          default:
+            return 1.0f;  // no effect for non-existing case
+        }
     }
 };
 
@@ -252,7 +259,7 @@ void MicrofacetBRDFWrapper<BSDFImpl>::sample(
     BSDFSample&                         sample) const
 {
     // World space original shading normal.
-    foundation::Vector3f original_shading_normal(
+    const foundation::Vector3f original_shading_normal(
         local_geometry.m_shading_point->get_original_shading_normal());
     if (foundation::dot(outgoing.get_value(), original_shading_normal) <= 0.0f)
         return;
@@ -261,7 +268,7 @@ void MicrofacetBRDFWrapper<BSDFImpl>::sample(
         local_geometry.m_shading_point->get_object_instance().get_render_data().m_shadow_terminator_freq_mult;
 
     // World space perturbed shading normal.
-    foundation::Vector3f perturbed_shading_normal(
+    const foundation::Vector3f perturbed_shading_normal(
         local_geometry.m_shading_point->get_shading_normal());
 
     // Perturbed normal too similar to original. Tangent vector can not be constructed.
@@ -288,7 +295,7 @@ void MicrofacetBRDFWrapper<BSDFImpl>::sample(
     }
 
     // World space tangent.
-    foundation::Vector3f tangent =
+    const foundation::Vector3f tangent =
         build_tangent(original_shading_normal, perturbed_shading_normal);
 
     float final_pdf = 0.0f;
@@ -335,7 +342,8 @@ void MicrofacetBRDFWrapper<BSDFImpl>::sample(
 
         sample.m_value = perturbed_facet_sample.m_value;
         final_pdf = perturbed_facet_pdf;
-    } else
+    }
+    else
     {
         // Case: hit tangent facet.
         // Sampling tangent facet is same as sampling the perturbed facet
@@ -374,13 +382,14 @@ void MicrofacetBRDFWrapper<BSDFImpl>::sample(
     }
 
     if (cosine_mult)
+    {
         sample.m_value *=
             cosine_multiplier(
                 sample.m_incoming.get_value(),
                 perturbed_shading_normal,
                 shadow_terminator_freq_mult);
+    }
 
-    // Final pdf.
     if (final_pdf == 0.0f)
         return;
 
@@ -406,24 +415,24 @@ float MicrofacetBRDFWrapper<BSDFImpl>::evaluate(
     float final_pdf = 0.0f;
 
     // World space original shading normal.
-    foundation::Vector3f original_shading_normal(
+    const foundation::Vector3f original_shading_normal(
         local_geometry.m_shading_point->get_original_shading_normal());
 
-    if (foundation::dot(incoming, original_shading_normal) <= 0.0f
-        || foundation::dot(outgoing, original_shading_normal) <= 0.0f)
+    if (foundation::dot(incoming, original_shading_normal) <= 0.0f ||
+        foundation::dot(outgoing, original_shading_normal) <= 0.0f)
         return 0.0f;
 
     // World space perturbed shading normal.
-    foundation::Vector3f perturbed_shading_normal(
+    const foundation::Vector3f perturbed_shading_normal(
         local_geometry.m_shading_point->get_shading_normal());
 
     const float shadow_terminator_freq_mult =
         local_geometry.m_shading_point->get_object_instance().get_render_data().m_shadow_terminator_freq_mult;
 
     // Perturbed normal too similar to original. Tangent vector can not be constructed.
-    if (foundation::dot(original_shading_normal, perturbed_shading_normal) > 1.0f - 1e-5)
+    if (foundation::dot(original_shading_normal, perturbed_shading_normal) > 1.0f - 1e-5f)
     {
-        if (foundation::dot(incoming, perturbed_shading_normal) < 0.0f) // cull check for non-adjoint, BSDF::reflective
+        if (foundation::dot(incoming, perturbed_shading_normal) < 0.0f)  // cull check for non-adjoint, BSDF::reflective
             return 0.0f;
 
         const float pdf = BSDFImpl::evaluate(
@@ -437,18 +446,17 @@ float MicrofacetBRDFWrapper<BSDFImpl>::evaluate(
             value);
 
         if (cosine_mult)
-            value *=
-                cosine_multiplier(incoming, perturbed_shading_normal, shadow_terminator_freq_mult);
+            value *= cosine_multiplier(incoming, perturbed_shading_normal, shadow_terminator_freq_mult);
 
         return pdf;
     }
 
     // World space tangent.
-    foundation::Vector3f tangent =
+    const foundation::Vector3f tangent =
         build_tangent(original_shading_normal, perturbed_shading_normal);
 
     // Case: i -> p -> o.
-    if (foundation::dot(incoming, perturbed_shading_normal) >= 0.0f) // cull check for non-adjoint, BSDF::reflective
+    if (foundation::dot(incoming, perturbed_shading_normal) >= 0.0f)  // cull check for non-adjoint, BSDF::reflective
     {
         DirectShadingComponents value_ipo;
         float pdf_ipo = BSDFImpl::evaluate(
@@ -473,20 +481,18 @@ float MicrofacetBRDFWrapper<BSDFImpl>::evaluate(
         value_ipo *= ipo_factor;
 
         if (cosine_mult)
-            value_ipo *=
-                cosine_multiplier(incoming, perturbed_shading_normal, shadow_terminator_freq_mult);
+            value_ipo *= cosine_multiplier(incoming, perturbed_shading_normal, shadow_terminator_freq_mult);
 
         value += value_ipo;
 
         final_pdf += pdf_ipo * ipo_factor;
     }
 
-    // Case: i -> p -> t -> o.
-
     // World space incoming direction reflected at tangent facet.
-    foundation::Vector3f incoming_reflected = reflect(incoming, tangent);
+    const foundation::Vector3f incoming_reflected = reflect(incoming, tangent);
 
-    if (foundation::dot(incoming_reflected, perturbed_shading_normal) >= 0.0f) // cull check for non-adjoint, BSDF::reflective
+    // Case: i -> p -> t -> o.
+    if (foundation::dot(incoming_reflected, perturbed_shading_normal) >= 0.0f)  // cull check for non-adjoint, BSDF::reflective
     {
         DirectShadingComponents value_ipto;
         float pdf_ipto = BSDFImpl::evaluate(
@@ -511,8 +517,7 @@ float MicrofacetBRDFWrapper<BSDFImpl>::evaluate(
         value_ipto *= ipto_factor;
 
         if (cosine_mult)
-            value_ipto *=
-                cosine_multiplier(incoming_reflected, perturbed_shading_normal, shadow_terminator_freq_mult);
+            value_ipto *= cosine_multiplier(incoming_reflected, perturbed_shading_normal, shadow_terminator_freq_mult);
 
         value += value_ipto;
 
@@ -520,7 +525,7 @@ float MicrofacetBRDFWrapper<BSDFImpl>::evaluate(
     }
 
     // Case: i -> t -> p -> o.
-    if (foundation::dot(incoming, perturbed_shading_normal) >= 0.0f) // cull check for non-adjoint, BSDF::reflective
+    if (foundation::dot(incoming, perturbed_shading_normal) >= 0.0f)  // cull check for non-adjoint, BSDF::reflective
     {
         DirectShadingComponents value_itpo;
         float pdf_itpo = BSDFImpl::evaluate(
@@ -528,7 +533,7 @@ float MicrofacetBRDFWrapper<BSDFImpl>::evaluate(
             adjoint,
             false,
             local_geometry,
-            reflect(outgoing, tangent), // world space outgoing direction reflected at tangent facet
+            reflect(outgoing, tangent),  // world space outgoing direction reflected at tangent facet
             incoming,
             modes,
             value_itpo);
@@ -545,43 +550,43 @@ float MicrofacetBRDFWrapper<BSDFImpl>::evaluate(
         value_itpo *= itpo_factor;
 
         if (cosine_mult)
-            value_itpo *=
-                cosine_multiplier(incoming, perturbed_shading_normal, shadow_terminator_freq_mult);
+            value_itpo *= cosine_multiplier(incoming, perturbed_shading_normal, shadow_terminator_freq_mult);
 
         value += value_itpo;
 
         final_pdf += pdf_itpo * itpo_factor;
     }
+
     return final_pdf;
 }
 
 template <typename BSDFImpl>
 float MicrofacetBRDFWrapper<BSDFImpl>::evaluate_pdf(
-        const void*                         data,
-        const bool                          adjoint,
-        const LocalGeometry&                local_geometry,
-        const foundation::Vector3f&         outgoing,
-        const foundation::Vector3f&         incoming,
-        const int                           modes) const
+    const void*                         data,
+    const bool                          adjoint,
+    const LocalGeometry&                local_geometry,
+    const foundation::Vector3f&         outgoing,
+    const foundation::Vector3f&         incoming,
+    const int                           modes) const
 {
     float final_pdf = 0.0f;
 
     // World space original shading normal.
-    foundation::Vector3f original_shading_normal(
+    const foundation::Vector3f original_shading_normal(
         local_geometry.m_shading_point->get_original_shading_normal());
 
-    if (foundation::dot(incoming, original_shading_normal) <= 0.0f
-        || foundation::dot(outgoing, original_shading_normal) <= 0.0f)
+    if (foundation::dot(incoming, original_shading_normal) <= 0.0f ||
+        foundation::dot(outgoing, original_shading_normal) <= 0.0f)
         return 0.0f;
 
     // World space perturbed shading normal.
-    foundation::Vector3f perturbed_shading_normal(
+    const foundation::Vector3f perturbed_shading_normal(
         local_geometry.m_shading_point->get_shading_normal());
 
     // Perturbed normal too similar to original. Tangent vector can not be constructed.
-    if (foundation::dot(original_shading_normal, perturbed_shading_normal) > 1.0f - 1e-5)
+    if (foundation::dot(original_shading_normal, perturbed_shading_normal) > 1.0f - 1e-5f)
     {
-        if (foundation::dot(incoming, perturbed_shading_normal) < 0.0f) // cull check for non-adjoint, BSDF::reflective
+        if (foundation::dot(incoming, perturbed_shading_normal) < 0.0f)  // cull check for non-adjoint, BSDF::reflective
             return 0.0f;
 
         const float pdf = 
@@ -597,11 +602,12 @@ float MicrofacetBRDFWrapper<BSDFImpl>::evaluate_pdf(
     }
 
     // World space tangent.
-    foundation::Vector3f tangent =
+    const foundation::Vector3f tangent =
         build_tangent(original_shading_normal, perturbed_shading_normal);
 
     // Case: i -> p -> o.
-    if (foundation::dot(incoming, perturbed_shading_normal) >= 0.0f) // cull check for non-adjoint, BSDF::reflective
+    if (foundation::dot(incoming, perturbed_shading_normal) >= 0.0f)  // cull check for non-adjoint, BSDF::reflective
+    {
         final_pdf +=
             BSDFImpl::evaluate_pdf(
                 data,
@@ -617,13 +623,14 @@ float MicrofacetBRDFWrapper<BSDFImpl>::evaluate_pdf(
                 original_shading_normal,
                 perturbed_shading_normal,
                 MicrofacetScattering::IPO);
-
-    // Case: i -> p -> t -> o.
+    }
 
     // World space outgoing direction reflected at tangent facet.
-    foundation::Vector3f incoming_reflected = reflect(incoming, tangent);
+    const foundation::Vector3f incoming_reflected = reflect(incoming, tangent);
 
-    if (foundation::dot(incoming_reflected, perturbed_shading_normal) >= 0.0f) // cull check for non-adjoint, BSDF::reflective
+    // Case: i -> p -> t -> o.
+    if (foundation::dot(incoming_reflected, perturbed_shading_normal) >= 0.0f)  // cull check for non-adjoint, BSDF::reflective
+    {
         final_pdf +=
             BSDFImpl::evaluate_pdf(
                 data,
@@ -639,15 +646,17 @@ float MicrofacetBRDFWrapper<BSDFImpl>::evaluate_pdf(
                 original_shading_normal,
                 perturbed_shading_normal,
                 MicrofacetScattering::IPTO);
+    }
 
     // Case: i -> t -> p -> o.
-    if (foundation::dot(incoming, perturbed_shading_normal) >= 0.0f) // cull check for non-adjoint, BSDF::reflective
+    if (foundation::dot(incoming, perturbed_shading_normal) >= 0.0f)  // cull check for non-adjoint, BSDF::reflective
+    {
         final_pdf +=
             BSDFImpl::evaluate_pdf(
                 data,
                 adjoint,
                 local_geometry,
-                reflect(outgoing, tangent), // world space incoming direction reflected at tangent facet.
+                reflect(outgoing, tangent),  // world space incoming direction reflected at tangent facet.
                 incoming,
                 modes)
             * microfacet_scattering_helper(
@@ -657,6 +666,7 @@ float MicrofacetBRDFWrapper<BSDFImpl>::evaluate_pdf(
                 original_shading_normal,
                 perturbed_shading_normal,
                 MicrofacetScattering::ITPO);
+    }
 
     return final_pdf;
 }

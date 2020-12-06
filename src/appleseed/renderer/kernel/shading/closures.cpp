@@ -3042,8 +3042,8 @@ void register_closures(OSLShadingSystem& shading_system)
     register_closure<HoldoutClosure>(shading_system);
     register_closure<MatteClosure>(shading_system);
     register_closure<MetalClosure>(shading_system);
-    register_closure<MicrofacetGlossyClosure>(shading_system);
     register_closure<MicrofacetBlinnClosure>(shading_system);
+    register_closure<MicrofacetGlossyClosure>(shading_system);
     register_closure<MicrofacetMetalClosure>(shading_system);
     register_closure<MicrofacetPlasticClosure>(shading_system);
     register_closure<NPRContourClosure>(shading_system);

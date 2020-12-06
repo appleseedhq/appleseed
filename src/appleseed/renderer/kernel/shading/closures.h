@@ -108,8 +108,8 @@ enum ClosureID
     NPRContourID,
 
     // Microfacet normal mapping closures.
-    MicrofacetGlossyID,
     MicrofacetBlinnID,
+    MicrofacetGlossyID,
     MicrofacetMetalID,
     MicrofacetPlasticID,
     MicrofacetSheenID,

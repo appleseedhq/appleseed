@@ -86,8 +86,8 @@ BSDFFactoryRegistrar::BSDFFactoryRegistrar(const SearchPaths& search_paths)
     impl->register_factory(auto_release_ptr<FactoryType>(new KelemenBRDFFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new LambertianBRDFFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new MetalBRDFFactory()));
-    impl->register_factory(auto_release_ptr<FactoryType>(new MicrofacetGlossyBRDFFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new MicrofacetBlinnBRDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new MicrofacetGlossyBRDFFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new MicrofacetLambertianBRDFFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new MicrofacetMetalBRDFFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new MicrofacetPlasticBRDFFactory()));

@@ -92,6 +92,7 @@ class APPLESEED_DLLSYMBOL BlinnBRDFFactory
         const ParamArray&   params) const override;
 };
 
+
 //
 // Microfacet Blinn BRDF factory.
 //

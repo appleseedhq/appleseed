@@ -37,8 +37,8 @@
 #include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/fresnel.h"
-#include "renderer/modeling/bsdf/microfacethelper.h"
 #include "renderer/modeling/bsdf/microfacetbrdfwrapper.h"
+#include "renderer/modeling/bsdf/microfacethelper.h"
 #include "renderer/utility/paramarray.h"
 
 // appleseed.foundation headers.
@@ -587,6 +587,7 @@ auto_release_ptr<BSDF> PlasticBRDFFactory::create(
 {
     return auto_release_ptr<BSDF>(new PlasticBRDF(name, params));
 }
+
 
 //
 // MicrofacetPlasticBRDFFactory class implementation.

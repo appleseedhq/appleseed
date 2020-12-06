@@ -87,6 +87,7 @@ class APPLESEED_DLLSYMBOL LambertianBRDFFactory
         const ParamArray&   params) const override;
 };
 
+
 //
 // Microfacet Lambertian BRDF factory.
 //

@@ -249,6 +249,7 @@ auto_release_ptr<BSDF> SheenBRDFFactory::create(
     return auto_release_ptr<BSDF>(new SheenBRDF(name, params));
 }
 
+
 //
 // MicrofacetSheenBRDFFactory class implementation.
 //

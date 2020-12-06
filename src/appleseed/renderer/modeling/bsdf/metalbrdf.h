@@ -98,6 +98,7 @@ class APPLESEED_DLLSYMBOL MetalBRDFFactory
         const ParamArray&   params) const override;
 };
 
+
 //
 // Microfacet Metal BRDF factory.
 //

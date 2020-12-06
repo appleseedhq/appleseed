@@ -30,10 +30,8 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/containers/dictionary.h"
 #include "foundation/core/concepts/iunknown.h"
 #include "foundation/memory/autoreleaseptr.h"
-#include "foundation/utility/api/specializedapiarrays.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
