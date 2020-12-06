@@ -299,8 +299,11 @@ void MicrofacetBRDFWrapper<BSDFImpl>::sample(
         build_tangent(original_shading_normal, perturbed_shading_normal);
 
     float final_pdf = 0.0f;
-    if (lambda(outgoing.get_value(), perturbed_shading_normal, original_shading_normal, true)
-        > sampling_context.next2<float>())
+
+    sampling_context.split_in_place(1, 1);
+    const float s1 = sampling_context.next2<float>();
+
+    if (lambda(outgoing.get_value(), perturbed_shading_normal, original_shading_normal, true) > s1)
     {
         // Case: hit perturbed facet.
         BSDFSample perturbed_facet_sample;
@@ -317,11 +320,14 @@ void MicrofacetBRDFWrapper<BSDFImpl>::sample(
 
         perturbed_facet_pdf = perturbed_facet_sample.get_probability();
 
-        if (g1(perturbed_facet_sample.m_incoming.get_value(),
-            perturbed_shading_normal,
-            original_shading_normal,
-            true)
-            > sampling_context.next2<float>())
+        sampling_context.split_in_place(1, 1);
+        const float s2 = sampling_context.next2<float>();
+
+        if (g1(
+                perturbed_facet_sample.m_incoming.get_value(),
+                perturbed_shading_normal,
+                original_shading_normal,
+                true) > s2)
         {
             // Sampled incoming direction was reflected on tangent facet (see [1], Fig 10, right).
             // Calculate reflected of incoming direction to find out the direction
