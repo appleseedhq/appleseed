@@ -101,4 +101,25 @@ class APPLESEED_DLLSYMBOL PlasticBRDFFactory
         const ParamArray&   params) const override;
 };
 
+
+//
+// Microfacet Plastic BSDF factory.
+//
+
+class APPLESEED_DLLSYMBOL MicrofacetPlasticBRDFFactory
+  : public PlasticBRDFFactory
+{
+  public:
+    // Return a string identifying this BSDF model.
+    const char* get_model() const override;
+
+    // Return metadata for this BSDF model.
+    foundation::Dictionary get_model_metadata() const override;
+
+    // Create a new BSDF instance.
+    foundation::auto_release_ptr<BSDF> create(
+        const char*         name,
+        const ParamArray&   params) const override;
+};
+
 }   // namespace renderer

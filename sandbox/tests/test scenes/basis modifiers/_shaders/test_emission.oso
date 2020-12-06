@@ -1,0 +1,24 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.10.3
+# options: 
+surface test_emission
+param	float	Kl	1		%read{3,3} %write{2147483647,-1}
+param	color	Cl	1 1 1		%read{3,3} %write{2147483647,-1}
+param	color	Cs	0 0 0		%read{2147483647,-1} %write{2147483647,-1}
+global	closure color	Ci	%read{2147483647,-1} %write{4,4}
+temp	int	$tmp1	%read{1,1} %write{0,0}
+const	string	$const1	"light"		%read{0,0} %write{2147483647,-1}
+temp	closure color	$tmp2	%read{4,4} %write{2,2}
+const	string	$const2	"emission"		%read{2,2} %write{2147483647,-1}
+temp	color	$tmp3	%read{4,4} %write{3,3}
+code ___main___
+# ../tests/test scenes/basis modifiers/_shaders/test_emission.osl:7
+#     if (raytype("light"))
+	raytype		$tmp1 $const1 	%filename{"../tests/test scenes/basis modifiers/_shaders/test_emission.osl"} %line{7} %argrw{"wr"}
+	if		$tmp1 5 5 	%argrw{"r"}
+# ../tests/test scenes/basis modifiers/_shaders/test_emission.osl:8
+#         Ci = Kl * Cl * emission();
+	closure		$tmp2 $const2 	%line{8} %argrw{"wr"}
+	mul		$tmp3 Kl Cl 	%argrw{"wrr"}
+	mul		Ci $tmp2 $tmp3 	%argrw{"wrr"}
+	end
