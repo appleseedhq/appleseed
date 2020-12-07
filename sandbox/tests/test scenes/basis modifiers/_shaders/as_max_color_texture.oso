@@ -1,0 +1,46 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.10.3
+# options: -O2 -DNDEBUG -I/home/lovro/appleseed/appleseed/src/appleseed.shaders/include -o /home/lovro/appleseed/appleseed/sandbox/shaders/max/as_max_color_texture.oso
+shader as_max_color_texture
+param	float	U	0		%read{4,4} %write{0,0} %derivs %initexpr
+param	float	V	0		%read{4,4} %write{1,1} %derivs %initexpr
+param	string	Filename	""		%read{2,4} %write{2147483647,-1}
+param	string	UWrap	"periodic"		%read{4,4} %write{2147483647,-1}
+param	string	VWrap	"periodic"		%read{4,4} %write{2147483647,-1}
+param	string	Filter	"smartcubic"		%read{2147483647,-1} %write{2147483647,-1}
+param	float	UWidth	1		%read{4,4} %write{2147483647,-1}
+param	float	VWidth	1		%read{4,4} %write{2147483647,-1}
+param	float	UBlur	0		%read{4,4} %write{2147483647,-1}
+param	float	VBlur	0		%read{4,4} %write{2147483647,-1}
+param	int	FirstChannel	0		%read{4,4} %write{2147483647,-1}
+param	float	Fill	0		%read{4,4} %write{2147483647,-1}
+oparam	color	ColorOut	0 0 0		%read{2147483647,-1} %write{4,4}
+global	float	u	%read{0,0} %write{2147483647,-1} %derivs
+global	float	v	%read{1,1} %write{2147483647,-1} %derivs
+const	string	$const1	""		%read{2,2} %write{2147483647,-1}
+temp	int	$tmp1	%read{3,3} %write{2,2}
+const	string	$const2	"swidth"		%read{4,4} %write{2147483647,-1}
+const	string	$const3	"twidth"		%read{4,4} %write{2147483647,-1}
+const	string	$const4	"sblur"		%read{4,4} %write{2147483647,-1}
+const	string	$const5	"tblur"		%read{4,4} %write{2147483647,-1}
+const	string	$const6	"swrap"		%read{4,4} %write{2147483647,-1}
+const	string	$const7	"twrap"		%read{4,4} %write{2147483647,-1}
+const	string	$const8	"firstchannel"		%read{4,4} %write{2147483647,-1}
+const	string	$const9	"fill"		%read{4,4} %write{2147483647,-1}
+code U
+# /home/lovro/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_color_texture.osl:31
+#     float        U = u,
+	assign		U u 	%filename{"/home/lovro/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_color_texture.osl"} %line{31} %argrw{"wr"}
+code V
+# /home/lovro/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_color_texture.osl:32
+#     float        V = v,
+	assign		V v 	%filename{"/home/lovro/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_color_texture.osl"} %line{32} %argrw{"wr"}
+code ___main___
+# /home/lovro/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_color_texture.osl:46
+#     if (Filename != "")
+	neq		$tmp1 Filename $const1 	%filename{"/home/lovro/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_color_texture.osl"} %line{46} %argrw{"wrr"}
+	if		$tmp1 5 5 	%argrw{"r"}
+# /home/lovro/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_color_texture.osl:48
+#         ColorOut = texture(
+	texture		ColorOut Filename U V $const2 UWidth $const3 VWidth $const4 UBlur $const5 VBlur $const6 UWrap $const7 VWrap $const8 FirstChannel $const9 Fill 	%line{48} %argrw{"wrrrrrrrrrrrrrrrrrrr"} %argderivs{2,3}
+	end

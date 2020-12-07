@@ -1,0 +1,26 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.10.3
+# options: -o ../tests/test scenes/basis modifiers/_shaders/as_microfacet_metal_surface.oso
+shader as_microfacet_metal_surface	%meta{string,help,"Microfacet normal mapping metal surface shader"} 
+param	vector	Normal	0 0 0		%read{1,1} %write{0,0} %initexpr
+param	vector	Tn	0 0 0		%meta{int,lockgeom,0} %meta{string,help,"Tangent"} %meta{string,help,"Tangent"}  %read{1,1} %write{2147483647,-1}
+param	float	Reflectance	0.800000012		%meta{float,min,0} %meta{float,max,1}  %read{2,2} %write{2147483647,-1}
+param	color	NormalReflectance	0.920000017 0.920000017 0.920000017		%read{1,1} %write{2147483647,-1}
+param	color	EdgeTint	0.980000019 0.980000019 0.980000019		%meta{int,divider,1}  %read{1,1} %write{2147483647,-1}
+param	float	Roughness	0.100000001		%meta{string,help,"Roughness"} %meta{float,min,0.00100000005} %meta{float,max,1}  %read{1,1} %write{2147483647,-1}
+param	float	Anisotropic	0		%meta{string,help,"Anisotropy"} %meta{float,min,-1} %meta{float,max,1}  %read{1,1} %write{2147483647,-1}
+oparam	closure color	BRDF			%read{2147483647,-1} %write{2,2}
+global	normal	N	%read{0,0} %write{2147483647,-1}
+temp	closure color	$tmp1	%read{2,2} %write{1,1}
+const	float	$const1	1		%read{1,1} %write{2147483647,-1}
+const	string	$const2	"as_microfacet_metal"		%read{1,1} %write{2147483647,-1}
+code Normal
+# ../tests/test scenes/basis modifiers/_shaders/as_microfacet_metal_surface.osl:34
+#     vector               Normal = N,
+	assign		Normal N 	%filename{"../tests/test scenes/basis modifiers/_shaders/as_microfacet_metal_surface.osl"} %line{34} %argrw{"wr"}
+code ___main___
+# ../tests/test scenes/basis modifiers/_shaders/as_microfacet_metal_surface.osl:66
+#     BRDF = Reflectance * as_microfacet_metal(
+	closure		$tmp1 $const2 Normal Tn NormalReflectance EdgeTint $const1 Roughness Anisotropic 	%filename{"../tests/test scenes/basis modifiers/_shaders/as_microfacet_metal_surface.osl"} %line{66} %argrw{"wrrrrrrrr"}
+	mul		BRDF $tmp1 Reflectance 	%argrw{"wrr"}
+	end

@@ -37,6 +37,7 @@
 #include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/fresnel.h"
+#include "renderer/modeling/bsdf/microfacetbrdfwrapper.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
 #include "renderer/modeling/bsdf/specularhelper.h"
 #include "renderer/utility/paramarray.h"
@@ -86,6 +87,7 @@ namespace
     //
 
     const char* Model = "glossy_brdf";
+    const char* MicrofacetModel = "microfacet_normal_mapping_glossy_brdf";
 
     class GlossyBRDFImpl
       : public BSDF
@@ -311,7 +313,20 @@ namespace
         }
     };
 
+    class MicrofacetGlossyBRDFImpl
+      : public GlossyBRDFImpl
+    {
+      public:
+        using GlossyBRDFImpl::GlossyBRDFImpl;
+
+        const char* get_model() const override
+        {
+            return MicrofacetModel;
+        }
+    };
+
     typedef BSDFWrapper<GlossyBRDFImpl> GlossyBRDF;
+    typedef MicrofacetBRDFWrapper<MicrofacetGlossyBRDFImpl> MicrofacetGlossyBRDF;
 }
 
 
@@ -463,6 +478,31 @@ auto_release_ptr<BSDF> GlossyBRDFFactory::create(
     const ParamArray&   params) const
 {
     return auto_release_ptr<BSDF>(new GlossyBRDF(name, params));
+}
+
+
+//
+// MicrofacetGlossyBRDFFactory class implementation.
+//
+
+const char* MicrofacetGlossyBRDFFactory::get_model() const
+{
+    return MicrofacetModel;
+}
+
+Dictionary MicrofacetGlossyBRDFFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+            .insert("name", MicrofacetModel)
+            .insert("label", "Microfacet Glossy BRDF");
+}
+
+auto_release_ptr<BSDF> MicrofacetGlossyBRDFFactory::create(
+    const char*         name,
+    const ParamArray&   params) const
+{
+    return auto_release_ptr<BSDF>(new MicrofacetGlossyBRDF(name, params));
 }
 
 }   // namespace renderer

@@ -290,6 +290,68 @@ namespace
         }
     };
 
+    struct MicrofacetBlinnClosure
+    {
+        struct Params
+        {
+            OSL::Vec3       N;
+            float           exponent;
+            float           ior;
+        };
+
+        static const char* name()
+        {
+            return "as_microfacet_blinn";
+        }
+
+        static ClosureID id()
+        {
+            return MicrofacetBlinnID;
+        }
+
+        static int modes()
+        {
+            return ScatteringMode::Glossy;
+        }
+
+        static void register_closure(OSLShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_FLOAT_PARAM(Params, exponent),
+                CLOSURE_FLOAT_PARAM(Params, ior),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
+
+            g_closure_convert_funs[id()] = &convert_closure;
+            g_closure_get_modes_funs[id()] = &modes;
+        }
+
+        static void convert_closure(
+            CompositeClosure&           composite_closure,
+            const Basis3f&              shading_basis,
+            const void*                 osl_params,
+            const Color3f&              weight,
+            Arena&                      arena)
+        {
+            const Params* p = static_cast<const Params*>(osl_params);
+
+            BlinnBRDFInputValues* values =
+                composite_closure.add_closure<BlinnBRDFInputValues>(
+                    BlinnID,
+                    shading_basis,
+                    weight,
+                    p->N,
+                    arena);
+
+            values->m_exponent = std::max(p->exponent, 0.001f);
+            values->m_ior = std::max(p->ior, 0.001f);
+        }
+    };
+
     struct DebugClosure
     {
         struct Params
@@ -624,6 +686,7 @@ namespace
             float           ior;
             float           energy_compensation;
             float           fresnel_weight;
+            float           microfacet_normal_mapping;
         };
 
         static const char* name()
@@ -634,6 +697,114 @@ namespace
         static ClosureID id()
         {
             return GlossyID;
+        }
+
+        static int modes()
+        {
+            return ScatteringMode::Glossy | ScatteringMode::Specular;
+        }
+
+        static void prepare_closure(
+            OSL::RendererServices*      render_services,
+            int                         id,
+            void*                       data)
+        {
+            // Initialize keyword parameter defaults.
+            Params* params = new (data) Params();
+            params->energy_compensation = 0.0f;
+            params->fresnel_weight = 1.0f;
+        }
+
+        static void register_closure(OSLShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_VECTOR_PARAM(Params, T),
+                CLOSURE_FLOAT_PARAM(Params, roughness),
+                CLOSURE_FLOAT_PARAM(Params, anisotropy),
+                CLOSURE_FLOAT_PARAM(Params, ior),
+                CLOSURE_FLOAT_KEYPARAM(Params, energy_compensation, "energy_compensation"),
+                CLOSURE_FLOAT_KEYPARAM(Params, fresnel_weight, "fresnel_weight"),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, &prepare_closure, nullptr);
+            g_closure_convert_funs[id()] = &convert_closure;
+            g_closure_get_modes_funs[id()] = &modes;
+        }
+
+        static void convert_closure(
+            CompositeClosure&           composite_closure,
+            const Basis3f&              shading_basis,
+            const void*                 osl_params,
+            const Color3f&              weight,
+            Arena&                      arena)
+        {
+            const Params* p = static_cast<const Params*>(osl_params);
+
+            const float roughness = saturate(p->roughness);
+            const float fresnel_weight = saturate(p->fresnel_weight);
+
+            const float ior = std::max(p->ior, 0.001f);
+
+            GlossyBRDFInputValues* values =
+                composite_closure.add_closure<GlossyBRDFInputValues>(
+                    id(),
+                    shading_basis,
+                    weight,
+                    p->N,
+                    p->T,
+                    arena);
+
+            composite_closure.override_closure_scalar_weight(
+                luminance(weight) * sample_weight(roughness, ior, fresnel_weight));
+
+            values->m_reflectance.set(1.0f);
+            values->m_reflectance_multiplier = 1.0f;
+            values->m_roughness = roughness;
+            values->m_anisotropy = clamp(p->anisotropy, -1.0f, 1.0f);
+            values->m_ior = ior;
+            values->m_fresnel_weight = fresnel_weight;
+            values->m_energy_compensation = saturate(p->energy_compensation);
+        }
+
+        static float sample_weight(
+            const float                 roughness,
+            const float                 ior,
+            const float                 fresnel_weight)
+        {
+            const float eavg = get_average_albedo(roughness);
+            const float favg = lerp(
+                1.0f,
+                average_fresnel_reflectance_dielectric(ior),
+                fresnel_weight);
+            return eavg * favg;
+        }
+    };
+
+    struct MicrofacetGlossyClosure
+    {
+        struct Params
+        {
+            OSL::Vec3       N;
+            OSL::Vec3       T;
+            float           roughness;
+            float           anisotropy;
+            float           ior;
+            float           energy_compensation;
+            float           fresnel_weight;
+            float           microfacet_normal_mapping;
+        };
+
+        static const char* name()
+        {
+            return "as_microfacet_glossy";
+        }
+
+        static ClosureID id()
+        {
+            return MicrofacetGlossyID;
         }
 
         static int modes()
@@ -950,6 +1121,93 @@ namespace
         }
     };
 
+    struct MicrofacetMetalClosure
+    {
+        struct Params
+        {
+            OSL::Vec3       N;
+            OSL::Vec3       T;
+            OSL::Color3     normal_reflectance;
+            OSL::Color3     edge_tint;
+            float           edge_tint_weight;
+            float           roughness;
+            float           anisotropy;
+            float           energy_compensation;
+        };
+
+        static const char* name()
+        {
+            return "as_microfacet_metal";
+        }
+
+        static ClosureID id()
+        {
+            return MicrofacetMetalID;
+        }
+
+        static int modes()
+        {
+            return ScatteringMode::Glossy | ScatteringMode::Specular;
+        }
+
+        static void prepare_closure(
+            OSL::RendererServices*      render_services,
+            int                         id,
+            void*                       data)
+        {
+            // Initialize keyword parameter defaults.
+            Params* params = new (data) Params();
+            params->energy_compensation = 0.0f;
+        }
+
+        static void register_closure(OSLShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_VECTOR_PARAM(Params, T),
+                CLOSURE_COLOR_PARAM(Params, normal_reflectance),
+                CLOSURE_COLOR_PARAM(Params, edge_tint),
+                CLOSURE_FLOAT_PARAM(Params, edge_tint_weight),
+                CLOSURE_FLOAT_PARAM(Params, roughness),
+                CLOSURE_FLOAT_PARAM(Params, anisotropy),
+                CLOSURE_FLOAT_KEYPARAM(Params, energy_compensation, "energy_compensation"),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, &prepare_closure, nullptr);
+            g_closure_convert_funs[id()] = &convert_closure;
+            g_closure_get_modes_funs[id()] = &modes;
+        }
+
+        static void convert_closure(
+            CompositeClosure&           composite_closure,
+            const Basis3f&              shading_basis,
+            const void*                 osl_params,
+            const Color3f&              weight,
+            Arena&                      arena)
+        {
+            const Params* p = static_cast<const Params*>(osl_params);
+
+            MetalBRDFInputValues* values =
+                composite_closure.add_closure<MetalBRDFInputValues>(
+                    id(),
+                    shading_basis,
+                    weight,
+                    p->N,
+                    p->T,
+                    arena);
+
+            values->m_normal_reflectance.set(Color3f(p->normal_reflectance), g_std_lighting_conditions, Spectrum::Reflectance);
+            values->m_edge_tint.set(Color3f(p->edge_tint), g_std_lighting_conditions, Spectrum::Reflectance);
+            values->m_edge_tint_weight = saturate(p->edge_tint_weight);
+            values->m_reflectance_multiplier = 1.0f;
+            values->m_roughness = std::max(p->roughness, 0.0f);
+            values->m_anisotropy = clamp(p->anisotropy, -1.0f, 1.0f);
+            values->m_energy_compensation = saturate(p->energy_compensation);
+        }
+    };
+
     struct OrenNayarClosure
     {
         struct Params
@@ -1160,6 +1418,84 @@ namespace
         }
     };
 
+    struct MicrofacetPlasticClosure
+    {
+        struct Params
+        {
+            OSL::Vec3       N;
+            OSL::Color3     specular_reflectance;
+            float           specular_reflectance_multiplier;
+            float           roughness;
+            float           ior;
+            OSL::Color3     diffuse_reflectance;
+            float           diffuse_reflectance_multiplier;
+            float           internal_scattering;
+        };
+
+        static const char* name()
+        {
+            return "as_microfacet_plastic";
+        }
+
+        static ClosureID id()
+        {
+            return MicrofacetPlasticID;
+        }
+
+        static int modes()
+        {
+            return ScatteringMode::Diffuse | ScatteringMode::Glossy | ScatteringMode::Specular;
+        }
+
+        static void register_closure(OSLShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_COLOR_PARAM(Params, specular_reflectance),
+                CLOSURE_FLOAT_PARAM(Params, specular_reflectance_multiplier),
+                CLOSURE_FLOAT_PARAM(Params, roughness),
+                CLOSURE_FLOAT_PARAM(Params, ior),
+                CLOSURE_COLOR_PARAM(Params, diffuse_reflectance),
+                CLOSURE_FLOAT_PARAM(Params, diffuse_reflectance_multiplier),
+                CLOSURE_FLOAT_PARAM(Params, internal_scattering),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
+            g_closure_convert_funs[id()] = &convert_closure;
+            g_closure_get_modes_funs[id()] = &modes;
+        }
+
+        static void convert_closure(
+            CompositeClosure&           composite_closure,
+            const Basis3f&              shading_basis,
+            const void*                 osl_params,
+            const Color3f&              weight,
+            Arena&                      arena)
+        {
+            const Params* p = static_cast<const Params*>(osl_params);
+
+            PlasticBRDFInputValues* values =
+                composite_closure.add_closure<PlasticBRDFInputValues>(
+                    id(),
+                    shading_basis,
+                    weight,
+                    p->N,
+                    arena);
+
+            values->m_specular_reflectance.set(Color3f(p->specular_reflectance), g_std_lighting_conditions,
+            Spectrum::Reflectance);
+            values->m_specular_reflectance_multiplier = std::max(p->specular_reflectance_multiplier, 0.0f);
+            values->m_roughness = clamp(p->roughness, 0.0001f, 1.0f);
+            values->m_ior = std::max(p->ior, 0.001f);
+            values->m_diffuse_reflectance.set(Color3f(p->diffuse_reflectance), g_std_lighting_conditions,
+            Spectrum::Reflectance);
+            values->m_diffuse_reflectance_multiplier = std::max(p->diffuse_reflectance_multiplier, 0.0f);
+            values->m_internal_scattering = std::max(p->internal_scattering, 0.0f);
+        }
+    };
+
     struct ReflectionClosure
     {
         struct Params
@@ -1239,6 +1575,64 @@ namespace
         static ClosureID id()
         {
             return SheenID;
+        }
+
+        static int modes()
+        {
+            return ScatteringMode::Diffuse;
+        }
+
+        static void register_closure(OSLShadingSystem& shading_system)
+        {
+            const OSL::ClosureParam params[] =
+            {
+                CLOSURE_VECTOR_PARAM(Params, N),
+                CLOSURE_FINISH_PARAM(Params)
+            };
+
+            shading_system.register_closure(name(), id(), params, nullptr, nullptr);
+
+            g_closure_convert_funs[id()] = &convert_closure;
+            g_closure_get_modes_funs[id()] = &modes;
+        }
+
+        static void convert_closure(
+            CompositeClosure&           composite_closure,
+            const Basis3f&              shading_basis,
+            const void*                 osl_params,
+            const Color3f&              weight,
+            Arena&                      arena)
+        {
+            const Params* p = static_cast<const Params*>(osl_params);
+
+            SheenBRDFInputValues* values =
+                composite_closure.add_closure<SheenBRDFInputValues>(
+                    id(),
+                    shading_basis,
+                    weight,
+                    p->N,
+                    arena);
+
+            values->m_reflectance.set(1.0f);
+            values->m_reflectance_multiplier = 1.0f;
+        }
+    };
+
+    struct MicrofacetSheenClosure
+    {
+        struct Params
+        {
+            OSL::Vec3 N;
+        };
+
+        static const char* name()
+        {
+            return "as_microfacet_sheen";
+        }
+
+        static ClosureID id()
+        {
+            return MicrofacetSheenID;
         }
 
         static int modes()
@@ -2648,6 +3042,10 @@ void register_closures(OSLShadingSystem& shading_system)
     register_closure<HoldoutClosure>(shading_system);
     register_closure<MatteClosure>(shading_system);
     register_closure<MetalClosure>(shading_system);
+    register_closure<MicrofacetBlinnClosure>(shading_system);
+    register_closure<MicrofacetGlossyClosure>(shading_system);
+    register_closure<MicrofacetMetalClosure>(shading_system);
+    register_closure<MicrofacetPlasticClosure>(shading_system);
     register_closure<NPRContourClosure>(shading_system);
     register_closure<NPRShadingClosure>(shading_system);
     register_closure<OrenNayarClosure>(shading_system);
