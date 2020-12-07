@@ -154,11 +154,12 @@ def command_output(command):
 
 def command_is_valid(command):
     try:
-        command_return = subprocess.check_call(
+        command_return = subprocess.check_call( 
+            # Ensure space seperated arguments are separate elements of an array 
+            # (required for subprocess calls)
             command.split(),
-            stdin = subprocess.PIPE, 
-            stdout = open(os.devnull, 'wb'),
-            stderr = subprocess.STDOUT)
+            # Ensure error output doesn't get printed to terminal                 
+            stdout = open(os.devnull, 'wb'))    
 
         return command_return == 0
     except (subprocess.CalledProcessError, OSError):
@@ -170,17 +171,17 @@ def command_is_valid(command):
 # Utility class to calculate successes vs failures
 # --------------------------------------------------------------------------------------------------
 
-class Results:
+class TestSuiteRunnerResults:
     def __init__(self):
         self.rendered = 0   
         self.successes = 0
         self.start_time = datetime.datetime.min
         self.end_time = datetime.datetime.min
 
-    def increment_total(self):
+    def increment_total_count(self):
         self.rendered += 1
     
-    def increment_successes(self):
+    def increment_successes_count(self):
         self.successes += 1
     
     def start_timer(self):
@@ -195,7 +196,7 @@ class Results:
     def failure_count(self):
         return self.rendered - self.successes
     
-    def total_count(self):
+    def total_test_count(self):
         return self.rendered
 
     def success_rate(self):
@@ -347,7 +348,7 @@ class ReportWriter:
         success_rate_text = "{0}%".format(results.success_rate())
         failures_text = "{0} out of {1} test scene(s)".format(
             results.failure_count(), 
-            results.total_count())
+            results.total_test_count())
         
         self.file.write(self.__render(self.stats_template,
                                        {'total-time': total_time_text,
@@ -556,7 +557,7 @@ def render_test_scene(args, logger, report_writer, project_directory, project_fi
 # --------------------------------------------------------------------------------------------------
 
 def render_test_scenes(script_directory, args):
-    results = Results()
+    results = TestSuiteRunnerResults()
     results.start_timer()
 
     logger = Logger()
@@ -576,10 +577,10 @@ def render_test_scenes(script_directory, args):
                     logger.skip_rendering(os.path.join(dirpath, filename))
                     continue
 
-                results.increment_total()
+                results.increment_total_count()
 
                 if render_test_scene(args, logger, report_writer, dirpath, filename):
-                    results.increment_successes()
+                    results.increment_successes_count()
 
     results.end_timer()
 
@@ -639,7 +640,7 @@ def main():
     print("  Failures       : {0}{1} out of {2} test scene(s){3}"
           .format(colorama.Fore.RED if results.failure_count() > 0 else colorama.Fore.GREEN,
                   results.failure_count(),
-                  results.total_count(),
+                  results.total_test_count(),
                   colorama.Fore.RESET))
     print("  Total Time     : {0}".format(results.total_time()))
 
