@@ -165,7 +165,6 @@ cmake \
     -Wno-dev \
     -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
     -DCMAKE_PREFIX_PATH=/usr/local/opt/qt \
-    -DWITH_DISNEY_MATERIAL=ON \
     -DWITH_EMBREE=ON \
     -DUSE_SSE42=ON \
     -DUSE_STATIC_BOOST=OFF \
@@ -179,10 +178,6 @@ cmake \
     -DOSL_QUERY_INFO=$THISDIR/bin/oslinfo \
     -DPYTHON_INCLUDE_DIR=/usr/local/opt/python@2/Frameworks/Python.framework/Versions/2.7/include/python2.7/ \
     -DPYTHON_LIBRARY=/usr/local/opt/python@2/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib \
-    -DSEEXPR_INCLUDE_DIR=$THISDIR/include \
-    -DSEEXPR_LIBRARY=$THISDIR/lib/libSeExpr.dylib \
-    -DSEEXPREDITOR_INCLUDE_DIR=$THISDIR/include \
-    -DSEEXPREDITOR_LIBRARY=$THISDIR/lib/libSeExprEditor.dylib \
     -DZLIB_INCLUDE_DIR=/usr/local/opt/zlib/include \
     -DZLIB_LIBRARY=/usr/local/opt/zlib/lib/libz.dylib \
     ..
