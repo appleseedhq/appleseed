@@ -69,9 +69,8 @@ brew unlink python@2
 brew upgrade python@2
 brew info python@2
 
-brew upgrade boost
 brew upgrade qt
-brew install boost-python embree llvm@8 lz4 openimageio openvdb pugixml xerces-c zlib
+brew install embree llvm@8 lz4 openimageio openvdb pugixml xerces-c zlib
 
 mkdir -p $HOME/Library/Python/2.7/lib/python/site-packages
 echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' \
@@ -79,6 +78,25 @@ echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' \
 
 echo "travis_fold:end:brew-packages"
 
+#--------------------------------------------------------------------------------------------------
+# Build boost.
+#--------------------------------------------------------------------------------------------------
+
+echo "travis_fold:start:boost"
+echo "Building Boost..."
+
+git clone https://github.com/boostorg/boost.git
+pushd boost
+
+git checkout boost-1.69.0
+git submodule update --init
+
+./bootstrap.sh --prefix=$THISDIR --with-python-version=2.7 --with-python-root=/usr/local/opt/python@2/
+./b2 cxxflags=-std=c++11 install
+
+popd
+
+echo "travis_fold:end:boost"
 
 #--------------------------------------------------------------------------------------------------
 # Build OSL.
@@ -114,35 +132,6 @@ echo "travis_fold:end:osl"
 
 
 #--------------------------------------------------------------------------------------------------
-# Build SeExpr.
-#--------------------------------------------------------------------------------------------------
-
-echo "travis_fold:start:seexpr"
-echo "Building SeExpr..."
-
-git clone https://github.com/appleseedhq/SeExpr
-pushd SeExpr
-
-git checkout appleseed-qt5
-
-mkdir build
-cd build
-
-cmake \
-    -Wno-dev \
-    -DCMAKE_PREFIX_PATH=/usr/local/opt/qt \
-    -DCMAKE_INSTALL_PREFIX=$THISDIR \
-    ..
-
-mkdir src/doc/html
-make install -j 2
-
-popd
-
-echo "travis_fold:end:seexpr"
-
-
-#--------------------------------------------------------------------------------------------------
 # Prepare to run appleseed.
 # This must be done before compiling appleseed because the compiling process needs to invokes oslc.
 #--------------------------------------------------------------------------------------------------
@@ -168,7 +157,7 @@ cmake \
     -DWITH_EMBREE=ON \
     -DUSE_SSE42=ON \
     -DUSE_STATIC_BOOST=OFF \
-    -DBoost_PYTHON_LIBRARY=/usr/local/lib/libboost_python27.dylib \
+    -DBoost_PYTHON_LIBRARY=$THISDIR/boost/lib/libboost_python27.dylib \
     -DOSL_INCLUDE_DIR=$THISDIR/include \
     -DOSL_LIBRARIES=$THISDIR/lib \
     -DOSL_EXEC_LIBRARY=$THISDIR/lib/liboslexec.dylib \
