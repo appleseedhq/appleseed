@@ -308,7 +308,7 @@ endif ()
 # Installation.
 #--------------------------------------------------------------------------------------------------
 
-set (py_module_dst "lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/appleseed")
+set (py_module_dst "lib/python/appleseed")
 
 install (FILES __init__.py DESTINATION ${py_module_dst})
 install (FILES logtarget.py DESTINATION ${py_module_dst})
