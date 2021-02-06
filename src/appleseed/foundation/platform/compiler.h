@@ -251,6 +251,24 @@ namespace foundation
 
 
 //
+// A macro to enforce the use of return values.
+//
+
+// Visual C++, supported since MSVC 2012.
+#if defined _MSC_VER
+    #define APPLESEED_NODISCARD _Check_return_
+
+// gcc: supported since gcc 3.4.
+#elif __GNUC__
+    #define APPLESEED_NODISCARD __attribute__((warn_unused_result))
+
+// Other compilers: ignore.
+#else
+    #define APPLESEED_NODISCARD
+#endif
+
+
+//
 // Utility macros converting their argument to a string literal:
 //   APPLESEED_TO_STRING_EVAL first expands the argument definition.
 //   APPLESEED_TO_STRING_NOEVAL does not expand the argument definition.
