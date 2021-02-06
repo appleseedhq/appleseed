@@ -31,6 +31,7 @@
 
 // appleseed.foundation headers.
 #include "foundation/platform/arch.h"
+#include "foundation/platform/compiler.h"
 #ifdef APPLESEED_USE_SSE
 #include "foundation/platform/sse.h"
 #endif
@@ -234,11 +235,11 @@ T binomial(const T n, const T k);
 
 // Clamp the argument to [low, high].
 template <typename T>
-T clamp(const T x, const T low, const T high);
+APPLESEED_NODISCARD T clamp(const T x, const T low, const T high);
 
 // Clamp the argument to [0, 1].
 template <typename T>
-T saturate(const T x);
+APPLESEED_NODISCARD T saturate(const T x);
 
 // Wrap the argument back to [0, 1).
 template <typename T>
