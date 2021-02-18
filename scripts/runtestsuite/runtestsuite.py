@@ -155,7 +155,7 @@ def command_output(command):
 def command_is_valid(command):
     try:
         command_return = subprocess.check_call( 
-            # Ensure space seperated arguments are separate elements of an array 
+            # Ensure space separated arguments are separate elements of an array 
             # (required for subprocess calls)
             command.split(),
             # Ensure error output doesn't get printed to terminal                 
@@ -178,10 +178,10 @@ class TestSuiteRunnerResults:
         self.start_time = datetime.datetime.min
         self.end_time = datetime.datetime.min
 
-    def increment_total_count(self):
+    def increment_rendered_count(self):
         self.rendered += 1
     
-    def increment_successes_count(self):
+    def increment_success_count(self):
         self.successes += 1
     
     def start_timer(self):
@@ -194,6 +194,7 @@ class TestSuiteRunnerResults:
         return self.successes
     
     def failure_count(self):
+        assert self.rendered >= self.successes
         return self.rendered - self.successes
     
     def total_test_count(self):
@@ -369,6 +370,8 @@ class ReportWriter:
             return 'copy /Y "{0}" "{1}"'.format(output_filepath, reference_filepath)
         else:
             return 'cp "{0}" "{1}"'.format(output_filepath, reference_filepath)
+
+
 # --------------------------------------------------------------------------------------------------
 # Render a given project file.
 # --------------------------------------------------------------------------------------------------
@@ -577,10 +580,10 @@ def render_test_scenes(script_directory, args):
                     logger.skip_rendering(os.path.join(dirpath, filename))
                     continue
 
-                results.increment_total_count()
+                results.increment_rendered_count()
 
                 if render_test_scene(args, logger, report_writer, dirpath, filename):
-                    results.increment_successes_count()
+                    results.increment_success_count()
 
     results.end_timer()
 
