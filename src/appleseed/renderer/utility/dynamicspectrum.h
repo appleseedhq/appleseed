@@ -228,19 +228,19 @@ template <typename T, size_t N> renderer::DynamicSpectrum<T, N> exp(const render
 template <typename T, size_t N> bool is_saturated(const renderer::DynamicSpectrum<T, N>& s);
 
 // Clamp the argument to [0,1].
-template <typename T, size_t N> renderer::DynamicSpectrum<T, N> saturate(const renderer::DynamicSpectrum<T, N>& s);
+template <typename T, size_t N> APPLESEED_NODISCARD renderer::DynamicSpectrum<T, N> saturate(const renderer::DynamicSpectrum<T, N>& s);
 template <typename T, size_t N> void saturate_in_place(renderer::DynamicSpectrum<T, N>& s);
 
 // Clamp the argument to [min, max].
-template <typename T, size_t N> renderer::DynamicSpectrum<T, N> clamp(const renderer::DynamicSpectrum<T, N>& s, const T min, const T max);
+template <typename T, size_t N> APPLESEED_NODISCARD renderer::DynamicSpectrum<T, N> clamp(const renderer::DynamicSpectrum<T, N>& s, const T min, const T max);
 template <typename T, size_t N> void clamp_in_place(renderer::DynamicSpectrum<T, N>& s, const T min, const T max);
 
 // Clamp the argument to [min, +infinity).
-template <typename T, size_t N> renderer::DynamicSpectrum<T, N> clamp_low(const renderer::DynamicSpectrum<T, N>& s, const T min);
+template <typename T, size_t N> APPLESEED_NODISCARD renderer::DynamicSpectrum<T, N> clamp_low(const renderer::DynamicSpectrum<T, N>& s, const T min);
 template <typename T, size_t N> void clamp_low_in_place(renderer::DynamicSpectrum<T, N>& s, const T min);
 
 // Clamp the argument to (-infinity, max].
-template <typename T, size_t N> renderer::DynamicSpectrum<T, N> clamp_high(const renderer::DynamicSpectrum<T, N>& s, const T max);
+template <typename T, size_t N> APPLESEED_NODISCARD renderer::DynamicSpectrum<T, N> clamp_high(const renderer::DynamicSpectrum<T, N>& s, const T max);
 template <typename T, size_t N> void clamp_high_in_place(renderer::DynamicSpectrum<T, N>& s, const T max);
 
 // Component-wise linear interpolation between a and b.

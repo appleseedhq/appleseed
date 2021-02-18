@@ -295,10 +295,8 @@ class APPLESEED_DLLSYMBOL ThreadFlag
 // Spinlock class implementation.
 //
 
-inline Spinlock::Spinlock()
+inline Spinlock::Spinlock() : m_sp BOOST_DETAIL_SPINLOCK_INIT
 {
-    boost::detail::spinlock initialized_sp = BOOST_DETAIL_SPINLOCK_INIT;
-    std::memcpy(&m_sp, &initialized_sp, sizeof(initialized_sp));
 }
 
 inline bool Spinlock::try_lock()
