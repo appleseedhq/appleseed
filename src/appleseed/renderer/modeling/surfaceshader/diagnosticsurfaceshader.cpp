@@ -271,7 +271,7 @@ namespace
         ShadingResult&  shading_result,
         const Spectrum& value)
     {
-        shading_result.m_main.rgb() = value.to_rgb(g_std_lighting_conditions);
+        shading_result.m_main.rgb() = value.illuminance_to_rgb(g_std_lighting_conditions);
         shading_result.m_main.a = 1.0f;
     }
 }

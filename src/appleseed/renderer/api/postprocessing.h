@@ -29,6 +29,8 @@
 #pragma once
 
 // API headers.
+#include "renderer/modeling/postprocessingstage/bloompostprocessingstage.h"
+#include "renderer/modeling/postprocessingstage/chromaticaberrationpostprocessingstage.h"
 #include "renderer/modeling/postprocessingstage/colormappostprocessingstage.h"
 #include "renderer/modeling/postprocessingstage/ipostprocessingstagefactory.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstage.h"
@@ -36,4 +38,5 @@
 #include "renderer/modeling/postprocessingstage/postprocessingstagefactoryregistrar.h"
 #include "renderer/modeling/postprocessingstage/postprocessingstagetraits.h"
 #include "renderer/modeling/postprocessingstage/renderstamppostprocessingstage.h"
+#include "renderer/modeling/postprocessingstage/tonemappostprocessingstage.h"
 #include "renderer/modeling/postprocessingstage/vignettepostprocessingstage.h"

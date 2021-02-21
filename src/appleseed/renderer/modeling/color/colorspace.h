@@ -34,8 +34,9 @@
 namespace renderer
 {
 
+
 //
-// Standard lighting conditions (D65 illuminant, CIE 1964 10-deg color matching functions).
+// Standard lighting conditions (D65 illuminant, CIE 1931 2-deg color matching functions).
 //
 
 extern foundation::LightingConditions g_std_lighting_conditions;

@@ -31,6 +31,7 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
 
 // appleseed.foundation headers.
@@ -55,7 +56,7 @@ class ColorSource
 {
   public:
     // Constructor.
-    explicit ColorSource(const ColorEntity& color_entity);
+    explicit ColorSource(const ColorEntity& color_entity, const InputFormat format);
 
     // Retrieve the color entity used by this source.
     const ColorEntity& get_color_entity() const;
@@ -89,8 +90,8 @@ class ColorSource
     Spectrum                        m_spectrum;
     Alpha                           m_alpha;
 
-    void initialize_from_spectrum(const ColorEntity& color_entity);
-    void initialize_from_color3(const ColorEntity& color_entity);
+    void initialize_from_spectrum(const ColorEntity& color_entity, const Spectrum::Intent intent);
+    void initialize_from_color3(const ColorEntity& color_entity, const Spectrum::Intent intent);
 };
 
 

@@ -161,7 +161,8 @@ extern const RegularSpectrum31f RGBToSpectrumBlueIlluminance;
 class LightingConditions
 {
   public:
-    APPLESEED_SIMD4_ALIGN Color4f   m_cmf[32];                  // precomputed values of (cmf[0], cmf[1], cmf[2]) * illuminant
+    APPLESEED_SIMD4_ALIGN Color4f   m_cmf_reflectance[32];      // precomputed normalized values of (cmf[0], cmf[1], cmf[2]) * illuminant
+    APPLESEED_SIMD4_ALIGN Color4f   m_cmf_illuminance[32];      // precomputed normalized values of cmf
 
     LightingConditions();                                       // leaves the object uninitialized
 
@@ -335,13 +336,18 @@ T luminance(const Color<T, 3>& linear_rgb);
 
 // Convert a spectrum to a color in the CIE XYZ color space.
 template <typename T, typename SpectrumType>
-Color<T, 3> spectrum_to_ciexyz(
+Color<T, 3> spectral_reflectance_to_ciexyz(
+    const LightingConditions&   lighting,
+    const SpectrumType&         spectrum);
+
+template <typename T, typename SpectrumType>
+Color<T, 3> spectral_illuminance_to_ciexyz(
     const LightingConditions&   lighting,
     const SpectrumType&         spectrum);
 
 // Convert a spectrum to a color in the CIE XYZ color space using the CIE D65 illuminant
 // and the CIE 1964 10-deg color matching functions.
-APPLESEED_DLLSYMBOL void spectrum_to_ciexyz_standard(
+APPLESEED_DLLSYMBOL void spectral_reflectance_to_ciexyz_standard(
     const float                 spectrum[],
     float                       ciexyz[3]);
 
@@ -840,8 +846,8 @@ inline T luminance(const Color<T, 3>& linear_rgb)
 //
 
 template <typename T, typename SpectrumType>
-Color<T, 3> spectrum_to_ciexyz(
-    const LightingConditions&   lighting,
+inline Color<T, 3> spectrum_to_ciexyz(
+    const Color4f               cmf[32],
     const SpectrumType&         spectrum)
 {
     static_assert(
@@ -855,19 +861,18 @@ Color<T, 3> spectrum_to_ciexyz(
     for (size_t w = 0; w < 31; ++w)
     {
         const T val = spectrum[w];
-        x += lighting.m_cmf[w][0] * val;
-        y += lighting.m_cmf[w][1] * val;
-        z += lighting.m_cmf[w][2] * val;
+        x += cmf[w][0] * val;
+        y += cmf[w][1] * val;
+        z += cmf[w][2] * val;
     }
 
     return Color<T, 3>(x, y, z);
 }
 
 #ifdef APPLESEED_USE_SSE
-
 template <>
 inline Color3f spectrum_to_ciexyz<float, RegularSpectrum31f>(
-    const LightingConditions&   lighting,
+    const Color4f               cmf[32],
     const RegularSpectrum31f&   spectrum)
 {
     __m128 xyz1 = _mm_setzero_ps();
@@ -877,10 +882,10 @@ inline Color3f spectrum_to_ciexyz<float, RegularSpectrum31f>(
 
     for (size_t w = 0; w < 8; ++w)
     {
-        xyz1 = _mm_add_ps(xyz1, _mm_mul_ps(_mm_set1_ps(spectrum[4 * w + 0]), _mm_load_ps(&lighting.m_cmf[4 * w + 0][0])));
-        xyz2 = _mm_add_ps(xyz2, _mm_mul_ps(_mm_set1_ps(spectrum[4 * w + 1]), _mm_load_ps(&lighting.m_cmf[4 * w + 1][0])));
-        xyz3 = _mm_add_ps(xyz3, _mm_mul_ps(_mm_set1_ps(spectrum[4 * w + 2]), _mm_load_ps(&lighting.m_cmf[4 * w + 2][0])));
-        xyz4 = _mm_add_ps(xyz4, _mm_mul_ps(_mm_set1_ps(spectrum[4 * w + 3]), _mm_load_ps(&lighting.m_cmf[4 * w + 3][0])));
+        xyz1 = _mm_add_ps(xyz1, _mm_mul_ps(_mm_set1_ps(spectrum[4 * w + 0]), _mm_load_ps(&cmf[4 * w + 0][0])));
+        xyz2 = _mm_add_ps(xyz2, _mm_mul_ps(_mm_set1_ps(spectrum[4 * w + 1]), _mm_load_ps(&cmf[4 * w + 1][0])));
+        xyz3 = _mm_add_ps(xyz3, _mm_mul_ps(_mm_set1_ps(spectrum[4 * w + 2]), _mm_load_ps(&cmf[4 * w + 2][0])));
+        xyz4 = _mm_add_ps(xyz4, _mm_mul_ps(_mm_set1_ps(spectrum[4 * w + 3]), _mm_load_ps(&cmf[4 * w + 3][0])));
     }
 
     xyz1 = _mm_add_ps(xyz1, xyz2);
@@ -892,8 +897,23 @@ inline Color3f spectrum_to_ciexyz<float, RegularSpectrum31f>(
 
     return Color3f(transfer[0], transfer[1], transfer[2]);
 }
-
 #endif  // APPLESEED_USE_SSE
+
+template <typename T, typename SpectrumType>
+inline Color<T, 3> spectral_reflectance_to_ciexyz(
+    const LightingConditions&   lighting,
+    const SpectrumType&         spectrum)
+{
+    return spectrum_to_ciexyz<T, SpectrumType>(lighting.m_cmf_reflectance, spectrum);
+}
+
+template <typename T, typename SpectrumType>
+inline Color<T, 3> spectral_illuminance_to_ciexyz(
+    const LightingConditions&   lighting,
+    const SpectrumType&         spectrum)
+{
+    return spectrum_to_ciexyz<T, SpectrumType>(lighting.m_cmf_illuminance, spectrum);
+}
 
 template <typename T, typename SpectrumType>
 void ciexyz_reflectance_to_spectrum(
@@ -1092,7 +1112,6 @@ void linear_rgb_illuminance_to_spectrum_unclamped(
     const Color<T, 3>&          linear_rgb,
     SpectrumType&               spectrum)
 {
-    /* This gives an undesirable blue tint...
     impl::linear_rgb_to_spectrum(
         linear_rgb,
         RGBToSpectrumWhiteIlluminance,
@@ -1102,17 +1121,6 @@ void linear_rgb_illuminance_to_spectrum_unclamped(
         RGBToSpectrumRedIlluminance,
         RGBToSpectrumGreenIlluminance,
         RGBToSpectrumBlueIlluminance,
-        spectrum); */
-
-    impl::linear_rgb_to_spectrum(
-        linear_rgb,
-        RGBToSpectrumWhiteReflectance,
-        RGBToSpectrumCyanReflectance,
-        RGBToSpectrumMagentaReflectance,
-        RGBToSpectrumYellowReflectance,
-        RGBToSpectrumRedReflectance,
-        RGBToSpectrumGreenReflectance,
-        RGBToSpectrumBlueReflectance,
         spectrum);
 }
 

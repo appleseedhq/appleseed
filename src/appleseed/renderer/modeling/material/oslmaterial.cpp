@@ -66,8 +66,8 @@ namespace
             const ParamArray&       params)
           : Material(name, params)
         {
-            m_inputs.declare("osl_surface", InputFormatEntity, "");
-            m_inputs.declare("alpha_map", InputFormatFloat, "");
+            m_inputs.declare("osl_surface", InputFormat::Entity, "");
+            m_inputs.declare("alpha_map", InputFormat::Float, "");
 
             m_osl_bsdf = OSLBSDFFactory().create();
             m_osl_bssrdf = OSLBSSRDFFactory().create();

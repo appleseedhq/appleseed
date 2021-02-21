@@ -36,6 +36,7 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
+#include "renderer/modeling/bsdf/microfacetbrdfwrapper.h"
 
 // appleseed.foundation headers.
 #include "foundation/containers/dictionary.h"
@@ -66,6 +67,7 @@ namespace
     //
 
     const char* Model = "lambertian_brdf";
+    const char* MicrofacetModel = "microfacet_normal_mapping_lambertian_brdf";
 
     class LambertianBRDFImpl
       : public BSDF
@@ -76,8 +78,8 @@ namespace
             const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::Diffuse, params)
         {
-            m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("reflectance", InputFormat::SpectralReflectance);
+            m_inputs.declare("reflectance_multiplier", InputFormat::Float, "1.0");
         }
 
         void release() override
@@ -174,7 +176,20 @@ namespace
         }
     };
 
+    class MicrofacetLambertianBRDFImpl
+      : public LambertianBRDFImpl
+    {
+      public:
+        using LambertianBRDFImpl::LambertianBRDFImpl;
+
+        const char* get_model() const override
+        {
+            return MicrofacetModel;
+        }
+    };
+
     typedef BSDFWrapper<LambertianBRDFImpl> LambertianBRDF;
+    typedef MicrofacetBRDFWrapper<MicrofacetLambertianBRDFImpl> MicrofacetLambertianBRDF;
 }
 
 
@@ -234,6 +249,31 @@ auto_release_ptr<BSDF> LambertianBRDFFactory::create(
     const ParamArray&   params) const
 {
     return auto_release_ptr<BSDF>(new LambertianBRDF(name, params));
+}
+
+
+//
+// MicrofacetLambertianBRDFFactory class implementation.
+//
+
+const char* MicrofacetLambertianBRDFFactory::get_model() const
+{
+    return MicrofacetModel;
+}
+
+Dictionary MicrofacetLambertianBRDFFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+            .insert("name", MicrofacetModel)
+            .insert("label", "Microfacet Lambertian BRDF");
+}
+
+auto_release_ptr<BSDF> MicrofacetLambertianBRDFFactory::create(
+    const char*         name,
+    const ParamArray&   params) const
+{
+    return auto_release_ptr<BSDF>(new MicrofacetLambertianBRDF(name, params));
 }
 
 }   // namespace renderer

@@ -199,7 +199,7 @@ namespace
             return true;
         }
 
-        void execute(Frame& frame) const override
+        void execute(Frame& frame, const size_t thread_count) const override
         {
             float min_luminance, max_luminance;
 
@@ -699,17 +699,19 @@ DictionaryArray ColorMapPostProcessingStageFactory::get_input_metadata() const
                     .insert("Turbo", "turbo")
                     .insert("Custom", "custom"))
             .insert("use", "required")
+            .insert("help", "Applied color map")
             .insert("default", "inferno")
             .insert("on_change", "rebuild_form"));
 
     metadata.push_back(
         Dictionary()
             .insert("name", "color_map_file_path")
-            .insert("label", "Colormap File Path")
+            .insert("label", "Color Map File Path")
             .insert("type", "file")
             .insert("file_picker_mode", "open")
             .insert("file_picker_type", "image")
             .insert("use", "optional")
+            .insert("help", "Path to a custom color map image")
             .insert("visible_if",
                 Dictionary()
                     .insert("color_map", "custom")));
@@ -720,6 +722,7 @@ DictionaryArray ColorMapPostProcessingStageFactory::get_input_metadata() const
             .insert("label", "Auto Range")
             .insert("type", "boolean")
             .insert("use", "optional")
+            .insert("help", "Maps the full range of luminance values to the color map")
             .insert("default", "true")
             .insert("on_change", "rebuild_form"));
 
@@ -737,6 +740,7 @@ DictionaryArray ColorMapPostProcessingStageFactory::get_input_metadata() const
                     .insert("value", "1.0")
                     .insert("type", "soft"))
             .insert("use", "optional")
+            .insert("help", "Luminance value mapped to the first row in the colormap")
             .insert("default", "0.0")
             .insert("visible_if",
                 Dictionary()
@@ -756,6 +760,7 @@ DictionaryArray ColorMapPostProcessingStageFactory::get_input_metadata() const
                     .insert("value", "1.0")
                     .insert("type", "soft"))
             .insert("use", "optional")
+            .insert("help", "Luminance value mapped to the last row in the colormap")
             .insert("default", "1.0")
             .insert("visible_if",
                 Dictionary()
@@ -767,6 +772,7 @@ DictionaryArray ColorMapPostProcessingStageFactory::get_input_metadata() const
             .insert("label", "Add Legend Bar")
             .insert("type", "boolean")
             .insert("use", "optional")
+            .insert("help", "Include a legend bar next to the color map")
             .insert("default", "true"));
 
     metadata.push_back(
@@ -783,6 +789,7 @@ DictionaryArray ColorMapPostProcessingStageFactory::get_input_metadata() const
                     .insert("value", "64")
                     .insert("type", "soft"))
             .insert("use", "optional")
+            .insert("help", "Set the number of divisions in the legend bar")
             .insert("default", "8")
             .insert("visible_if",
                 Dictionary()
@@ -794,6 +801,7 @@ DictionaryArray ColorMapPostProcessingStageFactory::get_input_metadata() const
             .insert("label", "Render Isolines")
             .insert("type", "boolean")
             .insert("use", "optional")
+            .insert("help", "Draw lines of equal relative luminance")
             .insert("default", "false")
             .insert("on_change", "rebuild_form"));
 
@@ -811,6 +819,7 @@ DictionaryArray ColorMapPostProcessingStageFactory::get_input_metadata() const
                     .insert("value", "5.0")
                     .insert("type", "soft"))
             .insert("use", "optional")
+            .insert("help", "Set the thickness of luminance isolines")
             .insert("default", "1.0")
             .insert("visible_if",
                 Dictionary()

@@ -73,8 +73,8 @@ namespace
             const ParamArray&           params)
           : BSDF(name, Transmissive, ScatteringMode::Diffuse, params)
         {
-            m_inputs.declare("transmittance", InputFormatSpectralReflectance);
-            m_inputs.declare("transmittance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("transmittance", InputFormat::SpectralReflectance);
+            m_inputs.declare("transmittance_multiplier", InputFormat::Float, "1.0");
         }
 
         void release() override

@@ -99,15 +99,15 @@ namespace
             const ParamArray&       params)
           : BSSRDF(name, params)
         {
-            m_inputs.declare("weight", InputFormatFloat, "1.0");
-            m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("mfp", InputFormatSpectralReflectance);
-            m_inputs.declare("mfp_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("ior", InputFormatFloat);
-            m_inputs.declare("fresnel_weight", InputFormatFloat, "1.0");
-            m_inputs.declare("volume_anisotropy", InputFormatFloat, "0.0");
-            m_inputs.declare("surface_roughness", InputFormatFloat, "0.01");
+            m_inputs.declare("weight", InputFormat::Float, "1.0");
+            m_inputs.declare("reflectance", InputFormat::SpectralReflectance);
+            m_inputs.declare("reflectance_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("mfp", InputFormat::SpectralReflectance);
+            m_inputs.declare("mfp_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("ior", InputFormat::Float);
+            m_inputs.declare("fresnel_weight", InputFormat::Float, "1.0");
+            m_inputs.declare("volume_anisotropy", InputFormat::Float, "0.0");
+            m_inputs.declare("surface_roughness", InputFormat::Float, "0.01");
 
             const std::string lambertian_brdf_name = std::string(name) + "_lambertian_brdf";
             m_lambertian_brdf = LambertianBRDFFactory().create(lambertian_brdf_name.c_str(), ParamArray());

@@ -1114,7 +1114,7 @@ void ShadingPoint::initialize_osl_shader_globals(
 
         // Opaque state pointers.
         m_shader_globals.renderstate = const_cast<ShadingPoint*>(this);
-        memset(&m_osl_trace_data, 0, sizeof(OSLTraceData));
+        m_osl_trace_data = {};
         m_shader_globals.tracedata = &m_osl_trace_data;
         m_shader_globals.objdata = nullptr;
 

@@ -134,12 +134,20 @@ class RGBSpectrum
     const ValueType& operator[](const size_t i) const;
 
     // Convert the spectrum to a linear RGB color.
-    foundation::Color<ValueType, 3> to_rgb(
-        const foundation::LightingConditions&   lighting_conditions) const;
+    foundation::Color<ValueType, 3> reflectance_to_rgb(
+        const foundation::LightingConditions& lighting_conditions) const;
+
+    // Use in emissive samples.
+    foundation::Color<ValueType, 3> illuminance_to_rgb(
+        const foundation::LightingConditions& lighting_conditions) const;
 
     // Convert the spectrum to a CIE XYZ color.
-    foundation::Color<ValueType, 3> to_ciexyz(
-        const foundation::LightingConditions&   lighting_conditions) const;
+    foundation::Color<ValueType, 3> reflectance_to_ciexyz(
+        const foundation::LightingConditions& lighting_conditions) const;
+
+    // Use in emissive samples.
+    foundation::Color<ValueType, 3> illuminance_to_ciexyz(
+        const foundation::LightingConditions& lighting_conditions) const;
 
   private:
     APPLESEED_SIMD4_ALIGN ValueType m_samples[StoredSamples];
@@ -390,9 +398,18 @@ void RGBSpectrum<T>::set(
     const foundation::LightingConditions&               lighting_conditions,
     const Intent                                        intent)
 {
-    reinterpret_cast<foundation::Color<T, 3>&>(m_samples[0]) =
-        foundation::ciexyz_to_linear_rgb(
-            foundation::spectrum_to_ciexyz<T>(lighting_conditions, spectrum));
+    if (intent == Reflectance)
+    {
+        reinterpret_cast<foundation::Color<T, 3>&>(m_samples[0]) =
+            foundation::ciexyz_to_linear_rgb(
+                foundation::spectral_reflectance_to_ciexyz<T>(lighting_conditions, spectrum));
+    }
+    else
+    {
+        reinterpret_cast<foundation::Color<T, 3>&>(m_samples[0]) =
+            foundation::ciexyz_to_linear_rgb(
+                foundation::spectral_illuminance_to_ciexyz<T>(lighting_conditions, spectrum));
+    }
 }
 
 template <typename T>
@@ -410,19 +427,32 @@ inline const T& RGBSpectrum<T>::operator[](const size_t i) const
 }
 
 template <typename T>
-inline foundation::Color<T, 3> RGBSpectrum<T>::to_rgb(
+inline foundation::Color<T, 3> RGBSpectrum<T>::reflectance_to_rgb(
     const foundation::LightingConditions& lighting_conditions) const
 {
     return foundation::Color<T, 3>(m_samples[0], m_samples[1], m_samples[2]);
 }
 
+template<typename T>
+inline foundation::Color<T, 3> RGBSpectrum<T>::illuminance_to_rgb(const foundation::LightingConditions& lighting_conditions) const
+{
+    return reflectance_to_rgb(lighting_conditions);
+}
+
 template <typename T>
-inline foundation::Color<T, 3> RGBSpectrum<T>::to_ciexyz(
+inline foundation::Color<T, 3> RGBSpectrum<T>::reflectance_to_ciexyz(
     const foundation::LightingConditions& lighting_conditions) const
 {
     return
         linear_rgb_to_ciexyz(
             foundation::Color<T, 3>(m_samples[0], m_samples[1], m_samples[2]));
+}
+
+template <typename T>
+inline foundation::Color<T, 3> RGBSpectrum<T>::illuminance_to_ciexyz(
+    const foundation::LightingConditions& lighting_conditions) const
+{
+    return reflectance_to_ciexyz(lighting_conditions);
 }
 
 template <typename T>

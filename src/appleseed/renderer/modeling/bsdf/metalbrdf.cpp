@@ -37,6 +37,7 @@
 #include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
 #include "renderer/modeling/bsdf/fresnel.h"
+#include "renderer/modeling/bsdf/microfacetbrdfwrapper.h"
 #include "renderer/modeling/bsdf/microfacethelper.h"
 #include "renderer/modeling/bsdf/specularhelper.h"
 #include "renderer/utility/paramarray.h"
@@ -82,6 +83,7 @@ namespace
     //
 
     const char* Model = "metal_brdf";
+    const char* MicrofacetModel = "microfacet_normal_mapping_metal_brdf";
 
     class MetalBRDFImpl
       : public BSDF
@@ -92,13 +94,13 @@ namespace
             const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::Glossy | ScatteringMode::Specular, params)
         {
-            m_inputs.declare("normal_reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("edge_tint", InputFormatSpectralReflectance);
-            m_inputs.declare("edge_tint_weight", InputFormatFloat, "1.0");
-            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("roughness", InputFormatFloat, "0.15");
-            m_inputs.declare("anisotropy", InputFormatFloat, "0.0");
-            m_inputs.declare("energy_compensation", InputFormatFloat, "0.0");
+            m_inputs.declare("normal_reflectance", InputFormat::SpectralReflectance);
+            m_inputs.declare("edge_tint", InputFormat::SpectralReflectance);
+            m_inputs.declare("edge_tint_weight", InputFormat::Float, "1.0");
+            m_inputs.declare("reflectance_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("roughness", InputFormat::Float, "0.15");
+            m_inputs.declare("anisotropy", InputFormat::Float, "0.0");
+            m_inputs.declare("energy_compensation", InputFormat::Float, "0.0");
         }
 
         void release() override
@@ -308,7 +310,20 @@ namespace
         }
     };
 
+    class MicrofacetMetalBRDFImpl
+      : public MetalBRDFImpl
+    {
+      public:
+        using MetalBRDFImpl::MetalBRDFImpl;
+
+        const char* get_model() const override
+        {
+            return MicrofacetModel;
+        }
+    };
+
     typedef BSDFWrapper<MetalBRDFImpl> MetalBRDF;
+    typedef MicrofacetBRDFWrapper<MicrofacetMetalBRDFImpl> MicrofacetMetalBRDF;
 }
 
 
@@ -454,6 +469,31 @@ auto_release_ptr<BSDF> MetalBRDFFactory::create(
     const ParamArray&   params) const
 {
     return auto_release_ptr<BSDF>(new MetalBRDF(name, params));
+}
+
+
+//
+// MicrofacetMetalBRDFFactory class implementation.
+//
+
+const char* MicrofacetMetalBRDFFactory::get_model() const
+{
+    return MicrofacetModel;
+}
+
+Dictionary MicrofacetMetalBRDFFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+            .insert("name", MicrofacetModel)
+            .insert("label", "Microfacet Metal BRDF");
+}
+
+auto_release_ptr<BSDF> MicrofacetMetalBRDFFactory::create(
+    const char*         name,
+    const ParamArray&   params) const
+{
+    return auto_release_ptr<BSDF>(new MicrofacetMetalBRDF(name, params));
 }
 
 }   // namespace renderer

@@ -507,7 +507,7 @@ void fresnel_reflectance_lazanyi_schlick(
     h *= cos_theta_i * k6;
     reflectance -= h;
 
-    clamp(reflectance, T(0.0), T(1.0));
+    reflectance = clamp(reflectance, T(0.0), T(1.0));
 }
 
 template <typename SpectrumType, typename T>

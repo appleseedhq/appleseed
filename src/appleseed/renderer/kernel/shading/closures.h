@@ -107,6 +107,13 @@ enum ClosureID
     NPRShadingID,
     NPRContourID,
 
+    // Microfacet normal mapping closures.
+    MicrofacetBlinnID,
+    MicrofacetGlossyID,
+    MicrofacetMetalID,
+    MicrofacetPlasticID,
+    MicrofacetSheenID,
+
     // Layered BSDF closures (must be last).
     FirstLayeredClosure,
     GlossyLayerID = FirstLayeredClosure,

@@ -8,7 +8,7 @@ appleseed is an open source, physically-based global illumination rendering engi
 
 appleseed is actively developed by a small, international team of talented volunteers from the animation and VFX industry. Its core mission is to provide individuals and small studios with a complete, reliable, fully open rendering package.
 
-Over the years appleseed has been used on several projects including [TV documentaries](https://vimeo.com/81199785), ads, promotional videos and [an animation short](http://www.fetchaveryshortfilm.com/).
+Over the years appleseed has been used on several projects including [TV documentaries](https://vimeo.com/81199785), ads, promotional videos and an animation short.
 
 appleseed is available as a portable C++ library with C++ and Python APIs, as a set of standalone applications for Windows, Linux and macOS, and as native plugins for content creation applications. [Downloads &rarr;](https://appleseedhq.net/download.html)
 

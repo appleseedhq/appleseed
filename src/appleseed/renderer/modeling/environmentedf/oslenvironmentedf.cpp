@@ -127,9 +127,7 @@ namespace
                 Vector3f::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
 
             // OSL exectute system.
-            payload = m_osl_shadergroup_exec.execute_background(
-                *m_shader_group,
-                local_outgoing);
+            payload = m_osl_shadergroup_exec.execute_background(*m_shader_group, local_outgoing);
 
             importance = luminance(payload);
         }
@@ -153,13 +151,13 @@ namespace
     {
       public:
         OSLEnvironmentEDF(
-            const char*         name,
-            const ParamArray&   params)
+            const char*             name,
+            const ParamArray&       params)
           : EnvironmentEDF(name, params)
           , m_importance_map_size(0)
           , m_probability_scale(0.0f)
         {
-            m_inputs.declare("osl_background", InputFormatEntity, "");
+            m_inputs.declare("osl_background", InputFormat::Entity, "");
         }
 
         void release() override
@@ -186,21 +184,6 @@ namespace
             m_shader_group =
                 static_cast<ShaderGroup*>(m_inputs.get_entity("osl_background"));
 
-            return true;
-        }
-
-        bool on_frame_begin(
-            const Project&          project,
-            const BaseGroup*        parent,
-            OnFrameBeginRecorder&   recorder,
-            IAbortSwitch*           abort_switch) override
-        {
-            if (!EnvironmentEDF::on_frame_begin(project, parent, recorder, abort_switch))
-                return false;
-
-            m_shader_group =
-                static_cast<ShaderGroup*>(m_inputs.get_entity("osl_background"));
-
             if (!m_importance_sampler || m_shader_group->get_version_id() != m_shader_group_version_id)
             {
                 m_shader_group_version_id = m_shader_group->get_version_id();
@@ -213,15 +196,6 @@ namespace
             return true;
         }
 
-        void on_frame_end(
-            const Project&     project,
-            const BaseGroup*   parent) override
-        {
-            m_shader_group = nullptr;
-
-            EnvironmentEDF::on_frame_end(project, parent);
-        }
-
         void sample(
             const ShadingContext&   shading_context,
             const Vector2f&         s,
@@ -229,7 +203,6 @@ namespace
             Spectrum&               value,
             float&                  probability) const override
         {
-
             if (!m_importance_sampler)
             {
                 RENDERER_LOG_WARNING(

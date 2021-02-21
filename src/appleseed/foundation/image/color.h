@@ -34,6 +34,7 @@
 #include "foundation/math/fp.h"
 #include "foundation/math/matrix.h"
 #include "foundation/math/scalar.h"
+#include "foundation/platform/compiler.h"
 #include "foundation/utility/poison.h"
 
 // Imath headers.
@@ -138,16 +139,16 @@ template <typename T, size_t N> Color<T, N> rcp(const Color<T, N>& c);
 template <typename T, size_t N> bool is_saturated(const Color<T, N>& c);
 
 // Clamp the argument to [0,1].
-template <typename T, size_t N> Color<T, N> saturate(const Color<T, N>& c);
+template <typename T, size_t N> APPLESEED_NODISCARD Color<T, N> saturate(const Color<T, N>& c);
 
 // Clamp the argument to [min, max].
-template <typename T, size_t N> Color<T, N> clamp(const Color<T, N>& c, const T min, const T max);
+template <typename T, size_t N> APPLESEED_NODISCARD Color<T, N> clamp(const Color<T, N>& c, const T min, const T max);
 
 // Clamp the argument to [min, +infinity).
-template <typename T, size_t N> Color<T, N> clamp_low(const Color<T, N>& c, const T min);
+template <typename T, size_t N> APPLESEED_NODISCARD Color<T, N> clamp_low(const Color<T, N>& c, const T min);
 
 // Clamp the argument to (-infinity, max].
-template <typename T, size_t N> Color<T, N> clamp_high(const Color<T, N>& c, const T max);
+template <typename T, size_t N> APPLESEED_NODISCARD Color<T, N> clamp_high(const Color<T, N>& c, const T max);
 
 // Return the smallest or largest signed component of a color.
 template <typename T, size_t N> T min_value(const Color<T, N>& c);

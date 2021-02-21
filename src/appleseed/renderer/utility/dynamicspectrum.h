@@ -132,12 +132,22 @@ class DynamicSpectrum
     const ValueType& operator[](const size_t i) const;
 
     // Convert the spectrum to a linear RGB color.
-    foundation::Color<ValueType, 3> to_rgb(
-        const foundation::LightingConditions&   lighting_conditions) const;
+    // Use in reflective and transmissive samples.
+    foundation::Color<ValueType, 3> reflectance_to_rgb(
+        const foundation::LightingConditions& lighting_conditions) const;
+
+    // Use in emissive samples.
+    foundation::Color<ValueType, 3> illuminance_to_rgb(
+        const foundation::LightingConditions& lighting_conditions) const;
 
     // Convert the spectrum to a CIE XYZ color.
-    foundation::Color<ValueType, 3> to_ciexyz(
-        const foundation::LightingConditions&   lighting_conditions) const;
+    // Use in reflective and transmissive samples.
+    foundation::Color<ValueType, 3> reflectance_to_ciexyz(
+        const foundation::LightingConditions& lighting_conditions) const;
+
+    // Use in emissive samples.
+    foundation::Color<ValueType, 3> illuminance_to_ciexyz(
+        const foundation::LightingConditions& lighting_conditions) const;
 
   private:
     static APPLESEED_TLS Mode       s_mode;
@@ -218,19 +228,19 @@ template <typename T, size_t N> renderer::DynamicSpectrum<T, N> exp(const render
 template <typename T, size_t N> bool is_saturated(const renderer::DynamicSpectrum<T, N>& s);
 
 // Clamp the argument to [0,1].
-template <typename T, size_t N> renderer::DynamicSpectrum<T, N> saturate(const renderer::DynamicSpectrum<T, N>& s);
+template <typename T, size_t N> APPLESEED_NODISCARD renderer::DynamicSpectrum<T, N> saturate(const renderer::DynamicSpectrum<T, N>& s);
 template <typename T, size_t N> void saturate_in_place(renderer::DynamicSpectrum<T, N>& s);
 
 // Clamp the argument to [min, max].
-template <typename T, size_t N> renderer::DynamicSpectrum<T, N> clamp(const renderer::DynamicSpectrum<T, N>& s, const T min, const T max);
+template <typename T, size_t N> APPLESEED_NODISCARD renderer::DynamicSpectrum<T, N> clamp(const renderer::DynamicSpectrum<T, N>& s, const T min, const T max);
 template <typename T, size_t N> void clamp_in_place(renderer::DynamicSpectrum<T, N>& s, const T min, const T max);
 
 // Clamp the argument to [min, +infinity).
-template <typename T, size_t N> renderer::DynamicSpectrum<T, N> clamp_low(const renderer::DynamicSpectrum<T, N>& s, const T min);
+template <typename T, size_t N> APPLESEED_NODISCARD renderer::DynamicSpectrum<T, N> clamp_low(const renderer::DynamicSpectrum<T, N>& s, const T min);
 template <typename T, size_t N> void clamp_low_in_place(renderer::DynamicSpectrum<T, N>& s, const T min);
 
 // Clamp the argument to (-infinity, max].
-template <typename T, size_t N> renderer::DynamicSpectrum<T, N> clamp_high(const renderer::DynamicSpectrum<T, N>& s, const T max);
+template <typename T, size_t N> APPLESEED_NODISCARD renderer::DynamicSpectrum<T, N> clamp_high(const renderer::DynamicSpectrum<T, N>& s, const T max);
 template <typename T, size_t N> void clamp_high_in_place(renderer::DynamicSpectrum<T, N>& s, const T max);
 
 // Component-wise linear interpolation between a and b.
@@ -449,9 +459,18 @@ void DynamicSpectrum<T, N>::set(
     }
     else
     {
-        reinterpret_cast<foundation::Color<T, 3>&>(m_samples[0]) =
-            foundation::ciexyz_to_linear_rgb(
-                foundation::spectrum_to_ciexyz<T>(lighting_conditions, spectrum));
+        if (intent == Reflectance)
+        {
+            reinterpret_cast<foundation::Color<T, 3>&>(m_samples[0]) =
+                foundation::ciexyz_to_linear_rgb(
+                    foundation::spectral_reflectance_to_ciexyz<T>(lighting_conditions, spectrum));
+        }
+        else
+        {
+            reinterpret_cast<foundation::Color<T, 3>&>(m_samples[0]) =
+                foundation::ciexyz_to_linear_rgb(
+                    foundation::spectral_illuminance_to_ciexyz<T>(lighting_conditions, spectrum));
+        }
     }
 }
 
@@ -470,25 +489,47 @@ inline const T& DynamicSpectrum<T, N>::operator[](const size_t i) const
 }
 
 template <typename T, size_t N>
-inline foundation::Color<T, 3> DynamicSpectrum<T, N>::to_rgb(
+inline foundation::Color<T, 3> DynamicSpectrum<T, N>::reflectance_to_rgb(
     const foundation::LightingConditions& lighting_conditions) const
 {
     return
         s_mode == RGB
             ? foundation::Color<T, 3>(m_samples[0], m_samples[1], m_samples[2])
             : foundation::ciexyz_to_linear_rgb(
-                  foundation::spectrum_to_ciexyz<T>(lighting_conditions, *this));
+                foundation::spectral_reflectance_to_ciexyz<T>(lighting_conditions, *this));
 }
 
 template <typename T, size_t N>
-inline foundation::Color<T, 3> DynamicSpectrum<T, N>::to_ciexyz(
+inline foundation::Color<T, 3> DynamicSpectrum<T, N>::illuminance_to_rgb(
+    const foundation::LightingConditions& lighting_conditions) const
+{
+    return
+        s_mode == RGB
+            ? foundation::Color<T, 3>(m_samples[0], m_samples[1], m_samples[2])
+            : foundation::ciexyz_to_linear_rgb(
+                foundation::spectral_illuminance_to_ciexyz<T>(lighting_conditions, *this));
+}
+
+template <typename T, size_t N>
+inline foundation::Color<T, 3> DynamicSpectrum<T, N>::reflectance_to_ciexyz(
     const foundation::LightingConditions& lighting_conditions) const
 {
     return
         s_mode == RGB
             ? linear_rgb_to_ciexyz(
-                  foundation::Color<T, 3>(m_samples[0], m_samples[1], m_samples[2]))
-            : foundation::spectrum_to_ciexyz<T>(lighting_conditions, *this);
+                foundation::Color<T, 3>(m_samples[0], m_samples[1], m_samples[2]))
+            : foundation::spectral_reflectance_to_ciexyz<T>(lighting_conditions, *this);
+}
+
+template <typename T, size_t N>
+inline foundation::Color<T, 3> DynamicSpectrum<T, N>::illuminance_to_ciexyz(
+    const foundation::LightingConditions& lighting_conditions) const
+{
+    return
+        s_mode == RGB
+            ? linear_rgb_to_ciexyz(
+                foundation::Color<T, 3>(m_samples[0], m_samples[1], m_samples[2]))
+            : foundation::spectral_illuminance_to_ciexyz<T>(lighting_conditions, *this);
 }
 
 template <typename T, size_t N>

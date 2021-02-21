@@ -74,9 +74,9 @@ namespace
             const ParamArray&           params)
           : SurfaceShader(name, params)
         {
-            m_inputs.declare("color", InputFormatSpectralIlluminanceWithAlpha);
-            m_inputs.declare("color_multiplier", InputFormatFloat, "1.0");
-            m_inputs.declare("alpha_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("color", InputFormat::SpectralIlluminanceWithAlpha);
+            m_inputs.declare("color_multiplier", InputFormat::Float, "1.0");
+            m_inputs.declare("alpha_multiplier", InputFormat::Float, "1.0");
 
             const std::string alpha_source = m_params.get_optional<std::string>("alpha_source", "color");
             if (alpha_source == "color")
@@ -120,7 +120,7 @@ namespace
                 &values);
 
             // Initialize the shading result.
-            shading_result.m_main.rgb() = values.m_color.to_rgb(g_std_lighting_conditions);
+            shading_result.m_main.rgb() = values.m_color.illuminance_to_rgb(g_std_lighting_conditions);
 
             // This surface shader can override alpha.
             if (m_alpha_source == AlphaSourceColor)

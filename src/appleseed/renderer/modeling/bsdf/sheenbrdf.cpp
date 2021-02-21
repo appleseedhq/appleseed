@@ -35,6 +35,7 @@
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
 #include "renderer/modeling/bsdf/bsdfwrapper.h"
+#include "renderer/modeling/bsdf/microfacetbrdfwrapper.h"
 
 // appleseed.foundation headers.
 #include "foundation/containers/dictionary.h"
@@ -66,6 +67,7 @@ namespace
     //
 
     const char* Model = "sheen_brdf";
+    const char* MicrofacetModel = "microfacet_normal_mapping_sheen_brdf";
 
     class SheenBRDFImpl
       : public BSDF
@@ -76,8 +78,8 @@ namespace
             const ParamArray&           params)
           : BSDF(name, Reflective, ScatteringMode::Glossy, params)
         {
-            m_inputs.declare("reflectance", InputFormatSpectralReflectance);
-            m_inputs.declare("reflectance_multiplier", InputFormatFloat, "1.0");
+            m_inputs.declare("reflectance", InputFormat::SpectralReflectance);
+            m_inputs.declare("reflectance_multiplier", InputFormat::Float, "1.0");
         }
 
         void release() override
@@ -172,7 +174,20 @@ namespace
         typedef SheenBRDFInputValues InputValues;
     };
 
+    class MicrofacetSheenBRDFImpl
+      : public SheenBRDFImpl
+    {
+      public:
+        using SheenBRDFImpl::SheenBRDFImpl;
+
+        const char* get_model() const override
+        {
+            return MicrofacetModel;
+        }
+    };
+
     typedef BSDFWrapper<SheenBRDFImpl> SheenBRDF;
+    typedef MicrofacetBRDFWrapper<MicrofacetSheenBRDFImpl> MicrofacetSheenBRDF;
 }
 
 
@@ -232,6 +247,31 @@ auto_release_ptr<BSDF> SheenBRDFFactory::create(
     const ParamArray&   params) const
 {
     return auto_release_ptr<BSDF>(new SheenBRDF(name, params));
+}
+
+
+//
+// MicrofacetSheenBRDFFactory class implementation.
+//
+
+const char* MicrofacetSheenBRDFFactory::get_model() const
+{
+    return MicrofacetModel;
+}
+
+Dictionary MicrofacetSheenBRDFFactory::get_model_metadata() const
+{
+    return
+        Dictionary()
+            .insert("name", MicrofacetModel)
+            .insert("label", "Microfacet Sheen BRDF");
+}
+
+auto_release_ptr<BSDF> MicrofacetSheenBRDFFactory::create(
+    const char*         name,
+    const ParamArray&   params) const
+{
+    return auto_release_ptr<BSDF>(new MicrofacetSheenBRDF(name, params));
 }
 
 }   // namespace renderer

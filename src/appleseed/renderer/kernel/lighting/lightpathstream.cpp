@@ -107,7 +107,7 @@ void LightPathStream::hit_reflector(const PathVertex& vertex)
     HitReflectorData data;
     data.m_object_instance = &vertex.m_shading_point->get_object_instance();
     data.m_vertex_position = Vector3f(vertex.get_point());
-    data.m_path_throughput = vertex.m_throughput.to_rgb(g_std_lighting_conditions);
+    data.m_path_throughput = vertex.m_throughput.illuminance_to_rgb(g_std_lighting_conditions);
     data.m_crossing_interface = vertex.m_crossing_interface;
     data.m_scattering_type = vertex.m_prev_mode;
     m_hit_reflector_data.push_back(data);
@@ -128,8 +128,8 @@ void LightPathStream::hit_emitter(
     HitEmitterData data;
     data.m_object_instance = &vertex.m_shading_point->get_object_instance();
     data.m_vertex_position = Vector3f(vertex.get_point());
-    data.m_path_throughput = vertex.m_throughput.to_rgb(g_std_lighting_conditions);
-    data.m_emitted_radiance = emitted_radiance.to_rgb(g_std_lighting_conditions);
+    data.m_path_throughput = vertex.m_throughput.illuminance_to_rgb(g_std_lighting_conditions);
+    data.m_emitted_radiance = emitted_radiance.illuminance_to_rgb(g_std_lighting_conditions);
     m_hit_emitter_data.push_back(data);
 }
 
@@ -149,8 +149,8 @@ void LightPathStream::sampled_emitting_shape(
         shape.get_assembly_instance()->get_assembly().object_instances().get_by_index(
             shape.get_object_instance_index());
     data.m_vertex_position = Vector3f(emission_position);
-    data.m_material_value = material_value.to_rgb(g_std_lighting_conditions);
-    data.m_emitted_radiance = emitted_radiance.to_rgb(g_std_lighting_conditions);
+    data.m_material_value = material_value.reflectance_to_rgb(g_std_lighting_conditions);
+    data.m_emitted_radiance = emitted_radiance.illuminance_to_rgb(g_std_lighting_conditions);
     m_sampled_emitter_data.push_back(data);
 }
 
@@ -168,8 +168,8 @@ void LightPathStream::sampled_non_physical_light(
     SampledEmitterData data;
     data.m_entity = &light;
     data.m_vertex_position = Vector3f(emission_position);
-    data.m_material_value = material_value.to_rgb(g_std_lighting_conditions);
-    data.m_emitted_radiance = emitted_radiance.to_rgb(g_std_lighting_conditions);
+    data.m_material_value = material_value.reflectance_to_rgb(g_std_lighting_conditions);
+    data.m_emitted_radiance = emitted_radiance.illuminance_to_rgb(g_std_lighting_conditions);
     m_sampled_emitter_data.push_back(data);
 }
 
@@ -187,8 +187,8 @@ void LightPathStream::sampled_environment(
     SampledEnvData data;
     data.m_environment_edf = &environment_edf;
     data.m_emission_direction = emission_direction;
-    data.m_material_value = material_value.to_rgb(g_std_lighting_conditions);
-    data.m_emitted_radiance = emitted_radiance.to_rgb(g_std_lighting_conditions);
+    data.m_material_value = material_value.reflectance_to_rgb(g_std_lighting_conditions);
+    data.m_emitted_radiance = emitted_radiance.illuminance_to_rgb(g_std_lighting_conditions);
     m_sampled_env_data.push_back(data);
 }
 
@@ -223,8 +223,7 @@ void LightPathStream::hit_background()
     m_events.push_back(event);
 }
 
-void LightPathStream::
-end_path()
+void LightPathStream::end_path()
 {
     // Ignore paths that fall outside of the supported range.
     if (m_pixel_coords.x >= 0 &&
@@ -249,18 +248,6 @@ end_path()
 
               case EventType::SampledEnvironment:
                 create_path_from_sampled_environment(i);
-                break;
-
-              case EventType::SampledVolume:
-                // todo: create proper path here
-                break;
-
-              case EventType::HitBackground:
-                // todo: create proper path here
-                break;
-
-              case EventType::Terminate:
-                // todo: create proper path here
                 break;
 
               assert_otherwise;
@@ -439,11 +426,7 @@ void LightPathStream::create_path_from_hit_emitter(const size_t emitter_event_in
 void LightPathStream::create_path_from_sampled_emitter(const size_t emitter_event_index)
 {
     // Find the last scattering event.
-    //assert(emitter_event_index > 0);
-
-    if (emitter_event_index == 0)
-        return;
-
+    assert(emitter_event_index > 0);
     size_t last_scattering_event_index = emitter_event_index - 1;
     while (m_events[last_scattering_event_index].m_type != EventType::HitReflector &&
            m_events[last_scattering_event_index].m_type != EventType::HitEmitter)

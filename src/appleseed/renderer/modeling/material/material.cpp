@@ -106,7 +106,7 @@ Material::Material(
 {
     set_name(name);
 
-    m_inputs.declare("surface_shader", InputFormatEntity, "");
+    m_inputs.declare("surface_shader", InputFormat::Entity, "");
 }
 
 const char* Material::get_surface_shader_name() const

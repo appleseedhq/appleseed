@@ -236,23 +236,21 @@ struct MasterRenderer::Impl
 
             // Insert post-processing time into frame's render info.
             render_info.insert("post_processing_time", stopwatch.get_seconds());
+            RENDERER_LOG_INFO("post-processing time: %s.", pretty_time(stopwatch.get_seconds()).c_str());
         }
         catch (const std::bad_alloc&)
         {
-            renderer_controller.on_rendering_abort();
             RENDERER_LOG_ERROR("rendering failed (ran out of memory).");
             result.m_status = RenderingResult::Failed;
         }
 #ifdef NDEBUG
         catch (const std::exception& e)
         {
-            renderer_controller.on_rendering_abort();
             RENDERER_LOG_ERROR("rendering failed (%s).", e.what());
             result.m_status = RenderingResult::Failed;
         }
         catch (...)
         {
-            renderer_controller.on_rendering_abort();
             RENDERER_LOG_ERROR("rendering failed (unknown exception).");
             result.m_status = RenderingResult::Failed;
         }
@@ -297,17 +295,11 @@ struct MasterRenderer::Impl
 
             // Expand procedural assemblies before scene entities inputs are bound.
             if (!m_project.get_scene()->expand_procedural_assemblies(m_project, &abort_switch))
-            {
-                renderer_controller.on_rendering_abort();
-                return RenderingResult::Aborted;
-            }
+                return RenderingResult::Failed; // todo: depends on whether the abort switch was triggered or not
 
             // Bind scene entities inputs.
             if (!bind_scene_entities_inputs())
-            {
-                renderer_controller.on_rendering_abort();
-                return RenderingResult::Aborted;
-            }
+                return RenderingResult::Failed;
 
             const IRendererController::Status status = initialize_and_render_frame(renderer_controller);
 
@@ -343,6 +335,24 @@ struct MasterRenderer::Impl
         // Construct an abort switch that will allow to abort initialization or rendering.
         RendererControllerAbortSwitch abort_switch(renderer_controller);
 
+        // Initialize the render device.
+        const bool success =
+            m_render_device->initialize(
+                m_resource_search_paths,
+                m_tile_callback_factory,
+                abort_switch);
+        if (!success || abort_switch.is_aborted())
+        {
+            // If it wasn't an abort, it was a failure.
+            return
+                abort_switch.is_aborted()
+                    ? renderer_controller.get_status()
+                    : IRendererController::AbortRendering;
+        }
+
+        // Print render device settings.
+        m_render_device->print_settings();
+
         // Let scene entities perform their pre-render actions. Don't proceed if that failed.
         // This is done before creating renderer components because renderer components need
         // to access the scene's render data such as the scene's bounding box.
@@ -353,26 +363,6 @@ struct MasterRenderer::Impl
             recorder.on_render_end(m_project);
             return renderer_controller.get_status();
         }
-
-        // Initialize the render device.
-        const bool success =
-            m_render_device->initialize(
-                m_resource_search_paths,
-                m_tile_callback_factory,
-                abort_switch);
-        if (!success || abort_switch.is_aborted())
-        {
-            recorder.on_render_end(m_project);
-
-            // If it wasn't an abort, it was a failure.
-            return
-                abort_switch.is_aborted()
-                    ? renderer_controller.get_status()
-                    : IRendererController::AbortRendering;
-        }
-
-        // Print render device settings.
-        m_render_device->print_settings();
 
         // Report whether Embree is used or not.
 #ifdef APPLESEED_WITH_EMBREE
@@ -529,11 +519,12 @@ struct MasterRenderer::Impl
         }
 
         // Execute post-processing stages.
+        const size_t thread_count = get_rendering_thread_count(m_params);
         for (PostProcessingStage* stage : ordered_stages)
         {
             RENDERER_LOG_INFO("executing \"%s\" post-processing stage with order %d on frame \"%s\"...",
                 stage->get_path().c_str(), stage->get_order(), frame->get_path().c_str());
-            stage->execute(*frame);
+            stage->execute(*frame, thread_count);
             invoke_tile_callbacks(*frame);
         }
     }

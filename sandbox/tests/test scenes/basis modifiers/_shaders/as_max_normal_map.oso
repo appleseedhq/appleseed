@@ -1,0 +1,121 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.10.3
+# options: -O2 -DNDEBUG -I/home/lovro/appleseed/appleseed/src/appleseed.shaders/include -o /home/lovro/appleseed/appleseed/sandbox/shaders/max/as_max_normal_map.oso
+shader as_max_normal_map
+param	color	Color	0 0 0		%read{6,6} %write{2147483647,-1}
+param	vector	Normal	0 0 0		%read{15,31} %write{0,0} %initexpr
+param	vector	Tn	0 0 0		%meta{int,lockgeom,0}  %read{15,22} %write{2147483647,-1}
+param	string	UpVector	"Blue"		%read{9,9} %write{2147483647,-1}
+param	string	Space	"Tangent"		%read{16,19} %write{2147483647,-1}
+param	float	Amount	1		%read{29,31} %write{2147483647,-1}
+oparam	vector	NormalOut	0 0 0		%read{34,34} %write{32,33}
+oparam	vector	TangentOut	0 0 0		%read{2147483647,-1} %write{35,35}
+global	normal	N	%read{0,0} %write{2147483647,-1}
+local	normal	n	%read{11,33} %write{8,28}
+local	float	___355_tmp	%read{14,14} %write{11,11}
+local	vector	bn	%read{24,34} %write{15,15}
+const	float	$const1	-1		%read{1,1} %write{2147483647,-1}
+temp	color	$tmp1	%read{8,8} %write{1,1}
+const	float	$const2	1		%read{2,29} %write{2147483647,-1}
+temp	color	$tmp2	%read{8,8} %write{2,2}
+temp	color	$tmp3	%read{8,8} %write{7,7}
+const	float	$const3	0		%read{3,3} %write{2147483647,-1}
+temp	color	$tmp4	%read{7,7} %write{3,3}
+temp	color	$tmp5	%read{6,6} %write{4,4}
+const	string	$const4	"clamp"		%read{5,5} %write{2147483647,-1}
+temp	color	$tmp6	%read{7,7} %write{6,6}
+const	string	$const5	"Green"		%read{9,9} %write{2147483647,-1}
+temp	int	$tmp7	%read{10,10} %write{9,9}
+const	int	$const6	2		%read{11,26} %write{2147483647,-1}
+const	int	$const7	1		%read{12,23} %write{2147483647,-1}
+temp	float	$tmp8	%read{13,13} %write{12,12}
+const	string	$const8	"Object"		%read{16,16} %write{2147483647,-1}
+temp	int	$tmp9	%read{17,17} %write{16,16}
+const	string	$const9	"object"		%read{18,18} %write{2147483647,-1}
+const	string	$const10	"world"		%read{18,18} %write{2147483647,-1}
+const	string	$const11	"Tangent"		%read{19,19} %write{2147483647,-1}
+temp	int	$tmp10	%read{20,20} %write{19,19}
+const	int	$const12	0		%read{21,21} %write{2147483647,-1}
+temp	float	$tmp11	%read{22,22} %write{21,21}
+temp	vector	$tmp12	%read{25,25} %write{22,22}
+temp	float	$tmp13	%read{24,24} %write{23,23}
+temp	vector	$tmp14	%read{25,25} %write{24,24}
+temp	vector	$tmp15	%read{28,28} %write{25,25}
+temp	float	$tmp16	%read{27,27} %write{26,26}
+temp	vector	$tmp17	%read{28,28} %write{27,27}
+temp	int	$tmp18	%read{30,30} %write{29,29}
+temp	vector	$tmp19	%read{32,32} %write{31,31}
+temp	vector	$tmp20	%read{35,35} %write{34,34}
+code Normal
+# /home/lovro/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_normal_map.osl:32
+#     vector        Normal = N,
+	assign		Normal N 	%filename{"/home/lovro/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_normal_map.osl"} %line{32} %argrw{"wr"}
+code ___main___
+# /home/lovro/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_normal_map.osl:44
+#     normal n = (normal) mix(-1.0, 1.0, clamp(Color, 0.0, 1.0));
+	assign		$tmp1 $const1 	%filename{"/home/lovro/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_normal_map.osl"} %line{44} %argrw{"wr"}
+	assign		$tmp2 $const2 	%argrw{"wr"}
+	assign		$tmp4 $const3 	%argrw{"wr"}
+	assign		$tmp5 $const2 	%argrw{"wr"}
+	functioncall	$const4 8 	%argrw{"r"}
+# /home/lovro/appleseed/appleseed/sandbox/shaders/stdosl.h:144
+# color  clamp (color x, color minval, color maxval) { return max(min(x,maxval),minval); }
+	min		$tmp6 Color $tmp5 	%filename{"/home/lovro/appleseed/appleseed/sandbox/shaders/stdosl.h"} %line{144} %argrw{"wrr"}
+	max		$tmp3 $tmp6 $tmp4 	%argrw{"wrr"}
+# /home/lovro/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_normal_map.osl:44
+#     normal n = (normal) mix(-1.0, 1.0, clamp(Color, 0.0, 1.0));
+	mix		n $tmp1 $tmp2 $tmp3 	%filename{"/home/lovro/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_normal_map.osl"} %line{44} %argrw{"wrrr"}
+# /home/lovro/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_normal_map.osl:46
+#     if (UpVector == "Green")
+	eq		$tmp7 UpVector $const5 	%line{46} %argrw{"wrr"}
+	if		$tmp7 15 15 	%argrw{"r"}
+# /home/lovro/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_normal_map.osl:48
+#         float tmp = n[2];
+	compref		___355_tmp n $const6 	%line{48} %argrw{"wrr"}
+# /home/lovro/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_normal_map.osl:49
+#         n[2] = n[1];
+	compref		$tmp8 n $const7 	%line{49} %argrw{"wrr"}
+	compassign	n $const6 $tmp8 	%argrw{"wrr"}
+# /home/lovro/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_normal_map.osl:50
+#         n[1] = tmp;
+	compassign	n $const7 ___355_tmp 	%line{50} %argrw{"wrr"}
+# /home/lovro/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_normal_map.osl:53
+#     vector bn = cross(Tn, Normal);
+	cross		bn Tn Normal 	%line{53} %argrw{"wrr"}
+# /home/lovro/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_normal_map.osl:55
+#     if (Space == "Object")
+	eq		$tmp9 Space $const8 	%line{55} %argrw{"wrr"}
+	if		$tmp9 19 29 	%argrw{"r"}
+# /home/lovro/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_normal_map.osl:57
+#         n = transform("object", "world", n);
+	transformn	n $const9 $const10 n 	%line{57} %argrw{"wrrr"}
+# /home/lovro/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_normal_map.osl:59
+#     else if (Space == "Tangent")
+	eq		$tmp10 Space $const11 	%line{59} %argrw{"wrr"}
+	if		$tmp10 29 29 	%argrw{"r"}
+# /home/lovro/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_normal_map.osl:61
+#         n = n[0] * Tn + n[1] * bn + n[2] * Normal;
+	compref		$tmp11 n $const12 	%line{61} %argrw{"wrr"}
+	mul		$tmp12 $tmp11 Tn 	%argrw{"wrr"}
+	compref		$tmp13 n $const7 	%argrw{"wrr"}
+	mul		$tmp14 $tmp13 bn 	%argrw{"wrr"}
+	add		$tmp15 $tmp12 $tmp14 	%argrw{"wrr"}
+	compref		$tmp16 n $const6 	%argrw{"wrr"}
+	mul		$tmp17 $tmp16 Normal 	%argrw{"wrr"}
+	add		n $tmp15 $tmp17 	%argrw{"wrr"}
+# /home/lovro/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_normal_map.osl:64
+#     if (Amount != 1.0)
+	neq		$tmp18 Amount $const2 	%line{64} %argrw{"wrr"}
+	if		$tmp18 33 34 	%argrw{"r"}
+# /home/lovro/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_normal_map.osl:65
+#         NormalOut = normalize(mix(Normal, n, Amount));
+	mix		$tmp19 Normal n Amount 	%line{65} %argrw{"wrrr"}
+	normalize	NormalOut $tmp19 	%argrw{"wr"}
+# /home/lovro/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_normal_map.osl:67
+#         NormalOut = normalize(n);
+	normalize	NormalOut n 	%line{67} %argrw{"wr"}
+# /home/lovro/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_normal_map.osl:69
+#     TangentOut = normalize(cross(NormalOut, bn));
+	cross		$tmp20 NormalOut bn 	%line{69} %argrw{"wrr"}
+	normalize	TangentOut $tmp20 	%argrw{"wr"}
+	end

@@ -73,8 +73,8 @@ namespace
             ShadingResult&              shading_result) override
         {
             shading_result.m_aovs[m_index].rgb() =
-                shading_components.m_glossy.to_rgb(g_std_lighting_conditions) +
-                shading_components.m_indirect_glossy.to_rgb(g_std_lighting_conditions);
+                shading_components.m_glossy.reflectance_to_rgb(g_std_lighting_conditions) +
+                shading_components.m_indirect_glossy.reflectance_to_rgb(g_std_lighting_conditions);
 
             shading_result.m_aovs[m_index].a = shading_result.m_main.a;
         }
@@ -105,7 +105,7 @@ namespace
             ShadingResult&              shading_result) override
         {
             shading_result.m_aovs[m_index].rgb() =
-                shading_components.m_glossy.to_rgb(g_std_lighting_conditions);
+                shading_components.m_glossy.reflectance_to_rgb(g_std_lighting_conditions);
 
             shading_result.m_aovs[m_index].a = shading_result.m_main.a;
         }
@@ -136,7 +136,7 @@ namespace
             ShadingResult&              shading_result) override
         {
             shading_result.m_aovs[m_index].rgb() =
-                shading_components.m_indirect_glossy.to_rgb(g_std_lighting_conditions);
+                shading_components.m_indirect_glossy.reflectance_to_rgb(g_std_lighting_conditions);
 
             shading_result.m_aovs[m_index].a = shading_result.m_main.a;
         }
