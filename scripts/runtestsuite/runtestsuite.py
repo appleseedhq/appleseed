@@ -56,6 +56,9 @@ MAX_DIFFERING_COMPONENTS = 4 * 2    # max number of pixel components that are al
 
 CURRENT_TIME = datetime.datetime.now()
 
+BUILD_REPORT_FILE = "build_report.txt"
+GIT_COMMIT_URL_PREFIX="https://github.com/appleseedhq/appleseed/commit/"
+
 
 # --------------------------------------------------------------------------------------------------
 # Utilities.
@@ -118,19 +121,18 @@ def write_rgba_png_file(filepath, rows):
         writer.write(file, rows)
 
 def git_information(path):
-    git_hash = git_title = "N/A"
-
     if is_git_installed(path) and is_git_repository(path):
-        hash = get_git_hash(path)
-        title = get_git_title(path)
-        if hash: git_hash = hash
-        if title: git_title = title
+        git_hash = get_git_hash(path)
+        git_title = get_git_title(path)
+        git_commit_html_fragment = make_git_commit_url(git_hash, git_title)
+    elif os.path.exists(BUILD_REPORT_FILE):
+        git_hash, git_title = parse_build_report(BUILD_REPORT_FILE)
+        git_commit_html_fragment = make_git_commit_url(git_hash, git_title)
     elif not is_git_installed(path):
-        git_hash = git_title = "N/A (Git not installed)"
+        git_hash = git_title = git_commit_html_fragment = "N/A (Git not installed)"
     else:
-        git_hash = git_title = "N/A (Directory not under git control)"
-        
-    return git_hash, git_title
+        git_hash = git_title = git_commit_html_fragment = "N/A (Directory not under git control)"
+    return git_hash, git_title, git_commit_html_fragment
 
 def is_git_installed(directory):
     return command_is_valid('git -C {0} --version'.format(directory))
@@ -144,6 +146,19 @@ def get_git_hash(directory):
 def get_git_title(directory):
     return command_output('git -C {0} rev-parse --abbrev-ref HEAD'.format(directory))
 
+def parse_build_report(build_report_file_path):
+    git_hash = None
+    git_title = None
+    for line in open(build_report_file_path, "r"):
+        if line.startswith("commit="):
+            git_hash = line.split('=')[1].strip()
+        if line.startswith("commit message="):
+            git_title = line.split('=')[1].strip()
+    return git_hash, git_title
+
+def make_git_commit_url(git_hash, git_title):
+    return '<a href="{0}{1}">{2}</a>'.format(GIT_COMMIT_URL_PREFIX, git_hash, git_title)
+
 def command_output(command):
     command_output = None
     try:
@@ -154,18 +169,19 @@ def command_output(command):
 
 def command_is_valid(command):
     try:
-        command_return = subprocess.check_call( 
-            # Ensure space separated arguments are separate elements of an array 
+        command_return = subprocess.check_call(
+            # Ensure space-separated arguments are separate elements of an array
             # (required for subprocess calls)
             command.split(),
-            # Ensure error output doesn't get printed to terminal                 
-            stdout = open(os.devnull, 'wb'))    
-
+            # Ensure output doesn't get printed to terminal
+            stdout = open(os.devnull, 'wb'),
+            stderr = open(os.devnull, 'wb'))
         return command_return == 0
     except (subprocess.CalledProcessError, OSError):
         pass
 
     return False
+
 
 # --------------------------------------------------------------------------------------------------
 # Utility class to calculate successes vs failures
@@ -173,7 +189,7 @@ def command_is_valid(command):
 
 class TestSuiteRunnerResults:
     def __init__(self):
-        self.rendered = 0   
+        self.rendered = 0
         self.successes = 0
         self.start_time = datetime.datetime.min
         self.end_time = datetime.datetime.min
@@ -330,7 +346,7 @@ class ReportWriter:
     def __write_header(self, args):
         script_path = os.path.realpath(__file__)
 
-        git_hash, git_title = git_information(self.template_directory)
+        git_commit_hash, git_commit_title, git_commit_html_fragment = git_information(self.template_directory)
 
         self.file.write(self.__render(self.header_template,
                                       {'test-date': CURRENT_TIME,
@@ -340,8 +356,9 @@ class ReportWriter:
                                        'appleseed-binary-path': args.tool_path,
                                        'max-abs-diff-allowed': VALUE_THRESHOLD,
                                        'max-diff-comps-count-allowed': MAX_DIFFERING_COMPONENTS,
-                                       'git-hash': git_hash,
-                                       'git-title': git_title}))
+                                       'git-commit-hash': git_commit_hash,
+                                       'git-commit-title': git_commit_title,
+                                       'git-commit-html-fragment': git_commit_html_fragment}))
         self.file.flush()
     
     def __write_stats(self, results):
