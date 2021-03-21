@@ -314,7 +314,6 @@ void AOVAccumulatorContainer::write(
 
     if (m_accum_ptr)
     {
-        //auto lpe_events = aov_components.m_light_path_stream->build_lpe_events();
         for (const auto& event : aov_components.m_lpe_events)
         {
             for (const auto c : event) {
@@ -323,7 +322,7 @@ void AOVAccumulatorContainer::write(
             m_accum_ptr->move(OSL::Labels::STOP);
         }
 
-        Color3f color = shading_components.m_beauty.to_rgb(g_std_lighting_conditions);
+        Color3f color = shading_components.m_beauty.illuminance_to_rgb(g_std_lighting_conditions);
         m_accum_ptr->accum(OSL::Color3(color.r, color.g, color.b));
     }
 }
