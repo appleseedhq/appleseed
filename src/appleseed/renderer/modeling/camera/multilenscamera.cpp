@@ -1420,7 +1420,7 @@ DictionaryArray MultiLensCameraFactory::get_input_metadata() const
         .insert("type", "file")
         .insert("file_picker_mode", "open")
         .insert("file_picker_type", "text")
-        .insert("default", "C:\\Users\\willi\\Desktop\\lenses\\double-gauss.txt")
+        .insert("default", "")
         .insert("use", "required"));
 
     CameraFactory::add_film_metadata(metadata);

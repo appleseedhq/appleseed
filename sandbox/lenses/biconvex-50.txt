@@ -1,0 +1,5 @@
+// single bi-convex lens, Ø1", N-BK7, FL 50mm
+// https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=4847
+0 3 iris 25.4
+50.6 5.2 abbe 1.517 64.17 25.4
+-50.6 48.2 air 25.4
