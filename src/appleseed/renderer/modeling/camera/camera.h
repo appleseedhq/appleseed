@@ -120,7 +120,7 @@ class APPLESEED_DLLSYMBOL Camera
     // expressed in normalized device coordinates
     // (https://github.com/appleseedhq/appleseed/wiki/Terminology).
     // The generated ray is expressed in world space.
-    virtual void spawn_ray(
+    virtual bool spawn_ray(
         SamplingContext&                sampling_context,
         const foundation::Dual2d&       ndc,
         ShadingRay&                     ray) const = 0;

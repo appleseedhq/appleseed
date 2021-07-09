@@ -37,6 +37,7 @@
 #include "renderer/modeling/camera/pinholecamera.h"
 #include "renderer/modeling/camera/sphericalcamera.h"
 #include "renderer/modeling/camera/thinlenscamera.h"
+#include "renderer/modeling/camera/multilenscamera.h"
 #include "renderer/modeling/entity/entityfactoryregistrar.h"
 
 // appleseed.foundation headers.
@@ -67,6 +68,7 @@ CameraFactoryRegistrar::CameraFactoryRegistrar(const SearchPaths& search_paths)
     impl->register_factory(auto_release_ptr<FactoryType>(new PinholeCameraFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new SphericalCameraFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new ThinLensCameraFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new MultiLensCameraFactory()));
 }
 
 CameraFactoryRegistrar::~CameraFactoryRegistrar()

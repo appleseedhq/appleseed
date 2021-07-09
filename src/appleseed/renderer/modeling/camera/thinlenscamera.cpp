@@ -300,7 +300,7 @@ namespace
             return true;
         }
 
-        void spawn_ray(
+        bool spawn_ray(
             SamplingContext&        sampling_context,
             const Dual2d&           ndc,
             ShadingRay&             ray) const override
@@ -344,6 +344,7 @@ namespace
                 ray.m_ry_dir = compute_ray_direction(py, lens_point, transform);
                 ray.m_has_differentials = true;
             }
+            return true;
         }
 
         bool connect_vertex(
