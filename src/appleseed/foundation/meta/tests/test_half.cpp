@@ -33,7 +33,7 @@
 
 // OpenEXR headers.
 #include "foundation/platform/_beginexrheaders.h"
-#include "OpenEXR/half.h"
+#include "Imath/half.h"
 #include "foundation/platform/_endexrheaders.h"
 
 // Standard headers.

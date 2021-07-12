@@ -13,6 +13,7 @@
 // BCD headers.
 #include "DeepImage.h"
 #include "ImageIO.h"
+#include "ImfHeader.h"
 
 // OpenEXR headers.
 #if defined _MSC_VER
