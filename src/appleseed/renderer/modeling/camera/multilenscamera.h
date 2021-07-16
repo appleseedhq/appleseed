@@ -82,8 +82,8 @@ namespace renderer
 
     typedef struct LensElement
     {
-        double lens_radius, thickness, ior, vno, housing_radius;
-        std::string material;
+        double radius, thickness, ior, diameter;
+        bool is_aperture;
     } LensElement;
 
     enum class Pupil {entrance, exit};

@@ -252,7 +252,7 @@ namespace
             if (!read_file(scale))
             {
                 RENDERER_LOG_ERROR(
-                    "while defining camera \"%s\": file \"%d\" not found",
+                    "while defining camera \"%s\": file \"%s\" not found",
                     get_path().c_str(),
                     lens_file);
                 return false;
@@ -275,7 +275,7 @@ namespace
 
             // Extract F-number.
             extract_f_number();
-            lens_f_number = m_focal_length / (2 * lens_container.at(get_aperture_index()).housing_radius);
+            lens_f_number = m_focal_length / lens_container.at(get_aperture_index()).diameter;
 
             // Adjust the F-number is a new one is set.
             if (m_f_number > 0.0)
@@ -657,14 +657,14 @@ namespace
                 float prob_xy;
                 m_importance_sampler->sample(s, x, y, payload, prob_xy);
 
-                const Vector2d lens_point = lens_container.back().housing_radius * payload;
+                const Vector2d lens_point = 0.5 * lens_container.back().diameter * payload;
                 return Vector3d(lens_point.x, lens_point.y, last_z);
             }
             else if (m_diaphragm_blade_count == 0)
             {
                 sampling_context.split_in_place(2, 1);
                 const Vector2d s = sampling_context.next2<Vector2d>();
-                const Vector2d lens_point = lens_container.back().housing_radius * sample_disk_uniform(s);
+                const Vector2d lens_point = 0.5 * lens_container.back().diameter * sample_disk_uniform(s);
                 return Vector3d(lens_point.x, lens_point.y, last_z);
             }
             else
@@ -672,7 +672,7 @@ namespace
                 sampling_context.split_in_place(3, 1);
                 const Vector3d s = sampling_context.next2<Vector3d>();
                 const Vector2d lens_point =
-                    lens_container.back().housing_radius *
+                    0.5 * lens_container.back().diameter *
                     sample_regular_polygon_uniform(
                         s,
                         m_diaphragm_vertices.size(),
@@ -837,7 +837,7 @@ namespace
         {
             const int number_of_samples = 2000;
             bounds.clear();
-            double last_radius = lens_container.back().housing_radius;
+            double last_radius = 0.5 * lens_container.back().diameter;
                 
             double radius = std::sqrt(m_film_dimensions[0] * m_film_dimensions[0] + m_film_dimensions[1] * m_film_dimensions[1]) / 2;
                 
@@ -899,31 +899,31 @@ namespace
             if (pupil == Pupil::entrance)
             {
                 // If the first element is the aperture, then use it as entrance pupil.
-                if (lens_container.front().material == "iris")
+                if (lens_container.front().ior == 0)
                 {
                     center = 0;
-                    radius = lens_container.front().housing_radius;
+                    radius = 0.5 * lens_container.front().diameter;
                     return true;
                 }
 
                 const double first_z = 0;
                 p0 = Vector3d(0, 0, -image_plane_z); // TODO: center of object plane
                 pmin = Vector3d(0, 0, first_z); // Center of the front lens
-                pmax = Vector3d(lens_container.front().housing_radius, 0, first_z); // Marginal point of the front lens
+                pmax = Vector3d(lens_container.front().diameter, 0, first_z); // Marginal point of the front lens
             }
             else
             {
                 // If the last element is the aperture, then use it as exit pupil.
-                if (lens_container.back().material == "iris")
+                if (lens_container.back().ior == 0)
                 {
                     center = get_aperture_z_offset();
-                    radius = lens_container.back().housing_radius;
+                    radius = 0.5 * lens_container.back().diameter;
                     return true;
                 }
 
                 p0 = Vector3d(0, 0, image_plane_z); // Center of iamge plane
                 pmin = Vector3d(0, 0, last_z); // Center of the rear lens
-                pmax = Vector3d(lens_container.back().housing_radius, 0, last_z); // Marginal point of the rear lens
+                pmax = Vector3d(0.5 * lens_container.back().diameter, 0, last_z); // Marginal point of the rear lens
             }
 
             Ray3d rmin(p0, normalize(pmin - p0));
@@ -963,7 +963,7 @@ namespace
             else
                 next_idx = aperture_idx + 1;
 
-            double paraxial_offset = lens_container.at(next_idx).housing_radius * 1e-8;
+            double paraxial_offset = 0.5 * lens_container.at(next_idx).diameter * 1e-8;
             p0 = Vector3d(0, 0, get_z_offset(aperture_idx)); // Center of the aperture stop
             Vector3d p3 = Vector3d(paraxial_offset, 0, get_z_offset(next_idx)); // Paraxial point on the lens before/after the aperture stop
 
@@ -1014,7 +1014,7 @@ namespace
 
                 double t = 0; // Parameter, at which ray intersects element
                 Vector3d normal(0, 0, 0); // Normal vector
-                if (current_element.lens_radius == 0)
+                if (current_element.radius == 0)
                 {
                     // Aperture intersection
                     t = (current_z - ray.m_org.z) / ray.m_dir.z;
@@ -1022,8 +1022,8 @@ namespace
                 else
                 {
                     // Lens element intersection
-                    const Vector3d center = Vector3d(0, 0, current_z + current_element.lens_radius); // Center of the lens element sphere
-                    if (!intersect_lens(ray, center, current_element.lens_radius, t, normal))
+                    const Vector3d center = Vector3d(0, 0, current_z + current_element.radius); // Center of the lens element sphere
+                    if (!intersect_lens(ray, center, current_element.radius, t, normal))
                         return false;
                 }
 
@@ -1035,7 +1035,7 @@ namespace
 
                 ray.m_org = intersection;
 
-                if (current_element.lens_radius != 0) {
+                if (current_element.radius != 0) {
                     Vector3d t(0, 0, 0); // Refracted ray
                         
                     double ior_frac = 1;
@@ -1045,7 +1045,7 @@ namespace
                         if (lens_iter != current_lens.begin())
                         {
                             auto prev_iter = std::prev(lens_iter);
-                            prev_ior = (*prev_iter).ior;
+                            prev_ior = (!(*prev_iter).is_aperture) ? (*prev_iter).ior : 1;
                         }
                         ior_frac = prev_ior / current_element.ior;
                     }
@@ -1053,7 +1053,7 @@ namespace
                     {
                         auto next_iter = std::next(lens_iter);
                         double next_ior = 1;
-                        if (next_iter != current_lens.end())
+                        if (next_iter != current_lens.end() && !(*next_iter).is_aperture)
                             next_ior = (*next_iter).ior;
                         ior_frac = current_element.ior / next_ior;
                     }
@@ -1093,14 +1093,14 @@ namespace
 
         bool is_inside(const LensElement& element, Vector3d p) const
         {
-            if (element.lens_radius != 0)
-                return p.x * p.x + p.y * p.y <= element.housing_radius * element.housing_radius;
+            if (element.radius != 0)
+                return p.x * p.x + p.y * p.y <= 0.5 * element.diameter * 0.5 * element.diameter;
             else
             {
                 if (m_diaphragm_map_bound)
                 {
                     // If the point lies outside the lens element, we can stop already here
-                    if (p.x * p.x + p.y * p.y > element.housing_radius * element.housing_radius)
+                    if (p.x * p.x + p.y * p.y > 0.5 * element.diameter * 0.5 * element.diameter)
                         return false;
 
                     Vector2d ndc = camera_to_ndc(p);
@@ -1112,19 +1112,19 @@ namespace
                     return probability != 0;
                 }
                 else if (m_diaphragm_blade_count == 0)
-                    return p.x * p.x + p.y * p.y <= element.housing_radius * element.housing_radius;
+                    return p.x * p.x + p.y * p.y <= 0.5 * element.diameter * 0.5 * element.diameter;
                 else
                 {
                     // If the point lies outside the lens element, we can stop already here
-                    if (p.x * p.x + p.y * p.y > element.housing_radius * element.housing_radius)
+                    if (p.x * p.x + p.y * p.y > 0.5 * element.diameter * 0.5 * element.diameter)
                         return false;
 
                     // Transform vertices from normalized coordinates to camera space coordinates
                     std::vector<Vector2d> vertices;
                     for (Vector2d vertex : m_diaphragm_vertices)
                     {
-                        Vector2d v(vertex.x * element.housing_radius - m_shift.x,
-                            vertex.y * element.housing_radius - m_shift.y);
+                        Vector2d v(vertex.x * 0.5 * element.diameter - m_shift.x,
+                            vertex.y * 0.5 * element.diameter - m_shift.y);
 
                         vertices.push_back(v);
                     }
@@ -1160,7 +1160,7 @@ namespace
 
         bool compute_thick_lens_scene(double& p_scene, double& f_scene) const
         {
-            const double x = 0.1 * lens_container.at(get_aperture_index()).housing_radius;
+            const double x = 0.01 * lens_container.at(get_aperture_index()).diameter;
             Ray3d orig_ray(Vector3d(x, 0, get_total_z_offset()), Vector3d(0, 0, -1));
             Ray3d ray = orig_ray;
 
@@ -1174,7 +1174,7 @@ namespace
 
         bool compute_thick_lens_film(double& p_film, double& f_film) const
         {
-            const double x = 0.01 * lens_container.at(get_aperture_index()).housing_radius;
+            const double x = 0.01 * lens_container.at(get_aperture_index()).diameter;
             Ray3d orig_ray(Vector3d(x, 0, -1), Vector3d(0, 0, 1));
             Ray3d ray = orig_ray;
 
@@ -1248,12 +1248,11 @@ namespace
 
 
         //
-        // lens_container helper functions
+        // lens container helper functions
         //
 
         // Lens files have to be space separated values of the format:
-        // For material air:      radius    thickness    air                       aperture
-        // For other material:    radius    thickness    material    ior    vno    aperture
+        // radius    thickness    ior    vno    aperture
         bool read_file(double factor)
         {
             lens_container.clear();
@@ -1274,35 +1273,18 @@ namespace
                 LensElement element;
 
                 iss >> num;
-                element.lens_radius = factor * num;
+                element.radius = factor * num;
 
                 iss >> num;
                 element.thickness = factor * num;
 
-                std::string mat;
-                iss >> mat;
-                if (mat.rfind("/", 0) == 0)
-                    iss >> mat;
-
-                std::transform(mat.begin(), mat.end(), mat.begin(), [](unsigned char c) { return std::tolower(c); });
-                element.material = mat;
-
-                if (element.material == "air" || element.material == "iris")
-                {
-                    element.ior = 1.0;
-                    element.vno = 0.0;
-                }
-                else
-                {
-                    iss >> num;
-                    element.ior = num;
-
-                    iss >> num;
-                    element.vno = num;
-                }
-
                 iss >> num;
-                element.housing_radius = factor * num;
+                element.ior = num;
+
+                element.is_aperture = num == 0;
+                
+                iss >> num;
+                element.diameter = factor * num;
 
                 lens_container.push_back(element);
             }
@@ -1317,15 +1299,15 @@ namespace
             double scale = to_focal_length / from_focal_length;
             for (auto iter = lens_container.begin(); iter != lens_container.end(); ++iter)
             {
-                (*iter).lens_radius *= scale;
+                (*iter).radius *= scale;
                 (*iter).thickness *= scale;
-                (*iter).housing_radius *= scale;
+                (*iter).diameter *= scale;
             }
         }
 
         void adjust_f_number()
         {
-            lens_container.at(get_aperture_index()).housing_radius = 0.5 * m_focal_length / m_f_number;
+            lens_container.at(get_aperture_index()).diameter = m_focal_length / m_f_number;
         }
 
         int get_aperture_index() const
@@ -1333,7 +1315,7 @@ namespace
             int cnt = 0;
             for (LensElement element : lens_container)
             {
-                if (element.material == "iris")
+                if (element.ior == 0)
                     return cnt;
 
                 ++cnt;
@@ -1347,7 +1329,7 @@ namespace
 
             for (LensElement element : lens_container)
             {
-                if (element.material == "iris")
+                if (element.ior == 0)
                     return offset;
 
                 offset += element.thickness;
