@@ -242,6 +242,9 @@ namespace
             if (!PerspectiveCamera::on_render_begin(project, parent, recorder, abort_switch))
                 return false;
 
+            // Extract the focal length from the camera parameters.
+            m_focal_length = extract_focal_length(m_film_dimensions[0]);
+
             // Extract autofocus status.
             m_autofocus_enabled = m_params.get_optional<bool>("autofocus_enabled", true);
 

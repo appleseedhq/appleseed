@@ -140,6 +140,22 @@ namespace
                 m_shutter_close_end_time);
         }
 
+        bool on_render_begin(
+            const Project& project,
+            const BaseGroup* parent,
+            OnRenderBeginRecorder& recorder,
+            IAbortSwitch* abort_switch) override
+        {
+            if (!PerspectiveCamera::on_render_begin(project, parent, recorder, abort_switch))
+                return false;
+
+            // Extract the focal length from the camera parameters.
+            m_focal_length = extract_focal_length(m_film_dimensions[0]);
+
+            return true;
+        }
+
+
         bool spawn_ray(
             SamplingContext&        sampling_context,
             const Dual2d&           ndc,
