@@ -14,14 +14,13 @@
             <parameter name="aspect_ratio" value="1.77778" />
             <parameter name="autofocus_enabled" value="false" />
             <parameter name="autofocus_target" value="0.5 0.5" />
-            <parameter name="controller_target" value="-4.99119 6.55286e-07 6.55286e-07" />
             <parameter name="diaphragm_blades" value="0" />
             <parameter name="diaphragm_tilt_angle" value="0.0" />
-            <parameter name="f_stop" value="1" />
+            <parameter name="f_stop" value="2.8" />
             <parameter name="film_dimensions" value="0.036 0.02025" />
             <parameter name="focal_distance" value="1.0" />
             <parameter name="focal_length" value="0.05" />
-            <parameter name="lens_file" value="C:\Users\willi\Documents\appleseed-dev\appleseed\sandbox\lenses\double-gauss-laikin.txt" />
+            <parameter name="lens_file" value="C:\Users\willi\Documents\appleseed-dev\appleseed\sandbox\lenses\double-gauss-tronnier.txt" />
             <parameter name="near_z" value="-0.001" />
             <parameter name="shift_x" value="0" />
             <parameter name="shift_y" value="0" />

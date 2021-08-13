@@ -17,11 +17,11 @@
             <parameter name="diaphragm_blades" value="0" />
             <parameter name="diaphragm_map" value="bokeh_map_star_inst" />
             <parameter name="diaphragm_tilt_angle" value="0.0" />
-            <parameter name="f_stop" value="1.0" />
+            <parameter name="f_stop" value="2.8" />
             <parameter name="film_dimensions" value="0.036 0.02025" />
-            <parameter name="focal_distance" value="1" />
+            <parameter name="focal_distance" value="0.8" />
             <parameter name="focal_length" value="0.05" />
-            <parameter name="lens_file" value="C:\Users\willi\Documents\appleseed-dev\appleseed\sandbox\lenses\double-gauss-laikin.txt" />
+            <parameter name="lens_file" value="C:\Users\willi\Documents\appleseed-dev\appleseed\sandbox\lenses\double-gauss-tronnier.txt" />
             <parameter name="near_z" value="-0.001" />
             <parameter name="shift_x" value="0" />
             <parameter name="shift_y" value="0" />
@@ -42,7 +42,16 @@
             <parameter name="color_space" value="srgb" />
             <parameter name="filename" value="bokeh_map_star.png" />
         </texture>
+        <texture name="bokeh_map_heart" model="disk_texture_2d">
+            <parameter name="color_space" value="srgb" />
+            <parameter name="filename" value="bokeh_map_heart.jpg" />
+        </texture>
         <texture_instance name="bokeh_map_star_inst" texture="bokeh_map_star">
+            <parameter name="addressing_mode" value="clamp" />
+            <parameter name="filtering_mode" value="bilinear" />
+            <parameter name="multiplier" value="2.0" />
+        </texture_instance>
+        <texture_instance name="bokeh_map_heart_inst" texture="bokeh_map_heart">
             <parameter name="addressing_mode" value="clamp" />
             <parameter name="filtering_mode" value="bilinear" />
             <parameter name="multiplier" value="2.0" />
@@ -6473,7 +6482,7 @@
             </parameters>
             <parameters name="uniform_pixel_renderer">
                 <parameter name="force_antialiasing" value="true" />
-                <parameter name="samples" value="48" />
+                <parameter name="samples" value="64" />
             </parameters>
         </configuration>
         <configuration name="interactive" base="base_interactive">
