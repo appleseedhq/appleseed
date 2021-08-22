@@ -323,7 +323,7 @@ namespace
             m_total_z = get_total_z_offset();
             m_last_z = m_total_z - m_lens_container.back().thickness;
 
-            const double max_error = 1e-6;
+            const double max_error = 1e-12;
             const int max_iter = 100;
 
             // Calculate entrance pupil or use first lens element.
@@ -732,8 +732,8 @@ namespace
             Ray3d r1 = rmax;
 
             int iter = 0;
-            double cos_difference = compute_cosine_similarity(rmin.m_dir, rmax.m_dir);
-            while (iter < max_iter && cos_difference >= max_err)
+            double cos_similarity = compute_cosine_similarity(rmin.m_dir, rmax.m_dir);
+            while (iter < max_iter && 1 - cos_similarity >= max_err)
             {
                 // Create temporary ray to send through lens
                 Ray3d testing_ray = r1;
@@ -750,7 +750,7 @@ namespace
                 r1.m_dir = normalize((rmin.m_dir + rmax.m_dir) / 2);
 
                 ++iter;
-                cos_difference = compute_cosine_similarity(rmin.m_dir, rmax.m_dir);
+                cos_similarity = compute_cosine_similarity(rmin.m_dir, rmax.m_dir);
             }
 
             if (iter >= max_iter)
@@ -1052,7 +1052,7 @@ namespace
                 denom_a += a[i] * a[i];
                 denom_b += b[i] * b[i];
             }
-            return acos(dot / (std::sqrt(denom_a) * std::sqrt(denom_b)));
+            return (dot / (std::sqrt(denom_a) * std::sqrt(denom_b)));
         }
 
         Vector3d ndc_to_camera(const Vector2d& point) const
