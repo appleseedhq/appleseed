@@ -393,7 +393,7 @@ namespace
 
         bool connect_vertex(
             SamplingContext& sampling_context,
-            const float             time,
+            const float time,
             const Vector3d& point,
             Vector2d& ndc,
             Vector3d& outgoing,
@@ -414,7 +414,7 @@ namespace
             if (!trace_ray_from_scene(ray))
                 return false;
 
-            // Compute the intersection of the ray with the film plane
+            // Compute the intersection of the ray with the film plane.
             double t;
             if (!intersect(ray, Vector3d(0, 0, m_total_z), Vector3d(0, 0, -1), t))
                 return false;
@@ -430,7 +430,7 @@ namespace
                 return false;
 
             // Transform the outgoing direction vector to world space.
-            outgoing = transform.vector_to_parent(outgoing);
+            outgoing = transform.vector_to_parent(input_point - pupil_point);
 
             // Compute the emitted importance.
             const double square_dist_film_lens = square_norm(film_point);
