@@ -929,8 +929,8 @@ namespace
                     if (!pythag_test)
                         return false;
 
-                    int x = (int)std::floor((p.x + 0.5 * element.diameter) / element.diameter * m_diaphragm_map_hints.m_width);
-                    int y = (int)std::floor((p.y + 0.5 * element.diameter) / element.diameter * m_diaphragm_map_hints.m_height);
+                    int x = static_cast<int>(std::floor((p.x + 0.5 * element.diameter) / element.diameter * m_diaphragm_map_hints.m_width));
+                    int y = static_cast<int>(std::floor((p.y + 0.5 * element.diameter) / element.diameter * m_diaphragm_map_hints.m_height));
 
                     float probability = m_importance_sampler->get_pdf((size_t)x, (size_t)y);
 
@@ -1074,27 +1074,22 @@ namespace
                 if (line.rfind("#", 0) == 0 || line.rfind("//", 0) == 0)
                     continue;
                 std::istringstream iss(line);
-                double num;
+                
                 LensElement element;
 
-                iss >> num;
-                element.radius = factor * num;
+                iss >> element.radius;
+                iss >> element.thickness;
+                iss >> element.ior;
+                iss >> element.diameter;
 
-                iss >> num;
-                element.thickness = factor * num;
-
-                iss >> num;
-                element.ior = num;
-
-                element.is_aperture = num == 0;
+                element.is_aperture = element.ior == 0;
                 if (element.is_aperture)
                 {
                     has_aperture = true;
                     m_aperture_index = index;
                 }
-                
-                iss >> num;
-                element.diameter = factor * num;
+
+                element.scale(factor);
 
                 m_lens_container.push_back(element);
                 ++index;

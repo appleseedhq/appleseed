@@ -84,6 +84,14 @@ namespace renderer
     {
         double radius, thickness, ior, diameter;
         bool is_aperture;
+
+        void scale(double factor)
+        {
+            radius = radius * factor;
+            thickness = thickness * factor;
+            diameter = diameter * factor;
+        }
+
     } LensElement;
 
     enum class Pupil {entrance, exit};
