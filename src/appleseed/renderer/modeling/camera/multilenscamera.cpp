@@ -792,9 +792,9 @@ namespace
             else
                 current_z = 0;
 
-            for (auto lens_iter = m_lens_container.begin() + start_index; lens_iter != m_lens_container.end(); ++lens_iter)
+            for (auto lens_iter = m_lens_container.cbegin() + start_index; lens_iter != m_lens_container.cend(); ++lens_iter)
             {
-                LensElement current_element = *lens_iter;
+                const LensElement current_element = *lens_iter;
 
                 double t; // parameter, at which ray intersects element
                 Vector3d normal; // normal vector
@@ -823,7 +823,7 @@ namespace
                     Vector3d t; // refracted ray
 
                     double prev_ior = 1;
-                    if (lens_iter != m_lens_container.begin())
+                    if (lens_iter != m_lens_container.cbegin())
                     {
                         auto prev_iter = std::prev(lens_iter);
                         prev_ior = (!(*prev_iter).is_aperture) ? (*prev_iter).ior : 1;
@@ -848,9 +848,9 @@ namespace
             else
                 current_z = m_total_z;
 
-            for (auto lens_iter = m_lens_container.rbegin() + start_index; lens_iter != m_lens_container.rend(); ++lens_iter)
+            for (auto lens_iter = m_lens_container.crbegin() + start_index; lens_iter != m_lens_container.crend(); ++lens_iter)
             {
-                LensElement current_element = *lens_iter;
+                const LensElement current_element = *lens_iter;
                 current_z -= current_element.thickness;
 
                 double t; // parameter, at which ray intersects element
@@ -881,7 +881,7 @@ namespace
 
                     auto next_iter = std::next(lens_iter);
                     double next_ior = 1;
-                    if (next_iter != m_lens_container.rend() && !(*next_iter).is_aperture)
+                    if (next_iter != m_lens_container.crend() && !(*next_iter).is_aperture)
                         next_ior = (*next_iter).ior;
                     double ior_frac = current_element.ior / next_ior;
 
@@ -1144,7 +1144,7 @@ namespace
             double offset = 0;
             int cnt = 0;
 
-            for (LensElement element : m_lens_container)
+            for (LensElement const &element : m_lens_container)
             {
                 if (i == cnt)
                     return offset;
@@ -1159,7 +1159,7 @@ namespace
         {
             double offset = 0;
 
-            for (LensElement element : m_lens_container)
+            for (LensElement const &element : m_lens_container)
                 offset += element.thickness;
             return offset;
         }
