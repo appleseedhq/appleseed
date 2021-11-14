@@ -725,7 +725,7 @@ namespace
             Ray3d r1 = rmax;
 
             int iter = 0;
-            double cos_similarity = compute_cosine_similarity(rmin.m_dir, rmax.m_dir);
+            double cos_similarity = dot(rmin.m_dir, rmax.m_dir);
             while (iter < max_iter && 1 - cos_similarity >= max_err)
             {
                 // Create temporary ray to send through lens.
@@ -743,7 +743,7 @@ namespace
                 r1.m_dir = normalize((rmin.m_dir + rmax.m_dir) / 2);
 
                 ++iter;
-                cos_similarity = compute_cosine_similarity(rmin.m_dir, rmax.m_dir);
+                cos_similarity = dot(rmin.m_dir, rmax.m_dir);
             }
 
             if (iter >= max_iter)
@@ -1030,18 +1030,6 @@ namespace
             m_lens_container.back().thickness += delta;
 
             return true;
-        }
-
-        double compute_cosine_similarity(const Vector3d a, const Vector3d b) const
-        {
-            double dot = 0.0, denom_a = 0.0, denom_b = 0.0;
-            for (int i = 0; i < 3; ++i)
-            {
-                dot += a[i] * b[i];
-                denom_a += a[i] * a[i];
-                denom_b += b[i] * b[i];
-            }
-            return (dot / (std::sqrt(denom_a) * std::sqrt(denom_b)));
         }
 
         Vector3d ndc_to_camera(const Vector2d& point) const
