@@ -41,7 +41,6 @@ using namespace foundation;
 namespace nishita {
 
     static const int num_wavelengths = 31;                                     // number of wavelengths per spectrum (400nm to 700nm, delta=10nm)
-    static float mie_g;                                                        // mie assymetricity component g
     static const int n_cylinders = 1024;                                       // number of cylinders for optical depth precomputation
 
     // Lookup table storing optical dephts into the direction of the sun.

@@ -37,9 +37,11 @@
 
 using namespace foundation;
 
+float mie_g;                                                        // mie assymetricity component g
+
 
 void nishita::precompute_mie_g(float haze) {
-    nishita::mie_g = nishita::mie_assymetricity(haze);
+    mie_g = nishita::mie_assymetricity(haze);
 }
 
 void nishita::precompute_shells() {
@@ -89,7 +91,7 @@ float nishita::mie_assymetricity(float u)
 
 float nishita::mie_phase(float angle)
 {
-    const static float mie_g_sqr = (nishita::mie_g * nishita::mie_g);
+    const static float mie_g_sqr = (mie_g * mie_g);
     return 3.0f / (8.0f * Pi<float>()) * (1.0f - mie_g_sqr) / (2.0f + mie_g_sqr) *
         (1.0f + angle * angle) / powf(1.0f + mie_g_sqr - 2.0f * mie_g * angle, 3.0f / 2.0f);
 }
