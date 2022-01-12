@@ -37,17 +37,17 @@
 
 using namespace foundation;
 
-static float get_rayleigh_density(float height)
+float get_rayleigh_density(float height)
 {
     return expf((-height + earth_radius) / rayleigh_scale);
 }
 
-static float get_mie_density(float height)
+float get_mie_density(float height)
 {
     return expf((-height + earth_radius) / mie_scale);
 }
 
-static float get_ozone_density(float height)
+float get_ozone_density(float height)
 {
     const float total_height = height - earth_radius;
     if (total_height < ozone_start)
