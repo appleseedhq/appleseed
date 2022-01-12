@@ -73,4 +73,4 @@ namespace renderer
             const ParamArray&   params) const override;
     };
 
-}   // namespace renderer
+}

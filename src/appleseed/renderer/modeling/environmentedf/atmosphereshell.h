@@ -28,7 +28,6 @@
 
 #pragma once
 
-// appleseed.foundation headers.
 #include "foundation/math/vector.h"
 #include "foundation/math/ray.h"
 
@@ -39,17 +38,17 @@ using namespace foundation;
 // Forward declarations.
 struct intersection;
 
-const float earth_radius = 6378137.0f;                               // Radius of Earth (m) according to nssdc.gsfc.nasa.gov.
-const float atmosphere_thickness = 60000.0f;                         // Rough height of Mesosphere according to nasa.gov.
-const float atmosphere_radius = earth_radius + atmosphere_thickness; // Radius of atmosphere (m).
-const Vector3f earth_center(0.0f, 0.0f, 0.0f);                       // Central point of the earth (m).
+const float earth_radius = 6378137.0f;                               // radius of Earth (m) according to nssdc.gsfc.nasa.gov
+const float atmosphere_thickness = 60000.0f;                         // rough height of Mesosphere according to nasa.gov
+const float atmosphere_radius = earth_radius + atmosphere_thickness; // radius of atmosphere (m)
+const Vector3f earth_center(0.0f, 0.0f, 0.0f);                       // central point of the earth (m)
 
-const float rayleigh_scale = 7994.0f;                                // Rayleigh scale height H0 (m).
-const float mie_scale = 1200.0f;                                     // Mie scale height H0 (m).
+const float rayleigh_scale = 7994.0f;                                // rayleigh scale height H0 (m)
+const float mie_scale = 1200.0f;                                     // mie scale height H0 (m)
 
-const float ozone_ground = 0.4f;                                      // Total amount of ozone on the ground
-const float ozone_start = 10000.0f;                                   // Height at beginning of ozone layer in atmosphere (m).
-const float ozone_peak = 32000.0f;                                    // Height at peak density of ozone in atmosphere (m).
+const float ozone_ground = 0.4f;                                      // total amount of ozone on the ground
+const float ozone_start = 10000.0f;                                   // height at beginning of ozone layer in atmosphere (m)
+const float ozone_peak = 32000.0f;                                    // height at peak density of ozone in atmosphere (m)
 
 // Density of rayleigh particles at height (m) above the earths surface.
 float get_rayleigh_density(float height);
@@ -68,16 +67,16 @@ class shell {
 
 public:
 
-    static const int n_atmosphere_shells = 64;                  // Number of atmospheric shells around the earth
-    static shell atmosphere_shells[n_atmosphere_shells + 1];    // Precomputed atmospheric shells with constant particle density
+    static const int n_atmosphere_shells = 64;                  // number of atmospheric shells around the earth
+    static shell atmosphere_shells[n_atmosphere_shells + 1];    // precomputed atmospheric shells with constant particle density
 
     //
     // Intersection of ray with a shell after a distance (m).
     // 
     struct intersection {
 
-        float distance;                 // Distance before ray hits shell
-        const shell* involved_shell;    // Pointer to shell that was hit
+        float distance;                 // distance before ray hits shell
+        const shell* involved_shell;    // pointer to shell that was hit
 
         intersection();
 
@@ -87,11 +86,11 @@ public:
         static bool sort_by_distance(const intersection& i, const intersection& j);
     };
 
-    int index;                          // Shell index between [0, n_shells)
-    float radius;                       // Radius (m) of shell around earth
-    float rayleigh_density;             // Constant density of aerosol particles withing shell
-    float mie_density;                  // Constant density of dust particles within shell
-    float ozone_density;                // Constant density of ozone particles within shell
+    int index;                          // shell index between [0, n_shells)
+    float radius;                       // radius (m) of shell around earth
+    float rayleigh_density;             // constant density of aerosol particles withing shell
+    float mie_density;                  // constant density of dust particles within shell
+    float ozone_density;                // constant density of ozone particles within shell
 
     shell();
 
@@ -117,8 +116,7 @@ public:
     static float find_index(float shell_radius);
 
     // Finds the intersection distances between the ray and each atmospheric shell.
-    // Returns the number N of intersections found, stores intersection objects in the
-    // intersections-array from position 0 to position N-1
+    // Returns the number N of intersections found, stores intersection objects in the intersections-array from position 0 to position N-1.
     static int find_intersections(const Ray3f& ray, shell::intersection intersections[]);
 
 private:

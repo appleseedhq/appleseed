@@ -210,32 +210,32 @@ namespace renderer
         private:
             APPLESEED_DECLARE_INPUT_VALUES(InputValues)
             {
-                float   m_sun_theta;                    // Angle (deg) between sun and zenith, 0=zenith
-                float   m_sun_phi;                      // Angle (deg) between sun and north, 0=north
-                float   m_sun_intensity_multiplier;     // Increases or decreases the returned radiance values
-                float   m_elevation;                    // Elevation of camera above earth surface (m)   
-                float   m_air_molecule_density;         // Multiplier of air molecule density, affecting rayleigh scattering
-                float   m_dust_molecule_density;        // Multiplier of dust molecule density, affecting mie scattering
-                float   m_ozone_molecule_density;       // Multiplier of ozone molecule density, affecting ozone scattering
+                float   m_sun_theta;                    // angle (deg) between sun and zenith, 0=zenith
+                float   m_sun_phi;                      // angle (deg) between sun and north, 0=north
+                float   m_sun_intensity_multiplier;     // increases or decreases the returned radiance values
+                float   m_elevation;                    // elevation of camera above earth surface (m)   
+                float   m_air_molecule_density;         // multiplier of air molecule density, affecting rayleigh scattering
+                float   m_dust_molecule_density;        // multiplier of dust molecule density, affecting mie scattering
+                float   m_ozone_molecule_density;       // multiplier of ozone molecule density, affecting ozone scattering
                 float   m_haze;                         // u parameter for Cornette phase function used for Mie scattering
                 float   m_horizon_shift;
-                float   m_sun_angular_diameter;         // Rays with angle (rad) +- sun_angular_diameter will return sun radiance directly
+                float   m_sun_angular_diameter;         // rays with angle (rad) +- sun_angular_diameter will return sun radiance directly
             };
 
             InputValues                 m_uniform_values;
 
-            float                       m_sun_theta;    // Angle (rad) between sun and zenith, 0=zenith
-            float                       m_sun_phi;      // Angle (rad) between sun and north, 0=north
-            Vector3f                    sun_dir;        // Vector pointing into the direction of the sun
+            float                       m_sun_theta;    // angle (rad) between sun and zenith, 0=zenith
+            float                       m_sun_phi;      // angle (rad) between sun and north, 0=north
+            Vector3f                    sun_dir;        // vector pointing into the direction of the sun
 
-            float                       m_sun_intensity_multiplier;         // Increases or decreases the returned radiance values
-            float                       m_elevation;                        // Elevation of camera above earth surface (m)    
-            float                       m_air_molecule_density;             // Multiplier of air molecule density, affecting rayleigh scattering
-            float                       m_dust_molecule_density;            // Multiplier of dust molecule density, affecting mie scattering
-            float                       m_ozone_molecule_density;           // Multiplier of ozone molecule density, affecting ozone scattering
+            float                       m_sun_intensity_multiplier;         // increases or decreases the returned radiance values
+            float                       m_elevation;                        // elevation of camera above earth surface (m)    
+            float                       m_air_molecule_density;             // multiplier of air molecule density, affecting rayleigh scattering
+            float                       m_dust_molecule_density;            // multiplier of dust molecule density, affecting mie scattering
+            float                       m_ozone_molecule_density;           // multiplier of ozone molecule density, affecting ozone scattering
             float                       m_haze;                             // u parameter for Cornette phase function used for Mie scattering
-            float                       m_sun_angular_diameter;             // Rays with angle (rad) +- sun_angular_diameter will return sun radiance directly
-            bool                        m_precompute;                       // Use 2D lookup table to precompute sky optical depths.
+            float                       m_sun_angular_diameter;             // rays with angle (rad) +- sun_angular_diameter will return sun radiance directly
+            bool                        m_precompute;                       // use 2D lookup table to precompute sky optical depths
 
             // Fills a 3D precomputation table with optical depths value along the sun direction.
             void sky_precomputations() {
@@ -262,9 +262,9 @@ namespace renderer
                 if (is_sun) {
                     const bool sun_hit = nishita::sun_disk(
                         ray,
-                        m_air_molecule_density,     // Air molecule density (Rayleigh scattering)
-                        m_dust_molecule_density,    // Dust molecule density (Mie scattering)
-                        m_ozone_molecule_density,   // Ozone molecule density (Ozone scattering)
+                        m_air_molecule_density,     // air molecule density (Rayleigh scattering)
+                        m_dust_molecule_density,    // dust molecule density (Mie scattering)
+                        m_ozone_molecule_density,   // ozone molecule density (Ozone scattering)
                         sun_angular_radius,
                         radiance
                     );
@@ -275,16 +275,16 @@ namespace renderer
                 // Compute the final sky radiance.
                 nishita::single_scattering(
                     ray,
-                    sun_dir,                    // Sun direction
-                    m_air_molecule_density,     // Air molecule density (Rayleigh scattering)
-                    m_dust_molecule_density,    // Dust molecule density (Mie scattering)
-                    m_ozone_molecule_density,   // Ozone molecule density (Ozone scattering)
-                    m_precompute,               // Use precomputed lookup table
+                    sun_dir,                    // sun direction
+                    m_air_molecule_density,     // air molecule density (Rayleigh scattering)
+                    m_dust_molecule_density,    // dust molecule density (Mie scattering)
+                    m_ozone_molecule_density,   // ozone molecule density (Ozone scattering)
+                    m_precompute,               // use precomputed lookup table
                     radiance
                 );
                 radiance *=
-                    m_uniform_values.m_sun_intensity_multiplier     // Multiply sun intensity
-                    * 1.5f;         // Since nishita93 underestimates radiance by 1/3 according to Bruneton.
+                    m_uniform_values.m_sun_intensity_multiplier     // multiply sun intensity
+                    * 1.5f;         // since nishita93 underestimates radiance by 1/3 according to Bruneton
             }
 
             Vector3f shift(Vector3f v) const
@@ -491,4 +491,4 @@ namespace renderer
                 new Nishita93EnvironmentEDF(name, params));
     }
 
-}   // namespace renderer
+}

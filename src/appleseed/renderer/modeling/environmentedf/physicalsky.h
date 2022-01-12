@@ -28,7 +28,6 @@
 
 #pragma once
 
-// appleseed.foundation headers.
 #include "foundation/math/vector.h"
 #include "foundation/image/regularspectrum.h"
 #include "foundation/math/ray.h"
@@ -41,9 +40,9 @@ using namespace foundation;
 
 namespace nishita {
 
-    static const int num_wavelengths = 31;                                     // Number of wavelengths per spectrum (400nm to 700nm, delta=10nm)
-    static float mie_g;                                                        // Mie assymetricity component g.
-    static const int n_cylinders = 1024;                                       // Number of cylinders for optical depth precomputation
+    static const int num_wavelengths = 31;                                     // number of wavelengths per spectrum (400nm to 700nm, delta=10nm)
+    static float mie_g;                                                        // mie assymetricity component g
+    static const int n_cylinders = 1024;                                       // number of cylinders for optical depth precomputation
 
     // Lookup table storing optical dephts into the direction of the sun.
     static sky::opticaldepth optical_depths_table[shell::n_atmosphere_shells + 1][n_cylinders];
@@ -93,7 +92,7 @@ namespace nishita {
     const RegularSpectrum31f sun_radiance_spectrum = RegularSpectrum31f::from_array(sun_radiance);
 
     // Rayleigh scattering coefficients (m^-1) from Rudolf Penndorf (1957) Table 3.
-    // Source: https://doi.org/10.1364/JOSA.47.000176.
+    // Source: https://doi.org/10.1364/JOSA.47.000176
     const float rayleigh_coeff[num_wavelengths] = {
             45.40e-6f,   // 400nm
             40.98e-6f,   // 410nm
@@ -129,40 +128,40 @@ namespace nishita {
     };
     const RegularSpectrum31f rayleigh_coeff_spectrum = RegularSpectrum31f::from_array(rayleigh_coeff);
 
-    // Ozona absorption coefficient (m^-1)
+    // Ozona absorption coefficient (m^-1).
     // Source: https://www.iup.uni-bremen.de/gruppen/molspec/databases/referencespectra/o3spectra2011/index.html
     const float ozone_coeff[num_wavelengths] = {
         3.804511196879277e-09f,      // 400 nm
         6.913786897105462e-09f,      // 410 nm
-        1.3852765960014552e-08f,      // 420 nm
-        2.1308603627919998e-08f,      // 430 nm
+        1.3852765960014552e-08f,     // 420 nm
+        2.1308603627919998e-08f,     // 430 nm
         3.974417614472733e-08f,      // 440 nm
         5.779591314894535e-08f,      // 450 nm
         9.191587335498181e-08f,      // 460 nm
-        1.2363721551643633e-07f,      // 470 nm
-        1.9505027060647285e-07f,      // 480 nm
-        2.2672051905767247e-07f,      // 490 nm
+        1.2363721551643633e-07f,     // 470 nm
+        1.9505027060647285e-07f,     // 480 nm
+        2.2672051905767247e-07f,     // 490 nm
         3.716605995280002e-07f,      // 500 nm
-        4.0267814468581854e-07f,      // 510 nm
+        4.0267814468581854e-07f,     // 510 nm
         5.364069922247275e-07f,      // 520 nm
         6.912136535745463e-07f,      // 530 nm
         7.745488102370914e-07f,      // 540 nm
         8.772119777709093e-07f,      // 550 nm
-        1.0680234682312722e-06f,      // 560 nm
-        1.1695343279723626e-06f,      // 570 nm
-        1.1011384812494534e-06f,      // 580 nm
-        1.1759623019832746e-06f,      // 590 nm
-        1.2552240270210935e-06f,      // 600 nm
-        1.0772983295309093e-06f,      // 610 nm
+        1.0680234682312722e-06f,     // 560 nm
+        1.1695343279723626e-06f,     // 570 nm
+        1.1011384812494534e-06f,     // 580 nm
+        1.1759623019832746e-06f,     // 590 nm
+        1.2552240270210935e-06f,     // 600 nm
+        1.0772983295309093e-06f,     // 610 nm
         9.361428617905462e-07f,      // 620 nm
         8.052237676756349e-07f,      // 630 nm
         6.675936847221821e-07f,      // 640 nm
         5.619235334727269e-07f,      // 650 nm
-        4.6550674463418176e-07f,      // 660 nm
-        3.7068568738763686e-07f,      // 670 nm
-        3.0466838275272715e-07f,      // 680 nm
-        2.3788813137578206e-07f,      // 690 nm
-        1.8836707145585476e-07f,      // 700 nm
+        4.6550674463418176e-07f,     // 660 nm
+        3.7068568738763686e-07f,     // 670 nm
+        3.0466838275272715e-07f,     // 680 nm
+        2.3788813137578206e-07f,     // 690 nm
+        1.8836707145585476e-07f,     // 700 nm
     };
     const RegularSpectrum31f ozone_coeff_spectrum = RegularSpectrum31f::from_array(ozone_coeff);
 
@@ -200,8 +199,7 @@ namespace nishita {
     // Finds best fitting optical depth from lookup table.
     sky::opticaldepth lookup_optical_depth(const Ray3f& ray);
 
-    // Computes the irradiance spectrum of a single ray through the atmosphere, considering rayleigh
-    // and mie scattering.
+    // Computes the irradiance spectrum of a single ray through the atmosphere, considering rayleigh and mie scattering.
     void single_scattering(
         const Ray3f& ray,
         const Vector3f& sun_dir,
