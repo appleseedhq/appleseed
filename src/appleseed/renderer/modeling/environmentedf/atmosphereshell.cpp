@@ -121,16 +121,9 @@ float shell::find_radius(int shell_index)
 
 float shell::find_index(float shell_radius)
 {
-    for (int i = 0; i < shell::n_atmosphere_shells; i++) {
-        float radius_s1 = shell::atmosphere_shells[i].radius;
-        float radius_s2 = shell::atmosphere_shells[i + 1].radius;
-        float dist_s1 = radius_s1 - shell_radius;
-        float dist_s2 = radius_s2 - shell_radius;
-        if (dist_s1 <= 0 && dist_s2 > 0) {
-            return static_cast<float>(i) + ((shell_radius - radius_s1) / (radius_s2 - radius_s1));
-        }
-    }
-    return shell::n_atmosphere_shells;
+    const float scale = rayleigh_scale * 2.0f;
+    const float a = expf(-(atmosphere_radius - earth_radius) / scale) - 1.0f;
+    return (expf(-(shell_radius - earth_radius) / scale) - 1) / a * (shell::n_atmosphere_shells - 1);
 }
 
 int shell::find_intersections(const Ray3f& ray, shell::intersection intersections[]) {
