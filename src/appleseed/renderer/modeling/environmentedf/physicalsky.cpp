@@ -204,7 +204,7 @@ void nishita::single_scattering(
         Vector3f segment_middle_point = ray.m_org + (ray.m_dir * distance_to_scatterpoint);
         Ray3f scatter_ray = Ray3f(segment_middle_point, sun_dir);
 
-        if (earth_intersection && distance_to_scatterpoint > distance_to_earth_intersection || intersects_earth(scatter_ray))
+        if (earth_intersection && ((distance_to_scatterpoint > distance_to_earth_intersection) || intersects_earth(scatter_ray)))
             break;
 
         float rayleigh_density = ith_intersection.involved_shell->rayleigh_density;
