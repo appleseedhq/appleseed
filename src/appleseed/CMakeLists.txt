@@ -1806,6 +1806,8 @@ source_group ("renderer\\modeling\\environment" FILES
 
 set (renderer_modeling_environmentedf_sources
     renderer/modeling/environmentedf/ArHosekSkyModelData_CIEXYZ.h
+    renderer/modeling/environmentedf/atmosphereshell.cpp
+    renderer/modeling/environmentedf/atmosphereshell.h
     renderer/modeling/environmentedf/constantenvironmentedf.cpp
     renderer/modeling/environmentedf/constantenvironmentedf.h
     renderer/modeling/environmentedf/constanthemisphereenvironmentedf.cpp
@@ -1825,8 +1827,14 @@ set (renderer_modeling_environmentedf_sources
     renderer/modeling/environmentedf/latlongmapenvironmentedf.h
     renderer/modeling/environmentedf/mirrorballmapenvironmentedf.cpp
     renderer/modeling/environmentedf/mirrorballmapenvironmentedf.h
+    renderer/modeling/environmentedf/nishita93environmentedf.cpp
+    renderer/modeling/environmentedf/nishita93environmentedf.h
+    renderer/modeling/environmentedf/opticaldepth.cpp
+    renderer/modeling/environmentedf/opticaldepth.h
     renderer/modeling/environmentedf/oslenvironmentedf.cpp
     renderer/modeling/environmentedf/oslenvironmentedf.h
+    renderer/modeling/environmentedf/physicalsky.cpp
+    renderer/modeling/environmentedf/physicalsky.h
     renderer/modeling/environmentedf/preethamenvironmentedf.cpp
     renderer/modeling/environmentedf/preethamenvironmentedf.h
     renderer/modeling/environmentedf/sphericalcoordinates.h
