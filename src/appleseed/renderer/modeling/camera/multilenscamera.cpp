@@ -39,10 +39,8 @@
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/texturing/texturecache.h"
 #include "renderer/kernel/texturing/texturestore.h"
-#include "renderer/modeling/camera/perspectivecamera.h"
+#include "renderer/modeling/camera/lenscamera.h"
 #include "renderer/modeling/frame/frame.h"
-#include "renderer/modeling/input/source.h"
-#include "renderer/modeling/input/sourceinputs.h"
 #include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/visibilityflags.h"
 #include "renderer/utility/paramarray.h"
@@ -95,61 +93,16 @@ namespace
 
     typedef ImageImportanceSampler<Vector2d, float> ImageImportanceSamplerType;
 
-    class ImageSampler
-    {
-    public:
-        ImageSampler(
-            TextureCache& texture_cache,
-            const Source* source,
-            const size_t    width,
-            const size_t    height)
-            : m_texture_cache(texture_cache)
-            , m_source(source)
-            , m_width(width)
-            , m_height(height)
-            , m_range(std::sqrt(1.0 + static_cast<double>(m_height * m_height) / (m_width * m_width)))
-        {
-        }
-
-        void sample(const size_t x, const size_t y, Vector2d& payload, float& importance) const
-        {
-            payload = Vector2d(
-                (2.0 * x + 1.0 - m_width) / (m_width - 1.0),
-                (2.0 * y + 1.0 - m_height) / (m_height - 1.0));
-
-            if (m_height != m_width)
-                payload.y *= static_cast<double>(m_height) / m_width;
-
-            payload /= m_range;     // scale to fit in a unit disk
-
-            const Vector2f uv(
-                x / (m_width - 1.0f),
-                y / (m_height - 1.0f));
-
-            Color3f color;
-            m_source->evaluate(m_texture_cache, SourceInputs(uv), color);
-
-            importance = luminance(color);
-        }
-
-    private:
-        TextureCache& m_texture_cache;
-        const Source* m_source;
-        const size_t        m_width;
-        const size_t        m_height;
-        const double        m_range;
-    };
-
     const char* Model = "multilens_camera";
 
     class MultiLensCamera
-        : public PerspectiveCamera
+        : public LensCamera
     {
     public:
         MultiLensCamera(
             const char* name,
             const ParamArray& params)
-            : PerspectiveCamera(name, params)
+            : LensCamera(name, params)
         {
             m_inputs.declare("diaphragm_map", InputFormat::SpectralReflectance, "");
         }
@@ -235,8 +188,7 @@ namespace
             // Extract diaphragm configuration.
             m_diaphragm_map_bound = build_diaphragm_importance_sampler(*project.get_scene());
             extract_diaphragm_blade_count();
-            m_diaphragm_tilt_angle =
-                deg_to_rad(m_params.get_optional<double>("diaphragm_tilt_angle", 0.0));
+            extract_diaphragm_tilt_angle();
 
             // Build the diaphragm polygon.
             if (!m_diaphragm_map_bound && m_diaphragm_blade_count > 0)
@@ -449,8 +401,6 @@ namespace
         Vector2d                 m_autofocus_target;           // autofocus target on film plane, in NDC
         double                   m_focal_distance;             // focal distance in camera space
         bool                     m_diaphragm_map_bound;        // is a diaphragm map bound to the camera
-        size_t                   m_diaphragm_blade_count;      // number of blades of the diaphragm, 0 for round aperture
-        double                   m_diaphragm_tilt_angle;       // tilt angle of the diaphragm in radians
         Source::Hints            m_diaphragm_map_hints;
 
         bool                     m_derivatives_enabled;
@@ -480,25 +430,6 @@ namespace
                 m_lens_file = m_params.get_required<std::string>("lens_file");
         }
 
-        void extract_diaphragm_blade_count()
-        {
-            const int blade_count = m_params.get_optional<int>("diaphragm_blades", 0);
-
-            if (blade_count == 0 || blade_count >= 3)
-                m_diaphragm_blade_count = static_cast<size_t>(blade_count);
-            else
-            {
-                m_diaphragm_blade_count = 0;
-                RENDERER_LOG_ERROR(
-                    "while defining camera \"%s\": invalid value \"%d\" for parameter \"%s\", "
-                    "using default value \"" FMT_SIZE_T "\".",
-                    get_path().c_str(),
-                    blade_count,
-                    "diaphragm_blades",
-                    m_diaphragm_blade_count);
-            }
-        }
-
         double extract_focal_length() const
         {
             if (has_param("focal_length"))
@@ -521,49 +452,6 @@ namespace
                 return hfov_to_focal_length(m_film_dimensions[0], deg_to_rad(hfov));
             }
             return -1;
-        }
-
-        void extract_focal_distance(
-            const bool              autofocus_enabled,
-            Vector2d& autofocus_target,
-            double& focal_distance) const
-        {
-            const Vector2d DefaultAFTarget(0.5);        // in NDC
-            const double DefaultFocalDistance = 1.0;    // in meters
-
-            if (autofocus_enabled)
-            {
-                if (has_param("autofocus_target"))
-                    autofocus_target = m_params.get_required<Vector2d>("autofocus_target", DefaultAFTarget);
-                else
-                {
-                    RENDERER_LOG_ERROR(
-                        "while defining camera \"%s\": no \"autofocus_target\" parameter found; "
-                        "using default value \"%f, %f\".",
-                        get_path().c_str(),
-                        DefaultAFTarget[0],
-                        DefaultAFTarget[1]);
-                    autofocus_target = DefaultAFTarget;
-                }
-
-                focal_distance = DefaultFocalDistance;
-            }
-            else
-            {
-                if (has_param("focal_distance"))
-                    focal_distance = m_params.get_required<double>("focal_distance", DefaultFocalDistance);
-                else
-                {
-                    RENDERER_LOG_ERROR(
-                        "while defining camera \"%s\": no \"focal_distance\" parameter found; "
-                        "using default value \"%f\".",
-                        get_path().c_str(),
-                        DefaultFocalDistance);
-                    focal_distance = DefaultFocalDistance;
-                }
-
-                autofocus_target = DefaultAFTarget;
-            }
         }
 
         bool build_diaphragm_importance_sampler(const Scene& scene)
@@ -1194,95 +1082,7 @@ DictionaryArray MultiLensCameraFactory::get_input_metadata() const
         .insert("default", "false"));
 
     CameraFactory::add_film_metadata(metadata);
-    CameraFactory::add_lens_metadata(metadata);
-
-    metadata.push_back(
-        Dictionary()
-        .insert("name", "f_stop")
-        .insert("label", "F-number")
-        .insert("type", "numeric")
-        .insert("min",
-            Dictionary()
-            .insert("value", "0.5")
-            .insert("type", "soft"))
-        .insert("max",
-            Dictionary()
-            .insert("value", "256.0")
-            .insert("type", "soft"))
-        .insert("use", "required"));
-
-    metadata.push_back(
-        Dictionary()
-        .insert("name", "autofocus_enabled")
-        .insert("label", "Enable autofocus")
-        .insert("type", "boolean")
-        .insert("use", "optional")
-        .insert("default", "true")
-        .insert("on_change", "rebuild_form"));
-
-    metadata.push_back(
-        Dictionary()
-        .insert("name", "focal_distance")
-        .insert("label", "Focal Distance")
-        .insert("type", "text")
-        .insert("use", "optional")
-        .insert("default", "1.0")
-        .insert("visible_if",
-            Dictionary()
-            .insert("autofocus_enabled", "false")));
-
-    metadata.push_back(
-        Dictionary()
-        .insert("name", "autofocus_target")
-        .insert("label", "Autofocus Target")
-        .insert("type", "text")
-        .insert("use", "optional")
-        .insert("default", "0.5 0.5")
-        .insert("visible_if",
-            Dictionary()
-            .insert("autofocus_enabled", "true")));
-
-    metadata.push_back(
-        Dictionary()
-        .insert("name", "diaphragm_blades")
-        .insert("label", "Diaphragm Blades")
-        .insert("type", "integer")
-        .insert("min",
-            Dictionary()
-            .insert("value", "3")
-            .insert("type", "hard"))
-        .insert("max",
-            Dictionary()
-            .insert("value", "256")
-            .insert("type", "soft"))
-        .insert("use", "optional")
-        .insert("default", "0"));
-
-    metadata.push_back(
-        Dictionary()
-        .insert("name", "diaphragm_tilt_angle")
-        .insert("label", "Diaphragm Tilt Angle")
-        .insert("type", "numeric")
-        .insert("min",
-            Dictionary()
-            .insert("value", "-360.0")
-            .insert("type", "soft"))
-        .insert("max",
-            Dictionary()
-            .insert("value", "360.0")
-            .insert("type", "soft"))
-        .insert("use", "optional")
-        .insert("default", "0.0"));
-
-    metadata.push_back(
-        Dictionary()
-        .insert("name", "diaphragm_map")
-        .insert("label", "Diaphragm Map")
-        .insert("type", "colormap")
-        .insert("entity_types",
-            Dictionary()
-            .insert("texture_instance", "Texture Instances"))
-        .insert("use", "optional"));
+    LensCameraFactory::add_lens_metadata(metadata);
 
     CameraFactory::add_clipping_metadata(metadata);
     CameraFactory::add_shift_metadata(metadata);
