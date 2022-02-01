@@ -5,13 +5,14 @@
         <camera name="camera" model="multilens_camera">
             <parameter name="autofocus_enabled" value="false" />
             <parameter name="autofocus_target" value="0.525 0.668" />
+            <parameter name="controller_target" value="1.6 0 0" />
             <parameter name="diaphragm_blades" value="0" />
             <parameter name="diaphragm_tilt_angle" value="0.0" />
-            <parameter name="f_stop" value="1" />
+            <parameter name="f_stop" value="1.0" />
             <parameter name="film_dimensions" value="0.025 0.01875" />
             <parameter name="focal_distance" value="1.0" />
             <parameter name="focal_length" value="0.035" />
-            <parameter name="lens_file" value="C:\Users\willi\Documents\appleseed-dev\appleseed\sandbox\lenses\double-gauss-tronnier.txt" />
+            <parameter name="lens_file" value="double-gauss-tronnier.txt" />
             <parameter name="near_z" value="-0.001" />
             <parameter name="shift_x" value="0.0" />
             <parameter name="shift_y" value="0.0" />
