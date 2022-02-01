@@ -1,4 +1,5 @@
-// fisheye 220 degree (shimizu)
+# fisheye 220 degree (shimizu)
+24 # lens size
 143.47	7.0	1.51680	213.0
 52.5	28.0	1	104.6
 76.4	3.8	1.51680	100.0

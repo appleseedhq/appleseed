@@ -1,4 +1,5 @@
-// double gauss f/2.5, Lens Design, Milton Laikin, 1992, Page 75
+# double gauss f/2.5, Lens Design, Milton Laikin, 1992, Page 75
+11 # lens size
 84.01558	10.668	1.6204	81.28
 351.08642	0.5842	1	81.28
 49.8475	15.367	1.6204	65.024

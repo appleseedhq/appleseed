@@ -1,4 +1,5 @@
-// petzval-type photographic objective US2500046A (1948), scale 50%
+# petzval-type photographic objective US2500046A (1948), scale 50%
+8 # lens size
 70.97	15.0	1.523	46.0
 -56.79	4.5	1.617	46.0
 0	24.0	1	46.0

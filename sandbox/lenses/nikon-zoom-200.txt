@@ -1,5 +1,6 @@
-// Nikon, PAT S.53-131852, F/2.8, 80-200mm (200)
-// Modern Lens Design 2nd Ed.: p. 527-528; Figure 20.3
+# Nikon, PAT S.53-131852, F/2.8, 80-200mm (200)
+# Modern Lens Design 2nd Ed.: p. 527-528; Figure 20.3
+22 # lens size
 148.570	5.0	1.564	64.4
 -479.279	0.357	1	64.4
 192.855	6.286	1.589	62.0

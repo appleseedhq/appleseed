@@ -1,5 +1,6 @@
-// Angenieux, US Patent 2701982; f/1.1, 100mm
-// scaling it by .5 to give a 50mm with nice vignetting/swirley bokeh
+# Angenieux, US Patent 2701982; f/1.1, 100mm
+# scaling it by .5 to give a 50mm with nice vignetting/swirley bokeh
+15 # lens size
 164.12	10.99	1.673	108.0
 559.28	0.23	1	108.0
 100.12	11.45	1.67	102.0

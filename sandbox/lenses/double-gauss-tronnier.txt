@@ -1,4 +1,5 @@
-// double gauss, Modern Lens Design, Warren J. Smith, 1992, Page 312
+# double gauss, Modern Lens Design, Warren J. Smith, 1992, Page 312
+11 # lens size
 58.95	7.52	1.67	100.8
 169.66	0.24	1	100.8
 38.55	8.05	1.67	92.0

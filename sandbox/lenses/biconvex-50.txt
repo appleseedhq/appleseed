@@ -1,5 +1,6 @@
-// single bi-convex lens, Ø1", N-BK7, FL 50mm
-// https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=4847
+# single bi-convex lens, Ø1", N-BK7, FL 50mm
+# https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=4847
+3 # lens size
 0	3	0	25.4
 50.6	5.2	1.517	25.4
 -50.6	48.2	1	25.4

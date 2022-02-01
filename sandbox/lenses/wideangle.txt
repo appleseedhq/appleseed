@@ -1,4 +1,5 @@
-// US Patent 4310222 wide angle
+# US Patent 4310222 wide angle
+26 # lens size
 38.794	3.1	1.72	40.0
 24.997	12.41	1	40.0
 58.28	5.02	1.6031	30.0

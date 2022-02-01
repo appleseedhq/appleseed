@@ -1,1 +1,3 @@
+# no lens element, only aperture
+1 # lens size
 0	50	0	0.01
