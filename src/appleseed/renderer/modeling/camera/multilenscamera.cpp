@@ -61,6 +61,7 @@
 #include "foundation/platform/types.h"
 #include "foundation/string/string.h"
 #include "foundation/utility/api/apistring.h"
+#include "foundation/utility/searchpaths.h"
 #include "foundation/utility/api/specializedapiarrays.h"
 #include "foundation/utility/iostreamop.h"
 
@@ -74,6 +75,7 @@
 #include <fstream>
 #include <limits>
 #include <random>
+#include <regex>
 #include <vector>
 
 // Forward declarations.
@@ -200,19 +202,10 @@ namespace
                     &m_diaphragm_vertices.front());
             }
 
-            // Extract the lens file path.
-            extract_lens_file();
-
             // Read the lens file and scale it to meters.
             const double scale = 0.001;
-            if (!read_lens_file(scale))
-            {
-                RENDERER_LOG_ERROR(
-                    "while defining camera \"%s\": file \"%s\" not found",
-                    get_path().c_str(),
-                    m_lens_file.c_str());
+            if (!read_lens_file(project, scale))
                 return false;
-            }
 
             // Extract the focal length.
             m_focal_length = extract_focal_length();
@@ -942,16 +935,35 @@ namespace
         // Lens container helper functions.
         //
 
-        // Lens files have to be space separated values of the format:
+        // Comments are preceded by a # and can stand on their own line or at the end of a line.
+        // The first line should contain the number of following lens elments.
+        // Lens elements have to be space separated values of the format:
         // radius    thickness    ior    aperture
-        bool read_lens_file(double factor)
+        bool read_lens_file(const Project& project, double factor)
         {
+            if (!has_param("lens_file"))
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining camera \"%s\": no lens file specified",
+                    get_path().c_str());
+                return false;
+            }
+
+            const std::string lens_filepath = to_string(
+                project.search_paths().qualify(m_params.get_required<std::string>("lens_file")));
+
             m_lens_container.clear();
             bool has_aperture = false;
 
-            std::ifstream infile(m_lens_file);
-            if (!infile.good())
+            std::ifstream infile;
+            infile.open(lens_filepath);
+            if (!infile.is_open())
+            {
+                RENDERER_LOG_ERROR(
+                    "while defining camera \"%s\": lens file not found",
+                    get_path().c_str());
                 return false;
+            }
 
             int index = 0;
             std::string line;
@@ -959,16 +971,37 @@ namespace
             {
                 if (line.empty())
                     continue;
-                if (line.rfind("#", 0) == 0 || line.rfind("//", 0) == 0)
-                    continue;
-                std::istringstream iss(line);
-                
-                LensElement element;
 
+                size_t comment_pos = line.find('#');
+                if (comment_pos == 0)
+                    continue;
+
+                if (comment_pos != std::string::npos)
+                    line = line.substr(0, comment_pos);
+
+                if (std::regex_match(line, std::regex("[0-9]+\\s+")))
+                {
+                    m_lens_container.reserve(std::atoi(line.c_str()));
+                    continue;
+                }
+
+                std::istringstream iss(line);
+
+                LensElement element;
                 iss >> element.radius;
                 iss >> element.thickness;
                 iss >> element.ior;
                 iss >> element.diameter;
+
+                if (iss.fail())
+                {
+                    RENDERER_LOG_ERROR(
+                        "while defining camera \"%s\": error reading file \"%s\" (lens element %d)",
+                        get_path().c_str(),
+                        lens_filepath.c_str(),
+                        index);
+                    return false;
+                }
 
                 element.is_aperture = element.ior == 0;
                 if (element.is_aperture)
@@ -982,15 +1015,17 @@ namespace
                 m_lens_container.push_back(element);
                 ++index;
             }
+
             if (get_total_z_offset() == 0 || !has_aperture)
             {
                 RENDERER_LOG_ERROR(
                     "while defining camera \"%s\": file \"%s\" empty or missing aperture",
                     get_path().c_str(),
-                    m_lens_file.c_str());
+                    lens_filepath.c_str());
                 return false;
             }
 
+            infile.close();
             return true;
         }
 
