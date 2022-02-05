@@ -267,11 +267,11 @@ class MultiLensCamera
             const int max_iter = 100;
 
             // Calculate entrance pupil or use first lens element.
-            if (!compute_sample_pupil(Pupil::entrance, max_error, max_iter, m_entrance_pupil_center_z, m_entrance_pupil_radius))
+            if (!compute_sample_pupil(Pupil::entrance, max_error, max_iter))
                 return false;
 
             // Calculate exit pupil or use last lens element.
-            if (!compute_sample_pupil(Pupil::exit, max_error, max_iter, m_exit_pupil_center_z, m_exit_pupil_radius))
+            if (!compute_sample_pupil(Pupil::exit, max_error, max_iter))
                 return false;
 
             return true;
@@ -398,10 +398,10 @@ class MultiLensCamera
         double                   m_lens_focal_length;          // original focal length of the lens
         double                   m_lens_f_number;              // original F-number of the lens
 
-        double                   m_entrance_pupil_radius;        // radius of the entrance pupil
-        double                   m_entrance_pupil_center_z;      // z coordinate of the center of the entrance pupil
-        double                   m_exit_pupil_radius;            // list of radii of exit pupils from center to edge of film
-        double                   m_exit_pupil_center_z;          // z coordinate of the center of the exit pupil
+        double                   m_entrance_pupil_radius;      // radius of the entrance pupil
+        double                   m_entrance_pupil_center_z;    // z coordinate of the center of the entrance pupil
+        double                   m_exit_pupil_radius;          // list of radii of exit pupils from center to edge of film
+        double                   m_exit_pupil_center_z;        // z coordinate of the center of the exit pupil
         double                   m_total_z;                    // z coordinate of the film plane
         double                   m_last_z;                     // z coordinate of the last lens element
 
@@ -573,8 +573,11 @@ class MultiLensCamera
             return Vector3d(lens_point.x, lens_point.y, center_z);
         }
 
-        bool compute_sample_pupil(Pupil pupil, double max_err, int max_iter, double& center_z, double& radius) const
+        bool compute_sample_pupil(Pupil pupil, double max_err, int max_iter)
         {
+            double& radius = pupil == Pupil::entrance ? m_entrance_pupil_radius : m_exit_pupil_radius;
+            double& center_z = pupil == Pupil::entrance ? m_entrance_pupil_center_z : m_exit_pupil_center_z;
+
             Vector3d p0, pmin, pmax;
             const double image_plane_z = m_total_z;
 
