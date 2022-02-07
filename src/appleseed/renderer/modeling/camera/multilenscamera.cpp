@@ -201,7 +201,7 @@ class MultiLensCamera
             // Read the lens file and scale it to meters.
             const double scale = 0.001;
             if (!read_lens_file(project, scale))
-                return false;
+                use_default_lens(0.001);
 
             // Extract the focal length.
             m_focal_length = extract_focal_length();
@@ -209,7 +209,10 @@ class MultiLensCamera
             // Compute the focal length of the lens.
             double p_film, f_film;
             if (!compute_thick_lens_film(p_film, f_film))
-                return false;
+            {
+                use_default_lens(0.001);
+                compute_thick_lens_film(p_film, f_film);
+            }
             m_lens_focal_length = f_film - p_film;
 
             // Scale the lens if a new focal length is set by the user.
@@ -563,6 +566,18 @@ class MultiLensCamera
 
                 return 1.0e38;
             }
+        }
+
+        void use_default_lens(double factor)
+        {
+            RENDERER_LOG_ERROR("falling back to default lens");
+            m_lens_container.clear();
+            m_lens_container.reserve(3);
+            // Biconvex lens from https://www.thorlabs.com/newgrouppage9.cfm?objectgroup_id=4847
+            m_lens_container.push_back(LensElement(0, 3.0, 0, 25.4, factor));
+            m_lens_container.push_back(LensElement(50.6, 5.2, 1.517, 25.4, factor));
+            m_lens_container.push_back(LensElement(-50.6, 48.2, 1, 25.4, factor));
+            m_aperture_index = 0;
         }
 
         Vector3d sample_pupil(SamplingContext& sampling_context, const double radius, const double center_z) const

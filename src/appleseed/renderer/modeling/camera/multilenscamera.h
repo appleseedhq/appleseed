@@ -85,6 +85,15 @@ namespace renderer
         double radius, thickness, ior, diameter;
         bool is_aperture;
 
+        LensElement() {}
+
+        LensElement(double radius, double thickness, double ior, double diameter, double factor) :
+            radius(radius), thickness(thickness), ior(ior), diameter(diameter)
+        {
+            is_aperture = ior == 0;
+            scale(factor);
+        }
+
         void scale(double factor)
         {
             radius = radius * factor;
