@@ -52,9 +52,6 @@ jobs:
       APPLESEED_DEPENDENCIES: $GITHUB_WORKSPACE/prebuilt-linux-deps
 
     steps:
-      - name: debug print
-        run: echo ${{ env.APPLESEED_DEPENDENCIES }}
-
       - name: install packages
         run: |
           sudo apt-get install -y git cmake python2.7-dev qtbase5-dev libqt5opengl5-dev sshpass zlib1g zlib1g-dev ${{ matrix.compiler.CC }} ${{ matrix.compiler.CXX }}
@@ -62,15 +59,11 @@ jobs:
       - name: setup dependencies
         run: |
           curl -L "https://github.com/appleseedhq/linux-deps/releases/download/v2.1.1/appleseed-deps-shared-2.1.1.tgz" > deps.tgz
-          tar xfz deps.tgz
+          tar xfz deps.tgz --directory $GITHUB_WORKSPACE
           rm deps.tgz
-          sudo chmod 0777 -R ${{ env.APPLESEED_DEPENDENCIES }}
 
       - name: checkout git
         uses: actions/checkout@v2
-
-      - name: debug print
-        run: echo ${{ env.APPLESEED_DEPENDENCIES }}
 
       - name: prepare cmake variables
         run: |
