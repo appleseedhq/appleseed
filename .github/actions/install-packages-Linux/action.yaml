@@ -29,12 +29,15 @@
 name: "Install packages on Linux"
 
 inputs:
-  compiler:
+  - CC:
     required: true
+  - CXX:
+    required: true
+  
 
 runs:
   steps:
     - name: install
       run: |
-        sudo apt-get install -y git cmake python2.7-dev qtbase5-dev libqt5opengl5-dev sshpass ${{ inputs.compiler.CC }} ${{ inputs.compiler.CXX }}
+        sudo apt-get install -y git cmake python2.7-dev qtbase5-dev libqt5opengl5-dev sshpass ${{ inputs.CC }} ${{ inputs.CXX }}
       shell: bash

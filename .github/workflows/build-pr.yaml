@@ -59,7 +59,8 @@ jobs:
       - name: Install packages
         uses: ./.github/actions/install-packages-Linux
         with:
-          compiler: ${{ matrix.compiler}}
+          CC: ${{ matrix.compiler.CC }}
+          CXX: ${{ matrix.compiler.CXX }}
 #        run: |
 #          sudo apt-get install -y git cmake python2.7-dev qtbase5-dev libqt5opengl5-dev sshpass ${{ matrix.compiler.CC }} ${{ matrix.compiler.CXX }}
 
