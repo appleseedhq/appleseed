@@ -73,7 +73,7 @@ jobs:
           export PYTHONPATH=$PYTHONPATH:sandbox/lib/${{ matrix.build_type }}/python
 
 
-      - name: prepare build
+      - name: execute cmake
         run: |
           mkdir build
           pushd build
@@ -114,12 +114,11 @@ jobs:
             -DOSL_EXEC_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/liboslexec.so \
             -DOSL_COMP_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/liboslcomp.so \
             ..
-
-      - name: Check current directory
-        run: pwd
+            popd
 
       - name: build
         run: |
+          pushd build
           make -j2
           popd
 
