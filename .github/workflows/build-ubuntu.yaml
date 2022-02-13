@@ -50,9 +50,9 @@ jobs:
 
     env: 
       APPLESEED_DEPENDENCIES: $GITHUB_WORKSPACE/prebuilt-linux-deps
-      CMAKE_INCLUDE_PATH: ${{ env.APPLESEED_DEPENDENCIES }}/include
-      CMAKE_LIBRARY_PATH: ${{ env.APPLESEED_DEPENDENCIES }}/lib
-      LD_LIBRARY_PATH: ${{ env.APPLESEED_DEPENDENCIES }}/lib
+      CMAKE_INCLUDE_PATH: ${{ APPLESEED_DEPENDENCIES }}/include
+      CMAKE_LIBRARY_PATH: ${{ APPLESEED_DEPENDENCIES }}/lib
+      LD_LIBRARY_PATH: ${{ APPLESEED_DEPENDENCIES }}/lib
       PYTHONPATH: sandbox/lib/${{ matrix.build_type }}/python
 
     steps:
