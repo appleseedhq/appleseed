@@ -42,14 +42,24 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-18.04]
-        compiler: [gcc-6, gcc-7, clang-8]
+#        compiler: [gcc-6, gcc-7, clang-8]
+        compiler: [gcc-6]
     steps:
-      - name: echo-compiler
-        run: echo ${{ matrix.compiler }}
+      - name: checkout-git
+        uses: actions/checkout@v2
+
+      - name: echo-branch
+        run: ls -la appleseed
+
       - name: install-packages
         run: sudo apt-get install -y git cmake python2.7-dev qtbase5-dev libqt5opengl5-dev sshpass ${{ matrix.compiler }}
-#      - name: setup-dependencies
-#      - name: checkout-git
+
+      - name: setup-dependencies
+        run: |
+          curl -L "https://github.com/appleseedhq/linux-deps/releases/download/v2.1.1/appleseed-deps-shared-2.1.1.tgz" > deps.tgz
+          tar xfz deps.tgz
+          rm deps.tgz
+
 #      - name: build
 #      - name: run-appleseed-unittests
 #      - name: run-python-unittests
