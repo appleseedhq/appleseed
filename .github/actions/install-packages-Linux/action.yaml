@@ -29,7 +29,7 @@
 name: "Install packages on Linux"
 
 inputs:
-  - compiler:
+  compiler:
     required: true
 
 runs:
