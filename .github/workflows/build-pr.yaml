@@ -56,8 +56,15 @@ jobs:
       - name: Checkout git
         uses: actions/checkout@v2
 
+      - name: test-echo
+        run: |
+          echo .github/actions/install-packages-${{ matrix.os.name }}
+          ls .github/actions/install-packages-${{ matrix.os.name }} 
+
       - name: Install packages
         uses: .github/actions/install-packages-${{ matrix.os.name }}
+        with:
+          compiler: ${{ matrix.compiler}}
 #        run: |
 #          sudo apt-get install -y git cmake python2.7-dev qtbase5-dev libqt5opengl5-dev sshpass ${{ matrix.compiler.CC }} ${{ matrix.compiler.CXX }}
 
