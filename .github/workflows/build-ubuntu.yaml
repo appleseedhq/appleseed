@@ -111,6 +111,8 @@ jobs:
             -DOSL_QUERY_INFO=${{ env.APPLESEED_DEPENDENCIES }}/bin/oslinfo \
             -DOSL_INCLUDE_DIR=${{ env.APPLESEED_DEPENDENCIES }}/include/OSL \
             -DOSL_QUERY_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/liboslquery.so \
+            -DOSL_EXEC_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/liboslexec.so \
+            -DOSL_COMP_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/liboslcomp.so \
             ..
 
 #      - name: build
