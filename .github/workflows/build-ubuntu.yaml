@@ -1,11 +1,6 @@
 name: build-ubuntu
 
-on:
-  - pull_request:
-    types: [opened, synchronize]
-    branches: [master]
-  - push:
-    branches: [Dev/Actions]
+on: [push]
 jobs:
   check-bats-version:
     runs-on: ubuntu-latest
