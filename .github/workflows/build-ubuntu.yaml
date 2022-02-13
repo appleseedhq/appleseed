@@ -43,9 +43,10 @@ jobs:
       matrix:
         os: [ubuntu-18.04]
         compiler: 
-          - {name: gcc-6, CC: gcc-6, CXX: g++-6}
-#        compiler: [gcc-6, gcc-7, clang-8]
-        build_type: [Release]
+          - {CC: gcc-6, CXX: g++-6}
+#          - {CC: gcc-7, CXX: g++-7}
+#          - {CC: clang-8, CXX: clang-8}
+        build_type: [Debug]
 #        build_type: [Debug, Release]
 
     env: 
@@ -108,7 +109,6 @@ jobs:
             -DOSL_MAKETX=${{ env.APPLESEED_DEPENDENCIES }}/bin/maketx \
             -DOSL_QUERY_INFO=${{ env.APPLESEED_DEPENDENCIES }}/bin/oslinfo \
             -DOSL_INCLUDE_DIR=${{ env.APPLESEED_DEPENDENCIES }}/include/OSL \
-            -DOSL_LIBRARY_DIR=${{ env.APPLESEED_DEPENDENCIES }}/lib \
             -DOSL_QUERY_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/liboslquery.so \
             -DOSL_EXEC_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/liboslexec.so \
             -DOSL_COMP_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/liboslcomp.so \
@@ -116,15 +116,22 @@ jobs:
             popd
 
       - name: build
+        env:
+          LD_LIBRARY_PATH: ${{ env.APPLESEED_DEPENDENCIES }}/lib
         run: |
           pushd build
+          export LD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }}
           make -j2
           popd
 
-#      - name: run-appleseed-unittests
-#        env:       PYTHONPATH: sandbox/lib/${{ matrix.build_type }}/python
+#      - name: run appleseed unit tests
+#        run: sandbox/bin/${{ matrix.build_type }}/appleseed.cli --run-unit-tests --verbose-unit-tests
 
-#      - name: run-python-unittests
+#      - name: run python unit tests
+#        env:
+#          PYTHONPATH: sandbox/lib/${{ matrix.build_type }}/python
+#        run: python sandbox/lib/$BUILD_TYPE/python/appleseed/test/runtests.py
+
 #  build-and-test-windows:
 #    name: windows
 #    runs-on: windows-latest
