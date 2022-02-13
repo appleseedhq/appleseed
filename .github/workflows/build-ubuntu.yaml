@@ -54,7 +54,7 @@ jobs:
     steps:
       - name: install packages
         run: |
-          sudo apt-get install -y git cmake python2.7-dev qtbase5-dev libqt5opengl5-dev sshpass zlib1g zlib1g-dev ${{ matrix.compiler.CC }} ${{ matrix.compiler.CXX }}
+          sudo apt-get install -y git cmake python2.7-dev qtbase5-dev libqt5opengl5-dev sshpass ${{ matrix.compiler.CC }} ${{ matrix.compiler.CXX }}
 
       - name: checkout git
         uses: actions/checkout@v2
@@ -115,11 +115,13 @@ jobs:
             -DOSL_COMP_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/liboslcomp.so \
             ..
 
-#      - name: build
-#        run: |
-#          make -j2
-#          popd
+      - name: build
+        run: |
+          make -j2
+          popd
+
 #      - name: run-appleseed-unittests
+
 #      - name: run-python-unittests
 #  build-and-test-windows:
 #    name: windows
