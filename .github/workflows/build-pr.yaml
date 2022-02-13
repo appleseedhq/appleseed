@@ -38,10 +38,10 @@ on:
 jobs:
   build-and-test-linux:
     name: linux
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.os.version }}
     strategy:
       matrix:
-        os: ubuntu-18.04
+        os: [{name: Linux, version: ubuntu-18.04}]
         compiler: 
           - {CC: gcc-6, CXX: g++-6}
 #          - {CC: gcc-7, CXX: g++-7}
