@@ -1,10 +1,10 @@
 name: build-ubuntu
 
 on:
-  pull_request:
+  - pull_request:
     types: [opened, synchronize]
     branches: [master]
-  [push]
+  - [push]
 jobs:
   check-bats-version:
     runs-on: ubuntu-latest
