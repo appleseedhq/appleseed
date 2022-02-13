@@ -50,6 +50,10 @@ jobs:
 
     env: 
       APPLESEED_DEPENDENCIES: $GITHUB_WORKSPACE/prebuilt-linux-deps
+      CMAKE_INCLUDE_PATH: ${{ env.APPLESEED_DEPENDENCIES }}/include
+      CMAKE_LIBRARY_PATH: ${{ env.APPLESEED_DEPENDENCIES }}/lib
+      LD_LIBRARY_PATH: ${{ env.APPLESEED_DEPENDENCIES }}/lib
+      PYTHONPATH: sandbox/lib/${{ matrix.build_type }}/python
 
     steps:
       - name: install packages
@@ -65,18 +69,12 @@ jobs:
           tar xfz deps.tgz --directory $GITHUB_WORKSPACE
           rm deps.tgz
 
-      - name: prepare cmake variables
-        run: |
-          export CMAKE_INCLUDE_PATH=${{ env.APPLESEED_DEPENDENCIES }}/include
-          export CMAKE_LIBRARY_PATH=${{ env.APPLESEED_DEPENDENCIES }}/lib
-          export LD_LIBRARY_PATH=${{ env.APPLESEED_DEPENDENCIES }}/lib:$LD_LIBRARY_PATH
-          export PYTHONPATH=$PYTHONPATH:sandbox/lib/${{ matrix.build_type }}/python
-
-
       - name: execute cmake
         run: |
           mkdir build
           pushd build
+          export CMAKE_INCLUDE_PATH=${{ env.CMAKE_INCLUDE_PATH }}
+          export CMAKE_LIBRARY_PATH=${{ env.CMAKE_LIBRARY_PATH }}
           cmake \
             -Wno-dev \
            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
