@@ -65,10 +65,10 @@ jobs:
 
       - name: prepare cmake variables
         run: |
-          export CMAKE_INCLUDE_PATH = ${{ env.APPLESEED_DEPENDENCIES }}/include
-          export CMAKE_LIBRARY_PATH = ${{ env.APPLESEED_DEPENDENCIES }}/lib
-          export LD_LIBRARY_PATH = ${{ env.APPLESEED_DEPENDENCIES }}/lib:$LD_LIBRARY_PATH
-          export PYTHONPATH = $PYTHONPATH:sandbox/lib/${{ matrix.build_type }}/python
+          export CMAKE_INCLUDE_PATH=${{ env.APPLESEED_DEPENDENCIES }}/include
+          export CMAKE_LIBRARY_PATH=${{ env.APPLESEED_DEPENDENCIES }}/lib
+          export LD_LIBRARY_PATH=${{ env.APPLESEED_DEPENDENCIES }}/lib:$LD_LIBRARY_PATH
+          export PYTHONPATH=$PYTHONPATH:sandbox/lib/${{ matrix.build_type }}/python
 
 
       - name: prepare build
