@@ -53,6 +53,9 @@ jobs:
       APPLESEED_DEPENDENCIES: $GITHUB_WORKSPACE/prebuilt-linux-deps
 
     steps:
+      - name: Checkout git
+        uses: actions/checkout@v2
+
       - name: build and test ubuntu
         uses: ./.github/actions/build-and-test-ubuntu
 
