@@ -48,7 +48,7 @@ jobs:
 #        build_type: [Debug, Release]
 
     env: 
-      APPLESEED_DEPENDENCIES: ${{ env.GITHUB_WORKSPACE }}/prebuilt-linux-deps
+      APPLESEED_DEPENDENCIES: $GITHUB_WORKSPACE/prebuilt-linux-deps
 
     steps:
       - name: install packages
