@@ -83,8 +83,8 @@ jobs:
             -DWITH_EMBREE=ON \
             -DUSE_SSE42=ON \
             -DUSE_STATIC_BOOST=OFF \
-            -DCMAKE_C_COMPILER=${{ matrix.compiler.CC }}
-            -DCMAKE_CXX_COMPILER=${{ matrix.compiler.CXX }}
+            -DCMAKE_C_COMPILER=${{ matrix.compiler.CC }} \
+            -DCMAKE_CXX_COMPILER=${{ matrix.compiler.CXX }} \
             -DBOOST_INCLUDE_DIR=${{ env.APPLESEED_DEPENDENCIES }}/include/boost_1_61_0 \
             -DBOOST_LIBRARY_DIR=${{ env.APPLESEED_DEPENDENCIES }}/lib/ \
             -DBoost_ATOMIC_LIBRARY_DEBUG=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_atomic-gcc63-mt-1_61.so.1.61.0 \
