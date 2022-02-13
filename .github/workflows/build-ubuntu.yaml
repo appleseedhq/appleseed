@@ -43,14 +43,16 @@ jobs:
       matrix:
         os: [ubuntu-18.04]
         compiler: [gcc-6]
-        build_type: [Debug, Release]
-        env: 
-          APPLESEED_DEPENDENCIES: prebuilt-linux-deps
-          CMAKE_INCLUDE_PATH: $APPLESEED_DEPENDENCIES/include
-          CMAKE_LIBRARY_PATH: $APPLESEED_DEPENDENCIES/lib
-          LD_LIBRARY_PATH: $APPLESEED_DEPENDENCIES/lib:$LD_LIBRARY_PATH
-          PYTHONPATH: $PYTHONPATH:sandbox/lib/${{ matrix.build_type }}/python
 #        compiler: [gcc-6, gcc-7, clang-8]
+        build_type: [Debug, Release]
+
+    env: 
+      APPLESEED_DEPENDENCIES: prebuilt-linux-deps
+      CMAKE_INCLUDE_PATH: $APPLESEED_DEPENDENCIES/include
+      CMAKE_LIBRARY_PATH: $APPLESEED_DEPENDENCIES/lib
+      LD_LIBRARY_PATH: $APPLESEED_DEPENDENCIES/lib:$LD_LIBRARY_PATH
+      PYTHONPATH: $PYTHONPATH:sandbox/lib/${{ matrix.build_type }}/python
+
     steps:
       - name: install-packages
         run: sudo apt-get install -y git cmake python2.7-dev qtbase5-dev libqt5opengl5-dev sshpass ${{ matrix.compiler }}
