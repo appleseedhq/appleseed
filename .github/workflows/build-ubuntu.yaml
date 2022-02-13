@@ -115,6 +115,9 @@ jobs:
             -DOSL_COMP_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/liboslcomp.so \
             ..
 
+      - name: Check current directory
+        run: pwd
+
       - name: build
         run: |
           make -j2
