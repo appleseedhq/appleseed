@@ -37,12 +37,14 @@ runs:
     - name: Install packages
       run: |
         sudo apt-get install -y git cmake python2.7-dev qtbase5-dev libqt5opengl5-dev sshpass ${{ matrix.compiler.CC }} ${{ matrix.compiler.CXX }}
+      shell: bash
 
     - name: Set Up dependencies
       run: |
         curl -L "https://github.com/appleseedhq/linux-deps/releases/download/v2.1.1/appleseed-deps-shared-2.1.1.tgz" > deps.tgz
         tar xfz deps.tgz
         rm deps.tgz
+      shell: bash
 
     - name: Execute cmake
       env:
@@ -92,6 +94,7 @@ runs:
           -DOSL_COMP_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/liboslcomp.so \
           ..
           popd
+      shell: bash
 
     - name: Build
       env:
@@ -101,6 +104,7 @@ runs:
         export LD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }}
         make -j2
         popd
+      shell: bash
 
     - name: Run appleseed unit tests
       env:
@@ -108,6 +112,7 @@ runs:
       run: |
         export LD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }}
         sandbox/bin/${{ matrix.build_type }}/appleseed.cli --run-unit-tests --verbose-unit-tests
+      shell: bash
 
     - name: Run python unit tests
       env:
@@ -117,3 +122,4 @@ runs:
         export LD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }}
         export PYTHONPATH=:${{ env.PYTHONPATH }}:$PYTHONPATH
         python sandbox/lib/${{ matrix.build_type }}/python/appleseed/test/runtests.py
+      shell: bash
