@@ -50,10 +50,6 @@ jobs:
 
     env: 
       APPLESEED_DEPENDENCIES: $GITHUB_WORKSPACE/prebuilt-linux-deps
-      CMAKE_INCLUDE_PATH: ${{ APPLESEED_DEPENDENCIES }}/include
-      CMAKE_LIBRARY_PATH: ${{ APPLESEED_DEPENDENCIES }}/lib
-      LD_LIBRARY_PATH: ${{ APPLESEED_DEPENDENCIES }}/lib
-      PYTHONPATH: sandbox/lib/${{ matrix.build_type }}/python
 
     steps:
       - name: install packages
@@ -70,6 +66,10 @@ jobs:
           rm deps.tgz
 
       - name: execute cmake
+        env:
+          CMAKE_INCLUDE_PATH: ${{ env.APPLESEED_DEPENDENCIES }}/include
+          CMAKE_LIBRARY_PATH: ${{ env.APPLESEED_DEPENDENCIES }}/lib
+          LD_LIBRARY_PATH: ${{ env.APPLESEED_DEPENDENCIES }}/lib
         run: |
           mkdir build
           pushd build
@@ -121,6 +121,7 @@ jobs:
           popd
 
 #      - name: run-appleseed-unittests
+#        env:       PYTHONPATH: sandbox/lib/${{ matrix.build_type }}/python
 
 #      - name: run-python-unittests
 #  build-and-test-windows:
