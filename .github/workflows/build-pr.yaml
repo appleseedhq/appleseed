@@ -37,7 +37,7 @@ on:
 
 jobs:
   build-and-test-linux:
-    name: linux
+    name: Linux
     runs-on: ${{ matrix.os.version }}
     strategy:
       matrix:

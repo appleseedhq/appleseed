@@ -29,9 +29,9 @@
 name: "Install packages on Linux"
 
 inputs:
-  - CC:
+  CC:
     required: true
-  - CXX:
+  CXX:
     required: true
   
 
