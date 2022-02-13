@@ -48,7 +48,7 @@ jobs:
 #        build_type: [Debug, Release]
 
     env: 
-      APPLESEED_DEPENDENCIES: ./prebuilt-linux-deps
+      APPLESEED_DEPENDENCIES: ${{env.base_directory}}/prebuilt-linux-deps
 
     steps:
       - name: install packages
@@ -62,13 +62,6 @@ jobs:
 
       - name: checkout git
         uses: actions/checkout@v2
-
-      - name: export base directory
-        run: export BASEDIR=`pwd`
-
-      - name: echo branch
-        run: | 
-          echo $BASEDIR
 
       - name: prepare cmake variables
         run: |
