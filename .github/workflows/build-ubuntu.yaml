@@ -62,7 +62,7 @@ jobs:
       - name: setup dependencies
         run: |
           curl -L "https://github.com/appleseedhq/linux-deps/releases/download/v2.1.1/appleseed-deps-shared-2.1.1.tgz" > deps.tgz
-          tar xfz deps.tgz --directory $GITHUB_WORKSPACE
+          tar xfz deps.tgz
           rm deps.tgz
 
       - name: execute cmake
@@ -108,6 +108,7 @@ jobs:
             -DOSL_MAKETX=${{ env.APPLESEED_DEPENDENCIES }}/bin/maketx \
             -DOSL_QUERY_INFO=${{ env.APPLESEED_DEPENDENCIES }}/bin/oslinfo \
             -DOSL_INCLUDE_DIR=${{ env.APPLESEED_DEPENDENCIES }}/include/OSL \
+            -DOSL_LIBRARY_DIR=${{ env.APPLESEED_DEPENDENCIES }}/lib \
             -DOSL_QUERY_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/liboslquery.so \
             -DOSL_EXEC_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/liboslexec.so \
             -DOSL_COMP_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/liboslcomp.so \
