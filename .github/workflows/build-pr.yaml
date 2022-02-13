@@ -1,0 +1,152 @@
+
+#
+# This source file is part of appleseed.
+# Visit https://appleseedhq.net/ for additional information and resources.
+#
+# This software is released under the MIT license.
+#
+# Copyright (c) 2022 Lars Zawallich, The appleseedhq Organization
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+
+name: build and test pr
+
+on:
+  push:
+    branches: [Dev/Actions]
+  pull_request:
+    types: [opened, synchronize]
+    branches: [master]
+
+jobs:
+  build-and-test-linux:
+    name: linux
+    runs-on: ${{ matrix.os.version }}
+    strategy:
+      matrix:
+        os: {name: Linux, version: ubuntu-18.04}
+        compiler: 
+          - {CC: gcc-6, CXX: g++-6}
+#          - {CC: gcc-7, CXX: g++-7}
+#          - {CC: clang-8, CXX: clang++-8}
+        build_type: [Debug]
+#        build_type: [Debug, Release]
+
+    env: 
+      APPLESEED_DEPENDENCIES: $GITHUB_WORKSPACE/prebuilt-linux-deps
+
+    steps:
+      - name: Checkout git
+        uses: actions/checkout@v2
+
+      - name: Install packages
+        uses: .github/actions/install-packages-${{ matrix.os.name }}
+#        run: |
+#          sudo apt-get install -y git cmake python2.7-dev qtbase5-dev libqt5opengl5-dev sshpass ${{ matrix.compiler.CC }} ${{ matrix.compiler.CXX }}
+
+
+      - name: Set Up dependencies
+        run: |
+          curl -L "https://github.com/appleseedhq/linux-deps/releases/download/v2.1.1/appleseed-deps-shared-2.1.1.tgz" > deps.tgz
+          tar xfz deps.tgz
+          rm deps.tgz
+
+      - name: Execute cmake
+        env:
+          CMAKE_INCLUDE_PATH: ${{ env.APPLESEED_DEPENDENCIES }}/include
+          CMAKE_LIBRARY_PATH: ${{ env.APPLESEED_DEPENDENCIES }}/lib
+          LD_LIBRARY_PATH: ${{ env.APPLESEED_DEPENDENCIES }}/lib
+        run: |
+          mkdir build
+          pushd build
+          export CMAKE_INCLUDE_PATH=${{ env.CMAKE_INCLUDE_PATH }}
+          export CMAKE_LIBRARY_PATH=${{ env.CMAKE_LIBRARY_PATH }}
+          cmake \
+            -Wno-dev \
+           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+            -DCMAKE_PREFIX_PATH=/usr/include/x86_64-linux-gnu/qt5 \
+            -DCMAKE_C_COMPILER=${{ matrix.compiler.CC }} \
+            -DCMAKE_CXX_COMPILER=${{ matrix.compiler.CXX }} \
+            -DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" \
+            -DWITH_EMBREE=ON \
+            -DUSE_SSE42=ON \
+            -DUSE_STATIC_BOOST=OFF \
+            -DBoost_INCLUDE_DIR=${{ env.APPLESEED_DEPENDENCIES }}/include/boost_1_61_0 \
+            -DBOOST_LIBRARYDIR=${{ env.APPLESEED_DEPENDENCIES }}/lib/ \
+            -DBoost_NO_SYSTEM_PATHS=ON \
+            -DBoost_ATOMIC_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_atomic-gcc63-mt-1_61.so.1.61.0 \
+            -DBoost_CHRONO_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_chrono-gcc63-mt-1_61.so.1.61.0 \
+            -DBoost_DATE_TIME_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_date_time-gcc63-mt-1_61.so.1.61.0 \
+            -DBoost_FILESYSTEM_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_filesystem-gcc63-mt-1_61.so.1.61.0 \
+            -DBoost_PYTHON_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_python-gcc63-mt-1_61.so.1.61.0 \
+            -DBoost_PYTHON_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_python-gcc63-mt-1_61.so.1.61.0 \
+            -DBoost_REGEX_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_regex-gcc63-mt-1_61.so.1.61.0 \
+            -DBoost_SYSTEM_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_system-gcc63-mt-1_61.so.1.61.0 \
+            -DBoost_THREAD_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_thread-gcc63-mt-1_61.so.1.61.0 \
+            -DBoost_WAVE_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_wave-gcc63-mt-1_61.so.1.61.0 \
+            -DEMBREE_INCLUDE_DIR=${{ env.APPLESEED_DEPENDENCIES }}/include \
+            -DEMBREE_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/libembree3.so \
+            -DLZ4_INCLUDE_DIR=${{ env.APPLESEED_DEPENDENCIES }}/include \
+            -DLZ4_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/liblz4.so \
+            -DOPENIMAGEIO_OIIOTOOL=${{ env.APPLESEED_DEPENDENCIES }}/bin/oiiotool \
+            -DOPENIMAGEIO_IDIFF=${{ env.APPLESEED_DEPENDENCIES }}/bin/idiff \
+            -DOSL_COMPILER=${{ env.APPLESEED_DEPENDENCIES }}/bin/oslc \
+            -DOSL_MAKETX=${{ env.APPLESEED_DEPENDENCIES }}/bin/maketx \
+            -DOSL_QUERY_INFO=${{ env.APPLESEED_DEPENDENCIES }}/bin/oslinfo \
+            -DOSL_INCLUDE_DIR=${{ env.APPLESEED_DEPENDENCIES }}/include/OSL \
+            -DOSL_QUERY_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/liboslquery.so \
+            -DOSL_EXEC_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/liboslexec.so \
+            -DOSL_COMP_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/liboslcomp.so \
+            ..
+            popd
+
+      - name: Build
+        env:
+          LD_LIBRARY_PATH: ${{ env.APPLESEED_DEPENDENCIES }}/lib
+        run: |
+          pushd build
+          export LD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }}
+          make -j2
+          popd
+
+      - name: Run appleseed unit tests
+        env:
+          LD_LIBRARY_PATH: ${{ env.APPLESEED_DEPENDENCIES }}/lib
+        run: |
+          export LD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }}
+          sandbox/bin/${{ matrix.build_type }}/appleseed.cli --run-unit-tests --verbose-unit-tests
+
+      - name: Run python unit tests
+        env:
+          PYTHONPATH: sandbox/lib/${{ matrix.build_type }}/python
+          LD_LIBRARY_PATH: ${{ env.APPLESEED_DEPENDENCIES }}/lib
+        run: |
+          export LD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }}
+          export PYTHONPATH=:${{ env.PYTHONPATH }}:$PYTHONPATH
+          python sandbox/lib/${{ matrix.build_type }}/python/appleseed/test/runtests.py
+
+#  build-and-test-windows:
+#    name: windows
+#    runs-on: windows-latest
+#    run: 
+#  build-and-test-mac:
+#    name: mac
+#    runs-on: macos-latest
+

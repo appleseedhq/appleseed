@@ -26,45 +26,17 @@
 # THE SOFTWARE.
 #
 
-name: build and test
+name: "Install packages on Linux"
 
-on:
-  push:
-    branches: [Dev/Actions]
-  pull_request:
-    types: [opened, synchronize]
-    branches: [master]
+inputs:
+  - CC:
+    required: true
+  - CXX:
+    required: true
 
-jobs:
-  build-and-test-linux:
-    name: linux
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-18.04]
-        compiler: 
-          - {CC: gcc-6, CXX: g++-6}
-#          - {CC: gcc-7, CXX: g++-7}
-#          - {CC: clang-8, CXX: clang++-8}
-        build_type: [Debug]
-#        build_type: [Debug, Release]
-
-    env: 
-      APPLESEED_DEPENDENCIES: $GITHUB_WORKSPACE/prebuilt-linux-deps
-
-    steps:
-      - name: Checkout git
-        uses: actions/checkout@v2
-
-      - name: build and test ubuntu
-        uses: ./.github/actions/build-and-test-ubuntu
-
-
-#  build-and-test-windows:
-#    name: windows
-#    runs-on: windows-latest
-#    run: 
-#  build-and-test-mac:
-#    name: mac
-#    runs-on: macos-latest
-
+runs:
+  steps:
+    - name: install
+      run: |
+        sudo apt-get install -y git cmake python2.7-dev qtbase5-dev libqt5opengl5-dev sshpass ${{ inputs.CC }} ${{ inputs.CXX }}
+      shell: bash
