@@ -55,7 +55,7 @@ jobs:
 
     steps:
       - name: install-packages
-        run: sudo apt-get install -y git cmake python2.7-dev qtbase5-dev libqt5opengl5-dev sshpass ${{ matrix.compiler }}
+        run: sudo apt-get install -y git cmake python2.7-dev qtbase5-dev libqt5opengl5-dev sshpass zlib1g zlib1g-dev liblz4-tool ${{ matrix.compiler }}
 
       - name: checkout-git
         uses: actions/checkout@v2
@@ -67,7 +67,10 @@ jobs:
           rm deps.tgz
 
       - name: echo-branch
-        run: pwd
+        run: | 
+          ls .github
+          echo $APPLESEED_DEPENDENCIES
+          ls $APPLESEED_DEPENDENCIES
 
       - name: prepare-build
         run: |
