@@ -4,7 +4,8 @@ on:
   - pull_request:
     types: [opened, synchronize]
     branches: [master]
-  - [push]
+  - push:
+    branches: [Dev/Actions]
 jobs:
   check-bats-version:
     runs-on: ubuntu-latest
