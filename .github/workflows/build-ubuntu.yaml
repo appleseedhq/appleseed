@@ -109,6 +109,8 @@ jobs:
             -DOSL_COMPILER=${{ env.APPLESEED_DEPENDENCIES }}/bin/oslc \
             -DOSL_MAKETX=${{ env.APPLESEED_DEPENDENCIES }}/bin/maketx \
             -DOSL_QUERY_INFO=${{ env.APPLESEED_DEPENDENCIES }}/bin/oslinfo \
+            -DOSL_INCLUDE_DIR=${{ env.APPLESEED_DEPENDENCIES }}/include/OSL \
+            -DOSL_QUERY_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/liboslquery.so \
             ..
 
 #      - name: build
