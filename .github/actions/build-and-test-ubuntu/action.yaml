@@ -28,6 +28,10 @@
 
 name: "build and test ubuntu action"
 
+defaults:
+  run:
+    shell: bash
+
 runs:
   steps:
     - name: Install packages
