@@ -48,11 +48,11 @@ jobs:
         run: echo ${{ matrix.compiler }}
       - name: install-packages
         run: sudo apt-get install -y git cmake python2.7-dev qtbase5-dev libqt5opengl5-dev sshpass ${{ matrix.compiler }}
-      - name: setup-dependencies
-      - name: checkout-git
-      - name: build
-      - name: run-appleseed-unittests
-      - name: run-python-unittests
+#      - name: setup-dependencies
+#      - name: checkout-git
+#      - name: build
+#      - name: run-appleseed-unittests
+#      - name: run-python-unittests
 #  build-and-test-windows:
 #    name: windows
 #    runs-on: windows-latest
