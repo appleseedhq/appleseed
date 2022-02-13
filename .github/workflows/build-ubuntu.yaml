@@ -42,7 +42,8 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-18.04]
-        compiler: [gcc-6]
+        compiler: 
+          - {name: gcc-6, CC: gcc-6, CXX: g++-6}
 #        compiler: [gcc-6, gcc-7, clang-8]
         build_type: [Release]
 #        build_type: [Debug, Release]
@@ -52,7 +53,7 @@ jobs:
 
     steps:
       - name: install packages
-        run: sudo apt-get install -y git cmake python2.7-dev qtbase5-dev libqt5opengl5-dev sshpass zlib1g zlib1g-dev ${{ matrix.compiler }}
+        run: sudo apt-get install -y git cmake python2.7-dev qtbase5-dev libqt5opengl5-dev sshpass zlib1g zlib1g-dev ${{ matrix.compiler.CC }} ${{ matrix.compiler.CXX }}
 
       - name: setup dependencies
         run: |
@@ -82,8 +83,10 @@ jobs:
             -DWITH_EMBREE=ON \
             -DUSE_SSE42=ON \
             -DUSE_STATIC_BOOST=OFF \
-            -DBOOST_INCLUDEDIR=${{ env.APPLESEED_DEPENDENCIES }}/include/boost_1_61_0 \
-            -DBOOST_LIBRARYDIR=${{ env.APPLESEED_DEPENDENCIES }}/lib/ \
+            -DCMAKE_C_COMPILER=${{ matrix.compiler.CC }}
+            -DCMAKE_CXX_COMPILER=${{ matrix.compiler.CXX }}
+            -DBOOST_INCLUDE_DIR=${{ env.APPLESEED_DEPENDENCIES }}/include/boost_1_61_0 \
+            -DBOOST_LIBRARY_DIR=${{ env.APPLESEED_DEPENDENCIES }}/lib/ \
             -DBoost_ATOMIC_LIBRARY_DEBUG=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_atomic-gcc63-mt-1_61.so.1.61.0 \
             -DBoost_CHRONO_LIBRARY_DEBUG=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_chrono-gcc63-mt-1_61.so.1.61.0 \
             -DBoost_DATE_TIME_LIBRARY_DEBUG=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_date_time-gcc63-mt-1_61.so.1.61.0 \
