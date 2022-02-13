@@ -53,20 +53,20 @@ jobs:
       APPLESEED_DEPENDENCIES: $GITHUB_WORKSPACE/prebuilt-linux-deps
 
     steps:
-      - name: install packages
+      - name: Install packages
         run: |
           sudo apt-get install -y git cmake python2.7-dev qtbase5-dev libqt5opengl5-dev sshpass ${{ matrix.compiler.CC }} ${{ matrix.compiler.CXX }}
 
-      - name: checkout git
+      - name: Checkout git
         uses: actions/checkout@v2
 
-      - name: setup dependencies
+      - name: Set Up dependencies
         run: |
           curl -L "https://github.com/appleseedhq/linux-deps/releases/download/v2.1.1/appleseed-deps-shared-2.1.1.tgz" > deps.tgz
           tar xfz deps.tgz
           rm deps.tgz
 
-      - name: execute cmake
+      - name: Execute cmake
         env:
           CMAKE_INCLUDE_PATH: ${{ env.APPLESEED_DEPENDENCIES }}/include
           CMAKE_LIBRARY_PATH: ${{ env.APPLESEED_DEPENDENCIES }}/lib
@@ -115,7 +115,7 @@ jobs:
             ..
             popd
 
-      - name: build
+      - name: Build
         env:
           LD_LIBRARY_PATH: ${{ env.APPLESEED_DEPENDENCIES }}/lib
         run: |
@@ -124,13 +124,21 @@ jobs:
           make -j2
           popd
 
-      - name: run appleseed unit tests
-        run: sandbox/bin/${{ matrix.build_type }}/appleseed.cli --run-unit-tests --verbose-unit-tests
+      - name: Run appleseed unit tests
+        env:
+          LD_LIBRARY_PATH: ${{ env.APPLESEED_DEPENDENCIES }}/lib
+        run: |
+          export LD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }}
+          sandbox/bin/${{ matrix.build_type }}/appleseed.cli --run-unit-tests --verbose-unit-tests
 
-      - name: run python unit tests
+      - name: Run python unit tests
         env:
           PYTHONPATH: sandbox/lib/${{ matrix.build_type }}/python
-        run: python sandbox/lib/$BUILD_TYPE/python/appleseed/test/runtests.py
+          LD_LIBRARY_PATH: ${{ env.APPLESEED_DEPENDENCIES }}/lib
+        run: |
+          export LD_LIBRARY_PATH=${{ env.LD_LIBRARY_PATH }}
+          export PYTHONPATH=:${{ env.PYTHONPATH }}:$PYTHONPATH
+          python sandbox/lib/$BUILD_TYPE/python/appleseed/test/runtests.py
 
 #  build-and-test-windows:
 #    name: windows
