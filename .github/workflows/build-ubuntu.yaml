@@ -41,7 +41,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-16.04]
+        os: [ubuntu-18.04]
         compiler: [gcc-6, gcc-7, clang-8]
     steps:
       - name: echo-compiler
