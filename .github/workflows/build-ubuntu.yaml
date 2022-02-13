@@ -52,64 +52,65 @@ jobs:
       APPLESEED_DEPENDENCIES: $GITHUB_WORKSPACE/prebuilt-linux-deps
 
     steps:
-      - name: install packages
-        run: |
-          sudo apt-get install -y git cmake python2.7-dev qtbase5-dev libqt5opengl5-dev sshpass zlib1g zlib1g-dev ${{ matrix.compiler.CC }} ${{ matrix.compiler.CXX }}
+#      - name: install packages
+#        run: |
+#          sudo apt-get install -y git cmake python2.7-dev qtbase5-dev libqt5opengl5-dev sshpass zlib1g zlib1g-dev ${{ matrix.compiler.CC }} ${{ matrix.compiler.CXX }}
+
+      - name: checkout git
+        uses: actions/checkout@v2
 
       - name: setup dependencies
         run: |
           curl -L "https://github.com/appleseedhq/linux-deps/releases/download/v2.1.1/appleseed-deps-shared-2.1.1.tgz" > deps.tgz
           tar xfz deps.tgz --directory $GITHUB_WORKSPACE
           rm deps.tgz
+          ls ${{ env.APPLESEED_DEPENDENCIES }}
 
-      - name: checkout git
-        uses: actions/checkout@v2
-
-      - name: prepare cmake variables
-        run: |
-          export CMAKE_INCLUDE_PATH=${{ env.APPLESEED_DEPENDENCIES }}/include
-          export CMAKE_LIBRARY_PATH=${{ env.APPLESEED_DEPENDENCIES }}/lib
-          export LD_LIBRARY_PATH=${{ env.APPLESEED_DEPENDENCIES }}/lib:$LD_LIBRARY_PATH
-          export PYTHONPATH=$PYTHONPATH:sandbox/lib/${{ matrix.build_type }}/python
+#      - name: prepare cmake variables
+#        run: |
+#          export CMAKE_INCLUDE_PATH=${{ env.APPLESEED_DEPENDENCIES }}/include
+#          export CMAKE_LIBRARY_PATH=${{ env.APPLESEED_DEPENDENCIES }}/lib
+#          export LD_LIBRARY_PATH=${{ env.APPLESEED_DEPENDENCIES }}/lib:$LD_LIBRARY_PATH
+#          export PYTHONPATH=$PYTHONPATH:sandbox/lib/${{ matrix.build_type }}/python
 
 
-      - name: prepare build
-        run: |
-          mkdir build
-          pushd build
-          cmake \
-            -Wno-dev \
-            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
-            -DCMAKE_PREFIX_PATH=/usr/include/x86_64-linux-gnu/qt5 \
-            -DCMAKE_C_COMPILER=${{ matrix.compiler.CC }} \
-            -DCMAKE_CXX_COMPILER=${{ matrix.compiler.CXX }} \
-            -DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" \
-            -DWITH_EMBREE=ON \
-            -DUSE_SSE42=ON \
-            -DUSE_STATIC_BOOST=OFF \
-            -DBoost_INCLUDE_DIR=${{ env.APPLESEED_DEPENDENCIES }}/include/boost_1_61_0 \
-            -DBOOST_LIBRARYDIR=${{ env.APPLESEED_DEPENDENCIES }}/lib/ \
-            -DBoost_NO_SYSTEM_PATHS=ON \
-            -DBoost_ATOMIC_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_atomic-gcc63-mt-1_61.so.1.61.0 \
-            -DBoost_CHRONO_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_chrono-gcc63-mt-1_61.so.1.61.0 \
-            -DBoost_DATE_TIME_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_date_time-gcc63-mt-1_61.so.1.61.0 \
-            -DBoost_FILESYSTEM_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_filesystem-gcc63-mt-1_61.so.1.61.0 \
-            -DBoost_PYTHON_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_python-gcc63-mt-1_61.so.1.61.0 \
-            -DBoost_PYTHON_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_python-gcc63-mt-1_61.so.1.61.0 \
-            -DBoost_REGEX_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_regex-gcc63-mt-1_61.so.1.61.0 \
-            -DBoost_SYSTEM_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_system-gcc63-mt-1_61.so.1.61.0 \
-            -DBoost_THREAD_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_thread-gcc63-mt-1_61.so.1.61.0 \
-            -DBoost_WAVE_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_wave-gcc63-mt-1_61.so.1.61.0 \
-            -DEMBREE_INCLUDE_DIR=${{ env.APPLESEED_DEPENDENCIES }}/include \
-            -DEMBREE_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/libembree3.so \
-            -DLZ4_INCLUDE_DIR=${{ env.APPLESEED_DEPENDENCIES }}/include \
-            -DLZ4_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/liblz4.so \
-            -DOPENIMAGEIO_OIIOTOOL=${{ env.APPLESEED_DEPENDENCIES }}/bin/oiiotool \
-            -DOPENIMAGEIO_IDIFF=${{ env.APPLESEED_DEPENDENCIES }}/bin/idiff \
-            -DOSL_COMPILER=${{ env.APPLESEED_DEPENDENCIES }}/bin/oslc \
-            -DOSL_MAKETX=${{ env.APPLESEED_DEPENDENCIES }}/bin/maketx \
-            -DOSL_QUERY_INFO=${{ env.APPLESEED_DEPENDENCIES }}/bin/oslinfo \
-            ..
+#      - name: prepare build
+#        run: |
+#          mkdir build
+#          pushd build
+#          cmake \
+#            -Wno-dev \
+#            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+#            -DCMAKE_PREFIX_PATH=/usr/include/x86_64-linux-gnu/qt5 \
+#            -DCMAKE_C_COMPILER=${{ matrix.compiler.CC }} \
+#            -DCMAKE_CXX_COMPILER=${{ matrix.compiler.CXX }} \
+#            -DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" \
+#            -DWITH_EMBREE=ON \
+#            -DUSE_SSE42=ON \
+#            -DUSE_STATIC_BOOST=OFF \
+#            -DBoost_INCLUDE_DIR=${{ env.APPLESEED_DEPENDENCIES }}/include/boost_1_61_0 \
+#            -DBOOST_LIBRARYDIR=${{ env.APPLESEED_DEPENDENCIES }}/lib/ \
+#            -DBoost_NO_SYSTEM_PATHS=ON \
+#            -DBoost_ATOMIC_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_atomic-gcc63-mt-1_61.so.1.61.0 \
+#            -DBoost_CHRONO_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_chrono-gcc63-mt-1_61.so.1.61.0 \
+#            -DBoost_DATE_TIME_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_date_time-gcc63-mt-1_61.so.1.61.0 \
+#            -DBoost_FILESYSTEM_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_filesystem-gcc63-mt-1_61.so.1.61.0 \
+#            -DBoost_PYTHON_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_python-gcc63-mt-1_61.so.1.61.0 \
+#            -DBoost_PYTHON_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_python-gcc63-mt-1_61.so.1.61.0 \
+#            -DBoost_REGEX_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_regex-gcc63-mt-1_61.so.1.61.0 \
+#            -DBoost_SYSTEM_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_system-gcc63-mt-1_61.so.1.61.0 \
+#            -DBoost_THREAD_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_thread-gcc63-mt-1_61.so.1.61.0 \
+#            -DBoost_WAVE_LIBRARY_RELEASE=${{ env.APPLESEED_DEPENDENCIES }}/lib/libboost_wave-gcc63-mt-1_61.so.1.61.0 \
+#            -DEMBREE_INCLUDE_DIR=${{ env.APPLESEED_DEPENDENCIES }}/include \
+#            -DEMBREE_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/libembree3.so \
+#            -DLZ4_INCLUDE_DIR=${{ env.APPLESEED_DEPENDENCIES }}/include \
+#            -DLZ4_LIBRARY=${{ env.APPLESEED_DEPENDENCIES }}/lib/liblz4.so \
+#            -DOPENIMAGEIO_OIIOTOOL=${{ env.APPLESEED_DEPENDENCIES }}/bin/oiiotool \
+#            -DOPENIMAGEIO_IDIFF=${{ env.APPLESEED_DEPENDENCIES }}/bin/idiff \
+#            -DOSL_COMPILER=${{ env.APPLESEED_DEPENDENCIES }}/bin/oslc \
+#            -DOSL_MAKETX=${{ env.APPLESEED_DEPENDENCIES }}/bin/maketx \
+#            -DOSL_QUERY_INFO=${{ env.APPLESEED_DEPENDENCIES }}/bin/oslinfo \
+#            ..
 
 #      - name: build
 #        run: |
