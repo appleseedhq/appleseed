@@ -79,7 +79,7 @@ jobs:
           pushd build
           cmake \
             -Wno-dev \
-            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
             -DCMAKE_PREFIX_PATH=/usr/include/x86_64-linux-gnu/qt5 \
             -DCMAKE_C_COMPILER=${{ matrix.compiler.CC }} \
             -DCMAKE_CXX_COMPILER=${{ matrix.compiler.CXX }} \
