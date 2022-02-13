@@ -26,7 +26,7 @@
 # THE SOFTWARE.
 #
 
-name: build-and-test-pr
+name: build and test pr
 
 on:
   push:
@@ -60,6 +60,7 @@ jobs:
           curl -L "https://github.com/appleseedhq/linux-deps/releases/download/v2.1.1/appleseed-deps-shared-2.1.1.tgz" > deps.tgz
           tar xfz deps.tgz
           rm deps.tgz
+          sudo chmod 0777 -R ${{ env.APPLESEED_DEPENDENCIES }}
 
       - name: checkout git
         uses: actions/checkout@v2
@@ -78,7 +79,11 @@ jobs:
           pushd build
           cmake \
             -Wno-dev \
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
             -DCMAKE_PREFIX_PATH=/usr/include/x86_64-linux-gnu/qt5 \
+            -DCMAKE_C_COMPILER=${{ matrix.compiler.CC }} \
+            -DCMAKE_CXX_COMPILER=${{ matrix.compiler.CXX }} \
+            -DCMAKE_CXX_FLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" \
             -DWITH_EMBREE=ON \
             -DUSE_SSE42=ON \
             -DUSE_STATIC_BOOST=OFF \
