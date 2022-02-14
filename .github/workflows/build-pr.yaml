@@ -41,18 +41,11 @@ jobs:
     runs-on: ${{ matrix.os.version }}
     strategy:
       matrix:
-        include:
-        - os: [{name: Linux, version: ubuntu-18.04}]
-          compiler: 
-            - {CC: gcc-6, CXX: g++-6}
-#            - {CC: gcc-7, CXX: g++-7}
-#            - {CC: clang-8, CXX: clang++-8}
-        - os: [{name: Windows, version: windows-latest}]
-          compiler:
-            - {CC: cl, CXX: cl}
-#        - os: [{name: Mac, version: macos-latest}
-#          compiler:
-#            - {CC: clang, CXX: clang++}
+        os: [{name: Linux, version: ubuntu-18.04}]
+        compiler: 
+          - {CC: gcc-6, CXX: g++-6}
+#          - {CC: gcc-7, CXX: g++-7}
+#          - {CC: clang-8, CXX: clang++-8}
         build_type: [Debug]
 #        build_type: [Debug, Release]
 
