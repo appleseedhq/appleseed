@@ -26,13 +26,14 @@
 # THE SOFTWARE.
 #
 
-name: "build and test ubuntu action"
+name: "build and test ubuntu"
 
 defaults:
   run:
     shell: bash
 
 runs:
+  using: "composite"
   steps:
     - name: Install packages
       run: |

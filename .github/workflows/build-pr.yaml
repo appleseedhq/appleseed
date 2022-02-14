@@ -36,8 +36,8 @@ on:
     branches: [master]
 
 jobs:
-  build-and-test:
-    name: Build and Test
+  build-and-test-linux:
+    name: Build and Test Linux
     runs-on: ${{ matrix.os.version }}
     strategy:
       matrix:
@@ -63,13 +63,12 @@ jobs:
       - name: Checkout git
         uses: actions/checkout@v2
 
+      - name: Build and test
+        uses: ./.github/actions/build-and-test-ubuntu
+
       - name: Install packages
-        uses: ./.github/actions/${{ matrix.os.name }}/install-packages
-        with:
-          CC: ${{ matrix.compiler.CC }}
-          CXX: ${{ matrix.compiler.CXX }}
-#        run: |
-#          sudo apt-get install -y git cmake python2.7-dev qtbase5-dev libqt5opengl5-dev sshpass ${{ matrix.compiler.CC }} ${{ matrix.compiler.CXX }}
+        run: |
+          sudo apt-get install -y git cmake python2.7-dev qtbase5-dev libqt5opengl5-dev sshpass ${{ matrix.compiler.CC }} ${{ matrix.compiler.CXX }}
 
       - name: Set Up dependencies
         run: |
