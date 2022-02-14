@@ -36,16 +36,23 @@ on:
     branches: [master]
 
 jobs:
-  build-and-test-linux:
-    name: Linux
+  build-and-test:
+    name: Build and Test
     runs-on: ${{ matrix.os.version }}
     strategy:
       matrix:
-        os: [{name: Linux, version: ubuntu-18.04}]
-        compiler: 
-          - {CC: gcc-6, CXX: g++-6}
-#          - {CC: gcc-7, CXX: g++-7}
-#          - {CC: clang-8, CXX: clang++-8}
+        include:
+        - os: [{name: Linux, version: ubuntu-18.04}]
+          compiler: 
+            - {CC: gcc-6, CXX: g++-6}
+#            - {CC: gcc-7, CXX: g++-7}
+#            - {CC: clang-8, CXX: clang++-8}
+        - os: [{name: Windows, version: windows-latest}]
+          compiler:
+            - {CC: cl, CXX: cl}
+#        - os: [{name: Mac, version: macos-latest}
+#          compiler:
+#            - {CC: clang, CXX: clang++}
         build_type: [Debug]
 #        build_type: [Debug, Release]
 
@@ -57,13 +64,12 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install packages
-        uses: ./.github/actions/install-packages-Linux
+        uses: ./.github/actions/${{ matrix.os.name }}/install-packages
         with:
           CC: ${{ matrix.compiler.CC }}
           CXX: ${{ matrix.compiler.CXX }}
 #        run: |
 #          sudo apt-get install -y git cmake python2.7-dev qtbase5-dev libqt5opengl5-dev sshpass ${{ matrix.compiler.CC }} ${{ matrix.compiler.CXX }}
-
 
       - name: Set Up dependencies
         run: |
