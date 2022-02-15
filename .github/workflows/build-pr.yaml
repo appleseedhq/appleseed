@@ -140,7 +140,7 @@ jobs:
 #         python sandbox/lib/${{ matrix.build_type }}/python/appleseed/test/runtests.py
 
   build-and-test-mac:
-    name: mac
+    name: Mac
     runs-on: macos-latest
     env:
       CC: clang
