@@ -934,7 +934,7 @@ class MultiLensCamera
         //
 
         // Comments are preceded by a # and can stand on their own line or at the end of a line.
-        // The first line should contain the number of following lens elments.
+        // The first non-comment line should contain the number of following lens elments.
         // Lens elements have to be space separated values of the format:
         // radius    thickness    ior    aperture
         bool read_lens_file(const Project& project, double factor)
@@ -963,25 +963,23 @@ class MultiLensCamera
                 return false;
             }
 
-            int index = 0;
             std::string line;
+
+            // Skip comment lines at the top of the file.
+            while (line.empty())
+            {
+                std::getline(infile, line);
+                remove_comment_from_line(line);
+            }
+
+            m_lens_container.reserve(std::atoi(line.c_str()));
+
+            int index = 0;
             while (std::getline(infile, line))
             {
+                remove_comment_from_line(line);
                 if (line.empty())
                     continue;
-
-                size_t comment_pos = line.find('#');
-                if (comment_pos == 0)
-                    continue;
-
-                if (comment_pos != std::string::npos)
-                    line = line.substr(0, comment_pos);
-
-                if (std::regex_match(line, std::regex("[0-9]+\\s+")))
-                {
-                    m_lens_container.reserve(std::atoi(line.c_str()));
-                    continue;
-                }
 
                 std::istringstream iss(line);
 
@@ -997,7 +995,7 @@ class MultiLensCamera
                         "while defining camera \"%s\": error reading file \"%s\" (lens element %d)",
                         get_path().c_str(),
                         lens_filepath.c_str(),
-                        index);
+                        index + 1);
                     return false;
                 }
 
@@ -1025,6 +1023,13 @@ class MultiLensCamera
 
             infile.close();
             return true;
+        }
+
+        void remove_comment_from_line(std::string& line)
+        {
+            size_t comment_pos = line.find('#');
+            if (comment_pos != std::string::npos)
+                line = line.substr(0, comment_pos);
         }
 
         void scale_lens_elements(const double from_focal_length, const double to_focal_length)
