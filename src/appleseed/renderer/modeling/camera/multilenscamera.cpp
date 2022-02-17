@@ -685,6 +685,7 @@ class MultiLensCamera
 
                 Vector3d intersection; // point at which the ray intersects the current lens element
                 Vector3d normal; // intersection normal
+                always_poison(normal);
                 if (!intersect_lens(ray, current_element, current_z, ignore_aperture_shape, intersection, normal))
                     return false;
 
@@ -726,6 +727,7 @@ class MultiLensCamera
 
                 Vector3d intersection; // point at which the ray intersects the current lens element
                 Vector3d normal; // intersection normal
+                always_poison(normal);
                 if (!intersect_lens(ray, current_element, current_z, ignore_aperture_shape, intersection, normal))
                     return false;
 
