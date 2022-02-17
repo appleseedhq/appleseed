@@ -421,25 +421,6 @@ class MultiLensCamera
                 m_lens_file = m_params.get_required<std::string>("lens_file");
         }
 
-        void extract_diaphragm_blade_count()
-        {
-            const int blade_count = m_params.get_optional<int>("diaphragm_blades", 0);
-
-            if (blade_count == 0 || blade_count >= 3)
-                m_diaphragm_blade_count = static_cast<size_t>(blade_count);
-            else
-            {
-                m_diaphragm_blade_count = 0;
-                RENDERER_LOG_ERROR(
-                    "while defining camera \"%s\": invalid value \"%d\" for parameter \"%s\", "
-                    "using default value \"" FMT_SIZE_T "\".",
-                    get_path().c_str(),
-                    blade_count,
-                    "diaphragm_blades",
-                    m_diaphragm_blade_count);
-            }
-        }
-
         double extract_focal_length() const
         {
             if (has_param("focal_length"))
