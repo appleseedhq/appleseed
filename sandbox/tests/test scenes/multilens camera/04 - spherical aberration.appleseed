@@ -10,7 +10,7 @@
             <parameter name="diaphragm_blades" value="0" />
             <parameter name="diaphragm_tilt_angle" value="0.0" />
             <parameter name="f_stop" value="1.0" />
-            <parameter name="film_dimensions" value="0.00625 0.00625" />
+            <parameter name="film_dimensions" value="0.005 0.005" />
             <parameter name="focal_distance" value="0.9" />
             <parameter name="focal_length" value="0.2" />
             <parameter name="lens_file" value="double-gauss-tronnier.txt" />
