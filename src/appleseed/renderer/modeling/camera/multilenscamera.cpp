@@ -208,6 +208,8 @@ class MultiLensCamera
 
             // Compute the focal length of the lens.
             double p_film, f_film;
+            always_poison(f_film);
+            always_poison(p_film);
             if (!compute_thick_lens_film(p_film, f_film))
             {
                 use_default_lens(0.001);
