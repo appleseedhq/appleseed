@@ -10,7 +10,7 @@
             <parameter name="diaphragm_blades" value="0" />
             <parameter name="diaphragm_tilt_angle" value="0.0" />
             <parameter name="f_stop" value="1.0" />
-            <parameter name="film_dimensions" value="0.0125 0.0125" />
+            <parameter name="film_dimensions" value="0.00625 0.00625" />
             <parameter name="focal_distance" value="0.9" />
             <parameter name="focal_length" value="0.2" />
             <parameter name="lens_file" value="double-gauss-tronnier.txt" />
@@ -110,9 +110,10 @@
             <parameter name="device" value="cpu" />
             <parameter name="lighting_engine" value="pt" />
             <parameter name="passes" value="8" />
+            <parameter name="pixel_renderer" value="uniform" />
             <parameter name="shading_result_framebuffer" value="permanent" />
             <parameter name="spectrum_mode" value="rgb" />
-            <parameter name="tile_renderer" value="adaptive" />
+            <parameter name="tile_renderer" value="generic" />
             <parameter name="use_embree" value="false" />
             <parameters name="adaptive_tile_renderer">
                 <parameter name="batch_size" value="8" />
@@ -177,7 +178,7 @@
             </parameters>
             <parameters name="uniform_pixel_renderer">
                 <parameter name="force_antialiasing" value="true" />
-                <parameter name="samples" value="100" />
+                <parameter name="samples" value="32" />
             </parameters>
         </configuration>
         <configuration name="interactive" base="base_interactive">
