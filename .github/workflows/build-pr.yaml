@@ -158,7 +158,7 @@ jobs:
           wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/embree.rb
           wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/llvm@6.rb
           wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/lz4.rb
-          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/openimagio.rb
+          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/openimageio.rb
           wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/openvdb.rb
           wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/xerces-c.rb
           wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/zlib.rb
