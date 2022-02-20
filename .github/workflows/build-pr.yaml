@@ -148,25 +148,25 @@ jobs:
       build_type: Debug
     
     steps:
-      - name: brew
+      - name: Homebrew
         run: |
           brew update
           brew upgrade cmake
           brew unlink python@2
-          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/python@2.rb
-          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/boost.rb
-          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/boost-python.rb
-          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/embree.rb
-          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/llvm@6.rb
-          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/lz4.rb
-          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/openimagio.rb
-          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/openvdb.rb
-          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/xerces-c.rb
-          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/zlib.rb
-          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/qt.rb
-          brew install python@2.rb boost.rb boost-python.rb embree.rb llvm@6.rb lz4.rb openimageio.rb openvdb.rb xerces-c.rb zlib.rb qt.rb
+#          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/python@2.rb
+#          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/boost.rb
+#          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/boost-python.rb
+#          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/embree.rb
+#          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/llvm@6.rb
+#          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/lz4.rb
+#          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/openimagio.rb
+#          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/openvdb.rb
+#          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/xerces-c.rb
+#          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/zlib.rb
+#          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/6c117c5f127d21dab0aa96713e42762c507a7d9c/Formula/qt.rb
+#          brew install python@2.rb boost.rb boost-python.rb embree.rb llvm@6.rb lz4.rb openimageio.rb openvdb.rb xerces-c.rb zlib.rb qt.rb
       
-      - name: python setup
+      - name: Python setup
         run: |
           mkdir -p $HOME/Library/Python/2.7/lib/python/site-packages
           echo 'import site; site.addsitedir("/usr/local/lib/python2.7/site-packages")' >> $HOME/Library/Python/2.7/lib/python/site-packages/homebrew.pth
