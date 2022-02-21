@@ -150,8 +150,8 @@ jobs:
     steps:
       - name: NPM
         run: |
-          npm i --python=python2.7
-          npm 
+          npm init
+          npm install --python=python2.7
 #          brew update
 #          brew upgrade cmake
 #          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/3a877e3525d93cfeb076fc57579bdd589defc585/Formula/python@2.rb
