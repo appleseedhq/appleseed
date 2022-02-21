@@ -40,7 +40,17 @@
                 </shader>
                 <connect_shaders src_layer="asAreaLight" src_param="out_output" dst_layer="asClosure2Surface" dst_param="in_input" />
             </shader_group>
+            <shader_group name="Material.001_tree">
+                <shader type="shader" name="_shaders/as_blackbody" layer="asBlackbody">
+                </shader>
+                <shader type="surface" name="_shaders/as_closure2surface" layer="asClosure2Surface">
+                </shader>
+                <connect_shaders src_layer="asBlackbody" src_param="out_color" dst_layer="asClosure2Surface" dst_param="in_input" />
+            </shader_group>
             <surface_shader name="Material_surface" model="physical_surface_shader">
+                <parameter name="lighting_samples" value="1" />
+            </surface_shader>
+            <surface_shader name="Material.001_surface" model="physical_surface_shader">
                 <parameter name="lighting_samples" value="1" />
             </surface_shader>
             <surface_shader name="__default_surface_shader" model="diagnostic_surface_shader">
@@ -49,6 +59,10 @@
             <material name="Material" model="osl_material">
                 <parameter name="osl_surface" value="Material_tree" />
                 <parameter name="surface_shader" value="Material_surface" />
+            </material>
+            <material name="Material.001" model="osl_material">
+                <parameter name="osl_surface" value="Material.001_tree" />
+                <parameter name="surface_shader" value="Material.001_surface" />
             </material>
             <material name="__default_material" model="generic_material">
                 <parameter name="surface_shader" value="__default_surface_shader" />
@@ -68,6 +82,9 @@
             </object>
             <object name="Plane" model="mesh_object">
                 <parameter name="filename" value="_geometry/cbf6b44ee2a309e5333095dfb17d4c44.binarymesh" />
+            </object>
+            <object name="Plane.001" model="mesh_object">
+                <parameter name="filename" value="_geometry/8ced3720fa574cde9f4db51e0ea6039f.binarymesh" />
             </object>
             <object_instance name="1_inst" object="1.mesh">
                 <parameter name="medium_priority" value="0" />
@@ -188,6 +205,30 @@
                 </transform>
                 <assign_material slot="default" side="front" material="Material" />
                 <assign_material slot="default" side="back" material="Material" />
+            </object_instance>
+            <object_instance name="Plane.001_inst" object="Plane.001.mesh">
+                <parameter name="medium_priority" value="0" />
+                <parameter name="photon_target" value="false" />
+                <parameter name="shadow_terminator_correction" value="0" />
+                <parameters name="visibility">
+                    <parameter name="camera" value="true" />
+                    <parameter name="diffuse" value="true" />
+                    <parameter name="glossy" value="true" />
+                    <parameter name="light" value="true" />
+                    <parameter name="shadow" value="true" />
+                    <parameter name="specular" value="true" />
+                    <parameter name="transparency" value="true" />
+                </parameters>
+                <transform>
+                    <matrix>
+                        2.25000000000000000 0.00000000000000000 0.00000000000000000 0.00000000000000000
+                        0.00000000000000000 0.00000000000000000 2.27363395690917969 0.00000000000000000
+                        -0.00000000000000000 -2.25000000000000000 -0.00000000000000000 -0.00000000000000000
+                        0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
+                    </matrix>
+                </transform>
+                <assign_material slot="default" side="front" material="Material.001" />
+                <assign_material slot="default" side="back" material="Material.001" />
             </object_instance>
         </assembly>
         <assembly_instance name="assembly_inst" assembly="assembly">

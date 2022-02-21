@@ -32,6 +32,13 @@
         </camera>
         <environment name="environment" model="generic_environment" />
         <assembly name="assembly">
+            <shader_group name="Material_tree">
+                <shader type="shader" name="_shaders/as_blackbody" layer="asBlackbody">
+                </shader>
+                <shader type="surface" name="_shaders/as_closure2surface" layer="asClosure2Surface">
+                </shader>
+                <connect_shaders src_layer="asBlackbody" src_param="out_color" dst_layer="asClosure2Surface" dst_param="in_input" />
+            </shader_group>
             <shader_group name="dot_tree">
                 <shader type="shader" name="_shaders/as_areaLight" layer="asAreaLight">
                     <parameter name="in_exposure" value="float 0" />
@@ -45,6 +52,9 @@
             <surface_shader name="__default_surface_shader" model="diagnostic_surface_shader">
                 <parameter name="mode" value="facing_ratio" />
             </surface_shader>
+            <surface_shader name="Material_surface" model="physical_surface_shader">
+                <parameter name="lighting_samples" value="1" />
+            </surface_shader>
             <surface_shader name="dot_surface" model="physical_surface_shader">
                 <parameter name="lighting_samples" value="1" />
             </surface_shader>
@@ -56,6 +66,13 @@
                 <parameter name="osl_surface" value="dot_tree" />
                 <parameter name="surface_shader" value="dot_surface" />
             </material>
+            <material name="Material" model="osl_material">
+                <parameter name="osl_surface" value="Material_tree" />
+                <parameter name="surface_shader" value="Material_surface" />
+            </material>
+            <object name="Plane" model="mesh_object">
+                <parameter name="filename" value="_geometry/8ced3720fa574cde9f4db51e0ea6039f.binarymesh" />
+            </object>
             <object name="center" model="mesh_object">
                 <parameter name="filename" value="_geometry/31d940309c302abf9eb58676e9c1e0a5.binarymesh" />
             </object>
@@ -82,6 +99,30 @@
                 </transform>
                 <assign_material slot="default" side="front" material="dot" />
                 <assign_material slot="default" side="back" material="dot" />
+            </object_instance>
+            <object_instance name="Plane_inst" object="Plane.mesh">
+                <parameter name="medium_priority" value="0" />
+                <parameter name="photon_target" value="false" />
+                <parameter name="shadow_terminator_correction" value="0" />
+                <parameters name="visibility">
+                    <parameter name="camera" value="true" />
+                    <parameter name="diffuse" value="true" />
+                    <parameter name="glossy" value="true" />
+                    <parameter name="light" value="true" />
+                    <parameter name="shadow" value="true" />
+                    <parameter name="specular" value="true" />
+                    <parameter name="transparency" value="true" />
+                </parameters>
+                <transform>
+                    <matrix>
+                        -0.00000000655670851 0.00000000000000000 0.14588308334350586 -0.10000000149011612
+                        -0.15000000596046448 0.00000000000000000 -0.00000000637675202 0.00000000000000000
+                        -0.00000000000000000 -0.15000000596046448 -0.00000000000000000 -0.00000000000000000
+                        0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
+                    </matrix>
+                </transform>
+                <assign_material slot="default" side="front" material="Material" />
+                <assign_material slot="default" side="back" material="Material" />
             </object_instance>
         </assembly>
         <assembly_instance name="assembly_inst" assembly="assembly">

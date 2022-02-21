@@ -41,48 +41,25 @@
                     1.000000000
                 </alpha>
             </color>
-            <shader_group name="black.001_tree">
-                <shader type="shader" name="_shaders/as_matte" layer="asMatte">
-                    <parameter name="in_matte_opacity_color" value="color 0.0331048 0.0331048 0.0331048" />
-                </shader>
-                <shader type="surface" name="_shaders/as_closure2surface" layer="asClosure2Surface">
-                </shader>
-                <connect_shaders src_layer="asMatte" src_param="out_outColor" dst_layer="asClosure2Surface" dst_param="in_input" />
-            </shader_group>
             <shader_group name="black_tree">
-                <shader type="shader" name="_shaders/as_matte" layer="asMatte">
-                    <parameter name="in_matte_opacity_color" value="color 0.0331048 0.0331048 0.0331048" />
+                <shader type="shader" name="_shaders/as_blackbody" layer="asBlackbody">
                 </shader>
                 <shader type="surface" name="_shaders/as_closure2surface" layer="asClosure2Surface">
                 </shader>
-                <connect_shaders src_layer="asMatte" src_param="out_outColor" dst_layer="asClosure2Surface" dst_param="in_input" />
-            </shader_group>
-            <shader_group name="white.001_tree">
-                <shader type="shader" name="_shaders/as_matte" layer="asMatte">
-                    <parameter name="in_matte_opacity_color" value="color 1 1 1" />
-                </shader>
-                <shader type="surface" name="_shaders/as_closure2surface" layer="asClosure2Surface">
-                </shader>
-                <connect_shaders src_layer="asMatte" src_param="out_outColor" dst_layer="asClosure2Surface" dst_param="in_input" />
+                <connect_shaders src_layer="asBlackbody" src_param="out_color" dst_layer="asClosure2Surface" dst_param="in_input" />
             </shader_group>
             <shader_group name="white_tree">
-                <shader type="shader" name="_shaders/as_matte" layer="asMatte">
-                    <parameter name="in_matte_opacity_color" value="color 1 1 1" />
+                <shader type="shader" name="_shaders/as_areaLight" layer="asAreaLight">
+                    <parameter name="in_intensity" value="float 1" />
                 </shader>
                 <shader type="surface" name="_shaders/as_closure2surface" layer="asClosure2Surface">
                 </shader>
-                <connect_shaders src_layer="asMatte" src_param="out_outColor" dst_layer="asClosure2Surface" dst_param="in_input" />
+                <connect_shaders src_layer="asAreaLight" src_param="out_output" dst_layer="asClosure2Surface" dst_param="in_input" />
             </shader_group>
             <surface_shader name="__default_surface_shader" model="diagnostic_surface_shader">
                 <parameter name="mode" value="facing_ratio" />
             </surface_shader>
-            <surface_shader name="black.001_surface" model="physical_surface_shader">
-                <parameter name="lighting_samples" value="1" />
-            </surface_shader>
             <surface_shader name="black_surface" model="physical_surface_shader">
-                <parameter name="lighting_samples" value="1" />
-            </surface_shader>
-            <surface_shader name="white.001_surface" model="physical_surface_shader">
                 <parameter name="lighting_samples" value="1" />
             </surface_shader>
             <surface_shader name="white_surface" model="physical_surface_shader">
@@ -96,33 +73,10 @@
                 <parameter name="osl_surface" value="black_tree" />
                 <parameter name="surface_shader" value="black_surface" />
             </material>
-            <material name="black.001" model="osl_material">
-                <parameter name="osl_surface" value="black.001_tree" />
-                <parameter name="surface_shader" value="black.001_surface" />
-            </material>
             <material name="white" model="osl_material">
                 <parameter name="osl_surface" value="white_tree" />
                 <parameter name="surface_shader" value="white_surface" />
             </material>
-            <material name="white.001" model="osl_material">
-                <parameter name="osl_surface" value="white.001_tree" />
-                <parameter name="surface_shader" value="white.001_surface" />
-            </material>
-            <light name="Light" model="point_light">
-                <parameter name="cast_indirect_light" value="true" />
-                <parameter name="exposure" value="0" />
-                <parameter name="importance_multiplier" value="1" />
-                <parameter name="intensity" value="Light_radiance" />
-                <parameter name="intensity_multiplier" value="25" />
-                <transform>
-                    <matrix>
-                        -0.29086464643478394 -0.77110081911087036 0.56639319658279419 0.00000000000000000
-                        -0.05518905818462372 0.60452473163604736 0.79467225074768066 5.90386199951171875
-                        -0.95517116785049438 0.19988335669040680 -0.21839119493961334 0.00000000000000000
-                        0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
-                    </matrix>
-                </transform>
-            </light>
             <object name="Cube" model="mesh_object">
                 <parameter name="filename" value="_geometry/1973d7ed542118d39cdbcdc1d0d71c68.binarymesh" />
             </object>
@@ -141,9 +95,9 @@
                 </parameters>
                 <transform>
                     <matrix>
-                        4.00000000000000000 0.00000000000000000 0.00000000000000000 0.00000000000000000
-                        0.00000000000000000 0.00000000000000000 0.02500000037252903 -0.04999999701976776
-                        -0.00000000000000000 -4.00000000000000000 -0.00000000000000000 -0.00000000000000000
+                        4.25139856338500977 0.00000000000000000 0.00000000000000000 0.00000000000000000
+                        0.00000000000000000 0.00000000000000000 0.02657124213874340 -0.04999999701976776
+                        -0.00000000000000000 -4.25139856338500977 -0.00000000000000000 -0.00000000000000000
                         0.00000000000000000 0.00000000000000000 0.00000000000000000 1.00000000000000000
                     </matrix>
                 </transform>
