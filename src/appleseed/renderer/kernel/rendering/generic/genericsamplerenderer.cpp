@@ -180,8 +180,11 @@ namespace
             if (!m_scene.get_render_data().m_active_camera->spawn_ray(
                 sampling_context,
                 Dual2d(image_point, m_image_point_dx, m_image_point_dy),
-                primary_ray))
-                return;
+                primary_ray)){
+                  shading_result.m_main.set(0.f);
+                  shading_result.m_main.a = 1.f;
+                  return;
+                }
 
             ShadingPoint shading_points[2];
             size_t shading_point_index = 0;
