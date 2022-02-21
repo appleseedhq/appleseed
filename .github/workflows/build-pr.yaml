@@ -150,8 +150,8 @@ jobs:
     steps:
       - name: Homebrew
         run: |
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/uninstall.sh)"
-          /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/0b5e1fe99a70dd40abc206c1ce3c1a1d46809fee/install.sh)"
+          sudo /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/uninstall.sh)"
+          sudo /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/0b5e1fe99a70dd40abc206c1ce3c1a1d46809fee/install)"
           wget https://raw.githubusercontent.com/Homebrew/homebrew-core/3a877e3525d93cfeb076fc57579bdd589defc585/Formula/python@2.rb
           brew install python@2.rb
 #          wget https://raw.githubusercontent.com/Homebrew/homebrew-core/3a877e3525d93cfeb076fc57579bdd589defc585/Formula/boost.rb
