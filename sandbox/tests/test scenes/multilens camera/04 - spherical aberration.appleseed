@@ -13,7 +13,7 @@
             <parameter name="film_dimensions" value="0.005 0.005" />
             <parameter name="focal_distance" value="0.9" />
             <parameter name="focal_length" value="0.2" />
-            <parameter name="lens_file" value="double-gauss-tronnier.txt" />
+            <parameter name="lens_file" value="_lenses/double-gauss-tronnier.txt" />
             <parameter name="near_z" value="-0.001" />
             <parameter name="shift_x" value="0" />
             <parameter name="shift_y" value="0" />

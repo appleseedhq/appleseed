@@ -10,10 +10,10 @@
             <parameter name="diaphragm_blades" value="0" />
             <parameter name="diaphragm_tilt_angle" value="0.0" />
             <parameter name="f_stop" value="64.0" />
-            <parameter name="film_dimensions" value="0.036 0.036" />
+            <parameter name="film_dimensions" value="0.035 0.035" />
             <parameter name="focal_distance" value="1.0" />
             <parameter name="focal_length" value="0.055" />
-            <parameter name="lens_file" value="fisheye.txt" />
+            <parameter name="lens_file" value="_lenses/fisheye.txt" />
             <parameter name="near_z" value="-0.001" />
             <parameter name="shift_x" value="0" />
             <parameter name="shift_y" value="0" />
