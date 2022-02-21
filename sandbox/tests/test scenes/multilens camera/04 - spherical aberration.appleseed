@@ -109,7 +109,7 @@
         <configuration name="final" base="base_final">
             <parameter name="device" value="cpu" />
             <parameter name="lighting_engine" value="pt" />
-            <parameter name="passes" value="8" />
+            <parameter name="passes" value="4" />
             <parameter name="pixel_renderer" value="uniform" />
             <parameter name="shading_result_framebuffer" value="permanent" />
             <parameter name="spectrum_mode" value="rgb" />
@@ -178,7 +178,7 @@
             </parameters>
             <parameters name="uniform_pixel_renderer">
                 <parameter name="force_antialiasing" value="true" />
-                <parameter name="samples" value="32" />
+                <parameter name="samples" value="64" />
             </parameters>
         </configuration>
         <configuration name="interactive" base="base_interactive">

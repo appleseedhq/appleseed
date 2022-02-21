@@ -190,9 +190,9 @@
         <configuration name="final" base="base_final">
             <parameter name="device" value="cpu" />
             <parameter name="lighting_engine" value="pt" />
-            <parameter name="passes" value="2" />
+            <parameter name="passes" value="1" />
             <parameter name="pixel_renderer" value="uniform" />
-            <parameter name="shading_result_framebuffer" value="permanent" />
+            <parameter name="shading_result_framebuffer" value="ephemeral" />
             <parameter name="spectrum_mode" value="rgb" />
             <parameter name="tile_renderer" value="generic" />
             <parameter name="use_embree" value="false" />

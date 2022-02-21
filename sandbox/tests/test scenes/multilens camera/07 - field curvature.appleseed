@@ -178,9 +178,9 @@
         <configuration name="final" base="base_final">
             <parameter name="device" value="cpu" />
             <parameter name="lighting_engine" value="pt" />
-            <parameter name="passes" value="8" />
+            <parameter name="passes" value="1" />
             <parameter name="pixel_renderer" value="uniform" />
-            <parameter name="shading_result_framebuffer" value="permanent" />
+            <parameter name="shading_result_framebuffer" value="ephemeral" />
             <parameter name="spectrum_mode" value="rgb" />
             <parameter name="tile_renderer" value="generic" />
             <parameter name="use_embree" value="false" />
@@ -239,9 +239,15 @@
                 <parameter name="photon_tracing_rr_min_path_length" value="6" />
                 <parameter name="photon_type" value="poly" />
             </parameters>
+            <parameters name="texture_controlled_pixel_renderer">
+                <parameter name="file_path" value="" />
+                <parameter name="force_antialiasing" value="true" />
+                <parameter name="max_samples" value="64" />
+                <parameter name="min_samples" value="0" />
+            </parameters>
             <parameters name="uniform_pixel_renderer">
                 <parameter name="force_antialiasing" value="true" />
-                <parameter name="samples" value="24" />
+                <parameter name="samples" value="32" />
             </parameters>
         </configuration>
         <configuration name="interactive" base="base_interactive">
