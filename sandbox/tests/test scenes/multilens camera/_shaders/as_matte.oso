@@ -1,0 +1,38 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.10.5
+# options: -O2 -DNDEBUG -ID:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/include -o D:/Barbo/3D/appleseed_dev/appleseed/sandbox/shaders/appleseed/as_matte.oso
+shader as_matte	%meta{string,help,"Matte Material"} %meta{string,icon,"asMatte.png"} %meta{string,URL,"https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_matte_surface.html"} %meta{string,as_node_name,"asMatte"} %meta{string,as_category,"shader"} %meta{string,as_max_class_id,"1941913893 1167117385"} %meta{string,as_max_plugin_type,"material"} %meta{int,as_maya_type_id,1210862} %meta{string,as_maya_classification,"drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedMatte"} 
+param	closure color	in_color			%meta{string,as_maya_attribute_name,"color"} %meta{string,as_maya_attribute_short_name,"c"} %meta{string,label,"Surface Passthrough"} %meta{string,page,"Matte"}  %read{9,9} %write{2147483647,-1}
+param	int	in_enable_matte	1		%meta{string,as_maya_attribute_name,"enableMatte"} %meta{string,as_maya_attribute_short_name,"ema"} %meta{string,widget,"checkBox"} %meta{string,label,"Enable Matte Opacity"} %meta{string,page,"Matte"} %meta{int,as_maya_attribute_connectable,0} %meta{int,as_maya_attribute_keyable,0} %meta{int,as_maya_attribute_hidden,1} %meta{int,as_blender_input_socket,0} %meta{int,gafferNoduleLayoutVisible,0} %meta{int,divider,1}  %read{3,3} %write{2147483647,-1}
+param	float	in_matte_opacity	0		%meta{string,as_maya_attribute_name,"matteOpacity"} %meta{string,as_maya_attribute_short_name,"mao"} %meta{float,min,0} %meta{float,max,1} %meta{string,label,"Matte Opacity"} %meta{string,page,"Matte"} %meta{int,as_blender_input_socket,0} %meta{int,gafferNoduleLayoutVisible,0}  %read{6,6} %write{2147483647,-1}
+param	color	in_matte_opacity_color	1 0.5 0		%meta{string,as_maya_attribute_name,"matteOpacityColor"} %meta{string,as_maya_attribute_short_name,"mac"} %meta{string,label,"Matte Opacity Color"} %meta{string,page,"Matte"} %meta{int,as_blender_input_socket,0} %meta{int,gafferNoduleLayoutVisible,0}  %read{6,6} %write{2147483647,-1}
+oparam	closure color	out_outColor			%meta{string,as_maya_attribute_name,"outColor"} %meta{string,as_maya_attribute_short_name,"oc"} %meta{string,widget,"null"}  %read{2147483647,-1} %write{7,9}
+oparam	closure color	out_outMatteOpacity			%meta{string,as_maya_attribute_name,"outMatteOpacity"} %meta{string,as_maya_attribute_short_name,"om"} %meta{string,label,"Matte Opacity"} %meta{string,widget,"null"}  %read{7,7} %write{6,6}
+temp	int	$tmp1	%read{1,1} %write{0,0}
+const	string	$const1	"transparency"		%read{0,0} %write{2147483647,-1}
+temp	int	$tmp2	%read{2,5} %write{1,4}
+const	int	$const2	0		%read{1,3} %write{2147483647,-1}
+temp	int	$tmp3	%read{4,4} %write{3,3}
+const	string	$const3	"as_matte"		%read{6,6} %write{2147483647,-1}
+code ___main___
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_matte.osl:101
+#     if (raytype("transparency") && in_enable_matte)
+	raytype		$tmp1 $const1 	%filename{"D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_matte.osl"} %line{101} %argrw{"wr"}
+	neq		$tmp2 $tmp1 $const2 	%argrw{"wrr"}
+	if		$tmp2 5 5 	%argrw{"r"}
+	neq		$tmp3 in_enable_matte $const2 	%argrw{"wrr"}
+	assign		$tmp2 $tmp3 	%argrw{"wr"}
+	if		$tmp2 9 9 	%argrw{"r"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_matte.osl:103
+#         out_outMatteOpacity = as_matte(
+	closure		out_outMatteOpacity $const3 in_matte_opacity_color in_matte_opacity 	%line{103} %argrw{"wrrr"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_matte.osl:107
+#         out_outColor = out_outMatteOpacity;
+	assign		out_outColor out_outMatteOpacity 	%line{107} %argrw{"wr"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_matte.osl:108
+#         return;
+	exit	%line{108}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_matte.osl:111
+#     out_outColor = in_color;
+	assign		out_outColor in_color 	%line{111} %argrw{"wr"}
+	end

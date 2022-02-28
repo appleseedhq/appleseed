@@ -1,0 +1,6 @@
+# achromatic double crown/flint (#NT32-921) edmund optics archomat, ~129mm
+4 # lens size
+65.22	9.60	1.5	48.0
+-62.03	4.20	1.5	48.0
+-1240.67	5.00	1	48.0
+0	105.00	0	40.0

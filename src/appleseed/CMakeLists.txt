@@ -1703,6 +1703,10 @@ set (renderer_modeling_camera_sources
     renderer/modeling/camera/fisheyelenscamera.cpp
     renderer/modeling/camera/fisheyelenscamera.h
     renderer/modeling/camera/icamerafactory.h
+    renderer/modeling/camera/lenscamera.cpp
+    renderer/modeling/camera/lenscamera.h
+    renderer/modeling/camera/multilenscamera.cpp
+    renderer/modeling/camera/multilenscamera.h
     renderer/modeling/camera/orthographiccamera.cpp
     renderer/modeling/camera/orthographiccamera.h
     renderer/modeling/camera/perspectivecamera.cpp

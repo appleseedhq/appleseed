@@ -125,7 +125,7 @@ namespace
             return true;
         }
 
-        void spawn_ray(
+        bool spawn_ray(
             SamplingContext&        sampling_context,
             const Dual2d&           ndc,
             ShadingRay&             ray) const override
@@ -153,6 +153,7 @@ namespace
                 ray.m_ry_dir = normalize(transform.vector_to_parent(ndc_to_camera(py)));
                 ray.m_has_differentials = true;
             }
+            return true;
         }
 
         bool connect_vertex(

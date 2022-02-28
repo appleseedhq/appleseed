@@ -83,9 +83,6 @@ bool PerspectiveCamera::on_render_begin(
     // Extract the film dimensions from the camera parameters.
     m_film_dimensions = extract_film_dimensions();
 
-    // Extract the focal length from the camera parameters.
-    m_focal_length = extract_focal_length(m_film_dimensions[0]);
-
     // Extract the abscissa of the near plane from the camera parameters.
     m_near_z = extract_near_z();
 

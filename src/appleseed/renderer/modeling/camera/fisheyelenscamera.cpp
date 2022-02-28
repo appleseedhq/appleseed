@@ -144,6 +144,9 @@ namespace
             if (!PerspectiveCamera::on_render_begin(project, parent, recorder, abort_switch))
                 return false;
 
+            // Extract the focal length from the camera parameters.
+            m_focal_length = extract_focal_length(m_film_dimensions[0]);
+
             const std::string projection_type = m_params.get_required<std::string>("projection_type", "equisolid_angle");
 
             if (projection_type == "equisolid_angle")
@@ -166,7 +169,7 @@ namespace
             return true;
         }
 
-        void spawn_ray(
+        bool spawn_ray(
             SamplingContext&        sampling_context,
             const Dual2d&           ndc,
             ShadingRay&             ray) const override
@@ -194,6 +197,7 @@ namespace
                 ray.m_ry_dir = normalize(transform.vector_to_parent(-ndc_to_camera(py)));
                 ray.m_has_differentials = true;
             }
+            return true;
         }
 
         bool connect_vertex(

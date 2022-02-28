@@ -140,7 +140,23 @@ namespace
                 m_shutter_close_end_time);
         }
 
-        void spawn_ray(
+        bool on_render_begin(
+            const Project& project,
+            const BaseGroup* parent,
+            OnRenderBeginRecorder& recorder,
+            IAbortSwitch* abort_switch) override
+        {
+            if (!PerspectiveCamera::on_render_begin(project, parent, recorder, abort_switch))
+                return false;
+
+            // Extract the focal length from the camera parameters.
+            m_focal_length = extract_focal_length(m_film_dimensions[0]);
+
+            return true;
+        }
+
+
+        bool spawn_ray(
             SamplingContext&        sampling_context,
             const Dual2d&           ndc,
             ShadingRay&             ray) const override
@@ -175,6 +191,7 @@ namespace
                 ray.m_ry_dir = normalize(transform.vector_to_parent(-ndc_to_camera(py)));
                 ray.m_has_differentials = true;
             }
+            return true;
         }
 
         bool connect_vertex(

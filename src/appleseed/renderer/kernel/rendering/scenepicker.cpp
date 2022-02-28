@@ -131,10 +131,11 @@ ScenePicker::PickingResult ScenePicker::pick(const Vector2d& ndc) const
     SamplingContext sampling_context(rng, SamplingContext::QMCMode);
 
     ShadingRay ray;
-    result.m_camera->spawn_ray(
+    if (!result.m_camera->spawn_ray(
         sampling_context,
         Dual2d(ndc),
-        ray);
+        ray))
+        return result;
 
     ShadingPoint shading_point;
     impl->m_intersector.trace(ray, shading_point);

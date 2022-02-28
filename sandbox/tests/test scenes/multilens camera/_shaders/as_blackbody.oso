@@ -1,0 +1,279 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.10.5
+# options: -O2 -DNDEBUG -ID:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/include -o D:/Barbo/3D/appleseed_dev/appleseed/sandbox/shaders/appleseed/as_blackbody.oso
+shader as_blackbody	%meta{string,help,"Emission shader with black-body radiation."} %meta{string,icon,"asBlackbody.png"} %meta{string,URL,"https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_blackbody.html"} %meta{string,as_node_name,"asBlackbody"} %meta{string,as_category,"shader"} %meta{string,as_max_class_id,"1182349026 1064055537"} %meta{string,as_max_plugin_type,"texture"} %meta{int,as_maya_type_id,1210832} %meta{string,as_maya_classification,"drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch"} 
+param	int	in_incandescence_type	0		%meta{string,as_maya_attribute_name,"incandescenceType"} %meta{string,as_maya_attribute_short_name,"int"} %meta{string,widget,"mapper"} %meta{string,options,"Custom:0|Black-body:1"} %meta{string,label,"Emission Type"} %meta{string,page,"Emission"} %meta{string,help,"Custom or black-body radiator EDF."} %meta{int,divider,1} %meta{int,as_maya_attribute_connectable,0} %meta{int,as_maya_attribute_keyable,0} %meta{int,as_maya_attribute_hidden,1} %meta{int,as_blender_input_socket,0} %meta{int,gafferNoduleLayoutVisible,0}  %read{57,57} %write{2147483647,-1}
+param	color	in_color	0 0 0		%meta{string,as_maya_attribute_name,"color"} %meta{string,as_maya_attribute_short_name,"inc"} %meta{string,label,"Color"} %meta{string,page,"Emission"} %meta{string,help,"Emission color, only valid in custom mode."}  %read{59,59} %write{2147483647,-1}
+param	float	in_incandescence_amount	0		%meta{string,as_maya_attribute_name,"incandescenceAmount"} %meta{string,as_maya_attribute_short_name,"inw"} %meta{float,min,0} %meta{float,softmax,1} %meta{string,label,"Emission Amount"} %meta{string,page,"Emission"}  %read{10,83} %write{2147483647,-1}
+param	float	in_temperature_scale	1		%meta{string,as_maya_attribute_name,"temperatureScale"} %meta{string,as_maya_attribute_short_name,"tsc"} %meta{float,min,0} %meta{float,max,1} %meta{string,label,"Temperature Scale"} %meta{string,page,"Emission"} %meta{string,help,"Temperature scaling factor."}  %read{61,65} %write{2147483647,-1}
+param	int	in_temperature	4300		%meta{string,as_maya_attribute_name,"temperature"} %meta{string,as_maya_attribute_short_name,"tem"} %meta{int,min,798} %meta{int,max,25000} %meta{int,softmin,3400} %meta{int,softmax,9300} %meta{string,label,"Temperature"} %meta{string,page,"Emission"} %meta{string,help,"Temperature in Kelvin degrees, only valid in physically based mode."} %meta{int,divider,1} %meta{int,as_maya_attribute_connectable,0} %meta{int,as_maya_attribute_keyable,0} %meta{int,as_maya_attribute_hidden,1} %meta{int,as_blender_input_socket,0} %meta{int,gafferNoduleLayoutVisible,0}  %read{60,64} %write{2147483647,-1}
+param	int	in_area_normalize_edf	0		%meta{string,as_maya_attribute_name,"normalizeAreaEDF"} %meta{string,as_maya_attribute_short_name,"nae"} %meta{string,widget,"checkBox"} %meta{string,label,"Normalize Area"} %meta{string,page,"Emission"} %meta{int,as_maya_attribute_connectable,0} %meta{int,as_maya_attribute_keyable,0} %meta{int,as_maya_attribute_hidden,1} %meta{int,as_blender_input_socket,0} %meta{int,gafferNoduleLayoutVisible,0}  %read{76,76} %write{2147483647,-1}
+param	int	in_tonemap_edf	1		%meta{string,as_maya_attribute_name,"toneMapEDF"} %meta{string,as_maya_attribute_short_name,"tme"} %meta{string,widget,"checkBox"} %meta{string,label,"Tonemap Color"} %meta{string,page,"Emission"} %meta{string,help,"Tonemap emission, only valid for the black-body radiator mode."} %meta{int,as_maya_attribute_connectable,0} %meta{int,as_maya_attribute_keyable,0} %meta{int,as_maya_attribute_hidden,1} %meta{int,as_blender_input_socket,0} %meta{int,gafferNoduleLayoutVisible,0}  %read{79,79} %write{2147483647,-1}
+param	float	in_specular_amount	0		%meta{string,as_maya_attribute_name,"specularAmount"} %meta{string,as_maya_attribute_short_name,"sam"} %meta{float,min,0} %meta{float,max,1} %meta{string,label,"Specular Weight"} %meta{string,page,"Specular"}  %read{24,49} %write{2147483647,-1}
+param	float	in_specular_roughness	0.100000001		%meta{string,as_maya_attribute_name,"specularRoughness"} %meta{string,as_maya_attribute_short_name,"sro"} %meta{float,min,0} %meta{float,max,1} %meta{string,label,"Specular Roughness"} %meta{string,page,"Specular"}  %read{48,48} %write{2147483647,-1}
+param	float	in_ior	1.37		%meta{string,as_maya_attribute_name,"ior"} %meta{string,as_maya_attribute_short_name,"sio"} %meta{float,min,1} %meta{float,max,10} %meta{float,softmax,2} %meta{string,label,"Index Of Refraction"} %meta{string,page,"Specular"} %meta{string,help,"IOR, only active if Fresnel is set to dielectric."} %meta{int,as_maya_attribute_connectable,0} %meta{int,as_maya_attribute_keyable,1} %meta{int,as_maya_attribute_hidden,1} %meta{int,as_blender_input_socket,0} %meta{int,gafferNoduleLayoutVisible,0}  %read{27,48} %write{2147483647,-1}
+param	normal	in_bump_normal	0 0 0		%meta{string,as_maya_attribute_name,"normalCamera"} %meta{string,as_maya_attribute_short_name,"n"} %meta{string,label,"Surface Normal"} %meta{string,page,"Bump"}  %read{31,31} %write{0,0} %initexpr
+param	int	in_enable_matte	0		%meta{string,as_maya_attribute_name,"enableMatte"} %meta{string,as_maya_attribute_short_name,"ema"} %meta{string,widget,"checkBox"} %meta{string,label,"Enable Matte Opacity"} %meta{string,page,"Matte Opacity"} %meta{int,as_maya_attribute_connectable,0} %meta{int,as_maya_attribute_keyable,0} %meta{int,as_maya_attribute_hidden,1} %meta{int,as_blender_input_socket,0} %meta{int,gafferNoduleLayoutVisible,0} %meta{int,divider,1}  %read{3,3} %write{2147483647,-1}
+param	float	in_matte_opacity	0		%meta{string,as_maya_attribute_name,"matteOpacity"} %meta{string,as_maya_attribute_short_name,"mao"} %meta{float,min,0} %meta{float,max,1} %meta{string,label,"Matte Opacity"} %meta{string,page,"Matte Opacity"} %meta{int,as_blender_input_socket,0} %meta{int,gafferNoduleLayoutVisible,0}  %read{4,4} %write{2147483647,-1}
+param	color	in_matte_opacity_color	1 0.5 0		%meta{string,as_maya_attribute_name,"matteOpacityColor"} %meta{string,as_maya_attribute_short_name,"mac"} %meta{string,label,"Matte Opacity Color"} %meta{string,page,"Matte Opacity"} %meta{int,as_maya_attribute_connectable,0} %meta{int,as_maya_attribute_keyable,0} %meta{int,as_maya_attribute_hidden,1} %meta{int,as_blender_input_socket,0} %meta{int,gafferNoduleLayoutVisible,0}  %read{4,4} %write{2147483647,-1}
+param	int	in_maximum_ray_depth	100		%meta{string,as_maya_attribute_name,"maximumRayDepth"} %meta{string,as_maya_attribute_short_name,"mrd"} %meta{int,min,0} %meta{int,max,100} %meta{int,softmax,16} %meta{string,label,"Ray Depth"} %meta{string,page,"Advanced"} %meta{int,as_maya_attribute_connectable,0} %meta{int,as_maya_attribute_keyable,0} %meta{int,as_maya_attribute_hidden,1} %meta{int,as_blender_input_socket,0} %meta{int,gafferNoduleLayoutVisible,0}  %read{18,18} %write{2147483647,-1}
+oparam	closure color	out_color			%meta{string,as_maya_attribute_name,"outColor"} %meta{string,as_maya_attribute_short_name,"oc"} %meta{string,widget,"null"}  %read{5,87} %write{5,87}
+oparam	closure color	out_matte_opacity			%meta{string,as_maya_attribute_name,"outMatteOpacity"} %meta{string,as_maya_attribute_short_name,"om"} %meta{string,widget,"null"}  %read{5,5} %write{4,4}
+oparam	color	out_blackbody_color	0 0 0		%meta{string,as_maya_attribute_name,"outBlackbodyColor"} %meta{string,as_maya_attribute_short_name,"bbc"} %meta{string,widget,"null"}  %read{85,85} %write{83,83}
+global	vector	I	%read{32,32} %write{2147483647,-1}
+global	normal	N	%read{0,0} %write{2147483647,-1}
+local	int	ray_depth	%read{18,18} %write{13,14}
+local	int	status	%read{15,15} %write{14,14}
+local	float	transmittance	%read{51,85} %write{23,47}
+local	normal	___386_Nn	%read{33,48} %write{31,31}
+local	float	___386_costheta_o	%read{40,40} %write{33,33}
+local	float	___386_R0	%read{39,43} %write{38,38}
+local	float	___386_Kr	%read{45,45} %write{43,43}
+local	color	___388_edf_color	%read{68,83} %write{56,82}
+temp	int	$tmp1	%read{2,2} %write{1,1}
+const	string	$const1	"transparency"		%read{1,1} %write{2147483647,-1}
+const	string	$const2	"as_matte"		%read{4,4} %write{2147483647,-1}
+temp	int	$tmp2	%read{8,8} %write{7,7}
+const	string	$const3	"shadow"		%read{7,7} %write{2147483647,-1}
+const	float	$const4	0		%read{10,48} %write{2147483647,-1}
+temp	int	$tmp3	%read{11,11} %write{10,10}
+const	int	$const5	0		%read{13,68} %write{2147483647,-1}
+const	string	$const6	"path:ray_depth"		%read{14,14} %write{2147483647,-1}
+temp	int	$tmp4	%read{16,16} %write{15,15}
+temp	int	$tmp5	%read{17,21} %write{16,20}
+temp	int	$tmp6	%read{19,19} %write{18,18}
+temp	int	$tmp7	%read{20,20} %write{19,19}
+const	float	$const7	1		%read{23,81} %write{2147483647,-1}
+temp	int	$tmp8	%read{25,25} %write{24,24}
+temp	int	$tmp9	%read{26,30} %write{25,29}
+temp	int	$tmp10	%read{28,28} %write{27,27}
+temp	int	$tmp11	%read{29,29} %write{28,28}
+temp	vector	$tmp12	%read{33,33} %write{32,32}
+temp	float	$tmp13	%read{36,36} %write{34,34}
+temp	float	$tmp14	%read{36,36} %write{35,35}
+temp	float	$tmp15	%read{38,38} %write{36,36}
+const	string	$const8	"sqr"		%read{37,37} %write{2147483647,-1}
+temp	float	$tmp16	%read{42,42} %write{39,39}
+temp	float	$tmp17	%read{42,42} %write{41,41}
+temp	float	$tmp18	%read{41,41} %write{40,40}
+const	float	$const9	5		%read{41,41} %write{2147483647,-1}
+temp	float	$tmp19	%read{43,43} %write{42,42}
+temp	float	$tmp20	%read{47,47} %write{46,46}
+const	string	$const10	"clamp"		%read{44,44} %write{2147483647,-1}
+temp	float	$tmp21	%read{46,46} %write{45,45}
+temp	closure color	$tmp22	%read{49,49} %write{48,48}
+const	vector	$const11	0 0 0		%read{48,48} %write{2147483647,-1}
+const	string	$const12	"energy_compensation"		%read{48,48} %write{2147483647,-1}
+const	string	$const13	"as_glossy"		%read{48,48} %write{2147483647,-1}
+temp	closure color	$tmp24	%read{50,50} %write{49,49}
+const	float	$const14	9.99999997e-07		%read{51,73} %write{2147483647,-1}
+temp	int	$tmp25	%read{52,52} %write{51,51}
+temp	int	$tmp26	%read{55,55} %write{54,54}
+const	string	$const15	"light"		%read{54,54} %write{2147483647,-1}
+const	color	$const16	0 0 0		%read{56,56} %write{2147483647,-1}
+temp	int	$tmp27	%read{58,58} %write{57,57}
+temp	float	$tmp28	%read{62,62} %write{61,61}
+temp	float	$tmp29	%read{61,61} %write{60,60}
+const	int	$const17	798		%read{62,62} %write{2147483647,-1}
+temp	int	$tmp30	%read{63,63} %write{62,62}
+temp	float	$tmp31	%read{65,65} %write{64,64}
+temp	float	$tmp32	%read{66,66} %write{65,65}
+temp	float	$tmp33	%read{73,73} %write{72,72}
+const	string	$const18	"max"		%read{67,67} %write{2147483647,-1}
+temp	float	$tmp34	%read{72,72} %write{68,68}
+temp	float	$tmp35	%read{72,72} %write{71,71}
+const	int	$const19	1		%read{69,69} %write{2147483647,-1}
+temp	float	$tmp36	%read{71,71} %write{69,69}
+const	int	$const20	2		%read{70,70} %write{2147483647,-1}
+temp	float	$tmp37	%read{71,71} %write{70,70}
+temp	int	$tmp38	%read{74,74} %write{73,73}
+temp	float	$tmp39	%read{78,78} %write{77,77}
+temp	float	$tmp40	%read{81,81} %write{80,80}
+temp	float	$tmp41	%read{82,82} %write{81,81}
+temp	closure color	$tmp42	%read{86,86} %write{84,84}
+const	string	$const21	"emission"		%read{84,84} %write{2147483647,-1}
+temp	color	$tmp43	%read{86,86} %write{85,85}
+temp	closure color	$tmp44	%read{87,87} %write{86,86}
+code in_bump_normal
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:170
+#     normal in_bump_normal = N
+	assign		in_bump_normal N 	%filename{"D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl"} %line{170} %argrw{"wr"}
+code ___main___
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:249
+#     if (raytype("transparency"))
+	raytype		$tmp1 $const1 	%filename{"D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl"} %line{249} %argrw{"wr"}
+	if		$tmp1 7 7 	%argrw{"r"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:251
+#         if (in_enable_matte)
+	if		in_enable_matte 6 6 	%line{251} %argrw{"r"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:253
+#             out_matte_opacity = as_matte(
+	closure		out_matte_opacity $const2 in_matte_opacity_color in_matte_opacity 	%line{253} %argrw{"wrrr"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:257
+#             out_color += out_matte_opacity;
+	add		out_color out_color out_matte_opacity 	%line{257} %argrw{"wrr"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:259
+#         return;
+	exit	%line{259}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:262
+#     if (raytype("shadow"))
+	raytype		$tmp2 $const3 	%line{262} %argrw{"wr"}
+	if		$tmp2 10 10 	%argrw{"r"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:264
+#         return;
+	exit	%line{264}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:267
+#     if (in_incandescence_amount == 0.0)
+	eq		$tmp3 in_incandescence_amount $const4 	%line{267} %argrw{"wrr"}
+	if		$tmp3 13 13 	%argrw{"r"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:269
+#         return;
+	exit	%line{269}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:272
+#     int ray_depth = 0;
+	assign		ray_depth $const5 	%line{272} %argrw{"wr"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:273
+#     int status = getattribute("path:ray_depth", ray_depth);
+	getattribute	status $const6 ray_depth 	%line{273} %argrw{"wrw"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:275
+#     if (!status || ray_depth > in_maximum_ray_depth)
+	eq		$tmp4 status $const5 	%line{275} %argrw{"wrr"}
+	neq		$tmp5 $tmp4 $const5 	%argrw{"wrr"}
+	if		$tmp5 18 21 	%argrw{"r"}
+	gt		$tmp6 ray_depth in_maximum_ray_depth 	%argrw{"wrr"}
+	neq		$tmp7 $tmp6 $const5 	%argrw{"wrr"}
+	assign		$tmp5 $tmp7 	%argrw{"wr"}
+	if		$tmp5 23 23 	%argrw{"r"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:277
+#         return;
+	exit	%line{277}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:280
+#     float transmittance = 1.0;
+	assign		transmittance $const7 	%line{280} %argrw{"wr"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:282
+#     if (in_specular_amount > 0.0 && in_ior > 1.0)
+	gt		$tmp8 in_specular_amount $const4 	%line{282} %argrw{"wrr"}
+	neq		$tmp9 $tmp8 $const5 	%argrw{"wrr"}
+	if		$tmp9 30 30 	%argrw{"r"}
+	gt		$tmp10 in_ior $const7 	%argrw{"wrr"}
+	neq		$tmp11 $tmp10 $const5 	%argrw{"wrr"}
+	assign		$tmp9 $tmp11 	%argrw{"wr"}
+	if		$tmp9 51 51 	%argrw{"r"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:285
+#         normal Nn = normalize(in_bump_normal);
+	normalize	___386_Nn in_bump_normal 	%line{285} %argrw{"wr"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:287
+#         float costheta_o = dot(-I, Nn);
+	neg		$tmp12 I 	%line{287} %argrw{"wr"}
+	dot		___386_costheta_o $tmp12 ___386_Nn 	%argrw{"wrr"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:289
+#         float R0 = sqr((in_ior - 1.0) / (in_ior + 1.0));
+	sub		$tmp13 in_ior $const7 	%line{289} %argrw{"wrr"}
+	add		$tmp14 in_ior $const7 	%argrw{"wrr"}
+	div		$tmp15 $tmp13 $tmp14 	%argrw{"wrr"}
+	functioncall	$const8 39 	%argrw{"r"}
+# D:\Barbo\3D\appleseed_dev\appleseed\src\appleseed.shaders\include\appleseed\math\as_math_helpers.h:34
+# float sqr(float x) { return x * x; }
+	mul		___386_R0 $tmp15 $tmp15 	%filename{"D:\Barbo\3D\appleseed_dev\appleseed\src\appleseed.shaders\include\appleseed\math\as_math_helpers.h"} %line{34} %argrw{"wrr"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:290
+#         float Kr = R0 + (1.0 - R0) * pow(1.0 - costheta_o, 5.0);
+	sub		$tmp16 $const7 ___386_R0 	%filename{"D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl"} %line{290} %argrw{"wrr"}
+	sub		$tmp18 $const7 ___386_costheta_o 	%argrw{"wrr"}
+	pow		$tmp17 $tmp18 $const9 	%argrw{"wrr"}
+	mul		$tmp19 $tmp16 $tmp17 	%argrw{"wrr"}
+	add		___386_Kr ___386_R0 $tmp19 	%argrw{"wrr"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:292
+#         transmittance = 1.0 - clamp(Kr, 0.0, 1.0);
+	functioncall	$const10 47 	%line{292} %argrw{"r"}
+# D:\Barbo\3D\appleseed_dev\appleseed\sandbox\shaders\stdosl.h:145
+# float  clamp (float x, float minval, float maxval) { return max(min(x,maxval),minval); }
+	min		$tmp21 ___386_Kr $const7 	%filename{"D:\Barbo\3D\appleseed_dev\appleseed\sandbox\shaders\stdosl.h"} %line{145} %argrw{"wrr"}
+	max		$tmp20 $tmp21 $const4 	%argrw{"wrr"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:292
+#         transmittance = 1.0 - clamp(Kr, 0.0, 1.0);
+	sub		transmittance $const7 $tmp20 	%filename{"D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl"} %line{292} %argrw{"wrr"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:295
+#             as_glossy(
+	closure		$tmp22 $const13 ___386_Nn $const11 in_specular_roughness $const4 in_ior $const12 $const7 	%line{295} %argrw{"wrrrrrrrr"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:294
+#         out_color += in_specular_amount *
+	mul		$tmp24 $tmp22 in_specular_amount 	%line{294} %argrw{"wrr"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:301
+#                 "energy_compensation", 1.0);
+	add		out_color out_color $tmp24 	%line{301} %argrw{"wrr"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:304
+#     if (transmittance <= EPS)
+	le		$tmp25 transmittance $const14 	%line{304} %argrw{"wrr"}
+	if		$tmp25 54 54 	%argrw{"r"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:306
+#         return;
+	exit	%line{306}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:309
+#     if (raytype("light"))
+	raytype		$tmp26 $const15 	%line{309} %argrw{"wr"}
+	if		$tmp26 88 88 	%argrw{"r"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:311
+#         color edf_color = color(0);
+	assign		___388_edf_color $const16 	%line{311} %argrw{"wr"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:313
+#         if (in_incandescence_type == 0)
+	eq		$tmp27 in_incandescence_type $const5 	%line{313} %argrw{"wrr"}
+	if		$tmp27 60 67 	%argrw{"r"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:315
+#             edf_color = in_color;
+	assign		___388_edf_color in_color 	%line{315} %argrw{"wr"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:317
+#         else if (in_temperature_scale * in_temperature > 798)
+	assign		$tmp29 in_temperature 	%line{317} %argrw{"wr"}
+	mul		$tmp28 in_temperature_scale $tmp29 	%argrw{"wrr"}
+	gt		$tmp30 $tmp28 $const17 	%argrw{"wrr"}
+	if		$tmp30 67 67 	%argrw{"r"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:324
+#                 (float) in_temperature);
+	assign		$tmp31 in_temperature 	%line{324} %argrw{"wr"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:323
+#             edf_color = blackbody(in_temperature_scale *
+	mul		$tmp32 in_temperature_scale $tmp31 	%line{323} %argrw{"wrr"}
+	blackbody	___388_edf_color $tmp32 	%argrw{"wr"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:327
+#         if (max(edf_color) < EPS)
+	functioncall	$const18 73 	%line{327} %argrw{"r"}
+# D:\Barbo\3D\appleseed_dev\appleseed\sandbox\shaders\as_osl_extensions.h:48
+# float max(color C)  { return max(C[0], max(C[1], C[2])); }
+	compref		$tmp34 ___388_edf_color $const5 	%filename{"D:\Barbo\3D\appleseed_dev\appleseed\sandbox\shaders\as_osl_extensions.h"} %line{48} %argrw{"wrr"}
+	compref		$tmp36 ___388_edf_color $const19 	%argrw{"wrr"}
+	compref		$tmp37 ___388_edf_color $const20 	%argrw{"wrr"}
+	max		$tmp35 $tmp36 $tmp37 	%argrw{"wrr"}
+	max		$tmp33 $tmp34 $tmp35 	%argrw{"wrr"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:327
+#         if (max(edf_color) < EPS)
+	lt		$tmp38 $tmp33 $const14 	%filename{"D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl"} %line{327} %argrw{"wrr"}
+	if		$tmp38 76 76 	%argrw{"r"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:329
+#             return;
+	exit	%line{329}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:332
+#         if (in_area_normalize_edf)
+	if		in_area_normalize_edf 79 79 	%line{332} %argrw{"r"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:334
+#             edf_color /= surfacearea();
+	surfacearea	$tmp39 	%line{334} %argrw{"w"}
+	div		___388_edf_color ___388_edf_color $tmp39 	%argrw{"wrr"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:336
+#         if (in_tonemap_edf)
+	if		in_tonemap_edf 83 83 	%line{336} %argrw{"r"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:338
+#             edf_color /= luminance(edf_color) + 1.0; // Rec.709 Y
+	luminance	$tmp40 ___388_edf_color 	%line{338} %argrw{"wr"}
+	add		$tmp41 $tmp40 $const7 	%argrw{"wrr"}
+	div		___388_edf_color ___388_edf_color $tmp41 	%argrw{"wrr"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:341
+#         out_blackbody_color = in_incandescence_amount * edf_color;
+	mul		out_blackbody_color in_incandescence_amount ___388_edf_color 	%line{341} %argrw{"wrr"}
+# D:/Barbo/3D/appleseed_dev/appleseed/src/appleseed.shaders/src/appleseed/as_blackbody.osl:342
+#         out_color += transmittance * out_blackbody_color * emission();
+	closure		$tmp42 $const21 	%line{342} %argrw{"wr"}
+	mul		$tmp43 transmittance out_blackbody_color 	%argrw{"wrr"}
+	mul		$tmp44 $tmp42 $tmp43 	%argrw{"wrr"}
+	add		out_color out_color $tmp44 	%argrw{"wrr"}
+	end
