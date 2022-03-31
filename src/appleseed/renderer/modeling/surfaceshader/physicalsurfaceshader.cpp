@@ -36,6 +36,7 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
+#include "renderer/kernel/shading/shadowcatcher.h"
 #include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/material/material.h"
@@ -109,7 +110,8 @@ namespace
             const ShadingPoint&         shading_point,
             ShadingResult&              shading_result,
             ShadingComponents&          shading_components,
-            AOVComponents&              aov_components) const override
+            AOVComponents&              aov_components,
+            ShadowCatcher&              shadow_catcher) const override
         {
             assert(shading_context.get_lighting_engine() != nullptr);
 
@@ -123,7 +125,8 @@ namespace
                 shading_context,
                 shading_point,
                 shading_components,
-                aov_components);
+                aov_components,
+                shadow_catcher);
 
             if (m_lighting_samples > 1)
             {
@@ -136,7 +139,8 @@ namespace
                         shading_context,
                         shading_point,
                         shading_components,
-                        aov_components);
+                        aov_components,
+                        shadow_catcher);
                 }
 
                 shading_components /= static_cast<float>(m_lighting_samples);

@@ -53,6 +53,7 @@ namespace renderer      { class Project; }
 namespace renderer      { class ShadingComponents; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
+namespace renderer      { class ShadowCatcher; }
 
 namespace renderer
 {
@@ -119,7 +120,8 @@ class APPLESEED_DLLSYMBOL DiagnosticSurfaceShader
         const ShadingPoint&         shading_point,
         ShadingResult&              shading_result,
         ShadingComponents&          shading_components,
-        AOVComponents&              aov_components) const override;
+        AOVComponents&              aov_components,
+        ShadowCatcher&              shadow_catcher) const override;
 
   private:
     friend class DiagnosticSurfaceShaderFactory;

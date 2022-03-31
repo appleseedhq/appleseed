@@ -64,6 +64,8 @@ void compute_ibl_combined_sampling(
     const size_t                material_sample_count,
     const size_t                env_sample_count,
     DirectShadingComponents&    radiance,
+    Spectrum&                   unshaded_radiance,
+    Spectrum&                   shaded_radiance,
     LightPathStream*            light_path_stream)
 {
     assert(is_normalized(outgoing.get_value()));
@@ -91,6 +93,8 @@ void compute_ibl_combined_sampling(
         material_sample_count,
         env_sample_count,
         radiance_env_sampling,
+        unshaded_radiance,
+        shaded_radiance,
         light_path_stream);
     radiance += radiance_env_sampling;
 }
@@ -179,6 +183,8 @@ void compute_ibl_environment_sampling(
     const size_t                material_sample_count,
     const size_t                env_sample_count,
     DirectShadingComponents&    radiance,
+    Spectrum&                   unshaded_radiance,
+    Spectrum&                   shaded_radiance,
     LightPathStream*            light_path_stream)
 {
     assert(is_normalized(outgoing.get_value()));
@@ -207,6 +213,9 @@ void compute_ibl_environment_sampling(
             env_value,
             env_prob);
         assert(is_normalized(incoming));
+
+        // Add unshaded light contribution for the shadow catcher
+        unshaded_radiance += env_value;
 
         // Compute the transmission factor between the environment and the shading point.
         Spectrum transmission;
@@ -239,6 +248,7 @@ void compute_ibl_environment_sampling(
 
         // Add the contribution of this sample to the illumination.
         env_value *= transmission;
+        shaded_radiance += env_value;
         env_value *= mis_weight / env_prob;
         madd(radiance, material_value, env_value);
 
@@ -254,7 +264,11 @@ void compute_ibl_environment_sampling(
     }
 
     if (env_sample_count > 1)
+    {
         radiance /= static_cast<float>(env_sample_count);
+        unshaded_radiance /= static_cast<float>(env_sample_count);
+        shaded_radiance /= static_cast<float>(env_sample_count);
+    }
 }
 
 }   // namespace renderer

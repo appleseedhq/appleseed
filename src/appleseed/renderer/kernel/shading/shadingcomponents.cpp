@@ -66,6 +66,38 @@ bool ShadingComponents::is_valid() const
         is_finite_non_neg(m_indirect_volume);
 }
 
+void ShadingComponents::add_shadowcatcher_emission(
+    const size_t                    path_length,
+    const ScatteringMode::Mode      scattering_mode,
+    const Spectrum& value)
+{
+    if (path_length == 1)
+    {
+        m_beauty += value;
+        m_emission += value;
+    }
+    else
+    {
+        switch (scattering_mode)
+        {
+        case ScatteringMode::Diffuse:
+            m_indirect_diffuse += value;
+            break;
+
+        case ScatteringMode::Glossy:
+        case ScatteringMode::Specular:
+            m_indirect_glossy += value;
+            break;
+
+        case ScatteringMode::Volume:
+            m_indirect_volume += value;
+            break;
+
+            assert_otherwise;
+        }
+    }
+}
+
 void ShadingComponents::add_emission(
     const size_t                    path_length,
     const ScatteringMode::Mode      scattering_mode,

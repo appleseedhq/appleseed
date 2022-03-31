@@ -1,0 +1,11 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.10.5
+# options: -O2 -DNDEBUG -IE:/GIT/appleseed/appleseed/src/appleseed.shaders/include -o E:/GIT/appleseed/appleseed/sandbox/shaders/max/as_max_closure2surface.oso
+surface as_max_closure2surface
+param	closure color	in_input			%read{0,0} %write{2147483647,-1}
+global	closure color	Ci	%read{2147483647,-1} %write{0,0}
+code ___main___
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_closure2surface.osl:34
+#     Ci = in_input;
+	assign		Ci in_input 	%filename{"E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_closure2surface.osl"} %line{34} %argrw{"wr"}
+	end
