@@ -39,6 +39,7 @@
 #include "renderer/api/environment.h"
 #include "renderer/api/environmentedf.h"
 #include "renderer/api/light.h"
+#include "renderer/api/postprocessing.h"
 #include "renderer/api/project.h"
 #include "renderer/api/scene.h"
 #include "renderer/api/shadergroup.h"
@@ -96,12 +97,20 @@ class ProjectBuilder
         ParentEntity&                       parent,
         const foundation::Dictionary&       values) const;
 
+    // Simulate partial specialization of edit_entity() for Entity = renderer::PostProcessingStage.
+    template <typename ParentEntity>
+    renderer::PostProcessingStage* edit_entity(
+        renderer::PostProcessingStage*      old_entity,
+        ParentEntity&                       parent,
+        const foundation::Dictionary&       values) const;
+
     renderer::Frame* edit_frame(
         const foundation::Dictionary&       values) const;
 
   signals:
     void signal_project_modified() const;
     void signal_frame_modified() const;
+    void signal_post_processing_stage_modified(const std::uint64_t stage_uid) const;
 
   public slots:
     void slot_notify_project_modification() const;
@@ -296,6 +305,52 @@ inline renderer::Light* ProjectBuilder::edit_entity(
     renderer::EntityTraits<renderer::Light>::insert_entity(new_entity, parent);
 
     slot_notify_project_modification();
+
+    return new_entity_ptr;
+}
+
+template <typename ParentEntity>
+inline renderer::PostProcessingStage* ProjectBuilder::edit_entity(
+    renderer::PostProcessingStage*      old_entity,
+    ParentEntity&                       parent,
+    const foundation::Dictionary&       values) const
+{
+    foundation::auto_release_ptr<renderer::PostProcessingStage> new_entity(
+        create_entity<renderer::PostProcessingStage>(values));
+    renderer::PostProcessingStage* new_entity_ptr = new_entity.get();
+
+    renderer::EntityTraits<renderer::PostProcessingStage>::remove_entity(old_entity, parent);
+    renderer::EntityTraits<renderer::PostProcessingStage>::insert_entity(new_entity, parent);
+
+    slot_notify_project_modification();
+
+    // @Note: we need to know whether or not to emit the signal. For this,
+    // we can either:
+    //   * change the `PostProcessingStage` class to have a `bool` flag (not good)
+    //   * pass this flag in its `params`, so that we can retrieve it here (maybe?)
+    //   * pass the flag through `values` instead (not sure if it'd be better or not)
+    //
+    // @Fixme: if the flag was true and is now false, the effect needs to be "unapplied"!
+
+#if 0
+    // @Note: using this to be able to inspect Dictionary values in Visual Studio.. :(
+    bool preview_enabled = false;
+    for (const auto& str : values.strings())
+    {
+        const auto key = std::string(str.key());
+        const auto value = std::string(str.value());
+        if (key == "real_time_preview")
+            preview_enabled = true;
+        if (value == "real_time_preview")
+            preview_enabled = true;
+    }
+#else
+    const bool preview_enabled = new_entity_ptr->get_parameters().get_required<bool>("real_time_preview");
+#endif
+
+    // Signal the modified stage, so that it can be previewed.
+    if (preview_enabled)
+        emit signal_post_processing_stage_modified(new_entity_ptr->get_uid());
 
     return new_entity_ptr;
 }

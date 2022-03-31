@@ -129,7 +129,7 @@ class LineEditSliderAdaptor
 
 
 //
-// Binds QLineEdit and qtcommon::DoubleSlider controls together such that updading
+// Binds QLineEdit and qtcommon::DoubleSlider controls together such that updating
 // the value in one control updates the value in the other.
 //
 

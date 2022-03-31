@@ -87,6 +87,7 @@ class ProjectExplorer
   signals:
     void signal_project_modified() const;
     void signal_frame_modified() const;
+    void signal_post_processing_stage_modified(const std::uint64_t stage_uid) const;
 
   private:
     QTreeWidget*                    m_tree_widget;
