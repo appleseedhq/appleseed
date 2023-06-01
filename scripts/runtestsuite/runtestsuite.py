@@ -27,8 +27,8 @@
 # THE SOFTWARE.
 #
 
-from __future__ import division
-from __future__ import print_function
+
+
 import argparse
 import colorama
 import datetime
@@ -36,7 +36,7 @@ import os
 import png
 import subprocess
 import sys
-import urllib
+import urllib.request, urllib.parse, urllib.error
 
 # We can't import modules from parent directories without modifying sys.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
@@ -85,7 +85,7 @@ def walk(directory, recursive):
         for dirpath, dirnames, filenames in os.walk(directory):
             yield dirpath, dirnames, filenames
     else:
-        yield os.walk(directory).next()
+        yield next(os.walk(directory))
 
 
 def should_skip(path):
@@ -315,10 +315,10 @@ class ReportWriter:
 
         self.file.write(self.__render(self.simple_failure_template,
                                       {'project-path': scene,
-                                       'ref-image-url': urllib.pathname2url(reference_filepath),
-                                       'output-image-url': urllib.pathname2url(output_filepath),
+                                       'ref-image-url': urllib.request.pathname2url(reference_filepath),
+                                       'output-image-url': urllib.request.pathname2url(output_filepath),
                                        'failure-reason': error_message,
-                                       'log-file-url': urllib.pathname2url(log_filepath),
+                                       'log-file-url': urllib.request.pathname2url(log_filepath),
                                        'log-file-path': os.path.basename(log_filepath),
                                        'update-command': command}))
         self.file.flush()
@@ -331,11 +331,11 @@ class ReportWriter:
 
         self.file.write(self.__render(self.detailed_failure_template,
                                       {'project-path': scene,
-                                       'ref-image-url': urllib.pathname2url(reference_filepath),
-                                       'diff-image-url': urllib.pathname2url(diff_filepath) if diff_filepath is not None else "",
-                                       'output-image-url': urllib.pathname2url(output_filepath),
+                                       'ref-image-url': urllib.request.pathname2url(reference_filepath),
+                                       'diff-image-url': urllib.request.pathname2url(diff_filepath) if diff_filepath is not None else "",
+                                       'output-image-url': urllib.request.pathname2url(output_filepath),
                                        'failure-reason': error_message,
-                                       'log-file-url': urllib.pathname2url(log_filepath),
+                                       'log-file-url': urllib.request.pathname2url(log_filepath),
                                        'log-file-path': os.path.basename(log_filepath),
                                        'max-abs-diff': max_diff,
                                        'diff-comps-count': num_diff,
@@ -378,7 +378,7 @@ class ReportWriter:
 
     def __render(self, template, variables):
         html = template
-        for name, value in variables.iteritems():
+        for name, value in variables.items():
             html = html.replace('{' + name + '}', str(value))
         return html
 
@@ -666,3 +666,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
