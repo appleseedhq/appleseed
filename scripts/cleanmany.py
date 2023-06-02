@@ -54,7 +54,7 @@ def walk(directory, recursive):
             for filename in filenames:
                 yield os.path.join(dirpath, filename)
     else:
-        dirpath, dirnames, filenames = os.walk(directory).next()
+        dirpath, dirnames, filenames = next(os.walk(directory))
         for filename in filenames:
             yield os.path.join(dirpath, filename)
 
@@ -64,7 +64,7 @@ def walk(directory, recursive):
 # -------------------------------------------------------------------------------------------------
 
 def clean_project_file(filepath, tool_path):
-    print("cleaning {0}...".format(filepath))
+    print(f"cleaning {filepath}...")
     subprocess.call([tool_path, "clean", filepath])
 
 
@@ -104,13 +104,13 @@ def main():
     if args.tool_path is None:
         script_directory = os.path.dirname(os.path.realpath(__file__))
         args.tool_path = os.path.join(script_directory, DEFAULT_TOOL_FILENAME)
-        print("setting tool path to {0}.".format(args.tool_path))
+        print(f"setting tool path to {args.tool_path}.")
 
     start_time = datetime.datetime.now()
     cleaned_file_count = clean_project_files(args.tool_path, args.directory, args.recursive)
     end_time = datetime.datetime.now()
 
-    print("cleaned {0} project file(s) in {1}.".format(cleaned_file_count, end_time - start_time))
+    print(f"cleaned {cleaned_file_count} project file(s) in {end_time - start_time}.")
 
 
 if __name__ == "__main__":
