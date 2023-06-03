@@ -33,7 +33,7 @@ import os.path
 import sys
 import argparse
 try:
-    from ConfigParser import ConfigParser
+    from configparser import ConfigParser
 except:
     from configparser import ConfigParser
 import datetime
@@ -309,11 +309,15 @@ def getNumberOfShaders(jsonFile):
 
 def cleanJsonShaders(jsonDict):
     num_del = 0
-    for shaderpath in jsonDict.keys():
+    keys_to_delete = []
+    for shaderpath, _ in jsonDict.items():
         if not os.path.isfile(shaderpath):
-            del jsonDict[shaderpath]
+            keys_to_delete.append(shaderpath)
             num_del += 1
-    return (num_del, jsonDict)
+    for shaderpath in keys_to_delete:
+        del jsonDict[shaderpath]
+    return num_del, jsonDict
+
 
 
 def existsJsonShader(jsonFile, shaderName):
@@ -402,7 +406,7 @@ def main():
     shaders = dict()
     for shaderfile in files:
         if args.verbosity:
-            print("Processing file %s" % shaderfile)
+            print(("Processing file %s" % shaderfile))
         shaderUI = parseShaderInfo(shaderfile, FileTypes, osl_cfg)
         if shaderUI:
             shaders[shaderUI['path']] = shaderUI
@@ -421,23 +425,23 @@ def main():
     if args.clean:
         (changes, jsonDict['shaders']) = cleanJsonShaders(jsonDict['shaders'])
         if args.verbosity:
-            print("Removed %s shaders." % changes)
+            print(("Removed %s shaders." % changes))
     if args.update:
         changes = len(shaders)
         jsonDict['shaders'].update(shaders)
         if args.verbosity:
-            print("%s shaders updated." % changes)
+            print(("%s shaders updated." % changes))
     if args.overwrite:
         changes = len(shaders)
         jsonDict['header'] = writeJsonHeader(output, changes)
         jsonDict['shaders'] = shaders
         if args.verbosity:
-            print("%s shaders added to %s" % (changes, output))
+            print(("%s shaders added to %s" % (changes, output)))
     # only adding new shaders
     else:
         temp_changes = changes
-        if jsonDict.has_key('shaders'):
-            existing_keys = jsonDict['shaders'].keys()
+        if 'shaders' in jsonDict:
+            existing_keys = list(jsonDict['shaders'].keys())
             for key in shaders:
                 if key not in existing_keys:
                     jsonDict['shaders'][key] = shaders[key]
@@ -447,7 +451,7 @@ def main():
             changes = len(shaders)
         if args.verbosity:
             added_shaders = changes - temp_changes
-            print("Added %s shaders." % added_shaders)
+            print(("Added %s shaders." % added_shaders))
 
     # write to file shaders to file if changed
     if existingFile and changes:
@@ -461,10 +465,11 @@ def main():
             jsonDict['header'] = writeJsonHeader(output, len(shaders))
             json.dump(jsonDict, fp)
     elif args.verbosity:
-        print("No shaders found for adding to %s, exiting." % output)
+        print(("No shaders found for adding to %s, exiting." % output))
 
     return 0
 
 
 if __name__ == "__main__":
     main()
+
