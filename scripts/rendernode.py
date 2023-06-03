@@ -95,21 +95,21 @@ class ConsoleBackend:
 
     @staticmethod
     def info(msg):
-        print("{0}".format(msg))
+        print(("{0}".format(msg)))
 
     @staticmethod
     def warning(msg):
         if ConsoleBackend.is_coloring_supported():
-            print("\033[93m{0}\033[0m".format(msg))
+            print(("\033[93m{0}\033[0m".format(msg)))
         else:
-            print("{0}".format(msg))
+            print(("{0}".format(msg)))
 
     @staticmethod
     def error(msg):
         if ConsoleBackend.is_coloring_supported():
-            print("\033[91m{0}\033[0m".format(msg))
+            print(("\033[91m{0}\033[0m".format(msg)))
         else:
-            print("{0}".format(msg))
+            print(("{0}".format(msg)))
 
     @staticmethod
     def is_coloring_supported():
@@ -174,19 +174,19 @@ class Log:
 # -------------------------------------------------------------------------------------------------
 
 if os.name == "nt":
-    import _winreg
+    import winreg
 
     WER_KEY_PATH = r"Software\Microsoft\Windows\Windows Error Reporting"
 
     def open_wer_key():
         try:
-            return _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, WER_KEY_PATH, 0,
-                                   _winreg.KEY_ALL_ACCESS)
+            return winreg.OpenKey(winreg.HKEY_CURRENT_USER, WER_KEY_PATH, 0,
+                                   winreg.KEY_ALL_ACCESS)
         except WindowsError:
             pass
 
         try:
-            return _winreg.CreateKey(_winreg.HKEY_CURRENT_USER, WER_KEY_PATH)
+            return winreg.CreateKey(winreg.HKEY_CURRENT_USER, WER_KEY_PATH)
         except WindowsError:
             pass
 
@@ -198,13 +198,13 @@ if os.name == "nt":
         if key is None:
             return None
 
-        previous_dont_show_ui = _winreg.QueryValueEx(key, "DontShowUI")[0]
-        previous_disabled = _winreg.QueryValueEx(key, "Disabled")[0]
+        previous_dont_show_ui = winreg.QueryValueEx(key, "DontShowUI")[0]
+        previous_disabled = winreg.QueryValueEx(key, "Disabled")[0]
 
-        _winreg.SetValueEx(key, "DontShowUI", 0, _winreg.REG_DWORD, dont_show_ui)
-        _winreg.SetValueEx(key, "Disabled", 0, _winreg.REG_DWORD, disabled)
+        winreg.SetValueEx(key, "DontShowUI", 0, winreg.REG_DWORD, dont_show_ui)
+        winreg.SetValueEx(key, "Disabled", 0, winreg.REG_DWORD, disabled)
 
-        _winreg.CloseKey(key)
+        winreg.CloseKey(key)
 
         return previous_dont_show_ui, previous_disabled
 
@@ -214,10 +214,10 @@ if os.name == "nt":
         if key is None:
             return "(unavailable)"
 
-        dont_show_ui = _winreg.QueryValueEx(key, "DontShowUI")[0]
-        disabled = _winreg.QueryValueEx(key, "Disabled")[0]
+        dont_show_ui = winreg.QueryValueEx(key, "DontShowUI")[0]
+        disabled = winreg.QueryValueEx(key, "Disabled")[0]
 
-        _winreg.CloseKey(key)
+        winreg.CloseKey(key)
 
         return "DontShowUI={0} Disabled={1}".format(dont_show_ui, disabled)
 
@@ -449,7 +449,7 @@ def main():
     if args.tool_path is None:
         script_directory = os.path.dirname(os.path.realpath(__file__))
         args.tool_path = os.path.join(script_directory, DEFAULT_TOOL_FILENAME)
-        print("setting tool path to {0}.".format(args.tool_path))
+        print(("setting tool path to {0}.".format(args.tool_path)))
 
     # If no watch directory is provided, watch the current directory.
     if args.directory is None:
@@ -488,7 +488,7 @@ def main():
             try:
                 while watch(args, log):
                     pass
-            except KeyboardInterrupt, SystemExit:
+            except KeyboardInterrupt as SystemExit:
                 raise
             except ProcessFailedException:
                 pass
@@ -497,7 +497,7 @@ def main():
                 lines = traceback.format_exception(exc_type, exc_value, exc_traceback)
                 log.error("".join(line for line in lines))
             time.sleep(PAUSE_BETWEEN_CHECKS)
-    except KeyboardInterrupt, SystemExit:
+    except KeyboardInterrupt as SystemExit:
         pass
 
     # Restore initial Windows Error Reporting parameters.
