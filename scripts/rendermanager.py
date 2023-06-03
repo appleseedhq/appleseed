@@ -28,7 +28,7 @@
 # THE SOFTWARE.
 #
 
-from __future__ import division
+
 import argparse
 import datetime
 import glob
@@ -145,21 +145,21 @@ class ConsoleBackend:
 
     @staticmethod
     def info(msg):
-        print("{0}".format(msg))
+        print(("{0}".format(msg)))
 
     @staticmethod
     def warning(msg):
         if ConsoleBackend.is_coloring_supported():
-            print("\033[93m{0}\033[0m".format(msg))
+            print(("\033[93m{0}\033[0m".format(msg)))
         else:
-            print("{0}".format(msg))
+            print(("{0}".format(msg)))
 
     @staticmethod
     def error(msg):
         if ConsoleBackend.is_coloring_supported():
-            print("\033[91m{0}\033[0m".format(msg))
+            print(("\033[91m{0}\033[0m".format(msg)))
         else:
-            print("{0}".format(msg))
+            print(("{0}".format(msg)))
 
     @staticmethod
     def is_coloring_supported():
@@ -276,7 +276,7 @@ class DependencyDB:
 
             return True, deps
 
-        except KeyboardInterrupt, SystemExit:
+        except KeyboardInterrupt as SystemExit:
             raise
 
         except:
@@ -314,17 +314,17 @@ class Manager:
 
     def gather_files(self):
         self.log.info("gathering files...")
-        self.source_files = map(os.path.basename, get_files(self.args.source_directory, "*.appleseed"))
+        self.source_files = list(map(os.path.basename, get_files(self.args.source_directory, "*.appleseed")))
         self.uploaded_files = self.gather_uploaded_files()
         self.inprogress_files = self.gather_inprogress_files()
-        self.completed_files = map(os.path.basename, get_files(self.archives_directory, "*.appleseed"))
+        self.completed_files = list(map(os.path.basename, get_files(self.archives_directory, "*.appleseed")))
         self.log.info("  found {0} source files (this shot) in {1}".format(len(self.source_files), self.args.source_directory))
         self.log.info("  found {0} uploaded files (all shots) in {1}".format(len(self.uploaded_files), self.args.target_directory))
         self.log.info("  found {0} in-progress files (all shots) in {1}".format(len(self.inprogress_files), self.args.target_directory))
         self.log.info("  found {0} completed files (all shots) in {1}".format(len(self.completed_files), self.archives_directory))
 
     def gather_uploaded_files(self):
-        return map(os.path.basename, get_files(self.args.target_directory, "*.appleseed"))
+        return list(map(os.path.basename, get_files(self.args.target_directory, "*.appleseed")))
 
     def gather_inprogress_files(self):
         inprogress = {}
@@ -357,11 +357,11 @@ class Manager:
     def print_assignments(self):
         assignments = {}
         for filename in self.source_files:
-            if filename in self.inprogress_files.keys():
+            if filename in list(self.inprogress_files.keys()):
                 assignments[filename] = ", ".join(self.inprogress_files[filename])
         if len(assignments) > 0:
             self.log.info("frame assignments:")
-            for filename in assignments.keys():
+            for filename in list(assignments.keys()):
                 self.log.info("  {0}: {1}".format(filename, assignments[filename]))
         else:
             self.log.info("no frame assigned.")
@@ -369,7 +369,7 @@ class Manager:
     def print_pings(self):
         owners = set()
         for filename in self.source_files:
-            if filename in self.inprogress_files.keys():
+            if filename in list(self.inprogress_files.keys()):
                 for owner in self.inprogress_files[filename]:
                     owners.add(owner)
         unsorted_pings = [(owner, self.read_ping(owner)) for owner in owners]
@@ -432,7 +432,7 @@ class Manager:
 
     def update_uploaded_dependency_db(self):
         self.log.info("updating dependency database of uploaded and in-progress files (all shots)...")
-        all_roots = map(os.path.basename, get_files(self.args.target_directory, "*.appleseed*"))
+        all_roots = list(map(os.path.basename, get_files(self.args.target_directory, "*.appleseed*")))
         self.all_uploaded_dependency_db.update(all_roots)
 
         self.log.info("updating dependency database of uploaded files (this shot)...")
@@ -537,7 +537,7 @@ def main():
     if args.max_size is None:
         args.max_size = 2 ** 40                 # default to 1 terabyte
     else:
-        args.max_size = long(args.max_size)
+        args.max_size = int(args.max_size)
         args.max_size *= MB                     # convert to bytes
 
     # Start the log.
@@ -552,7 +552,7 @@ def main():
         while True:
             try:
                 manager.manage()
-            except KeyboardInterrupt, SystemExit:
+            except KeyboardInterrupt as SystemExit:
                 raise
             except:
                 exc_type, exc_value, exc_traceback = sys.exc_info()
@@ -562,7 +562,7 @@ def main():
             log.info_no_log("waiting {0} seconds...".format(PAUSE_BETWEEN_UPDATES))
             time.sleep(PAUSE_BETWEEN_UPDATES)
 
-    except KeyboardInterrupt, SystemExit:
+    except KeyboardInterrupt as SystemExit:
         pass
 
     log.info("exiting...")
