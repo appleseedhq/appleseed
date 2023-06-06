@@ -51,7 +51,7 @@ def walk(directory, recursive):
             for filename in filenames:
                 yield os.path.join(dirpath, filename)
     else:
-        dirpath, dirnames, filenames = os.walk(directory).next()
+        dirpath, dirnames, filenames = next(os.walk(directory))
         for filename in filenames:
             yield os.path.join(dirpath, filename)
 
@@ -61,7 +61,7 @@ def walk(directory, recursive):
 # -------------------------------------------------------------------------------------------------
 
 def process_file(filepath):
-    print("processing {0}...".format(filepath))
+    print(("processing {0}...".format(filepath)))
 
     with open(filepath) as f:
         lines = f.readlines()
@@ -111,3 +111,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
