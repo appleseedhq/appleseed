@@ -767,7 +767,7 @@ class Writer:
 
         # First row's filter type.
         data.append(0)
-        # :todo: Certain exceptions in the call to ``.next()`` or the
+        # :todo: Certain exceptions in the call to ``next()`` or the
         # following try would indicate no row data supplied.
         # Should catch.
         i,row = next(enumrows)
