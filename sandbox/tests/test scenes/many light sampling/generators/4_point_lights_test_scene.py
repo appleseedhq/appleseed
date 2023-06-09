@@ -1,4 +1,3 @@
-
 #
 # This source file is part of appleseed.
 # Visit https://appleseedhq.net/ for additional information and resources.
@@ -151,7 +150,7 @@ def build_project():
         color_name = "color_" + key
         # Add colors to the project.
         assembly.colors().insert(asr.ColorEntity(color_name, {"color_space": "linear_rgb", "multiplier": 1.0}, light_colors[key]))
-        idx = light_colors.keys().index(key)
+        idx = list(light_colors.keys()).index(key)
         light_name = "light_" + key
         # Create the light.
         light = asr.Light("max_omni_light", light_name, {
@@ -240,3 +239,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
