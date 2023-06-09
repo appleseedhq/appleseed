@@ -1,4 +1,3 @@
-
 #
 # This source file is part of appleseed.
 # Visit https://appleseedhq.net/ for additional information and resources.
@@ -26,7 +25,7 @@
 # THE SOFTWARE.
 #
 
-from __future__ import print_function
+
 
 import colorsys
 import math
@@ -290,3 +289,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

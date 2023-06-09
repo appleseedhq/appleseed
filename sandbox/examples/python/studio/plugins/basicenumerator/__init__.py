@@ -1,4 +1,3 @@
-
 #
 # This source file is part of appleseed.
 # Visit https://appleseedhq.net/ for additional information and resources.
@@ -49,9 +48,10 @@ def list_objects_in_assembly(ass):
 
     # Print names of objects inside this assembly.
     for obj in ass.objects():
-        print(obj.get_name())
+        print((obj.get_name()))
 
     # Recurse into child assemblies.
     child_assemblies = ass.assemblies()
     for sub_ass_key in child_assemblies:
         list_objects_in_assembly(child_assemblies[sub_ass_key])
+
