@@ -1,4 +1,3 @@
-
 #
 # This source file is part of appleseed.
 # Visit https://appleseedhq.net/ for additional information and resources.
@@ -33,4 +32,5 @@ from testdict2dict import *
 from testentitymap import *
 from testentityvector import *
 
-unittest.TestProgram(testRunner=unittest.TextTestRunner())
+#no need to specify the environment, the appropriate environment will be used
+unittest.main()
