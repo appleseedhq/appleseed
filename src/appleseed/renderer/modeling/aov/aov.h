@@ -96,6 +96,9 @@ class APPLESEED_DLLSYMBOL AOV
         const char*                         file_path,
         const foundation::ImageAttributes&  image_attributes) const;
 
+    // Fill tile with specific color to debug.
+    void debug_fill(float r, float g, float b);
+
   protected:
     friend class AOVAccumulatorContainer;
     friend class Frame;

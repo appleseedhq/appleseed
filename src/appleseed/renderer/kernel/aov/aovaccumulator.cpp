@@ -31,17 +31,26 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
+#include "renderer/kernel/aov/aovcomponents.h"
+#include "renderer/kernel/shading/shadingcomponents.h"
 #include "renderer/modeling/aov/aov.h"
+#include "renderer/modeling/aov/lpeaov.h"
 #include "renderer/modeling/frame/frame.h"
+#include "renderer/modeling/color/colorspace.h"
 
 // appleseed.foundation headers.
 #include "foundation/image/canvasproperties.h"
 #include "foundation/image/image.h"
 #include "foundation/image/tile.h"
 
+// OSL headers.
+#include "OSL/oslclosure.h"
+
 // Standard headers.
 #include <cassert>
 #include <cstring>
+
+#include <iostream>
 
 using namespace foundation;
 
@@ -150,6 +159,18 @@ void UnfilteredAOVAccumulator::on_tile_end(
 
 
 //
+// PixelInfo structure to pass pixel information to LPE AOV.
+//
+
+struct PixelInfo
+{
+    size_t px;
+    size_t py;
+    size_t sample_count;
+};
+
+
+//
 // AOVAccumulatorContainer class implementation.
 //
 
@@ -174,6 +195,27 @@ AOVAccumulatorContainer::AOVAccumulatorContainer(const Frame& frame)
     {
         const AOV* aov = frame.internal_aovs().get_by_index(i);
         insert(aov->create_accumulator());
+    }
+
+    // Add custom LPE events and scattering types.
+    m_automata.addEventType(OSL::ustring("X"));
+
+    // Create accumulators for LPE AOVs if there is any.
+    if (frame.lpe_aovs().size() > 0)
+    {
+        for (size_t i = 0, e = frame.lpe_aovs().size(); i < e; ++i)
+        {
+            const LPEAOV* aov = static_cast<LPEAOV*>(frame.lpe_aovs().get_by_index(i));
+            m_automata.addRule(aov->get_rule_string(), i);
+        }
+        m_automata.compile();
+
+        m_accum_ptr = std::unique_ptr<OSL::Accumulator>(new OSL::Accumulator(&m_automata));
+        for (size_t i = 0, e = frame.lpe_aovs().size(); i < e; ++i)
+        {
+            const LPEAOV* aov = static_cast<LPEAOV*>(frame.lpe_aovs().get_by_index(i));
+            m_accum_ptr->setAov(i, aov->get_wrapped_aov(), false, false);
+        }
     }
 }
 
@@ -220,6 +262,12 @@ void AOVAccumulatorContainer::on_pixel_end(
 {
     for (size_t i = 0, e = m_size; i < e; ++i)
         m_accumulators[i]->on_pixel_end(pi);
+
+    if (m_accum_ptr)
+    {
+        PixelInfo pixel_info{static_cast<size_t>(pi.x), static_cast<size_t>(pi.y), 0};
+        m_accum_ptr->end(&pixel_info);
+    }
 }
 
 void AOVAccumulatorContainer::on_sample_begin(
@@ -227,6 +275,12 @@ void AOVAccumulatorContainer::on_sample_begin(
 {
     for (size_t i = 0, e = m_size; i < e; ++i)
         m_accumulators[i]->on_sample_begin(pixel_context);
+
+    if (m_accum_ptr)
+    {
+        m_accum_ptr->begin();
+        m_accum_ptr->pushState();
+    }
 }
 
 void AOVAccumulatorContainer::on_sample_end(
@@ -234,6 +288,11 @@ void AOVAccumulatorContainer::on_sample_end(
 {
     for (size_t i = 0, e = m_size; i < e; ++i)
         m_accumulators[i]->on_sample_end(pixel_context);
+
+    if (m_accum_ptr)
+    {
+        m_accum_ptr->popState();
+    }
 }
 
 void AOVAccumulatorContainer::write(
@@ -251,6 +310,20 @@ void AOVAccumulatorContainer::write(
             shading_components,
             aov_components,
             shading_result);
+    }
+
+    if (m_accum_ptr)
+    {
+        for (const auto& event : aov_components.m_lpe_events)
+        {
+            for (const auto c : event) {
+                m_accum_ptr->move(OSL::ustring(&c, 1));
+            }
+            m_accum_ptr->move(OSL::Labels::STOP);
+        }
+
+        Color3f color = shading_components.m_beauty.illuminance_to_rgb(g_std_lighting_conditions);
+        m_accum_ptr->accum(OSL::Color3(color.r, color.g, color.b));
     }
 }
 

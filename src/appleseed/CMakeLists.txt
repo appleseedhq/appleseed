@@ -1565,6 +1565,8 @@ set (renderer_modeling_aov_sources
     renderer/modeling/aov/iaovfactory.h
     renderer/modeling/aov/invalidsamplesaov.cpp
     renderer/modeling/aov/invalidsamplesaov.h
+    renderer/modeling/aov/lpeaov.cpp
+    renderer/modeling/aov/lpeaov.h
     renderer/modeling/aov/normalaov.cpp
     renderer/modeling/aov/normalaov.h
     renderer/modeling/aov/npraovs.cpp

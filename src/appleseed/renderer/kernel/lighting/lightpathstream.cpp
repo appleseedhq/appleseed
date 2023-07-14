@@ -108,6 +108,8 @@ void LightPathStream::hit_reflector(const PathVertex& vertex)
     data.m_object_instance = &vertex.m_shading_point->get_object_instance();
     data.m_vertex_position = Vector3f(vertex.get_point());
     data.m_path_throughput = vertex.m_throughput.illuminance_to_rgb(g_std_lighting_conditions);
+    data.m_crossing_interface = vertex.m_crossing_interface;
+    data.m_scattering_type = vertex.m_prev_mode;
     m_hit_reflector_data.push_back(data);
 }
 
@@ -190,6 +192,37 @@ void LightPathStream::sampled_environment(
     m_sampled_env_data.push_back(data);
 }
 
+void LightPathStream::sampled_volume(const bool is_homogeneous)
+{
+    Event event;
+    event.m_type = EventType::SampledVolume;
+    event.m_data_index = static_cast<std::uint8_t>(m_sampled_volume_data.size());
+    m_events.push_back(event);
+
+    SampledVolumeData data;
+    data.m_is_homogeneous = is_homogeneous;
+    m_sampled_volume_data.push_back(data);
+}
+
+void LightPathStream::terminate(const TerminateType& terminate_type)
+{
+    Event event;
+    event.m_type = EventType::Terminate;
+    event.m_data_index = static_cast<std::uint8_t>(m_cut_off_data.size());
+    m_events.push_back(event);
+
+    TerminateData data;
+    data.type = terminate_type;
+    m_cut_off_data.push_back(data);
+}
+
+void LightPathStream::hit_background()
+{
+    Event event;
+    event.m_type = EventType::HitBackground;
+    m_events.push_back(event);
+}
+
 void LightPathStream::end_path()
 {
     // Ignore paths that fall outside of the supported range.
@@ -227,6 +260,100 @@ void LightPathStream::end_path()
     clear_keep_memory(m_hit_emitter_data);
     clear_keep_memory(m_sampled_emitter_data);
     clear_keep_memory(m_sampled_env_data);
+}
+
+std::vector<OIIO::ustring> LightPathStream::build_lpe_events()
+{
+    std::vector<OIIO::ustring> lpe_events;
+
+    assert(m_camera != nullptr);
+    lpe_events.emplace_back("C_");
+
+    for (auto& event : m_events)
+    {
+        switch (event.m_type)
+        {
+          case EventType::HitReflector:
+          {
+            auto& reflector_data = m_hit_reflector_data[event.m_data_index];
+
+            std::string event_type, scattering_type;
+            // Determine event type.
+            // Volumn is not considered now.
+            if (reflector_data.m_crossing_interface)
+                event_type = "T";
+            else
+                event_type = "R";
+
+            // Determine scattering type.
+            switch (reflector_data.m_scattering_type)
+            {
+              case ScatteringMode::Diffuse:
+              {
+                scattering_type = "D";
+                break;
+              }
+              case ScatteringMode::Glossy:
+              {
+                scattering_type = "G";
+                break;
+              }
+              case ScatteringMode::Specular:
+              {
+                scattering_type = "S";
+                break;
+              }
+
+              // Ignore the "s" type for now.
+
+              assert_otherwise;
+            }
+
+            lpe_events.emplace_back(OIIO::ustring(event_type + scattering_type, 0));
+            break;
+          }
+
+          case EventType::HitEmitter:
+          {
+            lpe_events.emplace_back("O_");
+            break;
+          }
+
+          case EventType::SampledEmitter:
+          {
+            lpe_events.emplace_back("O_");
+            break;
+          }
+
+          case EventType::SampledEnvironment:
+          {
+            lpe_events.emplace_back("B_");
+            break;
+          }
+
+          case EventType::SampledVolume:
+          {
+            lpe_events.emplace_back("V_");
+            break;
+          }
+
+          case EventType::HitBackground:
+          {
+            lpe_events.emplace_back("B_");
+            break;
+          }
+
+          case EventType::Terminate:
+          {
+            lpe_events.emplace_back("X_");
+            break;
+          }
+
+          assert_otherwise;
+        }
+    }
+
+    return lpe_events;
 }
 
 void LightPathStream::create_path_from_hit_emitter(const size_t emitter_event_index)

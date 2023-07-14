@@ -509,6 +509,12 @@ namespace
             {
             }
 
+            // This function is added for consistence with pt engine interface and it will
+            // be called in the path tracer, do nothing here.
+            void on_terminate(const TerminateType& terminate_type)
+            {
+            }
+
             void emit_sample(
                 const Vector2d&             position_ndc,
                 const Spectrum&             radiance)
