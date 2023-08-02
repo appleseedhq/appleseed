@@ -96,7 +96,7 @@ void TileJob::execute(const size_t thread_index)
     // case of 3ds Max and Maya, updating the UI (e.g. displaying rendered tiles) can only
     // be done from a specific thread: the "main thread" or "UI thread".
     //
-    // To accomodate this constraint, plugins pass a single tile callback to the constructor
+    // To accommodate this constraint, plugins pass a single tile callback to the constructor
     // of `MasterRenderer` instead of a tile callback _factory_. `MasterRenderer` then wraps
     // this single tile callback into a `SerialTileCallback` whose sole purpose is to push
     // updates to a `SerialRendererController`, which in turn stores them into a local queue.

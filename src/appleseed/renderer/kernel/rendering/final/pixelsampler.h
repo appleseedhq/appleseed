@@ -60,7 +60,7 @@ class PixelSampler
     // Compute the position of a pixel sample and optionally the initial instance
     // number of the corresponding sampling context, given the integer coordinates
     // of the subpixel grid cell containing the sample. The coordinates of the
-    // pixel sample are expressed in continous image space
+    // pixel sample are expressed in continuous image space
     // (https://github.com/appleseedhq/appleseed/wiki/Terminology).
     void sample(
         const int               sx,

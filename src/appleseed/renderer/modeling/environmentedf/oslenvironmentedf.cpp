@@ -126,7 +126,7 @@ namespace
             const Vector3f local_outgoing =
                 Vector3f::make_unit_vector(cos_theta, sin_theta, cos_phi, sin_phi);
 
-            // OSL exectute system.
+            // OSL execute system.
             payload = m_osl_shadergroup_exec.execute_background(*m_shader_group, local_outgoing);
 
             importance = luminance(payload);
