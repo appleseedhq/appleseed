@@ -86,25 +86,25 @@ shader as_maya_remapValue
     [[
         string as_maya_attribute_name = "inputMin",
         string label = "Input Min",
-        string page = "Input And Ouput Attributes"
+        string page = "Input And Output Attributes"
     ]],
     float in_inputMax = 0.0
     [[
         string as_maya_attribute_name = "inputMax",
         string label = "Input Max",
-        string page = "Input And Ouput Attributes"
+        string page = "Input And Output Attributes"
     ]],
     float in_outputMin = 0.0
     [[
         string as_maya_attribute_name = "outputMin",
         string label = "Output Min",
-        string page = "Input And Ouput Attributes"
+        string page = "Input And Output Attributes"
     ]],
     float in_outputMax = 0.0
     [[
         string as_maya_attribute_name = "outputMax",
         string label = "Output Max",
-        string page = "Input And Ouput Attributes"
+        string page = "Input And Output Attributes"
     ]],
 
     output float out_outValue = 0.0

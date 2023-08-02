@@ -95,7 +95,7 @@ shader as_voronoi2d
         int as_maya_attribute_connectable = 0,
         int as_maya_attribute_keyable = 0,
         string widget = "mapper",
-        string options = "Euclidian Distance:0|Sum of Square Difference:1|Tchebychev Distance:2|Sum of Absolute Difference:3|Akritean Distance:4|Minkowski Metric:5|Karlsruhe Metric:6",
+        string options = "Euclidean Distance:0|Sum of Square Difference:1|Tchebychev Distance:2|Sum of Absolute Difference:3|Akritean Distance:4|Minkowski Metric:5|Karlsruhe Metric:6",
         string label = "Metric",
         string page = "Cell",
         int as_blender_input_socket = 0,
