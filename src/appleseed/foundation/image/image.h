@@ -106,7 +106,7 @@ class APPLESEED_DLLSYMBOL Image
         const size_t        tile_x,
         const size_t        tile_y) const override;
 
-    // Set a given tile. Ownership of the tile is transfered to the Image class.
+    // Set a given tile. Ownership of the tile is transferred to the Image class.
     // If a tile already exists at the given coordinates, it gets replaced.
     void set_tile(
         const size_t        tile_x,

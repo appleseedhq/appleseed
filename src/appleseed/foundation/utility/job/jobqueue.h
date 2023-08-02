@@ -98,7 +98,7 @@ class APPLESEED_DLLSYMBOL JobQueue
     // Return the number of scheduled and running jobs in the job queue.
     size_t get_total_job_count() const;
 
-    // Schedule a job for execution. Ownership of the job is transfered
+    // Schedule a job for execution. Ownership of the job is transferred
     // to the job queue if and only if transfer_ownership is true.
     void schedule(IJob* job, const bool transfer_ownership = true);
 

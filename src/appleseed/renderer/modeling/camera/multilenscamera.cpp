@@ -604,7 +604,7 @@ class MultiLensCamera
                     return true;
                 }
 
-                p0 = Vector3d(0, 0, image_plane_z); // center of iamge plane
+                p0 = Vector3d(0, 0, image_plane_z); // center of image plane
                 pmin = Vector3d(0, 0, m_last_z); // center of the rear lens
                 pmax = Vector3d(0.5 * m_lens_container.back().diameter, 0, m_last_z); // marginal point of the rear lens
             }
@@ -936,7 +936,7 @@ class MultiLensCamera
         //
 
         // Comments are preceded by a # and can stand on their own line or at the end of a line.
-        // The first non-comment line should contain the number of following lens elments.
+        // The first non-comment line should contain the number of following lens elements.
         // Lens elements have to be space separated values of the format:
         // radius    thickness    ior    aperture
         bool read_lens_file(const Project& project, double factor)
