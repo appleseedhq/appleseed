@@ -38,7 +38,7 @@
 // Imath headers.
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
 #include "foundation/platform/_beginexrheaders.h"
-#include "OpenEXR/ImathMatrix.h"
+#include "Imath/ImathMatrix.h"
 #include "foundation/platform/_endexrheaders.h"
 #endif
 

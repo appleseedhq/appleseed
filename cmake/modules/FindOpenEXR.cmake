@@ -1,93 +1,138 @@
+# - Find OpenEXR library
+# Find the native OpenEXR includes and library
+# This module defines
+#  OPENEXR_INCLUDE_DIRS, where to find ImfXdr.h, etc. Set when
+#                        OPENEXR_INCLUDE_DIR is found.
+#  OPENEXR_LIBRARIES, libraries to link against to use OpenEXR.
+#  OPENEXR_ROOT_DIR, The base directory to search for OpenEXR.
+#                    This can also be an environment variable.
+#  OPENEXR_FOUND, If false, do not try to use OpenEXR.
+#
+# For individual library access these advanced settings are available
+#  OPENEXR_HALF_LIBRARY, Path to Half library
+#  OPENEXR_IEX_LIBRARY, Path to Half library
+#  OPENEXR_ILMIMF_LIBRARY, Path to Ilmimf library
+#  OPENEXR_ILMTHREAD_LIBRARY, Path to IlmThread library
+#  OPENEXR_IMATH_LIBRARY, Path to Imath library
+#
+# also defined, but not for general use are
+#  OPENEXR_LIBRARY, where to find the OpenEXR library.
 
+#=============================================================================
+# Copyright 2011 Blender Foundation.
 #
-# This source file is part of appleseed.
-# Visit https://appleseedhq.net/ for additional information and resources.
-#
-# This software is released under the MIT license.
-#
-# Copyright (c) 2013-2018 Esteban Tovagliari, The appleseedhq Organization
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
-#
+# Distributed under the OSI-approved BSD 3-Clause License,
+# see accompanying file BSD-3-Clause-license.txt for details.
+#=============================================================================
 
+# If OPENEXR_ROOT_DIR was defined in the environment, use it.
+IF(NOT OPENEXR_ROOT_DIR AND NOT $ENV{OPENEXR_ROOT_DIR} STREQUAL "")
+  SET(OPENEXR_ROOT_DIR $ENV{OPENEXR_ROOT_DIR})
+ENDIF()
 
-#
-# Find OpenEXR headers and libraries.
-#
-# This module can take the following variables to define
-# custom search locations:
-#
-#   OPENEXR_ROOT
-#   OPENEXR_LOCATION
+# Old versions (before 2.0?) do not have any version string, just assuming this should be fine though.
+SET(_openexr_libs_ver_init "2.0")
 
-# This module defines the following variables:
-#
-#   OPENEXR_FOUND           True if OpenEXR was found
-#   OPENEXR_INCLUDE_DIRS    Where to find OpenEXR header files
-#   OPENEXR_LIBRARIES       List of OpenEXR libraries to link against
-#
-
-include (FindPackageHandleStandardArgs)
-
-find_path (OPENEXR_INCLUDE_DIR NAMES ImfHeader.h
-           PATH_SUFFIXES OpenEXR
-           HINTS ${OPENEXR_ROOT}/include
-                 ${OPENEXR_LOCATION}/include
-                 /usr/local/include
-                 /usr/include
+SET(_openexr_FIND_COMPONENTS
+  Iex
+  Imath
+  OpenEXR
+  IlmThread
 )
 
-find_library (OPENEXR_IMF_LIBRARY NAMES IlmImf-2_3 IlmImf-2_2 IlmImf
-              PATH_SUFFIXES lib64 lib
-              HINTS ${OPENEXR_ROOT}
-                    ${OPENEXR_LOCATION}
-                    /usr/local
-                    /usr
+SET(_openexr_SEARCH_DIRS
+  ${OPENEXR_ROOT_DIR}
+  /opt/lib/openexr
 )
 
-find_library (OPENEXR_THREADS_LIBRARY
-              NAMES IlmThread-2_3 IlmThread-2_2 IlmThread
-              PATH_SUFFIXES lib64 lib
-              HINTS ${OPENEXR_ROOT}
-                    ${OPENEXR_LOCATION}
-                    /usr/local
-                    /usr
+FIND_PATH(OPENEXR_INCLUDE_DIR
+  NAMES
+    OpenEXR/ImfXdr.h
+  HINTS
+    ${_openexr_SEARCH_DIRS}
+  PATH_SUFFIXES
+    include
 )
 
-# Handle the QUIETLY and REQUIRED arguments and set OPENEXR_FOUND.
-find_package_handle_standard_args (OPENEXR DEFAULT_MSG
-    OPENEXR_INCLUDE_DIR
-    OPENEXR_IMF_LIBRARY
-    OPENEXR_THREADS_LIBRARY
-)
+# If the headers were found, get the version from config file, if not already set.
+IF(OPENEXR_INCLUDE_DIR)
+  IF(NOT OPENEXR_VERSION)
 
-# Set the output variables.
-if (OPENEXR_FOUND)
-    set (OPENEXR_INCLUDE_DIRS ${OPENEXR_INCLUDE_DIR})
-    set (OPENEXR_LIBRARIES  ${OPENEXR_IMF_LIBRARY} ${OPENEXR_THREADS_LIBRARY})
-else ()
-    set (OPENEXR_INCLUDE_DIRS)
-    set (OPENEXR_LIBRARIES)
-endif ()
+    FIND_FILE(_openexr_CONFIG
+      NAMES
+        OpenEXRConfig.h
+      PATHS
+        "${OPENEXR_INCLUDE_DIR}"
+        "${OPENEXR_INCLUDE_DIR}/OpenEXR"
+      NO_DEFAULT_PATH
+    )
 
-mark_as_advanced (
-    OPENEXR_INCLUDE_DIR
-    OPENEXR_IMF_LIBRARY
-    OPENEXR_THREADS_LIBRARY
+    IF(_openexr_CONFIG)
+      FILE(STRINGS "${_openexr_CONFIG}" OPENEXR_BUILD_SPECIFICATION
+           REGEX "^[ \t]*#define[ \t]+OPENEXR_VERSION_STRING[ \t]+\"[.0-9]+\".*$")
+    ELSE()
+      MESSAGE(WARNING "Could not find \"OpenEXRConfig.h\" in \"${OPENEXR_INCLUDE_DIR}\"")
+    ENDIF()
+
+    IF(OPENEXR_BUILD_SPECIFICATION)
+      MESSAGE(STATUS "${OPENEXR_BUILD_SPECIFICATION}")
+      STRING(REGEX REPLACE ".*#define[ \t]+OPENEXR_VERSION_STRING[ \t]+\"([.0-9]+)\".*"
+             "\\1" _openexr_libs_ver_init ${OPENEXR_BUILD_SPECIFICATION})
+    ELSE()
+      MESSAGE(WARNING "Could not determine ILMBase library version, assuming ${_openexr_libs_ver_init}.")
+    ENDIF()
+
+    UNSET(_openexr_CONFIG CACHE)
+
+  ENDIF()
+ENDIF()
+
+SET("OPENEXR_VERSION" ${_openexr_libs_ver_init} CACHE STRING "Version of OpenEXR lib")
+UNSET(_openexr_libs_ver_init)
+
+STRING(REGEX REPLACE "([0-9]+)[.]([0-9]+).*" "\\1_\\2" _openexr_libs_ver ${OPENEXR_VERSION})
+
+SET(_openexr_LIBRARIES)
+FOREACH(COMPONENT ${_openexr_FIND_COMPONENTS})
+  STRING(TOUPPER ${COMPONENT} UPPERCOMPONENT)
+
+  FIND_LIBRARY(OPENEXR_${UPPERCOMPONENT}_LIBRARY
+    NAMES
+      ${COMPONENT}-${_openexr_libs_ver} ${COMPONENT}
+    NAMES_PER_DIR
+    HINTS
+      ${_openexr_SEARCH_DIRS}
+    PATH_SUFFIXES
+      lib64 lib
+    )
+  LIST(APPEND _openexr_LIBRARIES "${OPENEXR_${UPPERCOMPONENT}_LIBRARY}")
+ENDFOREACH()
+
+UNSET(_openexr_libs_ver)
+
+# handle the QUIETLY and REQUIRED arguments and set OPENEXR_FOUND to TRUE if
+# all listed variables are TRUE
+INCLUDE(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(OpenEXR  DEFAULT_MSG
+    _openexr_LIBRARIES OPENEXR_INCLUDE_DIR)
+
+IF(OPENEXR_FOUND)
+  SET(OPENEXR_LIBRARIES ${_openexr_LIBRARIES})
+  # Both include paths are needed because of dummy OSL headers mixing #include <OpenEXR/foo.h> and #include <foo.h> :(
+  SET(OPENEXR_INCLUDE_DIRS ${OPENEXR_INCLUDE_DIR} ${OPENEXR_INCLUDE_DIR}/OpenEXR ${OPENEXR_INCLUDE_DIR}/Imath)
+ENDIF()
+
+MARK_AS_ADVANCED(
+  OPENEXR_INCLUDE_DIR
+  OPENEXR_VERSION
 )
+FOREACH(COMPONENT ${_openexr_FIND_COMPONENTS})
+  STRING(TOUPPER ${COMPONENT} UPPERCOMPONENT)
+  MARK_AS_ADVANCED(OPENEXR_${UPPERCOMPONENT}_LIBRARY)
+ENDFOREACH()
+
+UNSET(COMPONENT)
+UNSET(UPPERCOMPONENT)
+UNSET(_openexr_FIND_COMPONENTS)
+UNSET(_openexr_LIBRARIES)
+UNSET(_openexr_SEARCH_DIRS)
