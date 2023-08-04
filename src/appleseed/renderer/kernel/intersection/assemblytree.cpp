@@ -40,6 +40,7 @@
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/proceduralobject.h"
+#include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/assemblyinstance.h"
 #include "renderer/modeling/scene/objectinstance.h"
 #include "renderer/modeling/scene/scene.h"
@@ -77,9 +78,9 @@ namespace renderer
 // AssemblyTree class implementation.
 //
 
-AssemblyTree::AssemblyTree(const Scene& scene)
+AssemblyTree::AssemblyTree(const Project& project)
   : TreeType(AlignedAllocator<void>(System::get_l1_data_cache_line_size()))
-  , m_scene(scene)
+  , m_project(project)
 #ifdef APPLESEED_WITH_EMBREE
   , m_use_embree(false)
   , m_dirty(false)
@@ -163,7 +164,7 @@ void AssemblyTree::rebuild_assembly_tree()
     RENDERER_LOG_INFO("collecting assembly instances...");
     AABBVector assembly_instance_bboxes;
     collect_assembly_instances(
-        m_scene.assembly_instances(),
+        m_project.get_scene()->assembly_instances(),
         TransformSequence(),
         assembly_instance_bboxes);
 
@@ -185,7 +186,7 @@ void AssemblyTree::rebuild_assembly_tree()
     Builder builder;
     builder.build<DefaultWallclockTimer>(*this, partitioner, m_items.size(), AssemblyTreeMaxLeafSize);
     statistics.insert_time("build time", builder.get_build_time());
-    statistics.merge(bvh::TreeStatistics<AssemblyTree>(*this, AABB3d(m_scene.compute_bbox())));
+    statistics.merge(bvh::TreeStatistics<AssemblyTree>(*this, AABB3d(m_project.get_scene()->compute_bbox())));
 
     if (!m_items.empty())
     {
@@ -407,7 +408,7 @@ void AssemblyTree::create_triangle_tree(const Assembly& assembly)
         std::unique_ptr<ILazyFactory<TriangleTree>> triangle_tree_factory(
             new TriangleTreeFactory(
                 TriangleTree::Arguments(
-                    m_scene,
+                    m_project,
                     assembly.get_uid(),
                     assembly_bbox,
                     assembly)));
@@ -435,7 +436,7 @@ void AssemblyTree::create_curve_tree(const Assembly& assembly)
         std::unique_ptr<ILazyFactory<CurveTree>> curve_tree_factory(
             new CurveTreeFactory(
                 CurveTree::Arguments(
-                    m_scene,
+                    *m_project.get_scene(),
                     assembly.get_uid(),
                     assembly_bbox,
                     assembly)));
@@ -473,7 +474,7 @@ void AssemblyTree::create_embree_scene(const Assembly& assembly)
         std::unique_ptr<ILazyFactory<EmbreeScene>> embree_scene_factory(
             new EmbreeSceneFactory(
                 EmbreeScene::Arguments(
-                    m_scene.get_embree_device(),
+                    m_project.get_scene()->get_embree_device(),
                     assembly
                 )));
 

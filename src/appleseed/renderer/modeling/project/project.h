@@ -80,11 +80,13 @@ namespace renderer      { class LightPathRecorder; }
 namespace renderer      { class Material; }
 namespace renderer      { class Object; }
 namespace renderer      { class OnFrameBeginRecorder; }
+namespace renderer      { class ParamArray; }
 namespace renderer      { class PluginStore; }
 namespace renderer      { class PostProcessingStage; }
 namespace renderer      { class Scene; }
 namespace renderer      { class SurfaceShader; }
 namespace renderer      { class Texture; }
+namespace renderer      { class TextureStore; }
 namespace renderer      { class TraceContext; }
 namespace renderer      { class Volume; }
 
@@ -191,6 +193,15 @@ class APPLESEED_DLLSYMBOL Project
     void on_frame_end(
         const Project&                  project,
         const BaseGroup*                parent) override;
+
+    // Initialize the texture store.
+    void initialize_texture_store(const ParamArray& params);
+
+    // Return true if the texture store has already been initialized.
+    bool has_texture_store() const;
+
+    // Get the texture store.
+    TextureStore& get_texture_store() const;
 
   private:
     friend class ProjectFactory;

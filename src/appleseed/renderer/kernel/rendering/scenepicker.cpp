@@ -36,7 +36,6 @@
 #include "renderer/kernel/intersection/tracecontext.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/texturing/texturecache.h"
-#include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/bsdf/bsdftraits.h"
 #include "renderer/modeling/bssrdf/bssrdftraits.h"
 #include "renderer/modeling/camera/camera.h"
@@ -57,6 +56,9 @@
 #include <cstddef>
 #include <limits>
 
+// Forward declarations.
+namespace renderer  { class TextureStore; }
+
 using namespace foundation;
 
 namespace renderer
@@ -66,14 +68,14 @@ struct ScenePicker::Impl
 {
     const Project&      m_project;
     const TraceContext& m_trace_context;
-    TextureStore        m_texture_store;
+    TextureStore&       m_texture_store;
     TextureCache        m_texture_cache;
     Intersector         m_intersector;
 
     explicit Impl(const Project& project)
       : m_project(project)
       , m_trace_context(m_project.get_trace_context())
-      , m_texture_store(m_trace_context.get_scene())
+      , m_texture_store(m_project.get_texture_store())
       , m_texture_cache(m_texture_store)
       , m_intersector(m_trace_context, m_texture_cache)
     {

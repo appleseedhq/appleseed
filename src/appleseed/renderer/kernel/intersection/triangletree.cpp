@@ -46,6 +46,7 @@
 #include "renderer/modeling/object/meshobject.h"
 #include "renderer/modeling/object/object.h"
 #include "renderer/modeling/object/triangle.h"
+#include "renderer/modeling/project/project.h"
 #include "renderer/modeling/scene/assembly.h"
 #include "renderer/modeling/scene/containers.h"
 #include "renderer/modeling/scene/objectinstance.h"
@@ -383,11 +384,11 @@ namespace
 }
 
 TriangleTree::Arguments::Arguments(
-    const Scene&            scene,
+    const Project&          project,
     const UniqueID          triangle_tree_uid,
     const GAABB3&           bbox,
     const Assembly&         assembly)
-  : m_scene(scene)
+  : m_project(project)
   , m_triangle_tree_uid(triangle_tree_uid)
   , m_bbox(bbox)
   , m_assembly(assembly)
@@ -1262,8 +1263,7 @@ void TriangleTree::update_intersection_filters()
         object_instances_to_filter_keys);
 
     // Create missing intersection filters and update existing ones.
-    TextureStore texture_store(m_arguments.m_scene);
-    TextureCache texture_cache(texture_store);
+    TextureCache texture_cache(m_arguments.m_project.get_texture_store());
     create_missing_intersection_filters(
         texture_cache,
         filter_keys,

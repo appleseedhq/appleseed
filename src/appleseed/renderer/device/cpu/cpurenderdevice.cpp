@@ -59,7 +59,7 @@ CPURenderDevice::CPURenderDevice(
     Project&                project,
     const ParamArray&       params)
   : RenderDeviceBase(project, params)
-  , m_texture_store(*project.get_scene(), params.child("texture_store"))
+  , m_texture_store(project.get_texture_store())
 {
     m_error_handler = new OIIOErrorHandler();
 #ifndef NDEBUG

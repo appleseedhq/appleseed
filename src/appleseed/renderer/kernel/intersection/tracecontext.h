@@ -32,6 +32,9 @@
 // appleseed.foundation headers.
 #include "foundation/core/concepts/noncopyable.h"
 
+// appleseed.renderer headers.
+#include "renderer/modeling/project/project.h"
+
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
@@ -54,7 +57,7 @@ class APPLESEED_DLLSYMBOL TraceContext
 {
   public:
     // Constructor, initializes the trace context for a given scene.
-    explicit TraceContext(const Scene& scene);
+    explicit TraceContext(const Project& project);
 
     // Destructor.
     ~TraceContext();
@@ -73,7 +76,7 @@ class APPLESEED_DLLSYMBOL TraceContext
 #endif
 
   private:
-    const Scene&    m_scene;
+    const Project&  m_project;
     AssemblyTree*   m_assembly_tree;
 };
 
@@ -84,7 +87,7 @@ class APPLESEED_DLLSYMBOL TraceContext
 
 inline const Scene& TraceContext::get_scene() const
 {
-    return m_scene;
+    return *m_project.get_scene();
 }
 
 inline const AssemblyTree& TraceContext::get_assembly_tree() const

@@ -1254,6 +1254,9 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
         rendering_mode == RenderingMode::InteractiveRendering ? "interactive" : "final";
     const ParamArray params = get_project_params(configuration_name);
 
+    if (!project->has_texture_store())
+        project->initialize_texture_store(params.child("texture_store"));
+
     // Effectively start rendering.
     m_rendering_manager.start_rendering(
         project,

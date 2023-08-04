@@ -34,6 +34,7 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/intersection/tracecontext.h"
 #include "renderer/kernel/lighting/lightpathrecorder.h"
+#include "renderer/kernel/texturing/texturestore.h"
 #include "renderer/modeling/aov/aovfactoryregistrar.h"
 #include "renderer/modeling/bsdf/bsdffactoryregistrar.h"
 #include "renderer/modeling/bssrdf/bssrdffactoryregistrar.h"
@@ -126,6 +127,7 @@ struct Project::Impl
     LightPathRecorder                   m_light_path_recorder;
     std::unique_ptr<TraceContext>       m_trace_context;
     RenderingTimer                      m_rendering_timer;
+    std::unique_ptr<TextureStore>       m_texture_store;
 
     explicit Impl(const Project& project)
       : m_format_revision(ProjectFormatRevision)
@@ -358,10 +360,7 @@ bool Project::has_trace_context() const
 const TraceContext& Project::get_trace_context() const
 {
     if (!impl->m_trace_context)
-    {
-        assert(impl->m_scene.get());
-        impl->m_trace_context.reset(new TraceContext(*impl->m_scene));
-    }
+        impl->m_trace_context.reset(new TraceContext(*this));
 
     return *impl->m_trace_context;
 }
@@ -434,6 +433,25 @@ void Project::on_frame_end(
     const BaseGroup*            parent)
 {
     impl->m_rendering_timer.measure();
+}
+
+void Project::initialize_texture_store(const ParamArray& params)
+{
+    assert(impl->m_scene.get());
+
+    impl->m_texture_store.reset(new TextureStore(*impl->m_scene, params));
+}
+
+bool Project::has_texture_store() const
+{
+    return impl->m_texture_store.get() != nullptr;
+}
+
+TextureStore& Project::get_texture_store() const
+{
+    assert(impl->m_texture_store);
+
+    return *impl->m_texture_store;
 }
 
 void Project::add_base_configurations()

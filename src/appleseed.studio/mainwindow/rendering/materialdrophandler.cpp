@@ -43,15 +43,15 @@ namespace appleseed {
 namespace studio {
 
 MaterialDropHandler::MaterialDropHandler(
-    const renderer::Project&    project,
-    RenderingManager&           rendering_manager)
+    const renderer::Project&        project,
+    RenderingManager&               rendering_manager)
   : m_project(project), m_rendering_manager(rendering_manager)
 {
 }
 
 void MaterialDropHandler::slot_material_dropped(
-    const foundation::Vector2d& drop_pos,
-    const QString&          material_name)
+    const foundation::Vector2d&     drop_pos,
+    const QString&                  material_name)
 {
     m_drop_pos = drop_pos;
     m_material_name = material_name.toStdString();

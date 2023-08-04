@@ -178,7 +178,7 @@ BackwardLightSampler::BackwardLightSampler(
     }
     else
     {
-        // Prepare the light-emitting shapes CDF for smapling.
+        // Prepare the light-emitting shapes CDF for sampling.
         if (m_emitting_shapes_cdf.valid())
             m_emitting_shapes_cdf.prepare();
 

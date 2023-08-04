@@ -56,9 +56,9 @@ namespace renderer
 // TraceContext class implementation.
 //
 
-TraceContext::TraceContext(const Scene& scene)
-  : m_scene(scene)
-  , m_assembly_tree(new AssemblyTree(scene))
+TraceContext::TraceContext(const Project& project)
+  : m_project(project)
+  , m_assembly_tree(new AssemblyTree(project))
 {
     RENDERER_LOG_DEBUG(
         "data structures size:\n"
