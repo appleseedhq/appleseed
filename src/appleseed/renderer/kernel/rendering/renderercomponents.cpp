@@ -32,6 +32,9 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/lighting/bdpt/bdptlightingengine.h"
+#include "renderer/kernel/lighting/gpt/gptlightingengine.h"
+#include "renderer/kernel/lighting/gpt/gptparameters.h"
+#include "renderer/kernel/lighting/gpt/gptpasscallback.h"
 #include "renderer/kernel/lighting/lighttracing/lighttracingsamplegenerator.h"
 #include "renderer/kernel/lighting/pt/ptlightingengine.h"
 #include "renderer/kernel/lighting/sppm/sppmlightingengine.h"
@@ -51,9 +54,11 @@
 #include "renderer/kernel/rendering/generic/generictilerenderer.h"
 #include "renderer/kernel/rendering/permanentshadingresultframebufferfactory.h"
 #include "renderer/kernel/rendering/progressive/progressiveframerenderer.h"
+#include "renderer/kernel/rendering/variancetrackingshadingresultframebufferfactory.h"
 #include "renderer/kernel/shading/oslshadingsystem.h"
 #include "renderer/kernel/texturing/oiiotexturesystem.h"
 #include "renderer/modeling/project/project.h"
+#include "renderer/modeling/scene/scene.h"
 #include "renderer/utility/paramarray.h"
 
 // OpenImageIO headers.
@@ -62,6 +67,7 @@
 #include "foundation/platform/_endoiioheaders.h"
 
 // Standard headers.
+#include <limits>
 #include <string>
 
 using namespace foundation;
@@ -122,9 +128,6 @@ RendererComponents::RendererComponents(
 
 bool RendererComponents::create()
 {
-    if (!create_shading_result_framebuffer_factory())
-        return false;
-
     if (!create_lighting_engine_factory())
         return false;
 
@@ -137,10 +140,13 @@ bool RendererComponents::create()
     if (!create_pixel_renderer_factory())
         return false;
 
+    if (!create_shading_result_framebuffer_factory())
+        return false;
+
     if (!create_tile_renderer_factory())
         return false;
 
-    if (!create_frame_renderer())
+    if (!create_frame_renderer_factory())
         return false;
 
     return true;
@@ -191,7 +197,53 @@ bool RendererComponents::create_lighting_engine_factory()
             new PTLightingEngineFactory(
                 *m_backward_light_sampler,
                 m_project.get_light_path_recorder(),
-                get_child_and_inherit_globals(m_params, "pt")));    // todo: change to "pt_lighting_engine"?
+                get_child_and_inherit_globals(m_params, "pt"))); // todo: change to "pt_lighting_engine"?
+
+        return true;
+    }
+    else if (name == "gpt")
+    {
+        const std::string pixel_renderer_name = m_params.get_optional<std::string>("pixel_renderer", "");
+
+        if (pixel_renderer_name != "uniform")
+        {
+            RENDERER_LOG_ERROR("cannot use guided path tracing with pixel renderer other than uniform pixel renderer.");
+            return false;
+        }
+
+        const std::string framebuffer_name = m_params.get_optional<std::string>("shading_result_framebuffer", "");
+
+        if (framebuffer_name != "permanent")
+        {
+            RENDERER_LOG_ERROR("cannot use guided path tracing without permanent shading result framebuffer.");
+            return false;
+        }
+
+        m_backward_light_sampler.reset(
+            new BackwardLightSampler(
+                m_scene,
+                get_child_and_inherit_globals(m_params, "light_sampler")));
+
+        const GPTParameters gpt_parameters(
+            get_child_and_inherit_globals(m_params, "gpt"));
+
+        m_sd_tree.reset(new STree(m_scene, gpt_parameters));
+
+        ParamArray uniform_pixel_renderer_params = get_child_and_inherit_globals(m_params, "uniform_pixel_renderer");
+
+        m_pass_callback.reset(
+            new GPTPassCallback(
+                gpt_parameters,
+                m_sd_tree.get(),
+                uniform_pixel_renderer_params.get_required<size_t>("samples", 64),
+                m_params.get_optional<size_t>("passes", std::numeric_limits<size_t>::max())));
+
+        m_lighting_engine_factory.reset(
+            new GPTLightingEngineFactory(
+                m_sd_tree.get(),
+                *m_backward_light_sampler,
+                m_project.get_light_path_recorder(),
+                gpt_parameters));
 
         return true;
     }
@@ -225,7 +277,7 @@ bool RendererComponents::create_lighting_engine_factory()
         const SPPMParameters sppm_params(
             get_child_and_inherit_globals(m_params, "sppm"));
 
-        SPPMPassCallback* sppm_pass_callback =
+        SPPMPassCallback *sppm_pass_callback =
             new SPPMPassCallback(
                 m_scene,
                 *m_forward_light_sampler,
@@ -367,11 +419,22 @@ bool RendererComponents::create_pixel_renderer_factory()
             return false;
         }
 
+        ParamArray params = get_child_and_inherit_globals(m_params, "uniform_pixel_renderer");
+
+        const std::string lighting_engine_name = m_params.get_required<std::string>("lighting_engine", "");
+
+        if (lighting_engine_name == "gpt")
+        {
+            const GPTParameters gpt_parameters(
+                get_child_and_inherit_globals(m_params, "gpt"));
+            params.insert("samples", gpt_parameters.m_samples_per_pass);
+        }
+
         m_pixel_renderer_factory.reset(
             new UniformPixelRendererFactory(
                 m_frame,
                 m_sample_renderer_factory.get(),
-                get_child_and_inherit_globals(m_params, "uniform_pixel_renderer")));
+                params));
 
         return true;
     }
@@ -421,8 +484,19 @@ bool RendererComponents::create_pixel_renderer_factory()
 bool RendererComponents::create_shading_result_framebuffer_factory()
 {
     const std::string name = m_params.get_optional<std::string>("shading_result_framebuffer", "ephemeral");
+    GPTPassCallback *gpt_pass_callback = dynamic_cast<GPTPassCallback *>(m_pass_callback.get());
 
-    if (name.empty())
+    if (gpt_pass_callback != nullptr)
+    {
+        VarianceTrackingShadingResultFrameBufferFactory *framebuffer_factory =
+            new VarianceTrackingShadingResultFrameBufferFactory(m_frame);
+            
+        m_shading_result_framebuffer_factory.reset(
+            framebuffer_factory);
+        gpt_pass_callback->set_framebuffer(framebuffer_factory);
+        return true;
+    }
+    else if (name.empty())
     {
         return true;
     }
@@ -520,7 +594,7 @@ bool RendererComponents::create_tile_renderer_factory()
     }
 }
 
-bool RendererComponents::create_frame_renderer()
+bool RendererComponents::create_frame_renderer_factory()
 {
     const std::string name = m_params.get_required<std::string>("frame_renderer", "generic");
 
@@ -542,6 +616,15 @@ bool RendererComponents::create_frame_renderer()
             return false;
         }
 
+        ParamArray params = get_child_and_inherit_globals(m_params, "generic_frame_renderer");
+
+        const std::string lighting_engine_name = m_params.get_required<std::string>("lighting_engine", "");
+
+        if (lighting_engine_name == "gpt")
+        {
+            params.insert("passes", 10000000);
+        }
+
         m_frame_renderer.reset(
             GenericFrameRendererFactory::create(
                 m_frame,
@@ -549,7 +632,7 @@ bool RendererComponents::create_frame_renderer()
                 m_tile_renderer_factory.get(),
                 m_tile_callback_factory,
                 m_pass_callback.get(),
-                get_child_and_inherit_globals(m_params, "generic_frame_renderer")));
+                params));
 
         return true;
     }

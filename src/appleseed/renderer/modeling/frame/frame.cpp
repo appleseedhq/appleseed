@@ -531,10 +531,10 @@ void Frame::denoise(
 
 namespace
 {
-    size_t get_checkpoint_total_channel_count(const size_t aov_count)
+    size_t get_checkpoint_total_channel_count(const IShadingResultFrameBufferFactory* buffer_factory, const size_t aov_count)
     {
         // The beauty image plus the shading result framebuffer.
-        return ShadingResultFrameBuffer::get_total_channel_count(aov_count) + 1;
+        return buffer_factory->get_total_channel_count(aov_count) + 1;
     }
 
     typedef std::vector<std::tuple<std::string, CanvasProperties, ImageAttributes>> CheckpointProperties;
@@ -558,7 +558,7 @@ namespace
                 m_frame.image().properties().m_canvas_height,
                 m_frame.image().properties().m_tile_width,
                 m_frame.image().properties().m_tile_height,
-                get_checkpoint_total_channel_count(m_frame.aov_images().size()),
+                get_checkpoint_total_channel_count(buffer_factory, m_frame.aov_images().size()),
                 PixelFormatFloat)
         {
             assert(buffer_factory);
@@ -647,9 +647,10 @@ namespace
     }
 
     bool is_checkpoint_compatible(
-        const std::string&              checkpoint_path,
-        const Frame&                    frame,
-        const CheckpointProperties&     checkpoint_props)
+        const std::string&                         checkpoint_path,
+        const Frame&                               frame,
+        const IShadingResultFrameBufferFactory*    buffer_factory,
+        const CheckpointProperties&                checkpoint_props)
     {
         const Image& frame_image = frame.image();
         const CanvasProperties& frame_props = frame_image.properties();
@@ -681,7 +682,7 @@ namespace
 
         // Check that the shading buffer layer has correct amount of channel.
         // The checkpoint should contain the beauty image and the shading buffer.
-        const size_t expect_channel_count = get_checkpoint_total_channel_count(frame.aov_images().size());
+        const size_t expect_channel_count = get_checkpoint_total_channel_count(buffer_factory, frame.aov_images().size());
         if (std::get<1>(checkpoint_props[1]).m_channel_count != expect_channel_count)
         {
             RENDERER_LOG_ERROR("incorrect checkpoint: the shading buffer doesn't contain the correct number of channels.");
@@ -827,7 +828,7 @@ bool Frame::load_checkpoint(
     }
 
     // Check checkpoint file's compatibility.
-    if (!is_checkpoint_compatible(impl->m_checkpoint_resume_path, *this, checkpoint_props))
+    if (!is_checkpoint_compatible(impl->m_checkpoint_resume_path, *this, buffer_factory, checkpoint_props))
         return false;
 
     // Compute the index of the first pass to render.

@@ -93,7 +93,7 @@ class SPPMPassCallback
         foundation::IAbortSwitch&           abort_switch) override;
 
     // This method is called at the end of a pass.
-    void on_pass_end(
+    bool on_pass_end(
         const Frame&                        frame,
         foundation::JobQueue&               job_queue,
         foundation::IAbortSwitch&           abort_switch) override;
