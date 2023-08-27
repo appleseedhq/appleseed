@@ -95,21 +95,21 @@ class ConsoleBackend:
 
     @staticmethod
     def info(msg):
-        print(("{0}".format(msg)))
+        print("{0}".format(msg))
 
     @staticmethod
     def warning(msg):
         if ConsoleBackend.is_coloring_supported():
-            print(("\033[93m{0}\033[0m".format(msg)))
+            print("\033[93m{0}\033[0m".format(msg))
         else:
-            print(("{0}".format(msg)))
+            print("{0}".format(msg))
 
     @staticmethod
     def error(msg):
         if ConsoleBackend.is_coloring_supported():
-            print(("\033[91m{0}\033[0m".format(msg)))
+            print("\033[91m{0}\033[0m".format(msg))
         else:
-            print(("{0}".format(msg)))
+            print("{0}".format(msg))
 
     @staticmethod
     def is_coloring_supported():
@@ -449,7 +449,7 @@ def main():
     if args.tool_path is None:
         script_directory = os.path.dirname(os.path.realpath(__file__))
         args.tool_path = os.path.join(script_directory, DEFAULT_TOOL_FILENAME)
-        print(("setting tool path to {0}.".format(args.tool_path)))
+        print("setting tool path to {0}.".format(args.tool_path))
 
     # If no watch directory is provided, watch the current directory.
     if args.directory is None:
