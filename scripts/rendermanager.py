@@ -145,21 +145,21 @@ class ConsoleBackend:
 
     @staticmethod
     def info(msg):
-        print(("{0}".format(msg)))
+        print("{0}".format(msg))
 
     @staticmethod
     def warning(msg):
         if ConsoleBackend.is_coloring_supported():
-            print(("\033[93m{0}\033[0m".format(msg)))
+            print("\033[93m{0}\033[0m".format(msg))
         else:
-            print(("{0}".format(msg)))
+            print("{0}".format(msg))
 
     @staticmethod
     def error(msg):
         if ConsoleBackend.is_coloring_supported():
-            print(("\033[91m{0}\033[0m".format(msg)))
+            print("\033[91m{0}\033[0m".format(msg))
         else:
-            print(("{0}".format(msg)))
+            print("{0}".format(msg))
 
     @staticmethod
     def is_coloring_supported():
