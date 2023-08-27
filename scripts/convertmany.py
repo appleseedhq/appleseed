@@ -66,7 +66,7 @@ def walk(directory, recursive):
 # -------------------------------------------------------------------------------------------------
 
 def convert_mesh_file(input_filepath, output_filepath, tool_path):
-    print(("converting {0} to {1}...".format(input_filepath, output_filepath)))
+    print("converting {0} to {1}...".format(input_filepath, output_filepath))
     subprocess.call([tool_path, input_filepath, output_filepath])
 
 
@@ -113,7 +113,7 @@ def main():
     if args.tool_path is None:
         script_directory = os.path.dirname(os.path.realpath(__file__))
         args.tool_path = os.path.join(script_directory, DEFAULT_TOOL_FILENAME)
-        print(("setting tool path to {0}.".format(args.tool_path)))
+        print("setting tool path to {0}.".format(args.tool_path))
 
     start_time = datetime.datetime.now()
     converted_file_count = convert_mesh_files(args.tool_path, args.directory, args.recursive,
@@ -121,7 +121,7 @@ def main():
                                               args.overwrite)
     end_time = datetime.datetime.now()
 
-    print(("converted {0} mesh file(s) in {1}.".format(converted_file_count, end_time - start_time)))
+    print("converted {0} mesh file(s) in {1}.".format(converted_file_count, end_time - start_time))
 
 
 if __name__ == "__main__":
