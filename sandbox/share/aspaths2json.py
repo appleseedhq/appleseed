@@ -37,7 +37,7 @@ import sys
 # -------------------------------------------------------------------------------------------------
 
 def fatal(message):
-    print((f"Fatal: {message}. Aborting."))
+    print(f"Fatal: {message}. Aborting.")
     sys.exit(1)
 
 
