@@ -61,7 +61,7 @@ def walk(directory, recursive):
 # -------------------------------------------------------------------------------------------------
 
 def process_file(filepath):
-    print(("processing {0}...".format(filepath)))
+    print("processing {0}...".format(filepath))
 
     with open(filepath) as f:
         lines = f.readlines()
