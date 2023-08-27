@@ -1,4 +1,3 @@
-
 #
 # This source file is part of appleseed.
 # Visit https://appleseedhq.net/ for additional information and resources.
@@ -98,7 +97,7 @@ class TestEntityMap(unittest.TestCase):
         self.assertEqual(len(self.assembly_map), 1)
 
     def test_keys(self):
-        self.assertEqual(self.assembly_map.keys(), [])
+        self.assertEqual(list(self.assembly_map.keys()), [])
 
         ass = asr.Assembly("assembly")
         self.assembly_map.insert(ass)
@@ -106,7 +105,7 @@ class TestEntityMap(unittest.TestCase):
         ass = asr.Assembly("another_assembly")
         self.assembly_map.insert(ass)
 
-        self.assertEqual(self.assembly_map.keys(), ["assembly", "another_assembly"])
+        self.assertEqual(list(self.assembly_map.keys()), ["assembly", "another_assembly"])
 
     def test_values(self):
         ass = asr.Assembly("assembly")
@@ -117,7 +116,7 @@ class TestEntityMap(unittest.TestCase):
         uid2 = ass.get_uid()
         self.assembly_map.insert(ass)
 
-        values = self.assembly_map.values()
+        values = list(self.assembly_map.values())
         self.assertEqual(len(values), 2)
         self.assertEqual(values[0].get_uid(), uid1)
         self.assertEqual(values[1].get_uid(), uid2)
@@ -142,3 +141,4 @@ class TestEntityMap(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+

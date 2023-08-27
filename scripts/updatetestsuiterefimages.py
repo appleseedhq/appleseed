@@ -27,7 +27,7 @@
 # THE SOFTWARE.
 #
 
-from __future__ import print_function
+
 import argparse
 import os
 import shutil
@@ -56,7 +56,7 @@ def walk(directory, recursive):
         for dirpath, dirnames, filenames in os.walk(directory):
             yield dirpath, dirnames, filenames
     else:
-        yield os.walk(directory).next()
+        yield next(os.walk(directory))
 
 
 # -------------------------------------------------------------------------------------------------
@@ -97,3 +97,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

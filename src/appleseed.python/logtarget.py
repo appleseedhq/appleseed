@@ -33,7 +33,7 @@
 # in that case just load the normal appleseed.python module.
 try:
     from _appleseedpythonbuiltin import *
-except:
+except ImportError:
     from sys import hexversion as appleseed_python_hexversion
 
     if appleseed_python_hexversion < 0x030000F0:
@@ -44,9 +44,8 @@ except:
         from ._appleseedpython3 import *
 
 class ConsoleLogTarget(ILogTarget):
-
     def __init__(self, stream):
-        ILogTarget.__init__(self)
+        super().__init__()
         self.__stream = stream
 
     def write(self, category, file, line, header, message):
@@ -56,9 +55,8 @@ class ConsoleLogTarget(ILogTarget):
 
 
 class FileLogTarget(ILogTarget):
-
     def __init__(self):
-        ILogTarget.__init__(self)
+        super().__init__()
         self.__file = None
 
     def open(self, filename):
@@ -73,7 +71,7 @@ class FileLogTarget(ILogTarget):
             self.__file = None
 
     def is_open(self):
-        return self.__file != None
+        return self.__file is not None
 
     def write(self, category, file, line, header, message):
         if self.is_open():
