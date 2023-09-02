@@ -1468,6 +1468,8 @@ LightingConditions::LightingConditions(
     const RegularSpectrum31f&   illuminant,
     const RegularSpectrum31f    cmf[3])
 {
+    constexpr float StepLambda = 10.0f;
+
     // Precompute convolution of color matching functions and illuminant.
     for (std::size_t w = 0; w < 31; ++w)
     {
@@ -1475,6 +1477,7 @@ LightingConditions::LightingConditions(
         m_cmf_reflectance[w][1] = m_cmf_illuminance[w][1] = cmf[1][w];
         m_cmf_reflectance[w][2] = m_cmf_illuminance[w][2] = cmf[2][w];
         m_cmf_illuminance[w][3] = m_cmf_reflectance[w][3] = 0.0f;
+        m_cmf_reflectance[w] = m_cmf_illuminance[w] *= StepLambda;
         m_cmf_reflectance[w] *= illuminant[w];
     }
 
@@ -1482,7 +1485,8 @@ LightingConditions::LightingConditions(
     m_cmf_reflectance[31].set(0.0f);
 
     const float reflectance_normalizer = get_cmf_normalizer(m_cmf_reflectance);
-    const float illuminance_normalizer = get_cmf_normalizer(m_cmf_illuminance);
+    // Adjust the brightness for coherence with linear_rgb_to_spectrum function.
+    const float illuminance_normalizer = 1 / 100.0f;
 
     // Normalize color matching functions.
     for (std::size_t w = 0; w < 31; ++w)

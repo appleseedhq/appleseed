@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2020 João Marcos Costa, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,49 +28,50 @@
 
 #pragma once
 
+// appleseed.renderer headers.
+#include "renderer/modeling/light/ilightfactory.h"
+#include "renderer/modeling/light/light.h"
+
 // appleseed.foundation headers.
-#include "foundation/core/concepts/iunknown.h"
 #include "foundation/memory/autoreleaseptr.h"
+#include "foundation/platform/compiler.h"
 
 // appleseed.main headers.
 #include "main/dllsymbol.h"
 
 // Forward declarations.
-namespace foundation    { class Dictionary; }
-namespace foundation    { class DictionaryArray; }
-namespace renderer      { class Light; }
-namespace renderer      { class ParamArray; }
+namespace foundation { class Dictionary; }
+namespace foundation { class DictionaryArray; }
+namespace renderer   { class ParamArray; }
 
 namespace renderer
 {
 
 //
-// Light factory interface.
+// Sun light factory.
 //
 
-class APPLESEED_DLLSYMBOL ILightFactory
-  : public foundation::IUnknown
+class APPLESEED_DLLSYMBOL PreethamSunLightFactory
+    : public ILightFactory
 {
-  public:
+public:
+    // Delete this instance.
+    void release() override;
+
     // Return a string identifying this light model.
-    virtual const char* get_model() const = 0;
+    const char* get_model() const override;
 
     // Return metadata for this light model.
-    virtual foundation::Dictionary get_model_metadata() const = 0;
+    foundation::Dictionary get_model_metadata() const override;
 
     // Return metadata for the inputs of this light model.
-    virtual foundation::DictionaryArray get_input_metadata() const = 0;
+    foundation::DictionaryArray get_input_metadata() const override;
 
     // Create a new light instance.
-    virtual foundation::auto_release_ptr<Light> create(
-        const char*         name,
-        const ParamArray&   params) const = 0;
-
-  protected:
-    // Add the input metadata common to all light models.
-    static void add_common_input_metadata(foundation::DictionaryArray& metadata);
-
-    static void add_common_sun_input_metadata(foundation::DictionaryArray& metadata);
+    foundation::auto_release_ptr<Light> create(
+        const char* name,
+        const ParamArray& params) const override;
 };
 
 }   // namespace renderer
+
