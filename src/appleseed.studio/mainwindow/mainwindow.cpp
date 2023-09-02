@@ -1909,6 +1909,8 @@ void MainWindow::slot_clear_render_region()
     else clear_render_region_action->operator()(*m_project_manager.get_project());
 
     m_rendering_manager.reinitialize_rendering();
+
+    slot_project_modified();
 }
 
 void MainWindow::slot_set_render_region(const QRect& rect)
@@ -1928,6 +1930,8 @@ void MainWindow::slot_set_render_region(const QRect& rect)
         m_rendering_manager.schedule(std::move(set_render_region_action));
         m_rendering_manager.reinitialize_rendering();
     }
+
+    slot_project_modified();
 }
 
 void MainWindow::slot_render_widget_context_menu(const QPoint& point)
