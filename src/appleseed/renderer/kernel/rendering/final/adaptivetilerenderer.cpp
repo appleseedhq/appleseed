@@ -164,11 +164,13 @@ namespace
         const float rcp_second_weight = second_weight == 0.0f ? 0.0f : 1.0f / second_weight;
 
         // Get colors and assign weights.
-        Color4f main_color(main[0], main[1], main[2], main[3]);
+        Color3f main_color(main[0], main[1], main[2]);
         main_color *= rcp_main_weight;
+        main_color = linear_rgb_to_srgb(main_color);
 
-        Color4f second_color(second[0], second[1], second[2], second[3]);
+        Color3f second_color(second[0], second[1], second[2]);
         second_color *= rcp_second_weight;
+        second_color = linear_rgb_to_srgb(second_color);
 
         const float rgb = std::abs(main_color.r) + std::abs(main_color.g) + std::abs(main_color.b);
 
