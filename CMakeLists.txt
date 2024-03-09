@@ -37,15 +37,15 @@ cmake_minimum_required (VERSION 3.9 FATAL_ERROR)
 cmake_policy (SET CMP0008 NEW)      # libraries linked by full-path must have a valid library file name
 
 if (POLICY CMP0026)
-    cmake_policy (SET CMP0026 OLD)  # disallow use of the LOCATION target property (CMake 3.0)
+    cmake_policy (SET CMP0026 NEW)  # disallow use of the LOCATION target property (CMake 3.0)
 endif ()
 
 if (POLICY CMP0042)
-    cmake_policy (SET CMP0042 OLD)  # MACOSX_RPATH is enabled by default (CMake 3.0)
+    cmake_policy (SET CMP0042 NEW)  # MACOSX_RPATH is enabled by default (CMake 3.0)
 endif ()
 
 if (POLICY CMP0043)
-    cmake_policy (SET CMP0043 OLD)  # consume the content of the suffixed COMPILE_DEFINITIONS_<CONFIG>
+    cmake_policy (SET CMP0043 NEW)  # consume the content of the suffixed COMPILE_DEFINITIONS_<CONFIG>
 endif ()
 
 set_property (GLOBAL PROPERTY USE_FOLDERS ON)
