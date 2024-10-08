@@ -43,23 +43,33 @@
 #   IMATH_LIBRARIES     List of Imath libraries to link against
 #
 
+# TODO: ILMBASE_ROOT to IMATH_ROOT
+# If ILMBASE_ROOT is defined, it will try to look for Imath libs there
+# as well.
+#
+
+if (DEFINED ILMBASE_ROOT)
+    list (APPEND CMAKE_PREFIX_PATH ${ILMBASE_ROOT})
+endif()
+
 include (FindPackageHandleStandardArgs)
 
-find_path (IMATH_INCLUDE_DIR NAMES ImathVec.h
-           PATH_SUFFIXES OpenEXR
+# TODO: Make it work without the 'APPEND' above.
+find_path (IMATH_INCLUDE_DIR NAMES Imath/ImathVec.h
            HINTS ${ILMBASE_ROOT}
                  ${ILMBASE_LOCATION}
                  /usr/local/include
                  /usr/include
 )
 
-find_library (IMATH_HALF_LIBRARY NAMES Half-2_3 Half-2_2 Half
-              PATH_SUFFIXES lib64 lib
-              HINTS ${ILMBASE_ROOT}
-                    ${ILMBASE_LOCATION}
-                    /usr/local
-                    /usr
-)
+# Is now part of Imath(?)
+# find_library (IMATH_HALF_LIBRARY NAMES Half-2_3 Half-2_2 Half
+#               PATH_SUFFIXES lib64 lib
+#               HINTS ${ILMBASE_ROOT}
+#                     ${ILMBASE_LOCATION}
+#                     /usr/local
+#                     /usr
+# )
 find_library (IMATH_IEX_LIBRARY NAMES Iex-2_3 Iex-2_2 Iex
               PATH_SUFFIXES lib64 lib
               HINTS ${ILMBASE_ROOT}
@@ -78,7 +88,6 @@ find_library (IMATH_MATH_LIBRARY NAMES Imath-2_3 Imath-2_2 Imath
 # Handle the QUIETLY and REQUIRED arguments and set IMATH_FOUND.
 find_package_handle_standard_args (IMATH DEFAULT_MSG
     IMATH_INCLUDE_DIR
-    IMATH_HALF_LIBRARY
     IMATH_IEX_LIBRARY
     IMATH_MATH_LIBRARY
 )
@@ -87,7 +96,6 @@ find_package_handle_standard_args (IMATH DEFAULT_MSG
 if (IMATH_FOUND)
     set (IMATH_INCLUDE_DIRS ${IMATH_INCLUDE_DIR})
     set (IMATH_LIBRARIES
-        ${IMATH_HALF_LIBRARY}
         ${IMATH_IEX_LIBRARY}
         ${IMATH_MATH_LIBRARY}
     )
@@ -98,7 +106,6 @@ endif ()
 
 mark_as_advanced (
     IMATH_INCLUDE_DIR
-    IMATH_HALF_LIBRARY
     IMATH_IEX_LIBRARY
     IMATH_MATH_LIBRARY
 )

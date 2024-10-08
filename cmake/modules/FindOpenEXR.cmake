@@ -43,8 +43,17 @@
 #   OPENEXR_LIBRARIES       List of OpenEXR libraries to link against
 #
 
+# If OPENEXR_ROOT is defined, it will try to look for OpenEXR libs there
+# as well.
+#
+
+if (DEFINED OPENEXR_ROOT)
+    list (APPEND CMAKE_PREFIX_PATH ${OPENEXR_ROOT})
+endif()
+
 include (FindPackageHandleStandardArgs)
 
+# TODO: Make it work without the 'APPEND' above.
 find_path (OPENEXR_INCLUDE_DIR NAMES ImfHeader.h
            PATH_SUFFIXES OpenEXR
            HINTS ${OPENEXR_ROOT}/include
@@ -53,7 +62,8 @@ find_path (OPENEXR_INCLUDE_DIR NAMES ImfHeader.h
                  /usr/include
 )
 
-find_library (OPENEXR_IMF_LIBRARY NAMES IlmImf-2_3 IlmImf-2_2 IlmImf
+# TODO: rename OPENEXR_IMF_LIBRARY
+find_library (OPENEXR_IMF_LIBRARY NAMES OpenEXR
               PATH_SUFFIXES lib64 lib
               HINTS ${OPENEXR_ROOT}
                     ${OPENEXR_LOCATION}
