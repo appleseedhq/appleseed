@@ -37,6 +37,14 @@
 #   OPENIMAGEIO_LIBRARIES       List of OpenImageIO libraries to link against
 #
 
+# If OIIO_ROOT is defined, it will try to look for OpenImageIO libs there
+# as well (OIIO_ROOT is expected to point to OSL dist directory).
+#
+
+if (DEFINED OIIO_ROOT)
+    list (APPEND CMAKE_PREFIX_PATH ${OIIO_ROOT})
+endif()
+
 include (FindPackageHandleStandardArgs)
 
 find_path (OPENIMAGEIO_INCLUDE_DIR NAMES OpenImageIO/imageio.h)
