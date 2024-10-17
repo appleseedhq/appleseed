@@ -26,10 +26,11 @@
     #pragma GCC diagnostic ignored "-Wdeprecated"
 #endif
 
-    #include <OpenEXR/ImfChannelList.h>
-    #include <OpenEXR/ImfFrameBuffer.h>
-    #include <OpenEXR/ImfInputFile.h>
-    #include <OpenEXR/ImfOutputFile.h>
+    #include <ImathBox.h> // => it does find Imath! So why not for the headers below?
+    #include <ImfChannelList.h>
+    #include <ImfFrameBuffer.h>
+    #include <ImfInputFile.h>
+    #include <ImfOutputFile.h>
 
 #if __GNUC__ >= 7
     #pragma GCC diagnostic pop
