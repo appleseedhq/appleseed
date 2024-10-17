@@ -70,13 +70,7 @@ find_path (IMATH_INCLUDE_DIR NAMES Imath/ImathVec.h
 #                     /usr/local
 #                     /usr
 # )
-find_library (IMATH_IEX_LIBRARY NAMES Iex-2_3 Iex-2_2 Iex
-              PATH_SUFFIXES lib64 lib
-              HINTS ${ILMBASE_ROOT}
-                    ${ILMBASE_LOCATION}
-                    /usr/local
-                    /usr
-)
+
 find_library (IMATH_MATH_LIBRARY NAMES Imath-2_3 Imath-2_2 Imath
               PATH_SUFFIXES lib64 lib
               HINTS ${ILMBASE_ROOT}
@@ -88,7 +82,6 @@ find_library (IMATH_MATH_LIBRARY NAMES Imath-2_3 Imath-2_2 Imath
 # Handle the QUIETLY and REQUIRED arguments and set IMATH_FOUND.
 find_package_handle_standard_args (IMATH DEFAULT_MSG
     IMATH_INCLUDE_DIR
-    IMATH_IEX_LIBRARY
     IMATH_MATH_LIBRARY
 )
 
@@ -96,7 +89,6 @@ find_package_handle_standard_args (IMATH DEFAULT_MSG
 if (IMATH_FOUND)
     set (IMATH_INCLUDE_DIRS ${IMATH_INCLUDE_DIR})
     set (IMATH_LIBRARIES
-        ${IMATH_IEX_LIBRARY}
         ${IMATH_MATH_LIBRARY}
     )
 else ()
@@ -106,6 +98,5 @@ endif ()
 
 mark_as_advanced (
     IMATH_INCLUDE_DIR
-    IMATH_IEX_LIBRARY
     IMATH_MATH_LIBRARY
 )
