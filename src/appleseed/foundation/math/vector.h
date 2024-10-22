@@ -36,7 +36,7 @@
 // Imath headers.
 #ifdef APPLESEED_ENABLE_IMATH_INTEROP
 #include "foundation/platform/_beginexrheaders.h"
-#include "Imath/ImathVec.h"
+#include "ImathVec.h"
 #include "foundation/platform/_endexrheaders.h"
 #endif
 
