@@ -55,8 +55,7 @@ endif()
 include (FindPackageHandleStandardArgs)
 
 # TODO: Make it work without the 'APPEND' above.
-find_path (IMATH_INCLUDE_DIR NAMES ImathVec.h
-           PATH_SUFFIXES Imath
+find_path (IMATH_INCLUDE_DIR NAMES Imath/ImathVec.h
            HINTS ${ILMBASE_ROOT}
                  ${ILMBASE_LOCATION}
                  /usr/local/include
@@ -87,7 +86,10 @@ find_package_handle_standard_args (IMATH DEFAULT_MSG
 
 # Set the output variables.
 if (IMATH_FOUND)
-    set (IMATH_INCLUDE_DIRS ${IMATH_INCLUDE_DIR})
+    set (IMATH_INCLUDE_DIRS
+        ${IMATH_INCLUDE_DIR}
+        ${IMATH_INCLUDE_DIR}/Imath
+    )
     set (IMATH_LIBRARIES
         ${IMATH_MATH_LIBRARY}
     )

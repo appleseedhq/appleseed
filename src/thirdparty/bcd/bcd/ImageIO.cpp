@@ -26,7 +26,6 @@
     #pragma GCC diagnostic ignored "-Wdeprecated"
 #endif
 
-    #include <ImathBox.h> // => it does find Imath! So why not for the headers below?
     #include <ImfChannelList.h>
     #include <ImfFrameBuffer.h>
     #include <ImfInputFile.h>
