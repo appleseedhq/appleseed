@@ -80,17 +80,30 @@ find_library (OPENEXR_THREADS_LIBRARY
                     /usr
 )
 
+find_library (IMATH_IEX_LIBRARY NAMES Iex-2_3 Iex-2_2 Iex
+              PATH_SUFFIXES lib64 lib
+              HINTS ${ILMBASE_ROOT}
+                    ${ILMBASE_LOCATION}
+                    /usr/local
+                    /usr
+)
+
 # Handle the QUIETLY and REQUIRED arguments and set OPENEXR_FOUND.
 find_package_handle_standard_args (OPENEXR DEFAULT_MSG
     OPENEXR_INCLUDE_DIR
     OPENEXR_IMF_LIBRARY
     OPENEXR_THREADS_LIBRARY
+    IMATH_IEX_LIBRARY
 )
 
 # Set the output variables.
 if (OPENEXR_FOUND)
     set (OPENEXR_INCLUDE_DIRS ${OPENEXR_INCLUDE_DIR})
-    set (OPENEXR_LIBRARIES  ${OPENEXR_IMF_LIBRARY} ${OPENEXR_THREADS_LIBRARY})
+    set (OPENEXR_LIBRARIES
+        ${OPENEXR_IMF_LIBRARY}
+        ${OPENEXR_THREADS_LIBRARY}
+        ${IMATH_IEX_LIBRARY}
+    )
 else ()
     set (OPENEXR_INCLUDE_DIRS)
     set (OPENEXR_LIBRARIES)
@@ -100,4 +113,5 @@ mark_as_advanced (
     OPENEXR_INCLUDE_DIR
     OPENEXR_IMF_LIBRARY
     OPENEXR_THREADS_LIBRARY
+    IMATH_IEX_LIBRARY
 )
