@@ -284,15 +284,15 @@ if (WITH_GPU)
     find_package (OptiX REQUIRED)
 endif ()
 
-# if (USE_FIND_PACKAGE_FOR_EXR)
-#     find_package (Imath REQUIRED)
-#     find_package (OpenEXR REQUIRED)
-# endif ()
+if (USE_FIND_PACKAGE_FOR_EXR)
+    find_package (Imath REQUIRED)
+    find_package (OpenEXR REQUIRED)
+endif ()
 
 # Find Imath for BCD
-# find_package (ImathBCD 2.3.0 REQUIRED)
+find_package (ImathBCD REQUIRED)
 # Find OpenEXR for BCD
-# find_package (OpenEXRBCD 2.3.0 REQUIRED)
+find_package (OpenEXRBCD REQUIRED)
 
 if (USE_FIND_PACKAGE_FOR_LZ4)
     find_package (LZ4 REQUIRED)
@@ -647,11 +647,6 @@ endmacro ()
 add_subdirectory (src/thirdparty/bcd)
 add_subdirectory (src/thirdparty/glad)
 add_subdirectory (src/thirdparty/murmurhash3)
-
-if (USE_FIND_PACKAGE_FOR_EXR)
-    find_package (Imath REQUIRED)
-    find_package (OpenEXR REQUIRED)
-endif ()
 
 add_subdirectory (src/appleseed)
 add_subdirectory (src/appleseed.shaders)
