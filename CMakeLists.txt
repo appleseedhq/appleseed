@@ -139,8 +139,6 @@ option (INSTALL_HEADERS                     "Install header files"              
 option (INSTALL_TESTS                       "Install unit tests and benchmarks"                         ON)
 option (INSTALL_API_EXAMPLES                "Install API examples (requires header files)"              ON)
 
-
-# TODO?: find package for BCD Imath, OpenEXR
 if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     option (USE_FIND_PACKAGE_FOR_EMBREE     "Use find_package() for Embree library"                     OFF)
     option (USE_FIND_PACKAGE_FOR_EXR        "Use find_package() for OpenEXR library"                    OFF)
@@ -288,11 +286,6 @@ if (USE_FIND_PACKAGE_FOR_EXR)
     find_package (Imath REQUIRED)
     find_package (OpenEXR REQUIRED)
 endif ()
-
-# Find Imath for BCD
-find_package (ImathBCD REQUIRED)
-# Find OpenEXR for BCD
-find_package (OpenEXRBCD REQUIRED)
 
 if (USE_FIND_PACKAGE_FOR_LZ4)
     find_package (LZ4 REQUIRED)
