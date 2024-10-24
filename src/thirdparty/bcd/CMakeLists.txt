@@ -69,12 +69,7 @@ apply_static_lib_linker_flags (bcd)
 
 link_against_platform (bcd)
 
-# link_against_openexr (bcd)
-
-target_link_libraries (bcd
-    ${BCD_IMATH_LIBRARIES}
-    ${BCD_OPENEXR_LIBRARIES}
-)
+link_against_openexr (bcd)
 
 
 #--------------------------------------------------------------------------------------------------
