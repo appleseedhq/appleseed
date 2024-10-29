@@ -134,11 +134,11 @@ RendererServices::RendererServices(
     m_global_attr_getters[OIIO::ustringhash("appleseed:version")] = &RendererServices::get_attr_appleseed_version;
 
     // Set up user data getters.
-    m_global_user_data_getters[OIIO::ustring("Tn")] = &RendererServices::get_user_data_tn;
-    m_global_user_data_getters[OIIO::ustring("Bn")] = &RendererServices::get_user_data_bn;
-    m_global_user_data_getters[OIIO::ustring("dNdu")] = &RendererServices::get_user_data_dndu;
-    m_global_user_data_getters[OIIO::ustring("dNdv")] = &RendererServices::get_user_data_dndv;
-    m_global_user_data_getters[OIIO::ustring("vertex_color")] = &RendererServices::get_user_data_vertex_color;
+    m_global_user_data_getters[OIIO::ustringhash("Tn")] = &RendererServices::get_user_data_tn;
+    m_global_user_data_getters[OIIO::ustringhash("Bn")] = &RendererServices::get_user_data_bn;
+    m_global_user_data_getters[OIIO::ustringhash("dNdu")] = &RendererServices::get_user_data_dndu;
+    m_global_user_data_getters[OIIO::ustringhash("dNdv")] = &RendererServices::get_user_data_dndv;
+    m_global_user_data_getters[OIIO::ustringhash("vertex_color")] = &RendererServices::get_user_data_vertex_color;
 }
 
 void RendererServices::initialize(TextureStore& texture_store)
@@ -616,9 +616,9 @@ bool RendererServices::get_userdata(
     bool RendererServices::get_attr_##name( \
         OSL::ShaderGlobals*     sg,         \
         bool                    derivs,     \
-        OIIO::ustring           object,     \
+        OIIO::ustringhash       object,     \
         OIIO::TypeDesc          type,       \
-        OIIO::ustring           name,       \
+        OIIO::ustringhash       name,       \
         void*                   val) const
 
 IMPLEMENT_ATTR_GETTER(object_instance_id)
@@ -1108,7 +1108,7 @@ IMPLEMENT_ATTR_GETTER(appleseed_version)
 #define IMPLEMENT_USER_DATA_GETTER(name)         \
     bool RendererServices::get_user_data_##name( \
         bool                    derivatives,     \
-        OIIO::ustring           name,            \
+        OIIO::ustringhash       name,            \
         OIIO::TypeDesc          type,            \
         OSL::ShaderGlobals*     sg,              \
         void*                   val) const

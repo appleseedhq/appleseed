@@ -260,21 +260,21 @@ class RendererServices
     typedef bool (RendererServices::*AttrGetterFun)(
         OSL::ShaderGlobals*         sg,
         bool                        derivs,
-        OIIO::ustring               object,
+        OIIO::ustringhash           object,
         OIIO::TypeDesc              type,
-        OIIO::ustring               name,
+        OIIO::ustringhash           name,
         void*                       val) const;
 
-    typedef std::unordered_map<OIIO::ustring, AttrGetterFun, OIIO::ustringHash> AttrGetterMapType;
+    typedef std::unordered_map<OIIO::ustringhash, AttrGetterFun, OIIO::ustringhash> AttrGetterMapType;
 
     typedef bool (RendererServices::*UserDataGetterFun)(
         bool                        derivatives,
-        OIIO::ustring               name,
+        OIIO::ustringhash           name,
         OIIO::TypeDesc              type,
         OSL::ShaderGlobals*         sg,
         void*                       val) const;
 
-    typedef std::unordered_map<OIIO::ustring, UserDataGetterFun, OIIO::ustringHash> UserDataGetterMapType;
+    typedef std::unordered_map<OIIO::ustringhash, UserDataGetterFun, OIIO::ustringhash> UserDataGetterMapType;
 
     OIIO::TextureSystem&            m_texture_sys;
     AttrGetterMapType               m_global_attr_getters;
@@ -291,9 +291,9 @@ class RendererServices
         bool get_attr_##name(                   \
             OSL::ShaderGlobals*     sg,         \
             bool                    derivs,     \
-            OIIO::ustring           object,     \
+            OIIO::ustringhash       object,     \
             OIIO::TypeDesc          type,       \
-            OIIO::ustring           name,       \
+            OIIO::ustringhash       name,       \
             void*                   val) const
 
     // Object attributes.
@@ -340,7 +340,7 @@ class RendererServices
     #define DECLARE_USER_DATA_GETTER(name)      \
         bool get_user_data_##name(              \
             bool                    derivatives,\
-            OIIO::ustring           name,       \
+            OIIO::ustringhash       name,       \
             OIIO::TypeDesc          type,       \
             OSL::ShaderGlobals*     sg,         \
             void*                   val) const
