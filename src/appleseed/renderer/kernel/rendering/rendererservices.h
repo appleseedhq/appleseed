@@ -265,7 +265,7 @@ class RendererServices
         OIIO::ustringhash           name,
         void*                       val) const;
 
-    typedef std::unordered_map<OIIO::ustringhash, AttrGetterFun, OIIO::ustringhash> AttrGetterMapType;
+    typedef std::unordered_map<OIIO::ustringhash, AttrGetterFun> AttrGetterMapType;
 
     typedef bool (RendererServices::*UserDataGetterFun)(
         bool                        derivatives,
@@ -274,7 +274,7 @@ class RendererServices
         OSL::ShaderGlobals*         sg,
         void*                       val) const;
 
-    typedef std::unordered_map<OIIO::ustringhash, UserDataGetterFun, OIIO::ustringhash> UserDataGetterMapType;
+    typedef std::unordered_map<OIIO::ustringhash, UserDataGetterFun> UserDataGetterMapType;
 
     OIIO::TextureSystem&            m_texture_sys;
     AttrGetterMapType               m_global_attr_getters;
