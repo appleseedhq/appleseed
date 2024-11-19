@@ -36,6 +36,12 @@ cmake_minimum_required (VERSION 3.9 FATAL_ERROR)
 
 cmake_policy (SET CMP0008 NEW)      # libraries linked by full-path must have a valid library file name
 
+# TODO: so could the Find<...>.cmake files be changed accordingly?
+cmake_policy (SET CMP0074 NEW)      # the find_package(<PackageName>) command now searches prefixes specified by the
+                                    # <PackageName>_ROOT CMake variable and the <PackageName>_ROOT environment variable
+
+cmake_policy (SET CMP0120 OLD)      # inclusion of the deprecated WriteCompilerDetectionHeader module
+
 if (POLICY CMP0026)
     cmake_policy (SET CMP0026 OLD)  # disallow use of the LOCATION target property (CMake 3.0)
 endif ()
@@ -198,6 +204,25 @@ endif ()
 
 set (CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 
+# use, i.e. don't skip the full RPATH for the build tree
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+
+# when building, don't use the install RPATH already
+# (but later on when installing)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+
+# add the automatically determined parts of the RPATH
+# which point to directories outside the build tree to the install RPATH
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+# the RPATH to be used when installing, but only if it's not a system directory
+list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_PREFIX}/lib" isSystemDir)
+if("${isSystemDir}" STREQUAL "-1")
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+endif("${isSystemDir}" STREQUAL "-1")
+
 
 #--------------------------------------------------------------------------------------------------
 # Platform-specific settings.
@@ -283,8 +308,8 @@ if (WITH_GPU)
 endif ()
 
 if (USE_FIND_PACKAGE_FOR_EXR)
-    find_package (Imath REQUIRED)
-    find_package (OpenEXR REQUIRED)
+    find_package (IMATH REQUIRED)
+    find_package (OPENEXR REQUIRED)
 endif ()
 
 if (USE_FIND_PACKAGE_FOR_LZ4)
@@ -306,7 +331,7 @@ if (USE_STATIC_OIIO)
     add_definitions (-DOIIO_STATIC_BUILD)
 endif ()
 if (USE_FIND_PACKAGE_FOR_OIIO)
-    find_package (OpenImageIO REQUIRED)
+    find_package (OPENIMAGEIO REQUIRED)
 endif ()
 
 if (USE_STATIC_OSL)
