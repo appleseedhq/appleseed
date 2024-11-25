@@ -2469,6 +2469,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     )
 else ()
     install (TARGETS appleseed
+        LIBRARY
         DESTINATION lib
     )
 endif ()
