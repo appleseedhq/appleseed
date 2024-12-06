@@ -316,7 +316,7 @@ if (USE_FIND_PACKAGE_FOR_LZ4)
     find_package (LZ4 REQUIRED)
 endif ()
 
-if (WITH_STUDIO)
+if (WITH_STUDIO OR WITH_BENCH)
     add_definitions (-DAPPLESEED_WITH_OCIO)
 
     if (USE_STATIC_OCIO)
