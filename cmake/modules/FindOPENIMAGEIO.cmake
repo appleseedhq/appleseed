@@ -50,6 +50,7 @@ include (FindPackageHandleStandardArgs)
 find_path (OPENIMAGEIO_INCLUDE_DIR NAMES OpenImageIO/imageio.h)
 
 find_library (OPENIMAGEIO_LIBRARY NAMES OpenImageIO)
+find_library (OPENIMAGEIO_UTIL_LIBRARY NAMES OpenImageIO_Util)
 
 find_program (OPENIMAGEIO_OIIOTOOL NAMES oiiotool)
 find_program (OPENIMAGEIO_IDIFF NAMES idiff)
@@ -58,6 +59,7 @@ find_program (OPENIMAGEIO_IDIFF NAMES idiff)
 find_package_handle_standard_args (OPENIMAGEIO DEFAULT_MSG
     OPENIMAGEIO_INCLUDE_DIR
     OPENIMAGEIO_LIBRARY
+    OPENIMAGEIO_UTIL_LIBRARY
     OPENIMAGEIO_OIIOTOOL
     OPENIMAGEIO_IDIFF
 )
@@ -65,7 +67,10 @@ find_package_handle_standard_args (OPENIMAGEIO DEFAULT_MSG
 # Set the output variables.
 if (OPENIMAGEIO_FOUND)
     set (OPENIMAGEIO_INCLUDE_DIRS ${OPENIMAGEIO_INCLUDE_DIR})
-    set (OPENIMAGEIO_LIBRARIES ${OPENIMAGEIO_LIBRARY})
+    set (OPENIMAGEIO_LIBRARIES
+        ${OPENIMAGEIO_LIBRARY}
+        ${OPENIMAGEIO_UTIL_LIBRARY}
+    )
 else ()
     set (OPENIMAGEIO_INCLUDE_DIRS)
     set (OPENIMAGEIO_LIBRARIES)
@@ -74,4 +79,5 @@ endif ()
 mark_as_advanced (
     OPENIMAGEIO_INCLUDE_DIR
     OPENIMAGEIO_LIBRARY
+    OPENIMAGEIO_UTIL_LIBRARY
 )
