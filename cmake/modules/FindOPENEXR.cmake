@@ -45,7 +45,6 @@
 
 # If OPENEXR_ROOT is defined, it will try to look for OpenEXR libs there
 # as well.
-#
 
 if (DEFINED OPENEXR_ROOT)
     list (APPEND CMAKE_PREFIX_PATH ${OPENEXR_ROOT})

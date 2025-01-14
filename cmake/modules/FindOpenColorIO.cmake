@@ -34,6 +34,12 @@
 #  OPENCOLORIO_LIBRARIES    - List of libraries when using OpenColorIO.
 #  OPENCOLORIO_FOUND        - True if OpenColorIO found.
 
+# If OCIO is defined, it will try to look for OpenEXR libs there as well.
+
+if (DEFINED OpenColorIO_ROOT)
+    list (APPEND CMAKE_PREFIX_PATH ${OpenColorIO_ROOT})
+endif()
+
 # Look for the header file.
 find_path (OPENCOLORIO_INCLUDE_DIR NAMES OpenColorIO/OpenColorIO.h)
 
