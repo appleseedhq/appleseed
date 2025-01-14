@@ -311,8 +311,8 @@ void RenderWidget::slot_display_transform_changed(const QString& transform)
     {
         QMutexLocker locker(&m_mutex);
 
-        OCIO::DisplayTransformRcPtr transform_ptr = OCIO::DisplayTransform::Create();
-        transform_ptr->setInputColorSpaceName(OCIO::ROLE_SCENE_LINEAR);
+        OCIO::DisplayViewTransformRcPtr transform_ptr = OCIO::DisplayViewTransform::Create();
+        transform_ptr->setSrc(OCIO::ROLE_SCENE_LINEAR);
         transform_ptr->setDisplay(m_ocio_config->getDefaultDisplay());
         transform_ptr->setView(transform.toStdString().c_str());
 
