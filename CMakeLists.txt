@@ -247,11 +247,7 @@ if (USE_STATIC_BOOST)
     set (Boost_USE_STATIC_LIBS TRUE)
 endif ()
 
-# Boost 1.70 breaks compatibility with the old way of doing things. This restores compatibility.
-# See https://gitlab.kitware.com/cmake/cmake/issues/18865 for details.
-set (Boost_NO_BOOST_CMAKE ON)
-
-find_package (Boost 1.61 REQUIRED COMPONENTS atomic chrono date_time filesystem regex system thread wave)
+find_package (Boost 1.86.00 REQUIRED COMPONENTS atomic chrono date_time filesystem regex system thread wave)
 
 add_definitions (-DBOOST_FILESYSTEM_VERSION=3 -DBOOST_FILESYSTEM_NO_DEPRECATED)
 

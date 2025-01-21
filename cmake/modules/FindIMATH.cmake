@@ -33,8 +33,7 @@
 # This module can take the following variables to define
 # custom search locations:
 #
-#   ILMBASE_ROOT
-#   ILMBASE_LOCATION
+#   IMATH_LOCATION
 #
 # This module defines the following variables:
 #
@@ -43,37 +42,18 @@
 #   IMATH_LIBRARIES     List of Imath libraries to link against
 #
 
-# TODO: ILMBASE_ROOT to IMATH_ROOT
-# If ILMBASE_ROOT is defined, it will try to look for Imath libs there
-# as well.
-#
-
-if (DEFINED ILMBASE_ROOT)
-    list (APPEND CMAKE_PREFIX_PATH ${ILMBASE_ROOT})
-endif()
 
 include (FindPackageHandleStandardArgs)
 
-# TODO: Make it work without the 'APPEND' above.
 find_path (IMATH_INCLUDE_DIR NAMES Imath/ImathVec.h
-           HINTS ${ILMBASE_ROOT}
-                 ${ILMBASE_LOCATION}
+           HINTS ${IMATH_LOCATION}/include
                  /usr/local/include
                  /usr/include
 )
 
-# find_library (IMATH_HALF_LIBRARY NAMES Half-2_3 Half-2_2 Half
-#               PATH_SUFFIXES lib64 lib
-#               HINTS ${ILMBASE_ROOT}
-#                     ${ILMBASE_LOCATION}
-#                     /usr/local
-#                     /usr
-# )
-
-find_library (IMATH_MATH_LIBRARY NAMES Imath-2_3 Imath-2_2 Imath
+find_library (IMATH_MATH_LIBRARY NAMES Imath
               PATH_SUFFIXES lib64 lib
-              HINTS ${ILMBASE_ROOT}
-                    ${ILMBASE_LOCATION}
+              HINTS ${IMATH_LOCATION}
                     /usr/local
                     /usr
 )
