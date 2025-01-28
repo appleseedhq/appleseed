@@ -317,7 +317,8 @@ void RenderWidget::slot_display_transform_changed(const QString& transform)
         transform_ptr->setView(transform.toStdString().c_str());
 
         OCIO::ConstContextRcPtr context = m_ocio_config->getCurrentContext();
-        m_ocio_processor = m_ocio_config->getProcessor(context, transform_ptr, OCIO::TRANSFORM_DIR_FORWARD);
+        m_ocio_gpu_processor = m_ocio_config->getProcessor(context, transform_ptr, OCIO::TRANSFORM_DIR_FORWARD);
+        m_ocio_cpu_processor = m_ocio_gpu_processor->getDefaultCPUProcessor();
 
         if (m_image_storage)
         {
@@ -418,7 +419,7 @@ void RenderWidget::update_tile_no_lock(const size_t tile_x, const size_t tile_y)
         static_cast<long>(float_tile.get_width()),
         static_cast<long>(float_tile.get_height()),
         static_cast<long>(float_tile.get_channel_count()));
-    m_ocio_processor->apply(image_desc);
+    m_ocio_cpu_processor->apply(image_desc);
 
     // Convert the tile to 8-bit RGB for display.
     static const size_t shuffle_table[4] = { 0, 1, 2, Pixel::SkipChannel };
