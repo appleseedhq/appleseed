@@ -403,6 +403,7 @@ foreach (osl_source ${osl_sources})
         OUTPUT ${oso_dir}/${oso_filename}
         COMMAND ${CMAKE_COMMAND} -E make_directory ${oso_dir}
         COMMAND ${PROJECT_SOURCE_DIR}/sandbox/bin/oslc ${OSLC_OPTIONS}
+            -I"${PROJECT_SOURCE_DIR}/src/appleseed.shaders"
             -I"${PROJECT_SOURCE_DIR}/src/appleseed.shaders/include"
             -o "${oso_dir}/${oso_filename}" "${PROJECT_SOURCE_DIR}/src/appleseed.shaders/${osl_source}"
         MAIN_DEPENDENCY ${PROJECT_SOURCE_DIR}/src/appleseed.shaders/${osl_source}
