@@ -241,6 +241,12 @@ configure_file (
 # Boost libraries.
 #--------------------------------------------------------------------------------------------------
 
+# bcd imports boost in a deprecated way, hence the variable below is defined to retain the old behavior.
+# "The practice of declaring the Bind placeholders (_1, _2, ...) in the global namespace is deprecated.
+#  Please use <boost/bind/bind.hpp> + using namespace boost::placeholders, or define
+#  BOOST_BIND_GLOBAL_PLACEHOLDERS to retain the current behavior.’"
+add_definitions(-DBOOST_BIND_GLOBAL_PLACEHOLDERS)
+
 set (Boost_MULTITHREADED TRUE)
 
 if (USE_STATIC_BOOST)
