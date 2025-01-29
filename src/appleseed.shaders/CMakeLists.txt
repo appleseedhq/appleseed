@@ -350,10 +350,10 @@ set_target_properties (prepare_sandbox PROPERTIES FOLDER "Contents")
 set_target_progress_message (prepare_sandbox "Preparing sandbox...")
 
 # Delete the sandbox/shaders/ directory.
-add_custom_command (
-    TARGET prepare_sandbox
-    COMMAND ${CMAKE_COMMAND} -E remove_directory ${PROJECT_SOURCE_DIR}/sandbox/shaders/
-)
+# add_custom_command (
+#     TARGET prepare_sandbox
+#     COMMAND ${CMAKE_COMMAND} -E remove_directory ${PROJECT_SOURCE_DIR}/sandbox/shaders/
+# )
 
 # Copy the OSL compiler to sandbox/bin/.
 if (USE_FIND_PACKAGE_FOR_OSL)
