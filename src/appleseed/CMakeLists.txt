@@ -2369,6 +2369,7 @@ append_custom_preprocessor_definitions (appleseed
 #--------------------------------------------------------------------------------------------------
 
 link_against_platform (appleseed)
+target_link_libraries(appleseed -ltiff)
 link_against_xercesc (appleseed)
 link_against_openexr (appleseed)
 link_against_zlib (appleseed)

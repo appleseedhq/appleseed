@@ -154,6 +154,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     option (USE_FIND_PACKAGE_FOR_OSL        "Use find_package() for OpenShadingLanguage library"        OFF)
     option (USE_FIND_PACKAGE_FOR_XERCES     "Use find_package() for Xerces library"                     OFF)
     option (USE_FIND_PACKAGE_FOR_ZLIB       "Use find_package() for zlib library"                       OFF)
+    option (USE_FIND_PACKAGE_FOR_TIFF       "Use find_package() for tiff"                               OFF)
 else ()
     set (USE_FIND_PACKAGE_FOR_EMBREE        ON)
     set (USE_FIND_PACKAGE_FOR_EXR           ON)
@@ -164,6 +165,7 @@ else ()
     set (USE_FIND_PACKAGE_FOR_PNG           ON)
     set (USE_FIND_PACKAGE_FOR_XERCES        ON)
     set (USE_FIND_PACKAGE_FOR_ZLIB          ON)
+    set (USE_FIND_PACKAGE_FOR_TIFF          ON)
 endif ()
 
 option (USE_STATIC_BOOST                    "Use static Boost libraries"                                ON)
@@ -335,6 +337,10 @@ endif ()
 
 if (USE_FIND_PACKAGE_FOR_ZLIB)
     find_package (ZLIB REQUIRED)
+endif ()
+
+if (USE_FIND_PACKAGE_FOR_TIFF)
+    find_package (TIFF REQUIRED)
 endif ()
 
 
