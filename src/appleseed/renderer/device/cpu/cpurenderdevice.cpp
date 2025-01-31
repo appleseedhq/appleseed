@@ -86,7 +86,7 @@ CPURenderDevice::CPURenderDevice(
             m_texture_system,
             m_error_handler);
     m_shading_system->attribute("lockgeom", 1);
-    m_shading_system->attribute("colorspace", "Linear");
+    m_shading_system->attribute("colorspace", "Rec709");
     m_shading_system->attribute("commonspace", "world");
     m_shading_system->attribute("statistics:level", 1);
     m_shading_system->attribute(

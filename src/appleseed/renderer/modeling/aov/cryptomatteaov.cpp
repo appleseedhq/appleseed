@@ -151,7 +151,7 @@ namespace
                 else if (attr_name == "color_space")
                 {
                     if (attr_value == "linear")
-                        m_spec.attribute("oiio:ColorSpace", "Linear");
+                        m_spec.attribute("oiio:ColorSpace", "scene_linear");
                     else
                         m_spec.attribute("oiio:ColorSpace", attr_value.c_str());
                 }
