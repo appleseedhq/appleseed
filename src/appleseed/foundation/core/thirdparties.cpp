@@ -42,7 +42,7 @@
 
 // (IlmBase) Imath headers.
 #include "foundation/platform/_beginexrheaders.h"
-#include <ImathConfig.h>
+#include <Imath/ImathConfig.h>
 #include "foundation/platform/_endexrheaders.h"
 
 // LZ4 headers.

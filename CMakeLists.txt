@@ -293,8 +293,8 @@ if (WITH_GPU)
 endif ()
 
 if (USE_FIND_PACKAGE_FOR_EXR)
-    find_package (IMATH REQUIRED)
-    find_package (OPENEXR REQUIRED)
+    find_package (Imath REQUIRED)
+    find_package (OpenEXR REQUIRED)
 endif ()
 
 if (USE_FIND_PACKAGE_FOR_LZ4)
@@ -365,9 +365,13 @@ if (WITH_EMBREE)
 endif ()
 
 if (USE_FIND_PACKAGE_FOR_EXR)
+    get_target_property(IMATH_INCLUDE_DIRS   Imath::Imath     INTERFACE_INCLUDE_DIRECTORIES)
+    get_target_property(OPENEXR_INCLUDE_DIRS OpenEXR::OpenEXR INTERFACE_INCLUDE_DIRECTORIES)
+
+    # this is required for third-party code, where headers are imported differently (without 'Imath/' or 'OpenEXR/')
     include_directories (
         ${IMATH_INCLUDE_DIRS}
-        ${IMATH_INCLUDE_DIRS}/OpenEXR/
+        ${IMATH_INCLUDE_DIRS}/Imath/
         ${OPENEXR_INCLUDE_DIRS}
         ${OPENEXR_INCLUDE_DIRS}/OpenEXR/
     )
