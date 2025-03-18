@@ -1,3 +1,4 @@
+// !!!  HERE ARE CLOSURES !!!
 
 //
 // This source file is part of appleseed.
@@ -615,6 +616,7 @@ namespace
             return ScatteringMode::Glossy | ScatteringMode::Specular;
         }
 
+        // arguments are good
         static void prepare_closure(
             OSL::RendererServices*      render_services,
             int                         id,
@@ -643,7 +645,7 @@ namespace
                 CLOSURE_FINISH_PARAM(Params)
             };
 
-            shading_system.register_closure(name(), id(), params, &prepare_closure, nullptr);
+            shading_system.register_closure(name(), id(), params, prepare_closure, nullptr);
             g_closure_convert_funs[id()] = &convert_closure;
             g_closure_get_modes_funs[id()] = &modes;
         }
