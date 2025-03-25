@@ -304,7 +304,7 @@ bool CameraController::handle_mouse_button_press_event(const QMouseEvent* event)
             position);
         return true;
 
-      case Qt::MidButton:
+      case Qt::MiddleButton:
         emit signal_camera_change_begin();
         m_controller.begin_drag(ControllerType::Track, position);
         return true;

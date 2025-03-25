@@ -36,6 +36,12 @@ cmake_minimum_required (VERSION 3.9 FATAL_ERROR)
 
 cmake_policy (SET CMP0008 NEW)      # libraries linked by full-path must have a valid library file name
 
+# TODO: so could the Find<...>.cmake files be changed accordingly?
+cmake_policy (SET CMP0074 NEW)      # the find_package(<PackageName>) command now searches prefixes specified by the
+                                    # <PackageName>_ROOT CMake variable and the <PackageName>_ROOT environment variable
+
+cmake_policy (SET CMP0120 OLD)      # inclusion of the deprecated WriteCompilerDetectionHeader module
+
 if (POLICY CMP0026)
     cmake_policy (SET CMP0026 OLD)  # disallow use of the LOCATION target property (CMake 3.0)
 endif ()
@@ -100,7 +106,7 @@ endif ()
 # Language and compiler features.
 #--------------------------------------------------------------------------------------------------
 
-set (CMAKE_CXX_STANDARD 11)
+set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 set (CMAKE_CXX_EXTENSIONS OFF)
 
@@ -148,6 +154,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     option (USE_FIND_PACKAGE_FOR_OSL        "Use find_package() for OpenShadingLanguage library"        OFF)
     option (USE_FIND_PACKAGE_FOR_XERCES     "Use find_package() for Xerces library"                     OFF)
     option (USE_FIND_PACKAGE_FOR_ZLIB       "Use find_package() for zlib library"                       OFF)
+    option (USE_FIND_PACKAGE_FOR_TIFF       "Use find_package() for tiff"                               OFF)
 else ()
     set (USE_FIND_PACKAGE_FOR_EMBREE        ON)
     set (USE_FIND_PACKAGE_FOR_EXR           ON)
@@ -158,6 +165,7 @@ else ()
     set (USE_FIND_PACKAGE_FOR_PNG           ON)
     set (USE_FIND_PACKAGE_FOR_XERCES        ON)
     set (USE_FIND_PACKAGE_FOR_ZLIB          ON)
+    set (USE_FIND_PACKAGE_FOR_TIFF          ON)
 endif ()
 
 option (USE_STATIC_BOOST                    "Use static Boost libraries"                                ON)
@@ -235,17 +243,19 @@ configure_file (
 # Boost libraries.
 #--------------------------------------------------------------------------------------------------
 
+# bcd imports boost in a deprecated way, hence the variable below is defined to retain the old behavior.
+# "The practice of declaring the Bind placeholders (_1, _2, ...) in the global namespace is deprecated.
+#  Please use <boost/bind/bind.hpp> + using namespace boost::placeholders, or define
+#  BOOST_BIND_GLOBAL_PLACEHOLDERS to retain the current behavior.’"
+add_definitions(-DBOOST_BIND_GLOBAL_PLACEHOLDERS)
+
 set (Boost_MULTITHREADED TRUE)
 
 if (USE_STATIC_BOOST)
     set (Boost_USE_STATIC_LIBS TRUE)
 endif ()
 
-# Boost 1.70 breaks compatibility with the old way of doing things. This restores compatibility.
-# See https://gitlab.kitware.com/cmake/cmake/issues/18865 for details.
-set (Boost_NO_BOOST_CMAKE ON)
-
-find_package (Boost 1.61 REQUIRED COMPONENTS atomic chrono date_time filesystem regex system thread wave)
+find_package (Boost 1.86.00 REQUIRED COMPONENTS atomic chrono date_time filesystem regex system thread wave)
 
 add_definitions (-DBOOST_FILESYSTEM_VERSION=3 -DBOOST_FILESYSTEM_NO_DEPRECATED)
 
@@ -291,7 +301,7 @@ if (USE_FIND_PACKAGE_FOR_LZ4)
     find_package (LZ4 REQUIRED)
 endif ()
 
-if (WITH_STUDIO)
+if (WITH_STUDIO OR WITH_BENCH)
     add_definitions (-DAPPLESEED_WITH_OCIO)
 
     if (USE_STATIC_OCIO)
@@ -329,6 +339,10 @@ if (USE_FIND_PACKAGE_FOR_ZLIB)
     find_package (ZLIB REQUIRED)
 endif ()
 
+if (USE_FIND_PACKAGE_FOR_TIFF)
+    find_package (TIFF REQUIRED)
+endif ()
+
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.
@@ -351,9 +365,13 @@ if (WITH_EMBREE)
 endif ()
 
 if (USE_FIND_PACKAGE_FOR_EXR)
+    get_target_property(IMATH_INCLUDE_DIRS   Imath::Imath     INTERFACE_INCLUDE_DIRECTORIES)
+    get_target_property(OPENEXR_INCLUDE_DIRS OpenEXR::OpenEXR INTERFACE_INCLUDE_DIRECTORIES)
+
+    # this is required for third-party code, where headers are imported differently (without 'Imath/' or 'OpenEXR/')
     include_directories (
         ${IMATH_INCLUDE_DIRS}
-        ${IMATH_INCLUDE_DIRS}/OpenEXR/
+        ${IMATH_INCLUDE_DIRS}/Imath/
         ${OPENEXR_INCLUDE_DIRS}
         ${OPENEXR_INCLUDE_DIRS}/OpenEXR/
     )

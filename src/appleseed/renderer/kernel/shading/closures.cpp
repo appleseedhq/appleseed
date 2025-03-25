@@ -77,6 +77,11 @@ using namespace foundation;
 using namespace renderer;
 
 using OSL::TypeDesc;
+using OSL::TypeVector;
+using OSL::TypeColor;
+using OSL::TypeFloat;
+using OSL::TypeString;
+using OSL::TypeInt;
 
 namespace renderer
 {

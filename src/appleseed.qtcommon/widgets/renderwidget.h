@@ -144,7 +144,8 @@ class RenderWidget
     std::unique_ptr<foundation::Image>  m_image_storage;
 
     OCIO::ConstConfigRcPtr              m_ocio_config;
-    OCIO::ConstProcessorRcPtr           m_ocio_processor;
+    OCIO::ConstProcessorRcPtr           m_ocio_gpu_processor;
+    OCIO::ConstCPUProcessorRcPtr        m_ocio_cpu_processor;
 
     void allocate_working_storage(const foundation::CanvasProperties& frame_props);
 

@@ -42,3 +42,21 @@
     #pragma GCC diagnostic ignored "-Wdeprecated"	// dynamic exception specifications are deprecated in C++11
 
 #endif
+
+/** Assure _DEBUG (if defined) is 1.
+ * 
+ * If _DEBUG is defined, then the OSL platform.h header defines OSL_DEBUG as `#define OSL_DEBUG _DEBUG`
+ * (as opposed to `#define OSL_DEBUG 1`). The header later then checks for `#if OSL_DEBUG`.
+ * 
+ * If _DEBUG is empty (defined without a value), then `#if OSL_DEBUG` it will throw an error during compilation: '#if with no expression'.
+ * To fix this, below we assure that if _DEBUG is defined, it is re-defined with the proper value 1.
+ * 
+ * Normally, if defined, _DEBUG should be defined with value 1 anyway. However, problems arose with the following libraries:
+ * (At the time of writing) Boosts' python/detail/wrap_python.hpp header undefines _DEBUG and re-defines it without a value.
+ * Resulting in the error. Similarly (at the time of writing) OCIO's pybind11/detail/common.h header also undefines
+ * _DEBUG and re-defines it without a value.
+ */
+#ifdef _DEBUG
+    #undef _DEBUG
+    #define _DEBUG 1
+#endif

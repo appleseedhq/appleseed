@@ -61,6 +61,7 @@
 #include "foundation/platform/_beginoiioheaders.h"
 #include "OpenImageIO/imagebufalgo.h"
 #include "OpenImageIO/typedesc.h"
+#include "OpenImageIO/imagecache.h"
 #include "foundation/platform/_endoiioheaders.h"
 
 // Standard headers.

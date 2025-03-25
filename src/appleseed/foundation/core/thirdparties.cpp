@@ -40,9 +40,9 @@
 #include <embree3/rtcore.h>
 #endif
 
-// IlmBase headers.
+// (IlmBase) Imath headers.
 #include "foundation/platform/_beginexrheaders.h"
-#include <OpenEXR/IlmBaseConfig.h>
+#include <Imath/ImathConfig.h>
 #include "foundation/platform/_endexrheaders.h"
 
 // LZ4 headers.
@@ -121,7 +121,7 @@ LibraryVersionArray ThirdParties::get_versions()
     versions.push_back(APIStringPair("OpenColorIO", OCIO_VERSION));
 #endif
 
-    versions.push_back(APIStringPair("IlmBase", ILMBASE_VERSION_STRING));
+    versions.push_back(APIStringPair("IlmBase", IMATH_VERSION_STRING)); // TODO: rename to Imath
     versions.push_back(APIStringPair("libjpeg-turbo", LibJpegTurboVersion));
     versions.push_back(APIStringPair("LibTIFF", LibTIFFVersion));
     versions.push_back(APIStringPair("LZ4", format("{0}.{1}.{2}", LZ4_VERSION_MAJOR, LZ4_VERSION_MINOR, LZ4_VERSION_RELEASE)));

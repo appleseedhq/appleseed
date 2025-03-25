@@ -27,36 +27,58 @@
 #
 
 
-# Find OpenColorIO headers and libraries.
 #
-#  This module defines
-#  OPENCOLORIO_INCLUDE_DIRS - where to find OpenColorIO uncludes.
-#  OPENCOLORIO_LIBRARIES    - List of libraries when using OpenColorIO.
-#  OPENCOLORIO_FOUND        - True if OpenColorIO found.
+# Find Imath headers and libraries.
+#
+# This module can take the following variables to define
+# custom search locations:
+#
+#   IMATH_LOCATION
+#
+# This module defines the following variables:
+#
+#   IMATH_FOUND         True if Imath was found
+#   IMATH_INCLUDE_DIRS  Where to find Imath header files
+#   IMATH_LIBRARIES     List of Imath libraries to link against
+#
 
-# If OCIO is defined, it will try to look for OpenEXR libs there as well.
 
-if (DEFINED OpenColorIO_ROOT)
-    list (APPEND CMAKE_PREFIX_PATH ${OpenColorIO_ROOT})
-endif()
-
-# Look for the header file.
-find_path (OPENCOLORIO_INCLUDE_DIR NAMES OpenColorIO/OpenColorIO.h)
-
-# Look for the library.
-find_library (OPENCOLORIO_LIBRARY NAMES OpenColorIO)
-
-# handle the QUIETLY and REQUIRED arguments and set OPENCOLORIO_FOUND to TRUE if all listed variables are TRUE
 include (FindPackageHandleStandardArgs)
-find_package_handle_standard_args (OPENCOLORIO DEFAULT_MSG OPENCOLORIO_LIBRARY OPENCOLORIO_INCLUDE_DIR)
 
-# Copy the results to the output variables.
-if (OPENCOLORIO_FOUND)
-    set (OPENCOLORIO_LIBRARIES ${OPENCOLORIO_LIBRARY})
-    set (OPENCOLORIO_INCLUDE_DIRS ${OPENCOLORIO_INCLUDE_DIR})
+find_path (IMATH_INCLUDE_DIR NAMES Imath/ImathVec.h
+           HINTS ${IMATH_LOCATION}/include
+                 /usr/local/include
+                 /usr/include
+)
+
+find_library (IMATH_MATH_LIBRARY NAMES Imath
+              PATH_SUFFIXES lib64 lib
+              HINTS ${IMATH_LOCATION}
+                    /usr/local
+                    /usr
+)
+
+# Handle the QUIETLY and REQUIRED arguments and set IMATH_FOUND.
+find_package_handle_standard_args (IMATH DEFAULT_MSG
+    IMATH_INCLUDE_DIR
+    IMATH_MATH_LIBRARY
+)
+
+# Set the output variables.
+if (IMATH_FOUND)
+    set (IMATH_INCLUDE_DIRS
+        ${IMATH_INCLUDE_DIR}
+        ${IMATH_INCLUDE_DIR}/Imath
+    )
+    set (IMATH_LIBRARIES
+        ${IMATH_MATH_LIBRARY}
+    )
 else ()
-    set (OPENCOLORIO_LIBRARIES)
-    set (OPENCOLORIO_INCLUDE_DIRS)
+    set (IMATH_INCLUDE_DIRS)
+    set (IMATH_LIBRARIES)
 endif ()
 
-mark_as_advanced (OPENCOLORIO_INCLUDE_DIR OPENCOLORIO_LIBRARY)
+mark_as_advanced (
+    IMATH_INCLUDE_DIR
+    IMATH_MATH_LIBRARY
+)
