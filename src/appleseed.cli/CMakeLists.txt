@@ -112,7 +112,6 @@ add_copy_target_exe_to_sandbox_command (appleseed.cli)
 #--------------------------------------------------------------------------------------------------
 
 install (TARGETS appleseed.cli
-    RUNTIME
     DESTINATION bin
 )
 

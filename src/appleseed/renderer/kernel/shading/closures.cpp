@@ -1,4 +1,3 @@
-// !!!  HERE ARE CLOSURES !!!
 
 //
 // This source file is part of appleseed.

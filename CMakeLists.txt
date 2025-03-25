@@ -316,7 +316,7 @@ if (USE_STATIC_OIIO)
     add_definitions (-DOIIO_STATIC_BUILD)
 endif ()
 if (USE_FIND_PACKAGE_FOR_OIIO)
-    find_package (OPENIMAGEIO REQUIRED)
+    find_package (OpenImageIO REQUIRED)
 endif ()
 
 if (USE_STATIC_OSL)
