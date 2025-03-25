@@ -26,10 +26,10 @@
     #pragma GCC diagnostic ignored "-Wdeprecated"
 #endif
 
-    #include <ImfChannelList.h>
-    #include <ImfFrameBuffer.h>
-    #include <ImfInputFile.h>
-    #include <ImfOutputFile.h>
+    #include <OpenEXR/ImfChannelList.h>
+    #include <OpenEXR/ImfFrameBuffer.h>
+    #include <OpenEXR/ImfInputFile.h>
+    #include <OpenEXR/ImfOutputFile.h>
 
 #if __GNUC__ >= 7
     #pragma GCC diagnostic pop

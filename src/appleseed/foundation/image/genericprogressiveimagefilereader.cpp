@@ -370,9 +370,9 @@ void GenericProgressiveImageFileReader::read_tile(
             impl->open();
         }
 
-        // TODO: placeholder values for `subimage`, `miplevel`, `chbegin` and `chend`
+        // TODO: placeholder values for `chbegin` and `chend`
         if (!impl->m_input->read_image(
-                0, 0, 0, -1,
+                impl->m_input->current_subimage(), impl->m_input->current_miplevel(), 0, -1,
                 impl->m_input->spec().format,
                 output_tile->get_storage()))
             throw ExceptionIOError(impl->m_input->geterror().c_str());

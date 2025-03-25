@@ -55,7 +55,7 @@
 
 // OpenEXR headers.
 #include "foundation/platform/_beginexrheaders.h"
-#include <OpenEXRConfig.h>
+#include <OpenEXR/OpenEXRConfig.h>
 #include "foundation/platform/_endexrheaders.h"
 
 // OpenImageIO headers.
