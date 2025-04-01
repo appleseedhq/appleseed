@@ -477,7 +477,7 @@ void AssemblyTree::create_embree_scene(const Assembly& assembly)
                     assembly
                 )));
 
-        scene = new Lazy<EmbreeScene>(move(embree_scene_factory));
+        scene = new Lazy<EmbreeScene>(std::move(embree_scene_factory));
         m_embree_scene_repository.insert(hash, scene);
     }
 

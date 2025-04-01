@@ -97,7 +97,7 @@ void DenoisingUnit::denoisePatchAndSimilarPatches(
         {
             if (m_pIsCenterOfAlreadyDenoisedPatchImage->getValue(m_mainPatchCenter, 0))
             {
-                if (skippingProbability == 1.0f || rand() < static_cast<int>(skippingProbability * RAND_MAX))
+                if (skippingProbability == 1.0f || rand() < static_cast<int>(skippingProbability * static_cast<float>(RAND_MAX)))
                     return;
             }
         }

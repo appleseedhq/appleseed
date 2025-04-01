@@ -151,7 +151,7 @@ inline std::int32_t rand_int1(RNG& rng, const std::int32_t min, const std::int32
 template <typename RNG>
 inline float rand_float1(RNG& rng)
 {
-    const float result = rng.rand_uint32() * (1.0f / 0xFFFFFFFFu);
+    const float result = rng.rand_uint32() * (1.0f / static_cast<float>(0xFFFFFFFFu));
 
     assert(result >= 0.0f);
     assert(result <= 1.0f);
