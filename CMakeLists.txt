@@ -333,7 +333,7 @@ endif ()
 
 if (USE_FIND_PACKAGE_FOR_XERCES)
     add_definitions (-DAPPLESEED_WITH_EXTERNAL_XERCES)
-    find_package (Xerces REQUIRED)
+    find_package (Xerces REQUIRED NAMES XercesC)
 endif ()
 
 if (USE_FIND_PACKAGE_FOR_ZLIB)
@@ -410,7 +410,9 @@ else ()
 endif ()
 
 if (USE_FIND_PACKAGE_FOR_XERCES)
-    include_directories (${XERCES_INCLUDE_DIRS})
+    get_target_property(XERCES_LIBRARIES XercesC::XercesC INTERFACE_LINK_LIBRARIES) 
+
+    include_directories (${XercesC_INCLUDE_DIRS})
 else ()
     include_directories (${APPLESEED_DEPS_STAGE_DIR}/xerces-c-debug/include)
 endif ()
