@@ -414,15 +414,19 @@ EmbreeScene::~EmbreeScene()
 
 void EmbreeScene::intersect(ShadingPoint& shading_point) const
 {
-    RTCIntersectContext context;
-    rtcInitIntersectContext(&context);
+    RTCRayQueryContext context;
+    rtcInitRayQueryContext(&context);
+
+    RTCIntersectArguments intersectArgs;
+    rtcInitIntersectArguments(&intersectArgs);
+    intersectArgs.context = &context;
 
     RTCRayHit rayhit;
     shading_ray_to_embree_ray(shading_point.get_ray(), rayhit.ray);
 
     rayhit.hit.geomID = RTC_INVALID_GEOMETRY_ID;
 
-    rtcIntersect1(m_scene, &context, &rayhit);
+    rtcIntersect1(m_scene, &rayhit, &intersectArgs);
 
     if (rayhit.hit.geomID != RTC_INVALID_GEOMETRY_ID)
     {
@@ -489,16 +493,17 @@ void EmbreeScene::intersect(ShadingPoint& shading_point) const
 
 bool EmbreeScene::occlude(const ShadingRay& shading_ray) const
 {
-    RTCIntersectContext context;
-    rtcInitIntersectContext(&context);
+    RTCRayQueryContext context;
+    rtcInitRayQueryContext(&context);
+
+    RTCOccludedArguments occludedArgs;
+    rtcInitOccludedArguments(&occludedArgs);
+    occludedArgs.context = &context;
 
     RTCRay ray;
     shading_ray_to_embree_ray(shading_ray, ray);
 
-    rtcOccluded1(
-        m_scene,
-        &context,
-        &ray);
+    rtcOccluded1(m_scene, &ray, &occludedArgs);
 
     if (ray.tfar < signed_min<float>())
         return true;

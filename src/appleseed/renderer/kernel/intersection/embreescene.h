@@ -41,7 +41,7 @@
 #include "foundation/utility/uid.h"
 
 // Embree headers.
-#include <embree3/rtcore.h>
+#include <embree4/rtcore.h>
 
 // Standard headers.
 #include <map>
