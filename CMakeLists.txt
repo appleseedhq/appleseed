@@ -272,6 +272,7 @@ link_directories (${Boost_LIBRARY_DIRS})
 #--------------------------------------------------------------------------------------------------
 # Find packages.
 #--------------------------------------------------------------------------------------------------
+include(FindPackageHandleStandardArgs)
 
 if (WITH_EMBREE)
     set (APPLESEED_WITH_EMBREE ON)
@@ -281,6 +282,7 @@ if (WITH_EMBREE)
     endif ()
     if (USE_FIND_PACKAGE_FOR_EMBREE)
         find_package (Embree REQUIRED)
+        find_package_handle_standard_args (Embree CONFIG_MODE)
     endif ()
 endif ()
 
@@ -294,7 +296,9 @@ endif ()
 
 if (USE_FIND_PACKAGE_FOR_EXR)
     find_package (Imath REQUIRED)
+    find_package_handle_standard_args (Imath CONFIG_MODE)
     find_package (OpenEXR REQUIRED)
+    find_package_handle_standard_args (OpenEXR CONFIG_MODE)
 endif ()
 
 if (USE_FIND_PACKAGE_FOR_LZ4)
@@ -310,6 +314,7 @@ if (WITH_STUDIO OR WITH_BENCH)
     endif ()
     if (USE_FIND_PACKAGE_FOR_OCIO)
         find_package (OpenColorIO REQUIRED)
+        #find_package_handle_standard_args(OpenColorIO CONFIG_MODE) # OpenColorIOConfig.cmake does this itself.
     endif ()
 endif ()
 
@@ -318,6 +323,7 @@ if (USE_STATIC_OIIO)
 endif ()
 if (USE_FIND_PACKAGE_FOR_OIIO)
     find_package (OpenImageIO REQUIRED)
+    find_package_handle_standard_args(OpenImageIO CONFIG_MODE)
 endif ()
 
 if (USE_STATIC_OSL)
@@ -325,6 +331,7 @@ if (USE_STATIC_OSL)
 endif ()
 if (USE_FIND_PACKAGE_FOR_OSL)
     find_package (OSL REQUIRED)
+    find_package_handle_standard_args(OSL CONFIG_MODE)
 endif ()
 
 if (USE_FIND_PACKAGE_FOR_PNG)
@@ -334,6 +341,7 @@ endif ()
 if (USE_FIND_PACKAGE_FOR_XERCES)
     add_definitions (-DAPPLESEED_WITH_EXTERNAL_XERCES)
     find_package (Xerces REQUIRED NAMES XercesC)
+    find_package_handle_standard_args(Xerces CONFIG_MODE)
 endif ()
 
 if (USE_FIND_PACKAGE_FOR_ZLIB)
@@ -392,25 +400,45 @@ else ()
 endif ()
 
 if (USE_FIND_PACKAGE_FOR_OCIO)
+    get_target_property (OPENCOLORIO_INCLUDE_DIRS OpenColorIO::OpenColorIO INTERFACE_INCLUDE_DIRECTORIES)
+
     include_directories (${OPENCOLORIO_INCLUDE_DIRS})
 else ()
     include_directories (${APPLESEED_DEPS_STAGE_DIR}/ocio-debug/include)
 endif ()
 
 if (USE_FIND_PACKAGE_FOR_OIIO)
+    set(OPENIMAGEIO_INCLUDE_DIRS ${OpenImageIO_INCLUDES})
+    set(OPENIMAGEIO_LIBRARIES    ${OpenImageIO_LIB_DIR})
+    # TODO: use these vars (OpenImageIO_INCLUDES, OpenImageIO_LIB_DIR) created by OpenImageIOConfig.cmake itself.
+
     include_directories (${OPENIMAGEIO_INCLUDE_DIRS})
+    link_directories (${OPENIMAGEIO_LIBRARIES})
 else ()
     include_directories (${APPLESEED_DEPS_STAGE_DIR}/oiio-debug/include)
 endif ()
 
 if (USE_FIND_PACKAGE_FOR_OSL)
-    include_directories (${OSL_INCLUDE_DIRS})
+    set(OSL_LIBRARIES ${OSL_LIB_DIR})
+    # TODO: use OSL_LIB_DIR created by OSLConfig.cmake itself.
+    find_program(OSL_COMPILER   OSL::oslc)
+    message(STATUS "OSL_COMPILER: "${OSL_COMPILER})
+    find_program(OSL_QUERY_INFO OSL::oslinfo)
+    message(STATUS "OSL_QUERY_INFO: "${OSL_QUERY_INFO})
+    find_program(OSL_MAKETX     OpenImageIO::maketx)
+    message(STATUS "OSL_MAKETX: "${OSL_MAKETX})
+    # TODO: correct: MakeTX is actually part of OpenImageIO.
+
+    message(STATUS "OSL_INCLUDE_DIR, OSL_LIBRARIES:"${OSL_INCLUDE_DIR}", "${OSL_LIBRARIES})
+
+    include_directories (${OSL_INCLUDE_DIR})
+    link_directories (${OSL_LIBRARIES})
 else ()
     include_directories (${APPLESEED_DEPS_STAGE_DIR}/osl-debug/include)
 endif ()
 
 if (USE_FIND_PACKAGE_FOR_XERCES)
-    get_target_property(XERCES_LIBRARIES XercesC::XercesC INTERFACE_LINK_LIBRARIES) 
+    get_target_property (XERCES_LIBRARIES XercesC::XercesC INTERFACE_LINK_LIBRARIES) 
 
     include_directories (${XercesC_INCLUDE_DIRS})
 else ()
