@@ -179,7 +179,7 @@ macro (link_against_embree target)
 endmacro ()
 
 macro (link_against_lz4 target)
-    target_link_libraries (${target} ${LZ4_LIBRARY})
+    target_link_libraries (${target} lz4)
 endmacro ()
 
 macro (link_against_ocio target)

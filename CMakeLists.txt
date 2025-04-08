@@ -298,7 +298,8 @@ if (USE_FIND_PACKAGE_FOR_EXR)
 endif ()
 
 if (USE_FIND_PACKAGE_FOR_LZ4)
-    find_package (LZ4 REQUIRED)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(lz4 REQUIRED IMPORTED_TARGET liblz4)
 endif ()
 
 if (WITH_STUDIO OR WITH_BENCH)
