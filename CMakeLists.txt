@@ -421,15 +421,10 @@ endif ()
 if (USE_FIND_PACKAGE_FOR_OSL)
     set(OSL_LIBRARIES ${OSL_LIB_DIR})
     # TODO: use OSL_LIB_DIR created by OSLConfig.cmake itself.
-    find_program(OSL_COMPILER   OSL::oslc)
-    message(STATUS "OSL_COMPILER: "${OSL_COMPILER})
-    find_program(OSL_QUERY_INFO OSL::oslinfo)
-    message(STATUS "OSL_QUERY_INFO: "${OSL_QUERY_INFO})
-    find_program(OSL_MAKETX     OpenImageIO::maketx)
-    message(STATUS "OSL_MAKETX: "${OSL_MAKETX})
+    find_program(OSL_COMPILER   oslc    HINTS ${OSL_LIB_DIR}/../bin ${OSL_INCLUDE_DIR}/../bin)
+    find_program(OSL_QUERY_INFO oslinfo HINTS ${OSL_LIB_DIR}/../bin ${OSL_INCLUDE_DIR}/../bin)
+    find_program(OSL_MAKETX     maketx  HINTS ${OpenImageIO_LIB_DIR}/../bin ${OpenImageIO_INCLUDE_DIR}/../bin)
     # TODO: correct: MakeTX is actually part of OpenImageIO.
-
-    message(STATUS "OSL_INCLUDE_DIR, OSL_LIBRARIES:"${OSL_INCLUDE_DIR}", "${OSL_LIBRARIES})
 
     include_directories (${OSL_INCLUDE_DIR})
     link_directories (${OSL_LIBRARIES})
