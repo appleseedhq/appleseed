@@ -192,8 +192,8 @@ endmacro ()
 
 macro (link_against_openexr target)
     target_link_libraries (${target}
-        ${IMATH_LIBRARIES}
-        ${OPENEXR_LIBRARIES}
+        Imath::Imath
+        OpenEXR::OpenEXR
     )
 endmacro ()
 
