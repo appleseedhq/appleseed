@@ -306,16 +306,14 @@ if (USE_FIND_PACKAGE_FOR_LZ4)
     pkg_check_modules(lz4 REQUIRED IMPORTED_TARGET liblz4)
 endif ()
 
-if (WITH_STUDIO OR WITH_BENCH)
-    add_definitions (-DAPPLESEED_WITH_OCIO)
+add_definitions (-DAPPLESEED_WITH_OCIO)
 
-    if (USE_STATIC_OCIO)
-        add_definitions (-DOCIO_STATIC_BUILD)
-    endif ()
-    if (USE_FIND_PACKAGE_FOR_OCIO)
-        find_package (OpenColorIO REQUIRED)
-        #find_package_handle_standard_args(OpenColorIO CONFIG_MODE) # OpenColorIOConfig.cmake does this itself.
-    endif ()
+if (USE_STATIC_OCIO)
+    add_definitions (-DOCIO_STATIC_BUILD)
+endif ()
+if (USE_FIND_PACKAGE_FOR_OCIO)
+    find_package (OpenColorIO REQUIRED)
+    #find_package_handle_standard_args(OpenColorIO CONFIG_MODE) # OpenColorIOConfig.cmake does this itself.
 endif ()
 
 if (USE_STATIC_OIIO)
