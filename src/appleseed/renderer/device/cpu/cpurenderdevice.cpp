@@ -86,7 +86,7 @@ CPURenderDevice::CPURenderDevice(
             m_texture_system,
             m_error_handler);
     m_shading_system->attribute("lockgeom", 1);
-    m_shading_system->attribute("colorspace", "sRGB"); // TODO: is this really correct? Note: this attribute does not need to be set for Appleseed to work.
+    m_shading_system->attribute("colorspace", "sRGB"); // TODO: is this really correct? Note: this attribute does not need to be set for Appleseed to render. (If not set, produces identical (looking) results.)
     m_shading_system->attribute("commonspace", "world");
     m_shading_system->attribute("statistics:level", 1);
     m_shading_system->attribute(

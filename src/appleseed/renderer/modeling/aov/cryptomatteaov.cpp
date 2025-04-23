@@ -468,7 +468,7 @@ namespace
         {
             std::vector<std::pair<float, std::uint32_t>> ranked_vector;
             std::vector<float> pixel_values;
-            constexpr float uint32_max_rcp = 1.0f / std::numeric_limits<std::uint32_t>::max();
+            constexpr float uint32_max_rcp = 1.0f / static_cast<float>(std::numeric_limits<std::uint32_t>::max()); // todo: in other places `4294967295u` is used instead. only one way to "get" this number should be used probably?
 
             for (size_t ry = m_tile_origin_y; ry <= m_tile_end_y; ++ry)
             {

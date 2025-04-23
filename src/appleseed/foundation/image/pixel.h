@@ -408,7 +408,7 @@ inline void Pixel::convert_to_format<std::uint32_t>(
             Half* typed_dest = reinterpret_cast<Half*>(dest);
             for (const std::uint32_t* it = src_begin; it < src_end; it += src_stride)
             {
-                *typed_dest = static_cast<Half>(static_cast<float>(*it) * (1.0f / 4294967295u));
+                *typed_dest = static_cast<Half>(static_cast<float>(*it) * (1.0f / static_cast<float>(4294967295u)));
                 typed_dest += dest_stride;
             }
         }
@@ -419,7 +419,7 @@ inline void Pixel::convert_to_format<std::uint32_t>(
             float* typed_dest = reinterpret_cast<float*>(dest);
             for (const std::uint32_t* it = src_begin; it < src_end; it += src_stride)
             {
-                *typed_dest = static_cast<float>(*it) * (1.0f / 4294967295u);
+                *typed_dest = static_cast<float>(*it) * (1.0f / static_cast<float>(4294967295u));
                 typed_dest += dest_stride;
             }
         }
@@ -1011,7 +1011,7 @@ inline void Pixel::convert_from_format<float>(
             const std::uint32_t* it = reinterpret_cast<const std::uint32_t*>(src_begin);
             for (; it < reinterpret_cast<const std::uint32_t*>(src_end); it += src_stride)
             {
-                *dest = static_cast<float>(*it) * (1.0f / 4294967295u);
+                *dest = static_cast<float>(*it) * (1.0f / static_cast<float>(4294967295u));
                 dest += dest_stride;
             }
         }
