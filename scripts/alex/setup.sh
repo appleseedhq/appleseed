@@ -83,6 +83,9 @@ _COLOR_INSTALL_DIR=$_COLOR_CYAN
 # Variables and Default Values
 # ================================================================
 
+_sCCompiler=""
+_sCXXCompiler=""
+
 _sBuildType="Ship"
 
 _sRoot="."
@@ -96,6 +99,7 @@ _bAppleseedRootPrepared=false
 
 # options
 _bAsk=true
+_bClang=false
 _bInstallDependencies=true
 _bNewBuild=false
 _bNuke=false
@@ -241,6 +245,8 @@ usage() {
   echo "Arguments:"
   echo "  -a, --appleseed-src APPLESEED SOURCE Specify a source for appleseed. (Can be a git HTTPS or SHH link for cloning, a ZIP or TAR file or a directory. Unless given as a directory, APPLESEED ROOT will be \"<ROOT>/appleseed\")"
   echo "  --branch            Specify a branch for APPLESEED SOURCE if it is a git link."
+  echo "  --cc                Specify a c compiler (path to). (Will use the gcc compiler by default.)"
+  echo "  --cxx               Specify a c++ compiler (path to). (Will use the g++ compiler by default.)"
   echo "  -b, --build         Specify a build type. (Defaults to \"Ship\".)"
   echo "  -d, --deps          DEPENDENCIES DIRECTORY Specify the directory containing the install directories of dependencies (who's install directory are not explicitly given with one of the arguments below)."
   echo "  -r, --root          ROOT Specify the root directory from which this script is supposed to be run. (Defaults to \".\" [the current working directory].)"
@@ -257,12 +263,13 @@ usage() {
   echo "  --xerces-install"
   echo ""
   echo "Options:"
-  echo "  --preview           Run in *preview mode*, where most commands (e.g. rm, wget, or running scripts) are only printed and not executed."
   echo "  -h, --help          Display this help message."
   echo "  -n, --new           Delete appleseed build directory to start new."
-  echo "  --no-install        Do not install any missing dependencies, exit instead." # TODO: test
+  echo "  --no-install        Do not install any missing dependencies, exit instead."
   echo "  --nuke              Remove all directories (and their contents) created by this script."
+  echo "  --preview           Run in *preview mode*, where most commands (e.g. rm, wget, or running scripts) are only printed and not executed."
   echo "  --quick-start       Print a quick start example to build Appleseed and all dependencies."
+  echo "  --use-clang         Compile with Clang instead of gcc. (Will search for compiler in \"usr/bin/\".) (Note: This is necessary even if --cc and --cxx is given, when building boost, as boost builds with different \"tool sets\" [here: gcc or clang].)"
   echo "  -v, --verbose       Verbose mode (only affects Appleseed's build)."
   echo "  -y, --yes           Assume \"yes\" for all queries."
   echo ""
@@ -314,7 +321,30 @@ handle_options() {
         shift
         ;;
       --branch)
+        if ! has_argument $@; then
+            echo "BRANCH was given no value." >&2
+            usage
+            exit 1
+        fi
         _sAppleseedSourceGitBranch=$(extract_argument $@)
+        shift
+        ;;
+      --cc)
+        if ! has_argument $@; then
+            echo "C COMPILER was given no value." >&2
+            usage
+            exit 1
+        fi
+        _sCCompiler=$(extract_argument $@)
+        shift
+        ;;
+      --cxx)
+        if ! has_argument $@; then
+            echo "C++ COMPILER was given no value." >&2
+            usage
+            exit 1
+        fi
+        _sCXXCompiler=$(extract_argument $@)
         shift
         ;;
       -b | --build)
@@ -431,9 +461,6 @@ handle_options() {
         shift
         ;;
       # Options
-      --preview)
-        _DEBUG=echo
-        ;;
       -h | --help)
         usage
         exit 0
@@ -447,12 +474,18 @@ handle_options() {
       --nuke)
         _bNuke=true
         ;;
+      --preview)
+        _DEBUG=echo
+        ;;
       --quick-start)
         quickStart
         exit 0
         ;;
       -s | --source)
         _bSource=true
+        ;;
+      --use-clang)
+        _bClang=true
         ;;
       -v | --verbose)
         _sVerbose="VERBOSE=1"
@@ -607,6 +640,10 @@ fi
 
 stepInfo $_NAME "Confirm settings ..."
 
+if [ $_bClang = true ]; then
+  echo "Using Clang."
+fi
+
 echo "  Root directory: \"$_sRoot\""
 
 if [ -n $_sBuildType ]; then
@@ -662,6 +699,28 @@ $_DEBUG mkdir -p $_sDependenciesDir
 # build essentials
 $_DEBUG sudo apt install -y build-essential cmake
 
+if [[ $_sCCompiler == "" ]]; then
+  if [ $_bClang = true ]; then
+    _sCCompiler=/usr/bin/clang
+    _sCXXCompiler=/usr/bin/clang++
+  else
+    _sCCompiler=/usr/bin/gcc
+    _sCXXCompiler=/usr/bin/g++
+  fi
+fi
+# check compiler
+if [ ! -f $_sCCompiler ]; then
+  echo "Error: Could not find C compiler \"$_sCCompiler\". Exiting."
+  exit 1
+fi
+if [ ! -f $_sCXXCompiler ]; then
+  echo "Error: Could not find C++ compiler \"$_sCXXCompiler\". Exiting."
+  exit 1
+fi
+# set compiler vars
+export CC=$_sCCompiler
+export CXX=$_sCXXCompiler
+
 stepInfo $_NAME "Setup complete."
 
 # ================================================================
@@ -683,6 +742,11 @@ if [[ $_sBoostInstallDir = "" ]]; then
   sourceVersion=${sourceFile//"boost-"/}
   _sSourceDir="$_sDependenciesDir/$sourceFile"
   _sInstallDir="$_sDependenciesDir/$depName-install"
+
+  toolset=gcc
+  if [ $_bClang = true ]; then
+    toolset=clang
+  fi
 
   # check for boost installation in _sInstallDir (via existence of lib file)
   if [ ! -f $_sInstallDir/lib/libboost_filesystem.so ]; then
@@ -718,7 +782,7 @@ if [[ $_sBoostInstallDir = "" ]]; then
     $_DEBUG cd $_sSourceDir
 
     stepInfo $depName "Installing from \"$_sSourceDir\" ..."
-    $_DEBUG ./bootstrap.sh --prefix=$_sInstallDir --with-python-version=2.7
+    $_DEBUG ./bootstrap.sh --prefix=$_sInstallDir --with-toolset=$toolset --with-python-version=2.7
 
     # Configure/check configuration of project for Python 2.7
     if [[ $_DEBUG = "" ]]; then
@@ -735,7 +799,7 @@ if [[ $_sBoostInstallDir = "" ]]; then
       fi
     fi
 
-    $_DEBUG ./b2 toolset=gcc cxxflags="-std=c++$_CXX_STD" install
+    $_DEBUG ./b2 toolset=$toolset cxxflags="-std=c++$_CXX_STD" install
     # Installed Boost
   fi
   
