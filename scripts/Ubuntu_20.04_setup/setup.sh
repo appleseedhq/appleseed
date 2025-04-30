@@ -12,8 +12,6 @@ $'# ================================================================
 # pendencies.
 # Use -h or --help to get a list of all possible arguments and
 # options.
-# Use --quick-start to get a quick start example to build Apple-
-# seed and all dependencies.
 # 
 # Note: This script has only been tested on Ubuntu 22.04!
 # ================================================================'
@@ -88,8 +86,8 @@ _sCXXCompiler=""
 
 _sBuildType="Ship"
 
-_sRoot="."
-_sDependenciesDir=$_sRoot/$_DEFAULT_DEPENDENCIES_DIR_NAME
+_sRoot=$(pwd)
+_sDependenciesDir=""
 _bCustomDependenciesDir=false
 
 _sAppleseedSource=""
@@ -243,13 +241,15 @@ dependencyInstallInfo() {
 usage() {
   echo "Usage: $0"
   echo "Arguments:"
-  echo "  -a, --appleseed-src APPLESEED SOURCE Specify a source for appleseed. (Can be a git HTTPS or SHH link for cloning, a ZIP or TAR file or a directory. Unless given as a directory, APPLESEED ROOT will be \"<ROOT>/appleseed\")"
-  echo "  --branch            Specify a branch for APPLESEED SOURCE if it is a git link."
+  echo "  -a, --appleseed-src APPLESEED SOURCE Specify a source for appleseed. (Can be a directory, a git HTTPS or SSH link for cloning, or a ZIP or TAR file.) (Defaults to \"<ROOT>/appleseed\".)"
+  echo "                        Can be used to specify a directory other then \"<ROOT>/appleseed\" for the Appleseed root directory."
+  echo "                        By specifying a link or path to a ZIP or TAR file, the script will clone/unpack appleseed into \"<ROOT>/appleseed\" automatically and set the root directory accordingly."
+  echo "  --branch            Specify a branch for APPLESEED SOURCE if it is a git link. (Defaults to specifying no branch.)"
   echo "  --cc                Specify a c compiler (path to). (Will use the gcc compiler by default.)"
   echo "  --cxx               Specify a c++ compiler (path to). (Will use the g++ compiler by default.)"
   echo "  -b, --build         Specify a build type. (Defaults to \"Ship\".)"
-  echo "  -d, --deps          DEPENDENCIES DIRECTORY Specify the directory containing the install directories of dependencies (who's install directory are not explicitly given with one of the arguments below)."
-  echo "  -r, --root          ROOT Specify the root directory from which this script is supposed to be run. (Defaults to \".\" [the current working directory].)"
+  echo "  -d, --deps          DEPENDENCIES DIRECTORY Specify the directory containing the install directories of dependencies (who's install directory are not explicitly given with one of the arguments below). (Defaults to \"<ROOT>/dependencies\".)"
+  echo "  -r, --root          ROOT Specify the root directory from which this script is supposed to be run. (Defaults to the current working directory.)"
   echo ""
   echo "  Install directories of dependencies. If non is given for a specific dependency, it will be downloaded and installed in \"<ROOT>/$_DEFAULT_DEPENDENCIES_DIR_NAME\" (or \"<DEPENDENCIES DIRECTORY>\", if it is given)."
   echo "  --boost-install"
@@ -268,7 +268,6 @@ usage() {
   echo "  --no-install        Do not install any missing dependencies, exit instead."
   echo "  --nuke              Remove all directories (and their contents) created by this script."
   echo "  --preview           Run in *preview mode*, where most commands (e.g. rm, wget, or running scripts) are only printed and not executed."
-  echo "  --quick-start       Print a quick start example to build Appleseed and all dependencies."
   echo "  --use-clang         Compile with Clang instead of gcc. (Will search for compiler in \"usr/bin/\".) (Note: This is necessary even if --cc and --cxx is given, when building boost, as boost builds with different \"tool sets\" [here: gcc or clang].)"
   echo "  -v, --verbose       Verbose mode (only affects Appleseed's build)."
   echo "  -y, --yes           Assume \"yes\" for all queries."
@@ -286,15 +285,6 @@ usage() {
   echo "  --collect           (See --collect-link.)"
   echo "  --collect-copy      Copy all binaries, headers and libraries into a single directory (like the pre-built dependencies) \"<Root>/collected-deps\". (Will install any missing dependencies and/or Appleseed before doing so.)"
   echo "  --collect-link      Like --collect-copy but only sim linking."
-}
-
-# Function to display an example
-quickStart() {
-  echo "The following is the minimum amount of arguments (and no options) that need to be given to the script:"
-  echo ""
-  echo "setup.sh -a https://github.com/4134N4/appleseed.git"
-  echo ""
-  echo "ROOT will be the current working directory. Appleseed will be cloned (from the given [my] github repository) into \"<ROOT>/appleseed\". All dependencies will be installed into \"<ROOT>/dependencies\". The build type will be \"Ship\" and it will build no optional dependencies."
 }
 
 # Extract options and arguments
@@ -373,9 +363,6 @@ handle_options() {
             exit 1
         fi
         _sRoot=$(extract_argument $@)
-        if [ $_bCustomDependenciesDir = false ]; then
-          _sDependenciesDir=$_sRoot/$_DEFAULT_DEPENDENCIES_DIR_NAME
-        fi
         shift
         ;;
       # Dependency Installation Arguments
@@ -477,10 +464,6 @@ handle_options() {
       --preview)
         _DEBUG=echo
         ;;
-      --quick-start)
-        quickStart
-        exit 0
-        ;;
       -s | --source)
         _bSource=true
         ;;
@@ -544,11 +527,6 @@ handle_options() {
 # MAIN
 # ================================================================
 
-if [[ $# = 0 ]]; then
-  echo "$_README"
-  exit 0
-fi
-
 # Handle options
 handle_options "$@"
 
@@ -586,10 +564,32 @@ if [[ $_DEBUG != "" ]]; then
   printf "${_COLOR_PINK}*Script running in PREVIEW MODE.*${_COLOR_CLEAR}\n"
 fi
 
+# Root Directory
+
+case $_sRoot in
+  *appleseed/scripts/Ubuntu_20.04_setup/|*appleseed/scripts/Ubuntu_20.04_setup|*appleseed/scripts/|*appleseed/scripts|*appleseed/|*appleseed)
+    echo "It looks like the path in ROOT may be a child directory of the Appleseed root directory. Are you sure you want to continue with \"$_sRoot\" as the root directory?"
+    select strictreply in "Yes" "No"; do
+      relaxedreply=${strictreply:-$REPLY}
+      case $relaxedreply in
+        Yes | YES | yes | y ) break;;
+        No  | NO  | no  | n )
+          echo "Tip: Try running this script from the parent directory of the Appleseed root directory or setting ROOT directly using -r or --root. (Use -h or --help to see usage help.) Exiting.";
+          exit 0
+          ;;
+      esac
+    done
+    ;;
+  *);;
+esac
+
+# dependencies directory
+_sDependenciesDir=$_sRoot/$_DEFAULT_DEPENDENCIES_DIR_NAME
+
 # Appleseed Source
 
 if [[ $_sAppleseedSource == "" ]]; then
-  stepInfo $_NAME "APPLEESEED SOURCE was not given, assuming \"<ROOT>/appleseed\"."
+  stepInfo $_NAME "APPLEESEED SOURCE was not specified, assuming \"<ROOT>/appleseed\"."
   _sAppleseedRoot=$_sRoot/appleseed
 
 elif [[ $_sAppleseedSource =~ ^git@.* ]] || [[ $_sAppleseedSource =~ ^https.* ]]; then
@@ -681,7 +681,9 @@ if [ $_bAsk = true ]; then
     relaxedreply=${strictreply:-$REPLY}
     case $relaxedreply in
       Yes | YES | yes | y ) break;;
-      No  | NO  | no  | n ) echo "Exiting."; exit 1;;
+      No  | NO  | no  | n )
+        echo "Tip: Use the -h or --help options to get usage help. Exiting.";
+        exit 1;;
     esac
   done
 fi
@@ -1280,7 +1282,7 @@ if [[ $_sOSLInstallDir = "" ]]; then
       echo "Error: Patch file \`fixOSL1957.cpp\` needs to be in \"<ROOT>\" or in the same directory as this setup script. Exiting."
       exit 1
     fi
-    stepInfo $depName "Found patch file `fixOSL1957.cpp` in \"$_sOSLPatchFilePath\"."
+    stepInfo $depName "Found patch file \`fixOSL1957.cpp\` in \"$_sOSLPatchFilePath\"."
     # `llvm_util.cpp` with "fixed" version
     $_DEBUG cp -f $_sOSLPatchFilePath "$_sSourceDir/src/liboslexec/llvm_util.cpp"
     stepInfo $depName "Fixed OSL issue #1957."
@@ -1491,7 +1493,6 @@ if [ $_bAppleseedRootPrepared = false ]; then
   fi
 
   _bAppleseedRootPrepared=true
-  stepInfo $_NAME "Done."
 
 fi
 
