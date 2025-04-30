@@ -584,7 +584,9 @@ case $_sRoot in
 esac
 
 # dependencies directory
-_sDependenciesDir=$_sRoot/$_DEFAULT_DEPENDENCIES_DIR_NAME
+if [ $_bCustomDependenciesDir = false ]; then
+  _sDependenciesDir=$_sRoot/$_DEFAULT_DEPENDENCIES_DIR_NAME
+fi
 
 # Appleseed Source
 
