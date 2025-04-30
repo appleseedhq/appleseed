@@ -226,6 +226,11 @@ dependencyInstallInfo() {
   fi
 }
 
+optionalComponentBuildInfo() {
+  # $1 _NAME, $2 _sWithCOMPONENT
+  if [ $2 = ON ]; then echo "    $1"; fi
+}
+
 # ----------------------------------------------------------------
 # Handle Arguments and Options Function
 # ----------------------------------------------------------------
@@ -478,14 +483,6 @@ handle_options() {
         _sCollectType="link"
         ;;
       # Optional Components
-      --all)
-        _sWithClient=ON
-        _sWithStudio=ON
-        _sWithBench=ON
-        _sWithTools=ON
-        _sWithPython2Bindings=ON
-        _sWithEmbree=ON
-        ;;
       --client)
         _sWithClient=ON
         _sWithAll=OFF
@@ -644,6 +641,27 @@ dependencyInstallInfo $_OSL     $_sOSLInstallDir
 dependencyInstallInfo $_PARTIO  $_sPartIOInstallDir
 dependencyInstallInfo $_XERCES  $_sXercesInstallDir
 
+# Optional Dependencies
+
+# _sWithAll is ON by default.
+if [ $_sWithAll = ON ]; then
+  echo "  Building all available optional dependencies."
+  _sWithClient=ON
+  _sWithStudio=ON
+  _sWithBench=ON
+  _sWithTools=ON
+  _sWithPython2Bindings=ON
+  _sWithEmbree=ON
+else
+  echo "  Building the following optional dependencies:"
+  optionalComponentBuildInfo Client             $_sWithClient
+  optionalComponentBuildInfo Studio             $_sWithStudio
+  optionalComponentBuildInfo Bench              $_sWithBench
+  optionalComponentBuildInfo Tools              $_sWithTools
+  optionalComponentBuildInfo "Python2 Bindings" $_sWithPython2Bindings
+  optionalComponentBuildInfo Embree             $_sWithEmbree
+fi
+
 if [ $_bAsk = true ]; then
   # Checkpoint
   echo "Do you wish to proceed with these settings?"
@@ -657,20 +675,6 @@ if [ $_bAsk = true ]; then
     esac
   done
 fi
-
-# Optional Dependencies
-
-# _sWithAll is ON by default.
-if [ $_sWithAll = ON ]; then
-  _sWithClient=ON
-  _sWithStudio=ON
-  _sWithBench=ON
-  _sWithTools=ON
-  _sWithPython2Bindings=ON
-  _sWithEmbree=ON
-fi
-
-# TODO: Print what opt. deps will be build.
 
 # ----------------------------------------------------------------
 # Setup
