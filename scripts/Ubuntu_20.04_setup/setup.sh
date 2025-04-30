@@ -362,7 +362,7 @@ handle_options() {
             usage
             exit 1
         fi
-        _sRoot=$(extract_argument $@)
+        _sRoot=$(realpath $(extract_argument $@))
         shift
         ;;
       # Dependency Installation Arguments
