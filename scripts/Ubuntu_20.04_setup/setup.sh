@@ -6,15 +6,10 @@ set -e
 # ================================================================
 # README
 # ================================================================
-_README=\
-$'# ================================================================
-# This script can be used to install Appleseed and all of its de-
-# pendencies.
-# Use -h or --help to get a list of all possible arguments and
-# options.
+# This script can be used to install Appleseed and all of its dependencies.
+# Use -h or --help to get a list of all possible arguments and options.
 # 
 # Note: This script has only been tested on Ubuntu 22.04!
-# ================================================================'
 
 # This text is also displayed if the script is called with no arguments.
 
@@ -92,8 +87,6 @@ _bCustomDependenciesDir=false
 
 _sAppleseedSource=""
 _sAppleseedSourceGitBranch=""
-_sAppleseedRoot=""
-_bAppleseedRootPrepared=false
 
 # options
 _bAsk=true
@@ -108,6 +101,7 @@ _bCollect=false
 _sCollectType="copy" # options: "copy" | "link"
 
 # appleseed optional components
+_sWithAll=ON
 _sWithClient=OFF
 _sWithStudio=OFF
 _sWithBench=OFF
@@ -198,10 +192,9 @@ collect() {
 }
 
 nuke() {
-  $_DEBUG cd $_sRoot
+  $_DEBUG rm -fr $_sRoot/build
   $_DEBUG rm -fr $_sDependenciesDir
-  $_DEBUG rm -fr $_sRoot/appleseed
-  echo "Removed \"$_sRoot/appleseed\", \"$_sDependenciesDir\". Exiting."
+  echo "Removed \"$_sRoot/build\", \"$_sDependenciesDir\". Exiting."
   exit 0
 }
 
@@ -241,17 +234,17 @@ dependencyInstallInfo() {
 usage() {
   echo "Usage: $0"
   echo "Arguments:"
-  echo "  -a, --appleseed-src APPLESEED SOURCE Specify a source for appleseed. (Can be a directory, a git HTTPS or SSH link for cloning, or a ZIP or TAR file.) (Defaults to \"<ROOT>/appleseed\".)"
-  echo "                        Can be used to specify a directory other then \"<ROOT>/appleseed\" for the Appleseed root directory."
-  echo "                        By specifying a link or path to a ZIP or TAR file, the script will clone/unpack appleseed into \"<ROOT>/appleseed\" automatically and set the root directory accordingly."
-  echo "  --branch            Specify a branch for APPLESEED SOURCE if it is a git link. (Defaults to specifying no branch.)"
+  echo "  -b, --build         Specify a build type. (Defaults to \"Ship\".)"
   echo "  --cc                Specify a c compiler (path to). (Will use the gcc compiler by default.)"
   echo "  --cxx               Specify a c++ compiler (path to). (Will use the g++ compiler by default.)"
-  echo "  -b, --build         Specify a build type. (Defaults to \"Ship\".)"
-  echo "  -d, --deps          DEPENDENCIES DIRECTORY Specify the directory containing the install directories of dependencies (who's install directory are not explicitly given with one of the arguments below). (Defaults to \"<ROOT>/dependencies\".)"
-  echo "  -r, --root          ROOT Specify the root directory from which this script is supposed to be run. (Defaults to the current working directory.)"
+  echo "  -d, --deps   DEPS   Specify the directory containing the install directories of dependencies (who's install directory are not explicitly given with one of the arguments below). (Defaults to \"ROOT/$_DEFAULT_DEPENDENCIES_DIR_NAME\".)"
+  echo "  -r, --root   ROOT   Specify the Appleseed root directory. (Defaults to the current working directory.)"
+  echo "  -s, --source SOURCE Specify a source for appleseed. This may be a Git HTTPS or SSH link, or a TAR or ZIP file."
+  echo "                      The script will then clone/unpack the source using ROOT as the root directory."
+printf "                      ${_COLOR_ORANGE}Warning: Fetching a new Appleseed repository source fill remove **everything** in ROOT.${_COLOR_CLEAR}\n"
+  echo "  --branch            Specify a branch for SOURCE, if it is a Git link. (Defaults to specifying no branch.)"
   echo ""
-  echo "  Install directories of dependencies. If non is given for a specific dependency, it will be downloaded and installed in \"<ROOT>/$_DEFAULT_DEPENDENCIES_DIR_NAME\" (or \"<DEPENDENCIES DIRECTORY>\", if it is given)."
+  echo "  Install directories of dependencies. If non is given for a specific dependency, it will be downloaded and installed in \"ROOT/$_DEFAULT_DEPENDENCIES_DIR_NAME\" (or \"DEPS\", if it is given)."
   echo "  --boost-install"
   echo "  --embree-install"
   echo "  --imath-install"
@@ -272,8 +265,8 @@ usage() {
   echo "  -v, --verbose       Verbose mode (only affects Appleseed's build)."
   echo "  -y, --yes           Assume \"yes\" for all queries."
   echo ""
-  echo "Optional Appleseed Components:"
-  echo "  --all               Built all optional components."
+  echo "Build only Optional Appleseed Components:"
+  echo "  If non are specified, builds all components."
   echo "  --client            Built the client (WITH_CLIENT=ON)."
   echo "  --studio            Built the studio (WITH_STUDIO=ON)."
   echo "  --bench             Built the bench (WITH_BENCH=ON)."
@@ -281,7 +274,7 @@ usage() {
   echo "  --python2-bindings  Built the Python 2.7 bindings (WITH_PYTHON2_BINDINGS=ON)."
   echo "  --embree            Built with Embree (WITH_EMBREE=ON)."
   echo ""
-  echo "Utilities:" # TODO
+  echo "Utilities:"
   echo "  --collect           (See --collect-link.)"
   echo "  --collect-copy      Copy all binaries, headers and libraries into a single directory (like the pre-built dependencies) \"<Root>/collected-deps\". (Will install any missing dependencies and/or Appleseed before doing so.)"
   echo "  --collect-link      Like --collect-copy but only sim linking."
@@ -301,22 +294,13 @@ handle_options() {
   while [ $# -gt 0 ]; do
     case $1 in
       # Arguments
-      -a | --apple-root)
+      -b | --build)
         if ! has_argument $@; then
-            echo "APPLESEED SOURCE was given no value." >&2
+            echo "BUILD TYPE was given no value." >&2
             usage
             exit 1
         fi
-        _sAppleseedSource=$(extract_argument $@)
-        shift
-        ;;
-      --branch)
-        if ! has_argument $@; then
-            echo "BRANCH was given no value." >&2
-            usage
-            exit 1
-        fi
-        _sAppleseedSourceGitBranch=$(extract_argument $@)
+        _sBuildType=$(extract_argument $@)
         shift
         ;;
       --cc)
@@ -337,18 +321,9 @@ handle_options() {
         _sCXXCompiler=$(extract_argument $@)
         shift
         ;;
-      -b | --build)
-        if ! has_argument $@; then
-            echo "BUILD TYPE was given no value." >&2
-            usage
-            exit 1
-        fi
-        _sBuildType=$(extract_argument $@)
-        shift
-        ;;
       -d | --deps)
         if ! has_argument $@; then
-            echo "DEPENDENCIES DIRECTORY was given no value." >&2
+            echo "DEPS was given no value." >&2
             usage
             exit 1
         fi
@@ -358,11 +333,29 @@ handle_options() {
         ;;
       -r | --root)
         if ! has_argument $@; then
-            echo "ROOT" >&2
+            echo "ROOT was given no value." >&2
             usage
             exit 1
         fi
         _sRoot=$(realpath $(extract_argument $@))
+        shift
+        ;;
+      -s | --source)
+        if ! has_argument $@; then
+            echo "SOURCE was given no value." >&2
+            usage
+            exit 1
+        fi
+        _sAppleseedSource=$(extract_argument $@)
+        shift
+        ;;
+      --branch)
+        if ! has_argument $@; then
+            echo "BRANCH was given no value." >&2
+            usage
+            exit 1
+        fi
+        _sAppleseedSourceGitBranch=$(extract_argument $@)
         shift
         ;;
       # Dependency Installation Arguments
@@ -495,22 +488,28 @@ handle_options() {
         ;;
       --client)
         _sWithClient=ON
+        _sWithAll=OFF
         ;;
       --studio)
         _sWithStudio=ON
         _sWithPython2Bindings=ON # required for studio
+        _sWithAll=OFF
         ;;
       --bench)
         _sWithBench=ON
+        _sWithAll=OFF
         ;;
       --tools)
         _sWithTools=ON
+        _sWithAll=OFF
         ;;
       --python2-bindings)
         _sWithTools=ON
+        _sWithAll=OFF
         ;;
       --embree)
         _sWithEmbree=ON
+        _sWithAll=OFF
         ;;
       *)
         echo "Invalid option: $1" >&2
@@ -566,73 +565,41 @@ fi
 
 # Root Directory
 
+sRemoveSuffix=""
 case $_sRoot in
-  *appleseed/scripts/Ubuntu_20.04_setup/|*appleseed/scripts/Ubuntu_20.04_setup|*appleseed/scripts/|*appleseed/scripts|*appleseed/|*appleseed)
-    echo "It looks like the path in ROOT may be a child directory of the Appleseed root directory. Are you sure you want to continue with \"$_sRoot\" as the root directory?"
-    select strictreply in "Yes" "No"; do
-      relaxedreply=${strictreply:-$REPLY}
-      case $relaxedreply in
-        Yes | YES | yes | y ) break;;
-        No  | NO  | no  | n )
-          echo "Tip: Try running this script from the parent directory of the Appleseed root directory or setting ROOT directly using -r or --root. (Use -h or --help to see usage help.) Exiting.";
-          exit 0
-          ;;
-      esac
-    done
-    ;;
-  *);;
+  *scripts/Ubuntu_20.04_setup/) sRemoveSuffix=scripts/Ubuntu_20.04_setup/;;
+  *scripts/Ubuntu_20.04_setup)  sRemoveSuffix=scripts/Ubuntu_20.04_setup;;
+  *scripts/)                    sRemoveSuffix=scripts/;;
+  *scripts)                     sRemoveSuffix=scripts;;
+  *);; # pass
 esac
 
-# dependencies directory
-if [ $_bCustomDependenciesDir = false ]; then
-  _sDependenciesDir=$_sRoot/$_DEFAULT_DEPENDENCIES_DIR_NAME
+if [[ $sRemoveSuffix != "" ]]; then
+  withSuffixRemoved=${_sRoot//$sRemoveSuffix/}
+  echo "Current ROOT \"$_sRoot\" may be a child directory of Appleseed's root directory. Do you want to set ROOT to \"$withSuffixRemoved\" instead?"
+  select strictreply in "Yes" "No"; do
+    relaxedreply=${strictreply:-$REPLY}
+    case $relaxedreply in
+      Yes | YES | yes | y )
+        _sRoot=$withSuffixRemoved
+        break
+        ;;
+      No  | NO  | no  | n )
+        break
+        ;;
+    esac
+  done
 fi
 
-# Appleseed Source
-
-if [[ $_sAppleseedSource == "" ]]; then
-  stepInfo $_NAME "APPLEESEED SOURCE was not specified, assuming \"<ROOT>/appleseed\"."
-  _sAppleseedRoot=$_sRoot/appleseed
-
-elif [[ $_sAppleseedSource =~ ^git@.* ]] || [[ $_sAppleseedSource =~ ^https.* ]]; then
-  stepInfo $_NAME "APPLEESEED SOURCE is a git link."
-  _sAppleseedRoot=$_sRoot/appleseed
-  if [ -d "$_sAppleseedRoot/src" ]; then
-    stepInfo $_NAME "APPLEESEED ROOT \"$_sAppleseedRoot/src\" exists. (Appleseed was already cloned.)"
-    _bAppleseedRootPrepared=true
-  else
-    stepInfo $_NAME "Appleseed will be cloned later."
-  fi
-
-elif [[ $_sAppleseedSource =~ ^.*\.zip ]]; then
-  stepInfo $_NAME "APPLEESEED SOURCE is a ZIP file."
-  _sAppleseedRoot=$_sRoot/appleseed
-  if [ -d "$_sAppleseedRoot/src" ]; then
-    stepInfo $_NAME "APPLEESEED ROOT \"$_sAppleseedRoot/src\" exists. (ZIP file was already unzipped.)"
-    _bAppleseedRootPrepared=true
-  else
-    stepInfo $_NAME "Appleseed will be unzipped later."
-  fi
-
-elif [[ $_sAppleseedSource =~ ^.*\.tar ]] || [[ $_sAppleseedSource =~ ^.*\.tar\.gz ]]; then
-  stepInfo $_NAME "APPLEESEED SOURCE is a TAR file."
-  _sAppleseedRoot=$_sRoot/appleseed
-  if [ -d "$_sAppleseedRoot/src" ]; then
-    stepInfo $_NAME "APPLEESEED ROOT \"$_sAppleseedRoot/src\" exists. (TAR file was already unpacked.)"
-    _bAppleseedRootPrepared=true
-  else
-    stepInfo $_NAME "Appleseed will be unpacked later."
-  fi
-
-elif [ -d $_sAppleseedSource ]; then
-  stepInfo $_NAME "APPLEESEED SOURCE is a directory - setting APPLESEED ROOT accordingly."
-  _sAppleseedRoot=$_sAppleseedSource
-  _bAppleseedRootPrepared=true
-
-else
-  echo "Error: Could not identify nature of APPLESEED SOURCE: \"$_sAppleseedSource\". Exiting."
+if [[ $_sAppleseedSource == "" ]] && [ ! -f $_sRoot/src/appleseed/main/dllmain.cpp ]; then
+  echo "Error: \"$_sAppleseedSource\" is not a valid ROOT directory. Exiting."
   exit 1
+fi
 
+# Dependencies Directory
+
+if [ $_bCustomDependenciesDir = false ]; then
+  _sDependenciesDir=$_sRoot/$_DEFAULT_DEPENDENCIES_DIR_NAME
 fi
 
 
@@ -642,14 +609,12 @@ fi
 
 stepInfo $_NAME "Confirm settings ..."
 
-if [ $_bClang = true ]; then
-  echo "Using Clang."
-fi
-
-echo "  Root directory: \"$_sRoot\""
-
 if [ -n $_sBuildType ]; then
   echo "  Build type: $_sBuildType"
+fi
+
+if [ $_bClang = true ]; then
+  echo "  Using Clang."
 fi
 
 if [[ $_bVerbose = true ]]; then
@@ -657,7 +622,10 @@ if [[ $_bVerbose = true ]]; then
 fi
 
 # Paths:
-echo "  Appleseed Root Directory: \"$_sAppleseedRoot\""
+echo "  Root Directory: \"$_sRoot\""
+if [[ $_sAppleseedSource != "" ]]; then
+  echo "  Appleseed Source: \"$_sAppleseedSource\""
+fi
 
 echo "  Install Directories:"
 printf "${_COLOR_GRAY}  Note: If no install directory is given, it is searched in \"$_sDependenciesDir\" for an installation."
@@ -690,11 +658,79 @@ if [ $_bAsk = true ]; then
   done
 fi
 
+# Optional Dependencies
+
+# _sWithAll is ON by default.
+if [ $_sWithAll = ON ]; then
+  _sWithClient=ON
+  _sWithStudio=ON
+  _sWithBench=ON
+  _sWithTools=ON
+  _sWithPython2Bindings=ON
+  _sWithEmbree=ON
+fi
+
+# TODO: Print what opt. deps will be build.
+
 # ----------------------------------------------------------------
 # Setup
 # ----------------------------------------------------------------
 
 stepInfo $_NAME "Setting Up ..."
+
+if [[ $_sAppleseedSource != "" ]]; then
+
+  stepInfo $_NAME "Sourcing Appleseed ..."
+
+  if [[ $_sAppleseedSource =~ ^git@.* ]] || [[ $_sAppleseedSource =~ ^https.* ]]; then
+    stepInfo $_NAME "Cloning Appleseed into \"$_sRoot\" ..."
+    $_DEBUG cd $_sRoot
+    $_DEBUG cd ..
+    branch=""
+    if [[ $_sAppleseedSourceGitBranch != "" ]]; then
+      branch="--branch $_sAppleseedSourceGitBranch"
+    fi
+    $_DEBUG git clone $_sAppleseedSource $branch
+
+  elif [[ $_sAppleseedSource =~ ^.*\.zip ]]; then
+    stepInfo $_NAME "Unzipping into \"$_sRoot\" ..."
+    $_DEBUG cd $_sRoot
+    $_DEBUG cd ..
+    $_DEBUG rm -fr appleseed
+    bn=$(basename $_sAppleseedSource)
+    bn=${bn//".zip"/}
+    $_DEBUG unzip -q -d "." $_sAppleseedSource
+    $_DEBUG mv ./$bn ./appleseed # rename
+
+  elif [[ $_sAppleseedSource =~ ^.*\.tar\.gz ]]; then
+    stepInfo $_NAME "Unpacking into \"$_sRoot\" ..."
+    $_DEBUG cd $_sRoot
+    $_DEBUG cd ..
+    $_DEBUG rm -fr appleseed
+    bn=$(basename $_sAppleseedSource)
+    echo $bn
+    bn=${bn//".tar.gz"/}
+    $_DEBUG tar -zxf $_sAppleseedSource -C "."
+    $_DEBUG mv ./$bn ./appleseed # rename
+
+  elif [[ $_sAppleseedSource =~ ^.*\.tar ]]; then
+    stepInfo $_NAME "Unpacking into \"$_sRoot\" ..."
+    $_DEBUG cd $_sRoot
+    $_DEBUG cd ..
+    $_DEBUG rm -fr appleseed
+    bn=$(basename $_sAppleseedSource)
+    bn=${bn//".tar"/}
+    $_DEBUG tar -xf $_sAppleseedSource -C "."
+    $_DEBUG mv ./$bn ./appleseed # rename
+
+  else
+    echo "Error: Could not handle SOURCE: \"$_sAppleseedSource\". Exiting."
+    exit 1
+
+  fi
+
+  stepInfo $_NAME "Sourcing Appleseed."
+fi
 
 # Create `dependencies` directory, if it does not exits.
 $_DEBUG cd $_sRoot
@@ -1279,6 +1315,8 @@ if [[ $_sOSLInstallDir = "" ]]; then
     # check for patch file
     if [ -f $_sRoot/fixOSL1957.cpp ]; then
       _sOSLPatchFilePath="$_sRoot/fixOSL1957.cpp"
+    elif [ -f $_sRoot/scripts/Ubuntu_20.04_setup/fixOSL1957.cpp ]; then
+      _sOSLPatchFilePath="$_sRoot/scripts/Ubuntu_20.04_setup/fixOSL1957.cpp"
     elif [ -f $_SCRIPT_DIR/fixOSL1957.cpp ]; then
       _sOSLPatchFilePath="$_SCRIPT_DIR/fixOSL1957.cpp"
     else
@@ -1446,60 +1484,6 @@ stepInfo $_NAME "Dependencies installed."
 
 stepInfo $_NAME "Building $_APPLESEED ..."
 
-# setup
-
-if [ $_bAppleseedRootPrepared = false ]; then
-
-  if [[ $_sAppleseedSource == "" ]]; then
-    if [ ! -d "$_sAppleseedRoot/src" ]; then
-      echo "Error: \"$_sAppleseedRoot\" does not contain a valid source for Appleseed. Exiting."
-      exit 1
-    fi
-
-  elif [[ $_sAppleseedSource =~ ^git@.* ]] || [[ $_sAppleseedSource =~ ^https.* ]]; then
-    stepInfo $_NAME "Cloning Appleseed into \"$_sRoot\" ..."
-    $_DEBUG cd $_sRoot
-    branch=""
-    if [[ $_sAppleseedSourceGitBranch != "" ]]; then
-      branch="--branch $_sAppleseedSourceGitBranch"
-    fi
-    $_DEBUG git clone $_sAppleseedSource $branch
-
-  elif [[ $_sAppleseedSource =~ ^.*\.zip ]]; then
-    stepInfo $_NAME "Unzipping into \"$_sRoot\" ..."
-    bn=$(basename $_sAppleseedSource)
-    bn=${bn//".zip"/}
-    $_DEBUG unzip -q -d $_sRoot $_sAppleseedSource
-    $_DEBUG mv ./$bn ./appleseed # rename
-
-  elif [[ $_sAppleseedSource =~ ^.*\.tar\.gz ]]; then
-    stepInfo $_NAME "Unpacking into \"$_sRoot\" ..."
-    bn=$(basename $_sAppleseedSource)
-    echo $bn
-    bn=${bn//".tar.gz"/}
-    $_DEBUG tar -zxf $_sAppleseedSource -C $_sRoot
-    $_DEBUG mv ./$bn ./appleseed # rename
-
-  elif [[ $_sAppleseedSource =~ ^.*\.tar ]]; then
-    stepInfo $_NAME "Unpacking into \"$_sRoot\" ..."
-    bn=$(basename $_sAppleseedSource)
-    bn=${bn//".tar"/}
-    $_DEBUG tar -xf $_sAppleseedSource -C $_sRoot
-    $_DEBUG mv ./$bn ./appleseed # rename
-
-  elif [ -d $_sAppleseedSource ]; then
-    true # pass
-
-  else
-    echo "Error: Could not identify nature of APPLESEED SOURCE: \"$_sAppleseedSource\". Exiting."
-    exit 1
-
-  fi
-
-  _bAppleseedRootPrepared=true
-
-fi
-
 # apt install dependencies
 $_DEBUG sudo apt install -y \
   freeglut3-dev \
@@ -1511,7 +1495,7 @@ $_DEBUG sudo apt install -y \
   zlib1g-dev
    
 
-$_DEBUG cd $_sAppleseedRoot
+$_DEBUG cd $_sRoot
 
 if [ ! -d ./build ]; then
   _bNewBuild=true # build new if no build directory exists yet
@@ -1559,7 +1543,7 @@ if [ $_bNewBuild = true ]; then
   stepInfo $_APPLESEED "Configured CMake."
 fi
 
-if [[ -f $_sAppleseedRoot/sandbox/lib/$_sBuildType/libappleseed.so && $_bNewBuild = false ]]; then
+if [[ -f $_sRoot/sandbox/lib/$_sBuildType/libappleseed.so && $_bNewBuild = false ]]; then
   stepInfo $_NAME "Appleseed is already built. (Add -n or --new to re-build.)"
 else
   stepInfo $_APPLESEED "Building ..."
