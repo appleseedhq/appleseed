@@ -689,6 +689,7 @@ if [[ $_sAppleseedSource != "" ]]; then
   if [[ $_sAppleseedSource =~ ^git@.* ]] || [[ $_sAppleseedSource =~ ^https.* ]]; then
     stepInfo $_NAME "Cloning Appleseed into \"$_sRoot\" ..."
     $_DEBUG cd $_sRoot
+    $_DEBUG rm -fr *
     $_DEBUG cd ..
     branch=""
     if [[ $_sAppleseedSourceGitBranch != "" ]]; then
