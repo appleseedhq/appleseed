@@ -2,4 +2,3 @@ build/
 sandbox/shaders/
 *.pyc
 __pycache__
-.vscode/
