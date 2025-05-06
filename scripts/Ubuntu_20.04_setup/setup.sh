@@ -8,11 +8,39 @@ set -e
 # ================================================================
 # This script can be used to install Appleseed and all of its dependencies.
 # Use -h or --help to get a list of all possible arguments and options.
+#
+# Below are constants which may be set by the user (though everything can also be set via flags -- set `-h` for help.)
+#
+# All variables beginning with `_` are internal variables and should not manually be changed unless you know what you are doing!
 # 
 # Note: This script has only been tested on Ubuntu 22.04!
 
-# This text is also displayed if the script is called with no arguments.
+# ================================================================
+# Set Constants
+# ================================================================
 
+# README: YOU CAN CHANGE THESE VARIABLES
+
+# Optional Components
+WITH_BENCH=ON
+WITH_CLIENT=ON
+WITH_STUDIO=ON
+WITH_TOOLS=ON
+WITH_PYTHON2_BINDINGS=ON
+WITH_EMBREE=ON
+
+# Download Links
+BOOST_DL="https://github.com/boostorg/boost/releases/download/boost-1.88.0/boost-1.88.0-b2-nodocs.tar.gz"
+EMBREE_DL="https://github.com/RenderKit/embree/releases/download/v4.4.0/embree-4.4.0.x86_64.linux.tar.gz"
+IMATH_DL="https://github.com/AcademySoftwareFoundation/Imath/releases/download/v3.1.12/Imath-3.1.12.tar.gz"
+OCIO_DL="https://github.com/AcademySoftwareFoundation/OpenColorIO/archive/refs/tags/v2.4.2.tar.gz"
+OEXR_DL="https://github.com/AcademySoftwareFoundation/openexr/releases/download/v3.3.3/openexr-3.3.3.tar.gz"
+OIIO_DL="https://github.com/AcademySoftwareFoundation/OpenImageIO/releases/download/v2.5.18.0/OpenImageIO-2.5.18.0.tar.gz"
+OSL_DL="https://github.com/AcademySoftwareFoundation/OpenShadingLanguage/archive/refs/tags/v1.13.12.0.tar.gz" # TODO: update to 1.14
+PARTIO_DL="https://github.com/wdas/partio/archive/refs/tags/v1.19.0.tar.gz"
+XERCES_DL="https://github.com/apache/xerces-c/archive/refs/tags/v3.3.0.tar.gz"
+
+# README: YOU SHOULD NOT CHANGE ANY OF THE VARIABLES BELOW, UNLESS YOU KNOW WHAT YOU ARE DOING.
 
 # ================================================================
 # Constants
@@ -22,8 +50,6 @@ set -e
 # (If `fixOSL1957.cpp` is not found in ROOT, it will also be searched for in the script's directory.)
 _SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-# "Main Name" of the "master script".
-_NAME="SETUP"
 # If _DEBUG is set to `echo` most commands (e.g. rm, wget, or running scripts) will only be printed and not executed.
 # Note: The former "debug mode" was renamed to "preview mode".
 _DEBUG=
@@ -31,7 +57,17 @@ _DEBUG=
 
 # DEPENDENCIES_DIR relative to APPLESEED_ROOT
 _DEFAULT_DEPENDENCIES_DIR_NAME="dependencies"
+# Note: Building has only been tested for C++ standard 17.
+#       C++ standard 17 is the minimum requirement for many of the dependencies build here and thus is required.
 _CXX_STD=17
+
+# ----------------------------------------------------------------
+# Cosmetics
+# ----------------------------------------------------------------
+# These constants are only for cosmetics (formatting, how things are named or colored, etc.).
+
+# "Main Name" of the "master script".
+_NAME="SETUP"
 
 # Appleseed (Name)
 _APPLESEED=Appleseed
@@ -46,17 +82,6 @@ _OPENEXR=OpenEXR
 _OSL=OSL
 _PARTIO=PartIO
 _XERCES=Xerces
-
-# Dependencies Releases Links
-_BOOST_DL="https://github.com/boostorg/boost/releases/download/boost-1.88.0/boost-1.88.0-b2-nodocs.tar.gz"
-_EMBREE_DL="https://github.com/RenderKit/embree/releases/download/v4.4.0/embree-4.4.0.x86_64.linux.tar.gz"
-_IMATH_DL="https://github.com/AcademySoftwareFoundation/Imath/releases/download/v3.1.12/Imath-3.1.12.tar.gz"
-_OCIO_DL="https://github.com/AcademySoftwareFoundation/OpenColorIO/archive/refs/tags/v2.4.2.tar.gz"
-_OEXR_DL="https://github.com/AcademySoftwareFoundation/openexr/releases/download/v3.3.3/openexr-3.3.3.tar.gz"
-_OIIO_DL="https://github.com/AcademySoftwareFoundation/OpenImageIO/releases/download/v2.5.18.0/OpenImageIO-2.5.18.0.tar.gz"
-_OSL_DL="https://github.com/AcademySoftwareFoundation/OpenShadingLanguage/archive/refs/tags/v1.13.12.0.tar.gz" # TODO: update to 1.14
-_PARTIO_DL="https://github.com/wdas/partio/archive/refs/tags/v1.19.0.tar.gz"
-_XERCES_DL="https://github.com/apache/xerces-c/archive/refs/tags/v3.3.0.tar.gz"
 
 # Colors
 _COLOR_CLEAR='\033[0m'
@@ -96,18 +121,12 @@ _bNewBuild=false
 _bNuke=false
 _sVerbose=""
 
-#utilities
+# utilities
 _bCollect=false
 _sCollectType="copy" # options: "copy" | "link"
 
-# appleseed optional components
-_sWithAll=ON
-_sWithClient=OFF
-_sWithStudio=OFF
-_sWithBench=OFF
-_sWithTools=OFF
-_sWithPython2Bindings=OFF
-_sWithEmbree=OFF
+# "no optional components flags seen" variable
+_bNoOptCompFlags=true
 
 # dependency install directories
 _sBoostInstallDir=""
@@ -143,6 +162,22 @@ _sCollectLibPath=""
 # ----------------------------------------------------------------
 # Helper Functions
 # ----------------------------------------------------------------
+
+optCompFlagCheck() {
+  # If this is called (meaning a "optional component flag" is being handled by `handle_options`) then chick if `_bNoOptCompFlags` is true.
+  # If it is, that means this is the first "optional component flag" seen. In this case all "WITH_X" variables are set to OFF and `_bNoOptCompFlags` is set to false. The appropriate "WITH_X" flag should then set to ON by `handle_options`.
+  # Else nothing happens. (All "WITH_X" variables were already set to OFF once and should now be set to ON by `handle_options` when an appropriate "optional component flag" is seen.)
+  if [ $_bNoOptCompFlags == true ]; then
+    WITH_BENCH=OFF
+    WITH_CLIENT=OFF
+    WITH_STUDIO=OFF
+    WITH_TOOLS=OFF
+    WITH_PYTHON2_BINDINGS=OFF
+    WITH_EMBREE=OFF
+
+    _bNoOptCompFlags=false
+  fi
+}
 
 cleanInstallStep() {
   $_DEBUG cd $_sDependenciesDir
@@ -227,7 +262,7 @@ dependencyInstallInfo() {
 }
 
 optionalComponentBuildInfo() {
-  # $1 _NAME, $2 _sWithCOMPONENT
+  # $1 _NAME, $2 WITH_X
   if [ $2 = ON ]; then echo "    $1"; fi
 }
 
@@ -483,30 +518,30 @@ handle_options() {
         _sCollectType="link"
         ;;
       # Optional Components
+      --bench)
+        optCompFlagCheck
+        WITH_BENCH=ON
+        ;;
       --client)
-        _sWithClient=ON
-        _sWithAll=OFF
+        optCompFlagCheck
+        WITH_CLIENT=ON
         ;;
       --studio)
-        _sWithStudio=ON
-        _sWithPython2Bindings=ON # required for studio
-        _sWithAll=OFF
-        ;;
-      --bench)
-        _sWithBench=ON
-        _sWithAll=OFF
+        optCompFlagCheck
+        WITH_STUDIO=ON
+        WITH_PYTHON2_BINDINGS=ON
         ;;
       --tools)
-        _sWithTools=ON
-        _sWithAll=OFF
+        optCompFlagCheck
+        WITH_TOOLS=ON
         ;;
       --python2-bindings)
-        _sWithTools=ON
-        _sWithAll=OFF
+        optCompFlagCheck
+        WITH_PYTHON2_BINDINGS=ON
         ;;
       --embree)
-        _sWithEmbree=ON
-        _sWithAll=OFF
+        optCompFlagCheck
+        WITH_PYTHON2_BINDINGS=ON
         ;;
       *)
         echo "Invalid option: $1" >&2
@@ -642,25 +677,13 @@ dependencyInstallInfo $_PARTIO  $_sPartIOInstallDir
 dependencyInstallInfo $_XERCES  $_sXercesInstallDir
 
 # Optional Dependencies
-
-# _sWithAll is ON by default.
-if [ $_sWithAll = ON ]; then
-  echo "  Building all available optional dependencies."
-  _sWithClient=ON
-  _sWithStudio=ON
-  _sWithBench=ON
-  _sWithTools=ON
-  _sWithPython2Bindings=ON
-  _sWithEmbree=ON
-else
-  echo "  Building the following optional dependencies:"
-  optionalComponentBuildInfo Client             $_sWithClient
-  optionalComponentBuildInfo Studio             $_sWithStudio
-  optionalComponentBuildInfo Bench              $_sWithBench
-  optionalComponentBuildInfo Tools              $_sWithTools
-  optionalComponentBuildInfo "Python2 Bindings" $_sWithPython2Bindings
-  optionalComponentBuildInfo Embree             $_sWithEmbree
-fi
+echo "  Building the following optional dependencies:"
+optionalComponentBuildInfo Client             $WITH_CLIENT
+optionalComponentBuildInfo Studio             $WITH_STUDIO
+optionalComponentBuildInfo Bench              $WITH_BENCH
+optionalComponentBuildInfo Tools              $WITH_TOOLS
+optionalComponentBuildInfo "Python2 Bindings" $WITH_PYTHON2_BINDINGS
+optionalComponentBuildInfo Embree             $WITH_EMBREE
 
 if [ $_bAsk = true ]; then
   # Checkpoint
@@ -860,7 +883,7 @@ fi
 # Embree
 # ----------------------------------------------------------------
 
-if [[ $_sEmbreeInstallDir = "" && $_sWithEmbree = ON ]]; then
+if [[ $_sEmbreeInstallDir = "" && $WITH_EMBREE = ON ]]; then
 
   # setup
   depName=$_EMBREE
@@ -1535,13 +1558,13 @@ if [ $_bNewBuild = true ]; then
     -DOPENIMAGEIO_OIIOTOOL=$_sOIIOInstallDir/bin/oiiotool \
     -DOSL_DIR=$_sOSLInstallDir/lib/cmake/OSL \
     -DXerces_DIR=$_sXercesInstallDir/lib/cmake/XercesC \
-    -DWITH_CLI=$_sWithClient \
-    -DWITH_STUDIO=$_sWithStudio \
-    -DWITH_BENCH=$_sWithBench \
-    -DWITH_TOOLS=$_sWithTools \
-    -DWITH_PYTHON2_BINDINGS=$_sWithPython2Bindings \
+    -DWITH_CLI=$WITH_CLIENT \
+    -DWITH_STUDIO=$WITH_STUDIO \
+    -DWITH_BENCH=$WITH_BENCH \
+    -DWITH_TOOLS=$WITH_TOOLS \
+    -DWITH_PYTHON2_BINDINGS=$WITH_PYTHON2_BINDINGS \
     -DWITH_PYTHON3_BINDINGS=OFF \
-    -DWITH_EMBREE=$_sWithEmbree \
+    -DWITH_EMBREE=$WITH_EMBREE \
     -DWITH_GPU=OFF \
     -DWITH_SPECTRAL_SUPPORT=OFF \
     ..
@@ -1584,7 +1607,7 @@ if [[ $_bCollect = true ]]; then
   cd $_sDependenciesDir
 
   collect $_sCollectType $_sBoostInstallDir
-  if [[ $_sWithEmbree = ON ]]; then collect $_sCollectType $_sEmbreeInstallDir; fi
+  if [[ $WITH_EMBREE = ON ]]; then collect $_sCollectType $_sEmbreeInstallDir; fi
   collect $_sCollectType $_sOCIOInstallDir
   collect $_sCollectType $_sOIIOInstallDir
   collect $_sCollectType $_sOpenEXRInstallDir
