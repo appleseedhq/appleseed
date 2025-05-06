@@ -9,9 +9,9 @@ set -e
 # This script can be used to install Appleseed and all of its dependencies.
 # Use -h or --help to get a list of all possible arguments and options.
 #
-# Below are constants which may be set by the user (though everything can also be set via flags -- set `-h` for help.)
+# Below are constants which may be set by the user (though everything can also be set -- and is preferred to be set -- via flags).
 #
-# All variables beginning with `_` are internal variables and should not manually be changed unless you know what you are doing!
+# All variables beginning with `_` are internal variables and should NOT manually be changed, unless you know what you are doing!
 # 
 # Note: This script has only been tested on Ubuntu 22.04!
 
@@ -27,7 +27,18 @@ set -e
 DEBUG=
 #DEBUG=echo
 
+# Build Type
+# Can be set using the `-b` or `--build` flag.
+BUILD_TYPE="Ship"
+
+# C and C++ Compiler
+# Can be set using the `--cc` and `--cxx` flags respectively.
+# Note: If not set here, or via flags, will search for it in `/usr/bin`.
+C_COMPILER=
+CXX_COMPILER=
+
 # Optional Components
+# Can bse set using their flags (e.g. `--bench`, `--client`, etc.).
 WITH_BENCH=ON
 WITH_CLIENT=ON
 WITH_STUDIO=ON
@@ -56,14 +67,16 @@ XERCES_DL="https://github.com/apache/xerces-c/archive/refs/tags/v3.3.0.tar.gz"
 # (If `fixOSL1957.cpp` is not found in ROOT, it will also be searched for in the script's directory.)
 _SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-# DEPENDENCIES_DIR relative to APPLESEED_ROOT
+# DEPENDENCIES_DIR relative to ROOT
 _DEFAULT_DEPENDENCIES_DIR_NAME="dependencies"
+
+# C++ Standard
 # Note: Building has only been tested for C++ standard 17.
-#       C++ standard 17 is the minimum requirement for many of the dependencies build here and thus is required.
+#       C++ standard 17 is the minimum requirement for many of the dependencies build here and thus is our minimum requirement.
 _CXX_STD=17
 
 # ----------------------------------------------------------------
-# Cosmetics
+# Cosmetic Constants
 # ----------------------------------------------------------------
 # These constants are only for cosmetics (formatting, how things are named or colored, etc.).
 
@@ -99,13 +112,8 @@ _COLOR_DEFAULT=$_COLOR_PURPLE
 _COLOR_INSTALL_DIR=$_COLOR_CYAN
 
 # ================================================================
-# Variables and Default Values
+# Internal Variables
 # ================================================================
-
-_sCCompiler=""
-_sCXXCompiler=""
-
-_sBuildType="Ship"
 
 _sRoot=$(pwd)
 _sDependenciesDir=""
@@ -341,7 +349,7 @@ handle_options() {
             usage
             exit 1
         fi
-        _sBuildType=$(extract_argument $@)
+        BUILD_TYPE=$(extract_argument $@)
         shift
         ;;
       --cc)
@@ -350,7 +358,7 @@ handle_options() {
             usage
             exit 1
         fi
-        _sCCompiler=$(extract_argument $@)
+        C_COMPILER=$(extract_argument $@)
         shift
         ;;
       --cxx)
@@ -359,7 +367,7 @@ handle_options() {
             usage
             exit 1
         fi
-        _sCXXCompiler=$(extract_argument $@)
+        CXX_COMPILER=$(extract_argument $@)
         shift
         ;;
       -d | --deps)
@@ -642,8 +650,8 @@ fi
 
 stepInfo $_NAME "Confirm settings ..."
 
-if [ -n $_sBuildType ]; then
-  echo "  Build type: $_sBuildType"
+if [ -n $BUILD_TYPE ]; then
+  echo "  Build type: $BUILD_TYPE"
 fi
 
 if [ $_bClang = true ]; then
@@ -768,27 +776,27 @@ $DEBUG mkdir -p $_sDependenciesDir
 # build essentials
 $DEBUG sudo apt install -y build-essential cmake
 
-if [[ $_sCCompiler == "" ]]; then
+if [[ $C_COMPILER == "" ]]; then
   if [ $_bClang = true ]; then
-    _sCCompiler=/usr/bin/clang
-    _sCXXCompiler=/usr/bin/clang++
+    C_COMPILER=/usr/bin/clang
+    CXX_COMPILER=/usr/bin/clang++
   else
-    _sCCompiler=/usr/bin/gcc
-    _sCXXCompiler=/usr/bin/g++
+    C_COMPILER=/usr/bin/gcc
+    CXX_COMPILER=/usr/bin/g++
   fi
 fi
 # check compiler
-if [ ! -f $_sCCompiler ]; then
-  echo "Error: Could not find C compiler \"$_sCCompiler\". Exiting."
+if [ ! -f $C_COMPILER ]; then
+  echo "Error: Could not find C compiler \"$C_COMPILER\". Exiting."
   exit 1
 fi
-if [ ! -f $_sCXXCompiler ]; then
-  echo "Error: Could not find C++ compiler \"$_sCXXCompiler\". Exiting."
+if [ ! -f $CXX_COMPILER ]; then
+  echo "Error: Could not find C++ compiler \"$CXX_COMPILER\". Exiting."
   exit 1
 fi
 # set compiler vars
-export CC=$_sCCompiler
-export CXX=$_sCXXCompiler
+export CC=$C_COMPILER
+export CXX=$CXX_COMPILER
 
 stepInfo $_NAME "Setup complete."
 
@@ -1543,7 +1551,7 @@ if [ $_bNewBuild = true ]; then
   $DEBUG cmake \
     -Wno-dev \
     -DWARNINGS_AS_ERRORS=OFF \
-    -DCMAKE_BUILD_TYPE=$_sBuildType \
+    -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
     -DCMAKE_CXX_FLAGS=-D_GLIBCXX_USE_CXX11_ABI=1 \
     -DCMAKE_PREFIX_PATH=/usr/include/x86_64-linux-gnu/qt5 \
     -DUSE_SSE42=ON \
@@ -1572,7 +1580,7 @@ if [ $_bNewBuild = true ]; then
   stepInfo $_APPLESEED "Configured CMake."
 fi
 
-if [[ -f $_sRoot/sandbox/lib/$_sBuildType/libappleseed.so && $_bNewBuild = false ]]; then
+if [[ -f $_sRoot/sandbox/lib/$BUILD_TYPE/libappleseed.so && $_bNewBuild = false ]]; then
   stepInfo $_NAME "Appleseed is already built. (Add -n or --new to re-build.)"
 else
   stepInfo $_APPLESEED "Building ..."
