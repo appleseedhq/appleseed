@@ -408,7 +408,9 @@ handle_options() {
             usage
             exit 1
         fi
+        echo "DEPS extract argument called with:" $@
         _sDependenciesDir=$(extract_argument $@)
+        echo "Extracted:" $_sDependenciesDir
         _bCustomDependenciesDir=true
         shift
         ;;
@@ -692,6 +694,7 @@ if [ $_bCustomDependenciesDir = false ]; then
   _sDependenciesDir=$_sRoot/$_DEFAULT_DEPENDENCIES_DIR_NAME
 fi
 
+_sDependenciesDir=$(realpath $_sAppleseedRoot/dependencies)
 
 # ----------------------------------------------------------------
 # Echo Settings
