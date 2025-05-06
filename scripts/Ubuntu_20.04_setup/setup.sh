@@ -8,7 +8,7 @@ set -e
 # ================================================================
 # This script can be used to install Appleseed and all of its dependencies.
 #
-# Easiest is to run it from Appleseed's root directory -- so `./scripts/Ubuntu_20.04_setup/setup.sh`.
+# Easiest is to run it from Appleseed's root directory -- e.g. `./scripts/Ubuntu_20.04_setup/setup.sh`.
 #
 # Use -h or --help to get a list of all possible arguments and options.
 #
@@ -24,6 +24,8 @@ set -e
 # ================================================================
 
 # README: YOU CAN CHANGE THESE VARIABLES
+
+# Note: Flags will overwrite the values here.
 
 # Preview Mode
 # Can be set using the `--preview` flag.
@@ -42,7 +44,8 @@ C_COMPILER=
 CXX_COMPILER=
 
 # Optional Components
-# Can bse set using their flags (e.g. `--bench`, `--client`, etc.).
+# Can be set using their flags (e.g. `--bench`, `--client`, etc.).
+# Note: If at least one such flag is set, it will ONLY build those mentioned (via flag) optional components.
 WITH_BENCH=ON
 WITH_CLIENT=ON
 WITH_STUDIO=ON
@@ -260,6 +263,7 @@ nuke() {
 
 # Prints a "step info" of the form '~~> [Name] Step Message'.
 stepInfo() {
+  # $1 name $2 message (optional) $3 color 
   if [[ $3 = "" ]]; then
     printf "${_COLOR_DEFAULT}~~> [$1] $2${_COLOR_CLEAR}\n"
   else
@@ -270,6 +274,7 @@ stepInfo() {
 
 # Makes a fully capitalized "root variable name" of the form 'NAME_ROOT'.
 rootVarName() {
+  # $1 name
   echo $1"_ROOT" | tr a-z A-Z
 }
 
