@@ -4,4 +4,3 @@ dependencies/
 sandbox/shaders/
 *.pyc
 __pycache__
-.vscode/
