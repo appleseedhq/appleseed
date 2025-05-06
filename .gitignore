@@ -4,3 +4,4 @@ sandbox/shaders/
 __pycache__
 .vscode/
 dependencies/
+scratch_data/
