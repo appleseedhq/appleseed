@@ -7,7 +7,11 @@ set -e
 # README
 # ================================================================
 # This script can be used to install Appleseed and all of its dependencies.
+#
+# Easiest is to run it from Appleseed's root directory -- so `./scripts/Ubuntu_20.04_setup/setup.sh`.
+#
 # Use -h or --help to get a list of all possible arguments and options.
+#
 #
 # Below are constants which may be set by the user (though everything can also be set -- and is preferred to be set -- via flags).
 #
@@ -189,11 +193,19 @@ optCompFlagCheck() {
 }
 
 cleanInstallStep() {
+  if [[ $DEBUG != "" ]]; then echo "cleanInstallStep"; fi
   $DEBUG cd $_sDependenciesDir
 
-  rm -f  $_sTarFile
-  rm -fr $_sSourceDir
-  rm -fr $_sBuildDir
+  $DEBUG rm -f  $_sTarFile
+  if [[ $_sSourceDir != $_sDependenciesDir ]]; then
+    $DEBUG rm -fr $_sSourceDir
+  fi
+  if [[ $_sBuildDir != $_sDependenciesDir ]]; then
+    $DEBUG rm -fr $_sBuildDir
+  fi
+  # Here we check if the source/build dir is != the deps dir.
+  # -> Source/build dir is == the deps dir can happen if a "X_DL" variable is set wrongly.
+  # With that we prevent the dependencies dir from being completely deleted by accident.
 
   _sTarFile=""
   _sSourceDir=""
@@ -288,7 +300,7 @@ usage() {
   echo "  --cxx               Specify a c++ compiler (path to). (Will use the g++ compiler by default.)"
   echo "  -d, --deps   DEPS   Specify the directory containing the install directories of dependencies (who's install directory are not explicitly given with one of the arguments below). (Defaults to \"ROOT/$_DEFAULT_DEPENDENCIES_DIR_NAME\".)"
   echo "  -r, --root   ROOT   Specify the Appleseed root directory. (Defaults to the current working directory.)"
-  echo "  -s, --source SOURCE Specify a source for appleseed. This may be a Git HTTPS or SSH link, or a TAR or ZIP file."
+  echo "  -s, --source SOURCE Specify a source for Appleseed. This may be a Git HTTPS or SSH link, or a TAR or ZIP file."
   echo "                      The script will then clone/unpack the source using ROOT as the root directory."
 printf "                      ${_COLOR_ORANGE}Warning: Fetching a new Appleseed repository source fill remove **everything** in ROOT.${_COLOR_CLEAR}\n"
   echo "  --branch            Specify a branch for SOURCE, if it is a Git link. (Defaults to specifying no branch.)"
@@ -306,7 +318,7 @@ printf "                      ${_COLOR_ORANGE}Warning: Fetching a new Appleseed 
   echo ""
   echo "Options:"
   echo "  -h, --help          Display this help message."
-  echo "  -n, --new           Delete appleseed build directory to start new."
+  echo "  -n, --new           Delete Appleseed's build directory to start new."
   echo "  --no-install        Do not install any missing dependencies, exit instead."
   echo "  --nuke              Remove all directories (and their contents) created by this script."
   echo "  --preview           Run in *preview mode*, where most commands (e.g. rm, wget, or running scripts) are only printed and not executed."
@@ -633,7 +645,7 @@ if [[ $sRemoveSuffix != "" ]]; then
 fi
 
 if [[ $_sAppleseedSource == "" ]] && [ ! -f $_sRoot/src/appleseed/main/dllmain.cpp ]; then
-  echo "Error: \"$_sAppleseedSource\" is not a valid ROOT directory. Exiting."
+  echo "Error: \"$_sRoot\" is not a valid ROOT directory. Exiting."
   exit 1
 fi
 
@@ -814,7 +826,7 @@ if [[ $_sBoostInstallDir = "" ]]; then
 
   # setup
   depName=$_BOOST
-  _sTarFile=${_BOOST_DL##*/}
+  _sTarFile=${BOOST_DL##*/}
   sourceFile=${_sTarFile//"-b2-nodocs.tar.gz"/} # boost specific
   sourceVersion=${sourceFile//"boost-"/}
   _sSourceDir="$_sDependenciesDir/$sourceFile"
@@ -849,7 +861,7 @@ if [[ $_sBoostInstallDir = "" ]]; then
     # download if not already
     if [[ ! -f $_sTarFile ]]; then
       stepInfo $depName "Downloading $_sTarFile ..."
-      $DEBUG wget -c $_BOOST_DL
+      $DEBUG wget -c $BOOST_DL
     fi
 
     # unpack
@@ -885,7 +897,7 @@ if [[ $_sBoostInstallDir = "" ]]; then
   stepInfo $_NAME "$depName installed in \"$_sInstallDir\" with config file in \"$_sBoostConfigDir\"." $_COLOR_INSTALL_DIR
 
   # clean step
-  $DEBUG cleanInstallStep
+  cleanInstallStep
 fi
 
 # ----------------------------------------------------------------
@@ -896,7 +908,7 @@ if [[ $_sEmbreeInstallDir = "" && $WITH_EMBREE = ON ]]; then
 
   # setup
   depName=$_EMBREE
-  _sTarFile=${_EMBREE_DL##*/}
+  _sTarFile=${EMBREE_DL##*/}
   tarFileDir="$_sDependenciesDir/$_sTarFile"
   sourceFile=${_sTarFile//".x86_64.linux.tar.gz"/}
   sourceVersion=${sourceFile//"embree-"/}
@@ -922,7 +934,7 @@ if [[ $_sEmbreeInstallDir = "" && $WITH_EMBREE = ON ]]; then
     # download if not already
     if [[ ! -f $_sTarFile ]]; then
       stepInfo $depName "Downloading $_sTarFile ..."
-      $DEBUG wget -c $_EMBREE_DL
+      $DEBUG wget -c $EMBREE_DL
     fi
 
     $DEBUG mkdir $sourceFile
@@ -945,7 +957,7 @@ if [[ $_sEmbreeInstallDir = "" && $WITH_EMBREE = ON ]]; then
 
   # clean step
   _sSourceDir="" # else the install directory is removed
-  $DEBUG cleanInstallStep
+  cleanInstallStep
 fi
 
 
@@ -957,7 +969,7 @@ if [[ $_sImathInstallDir = "" ]]; then
 
   # setup
   depName=$_IMATH
-  _sTarFile=${_IMATH_DL##*/}
+  _sTarFile=${IMATH_DL##*/}
   sourceFile=${_sTarFile//".tar.gz"/}
   _sSourceDir="$_sDependenciesDir/$sourceFile"
   _sInstallDir="$_sDependenciesDir/$depName-install"
@@ -988,7 +1000,7 @@ if [[ $_sImathInstallDir = "" ]]; then
     # download if not already
     if [[ ! -f $_sTarFile ]]; then
       stepInfo $depName "Downloading $_sTarFile ..."
-      $DEBUG wget -c $_IMATH_DL
+      $DEBUG wget -c $IMATH_DL
     fi
 
     # unpack
@@ -1009,7 +1021,7 @@ if [[ $_sImathInstallDir = "" ]]; then
   _sImathInstallDir=$_sInstallDir
 
   # clean step
-  $DEBUG cleanInstallStep
+  cleanInstallStep
 fi
 
 
@@ -1021,7 +1033,7 @@ if [[ $_sOpenEXRInstallDir = "" ]]; then
 
   # setup
   depName=$_OPENEXR
-  _sTarFile=${_OEXR_DL##*/}
+  _sTarFile=${OEXR_DL##*/}
   sourceFile=${_sTarFile//".tar.gz"/}
   _sSourceDir="$_sDependenciesDir/$sourceFile"
   _sInstallDir="$_sDependenciesDir/$depName-install"
@@ -1052,7 +1064,7 @@ if [[ $_sOpenEXRInstallDir = "" ]]; then
     # download if not already
     if [[ ! -f $_sTarFile ]]; then
       stepInfo $depName "Downloading $_sTarFile ..."
-      $DEBUG wget -c $_OEXR_DL
+      $DEBUG wget -c $OEXR_DL
     fi
 
     # unpack
@@ -1074,7 +1086,7 @@ if [[ $_sOpenEXRInstallDir = "" ]]; then
   _sOpenEXRInstallDir=$_sInstallDir
 
   # clean step
-  $DEBUG cleanInstallStep
+  cleanInstallStep
 fi
 
 
@@ -1086,7 +1098,7 @@ if [[ $_sOCIOInstallDir = "" ]]; then
 
   # setup
   depName=$_OCIO
-  _sTarFile=${_OCIO_DL##*/}
+  _sTarFile=${OCIO_DL##*/}
   sourceVersion=${_sTarFile//".tar.gz"/}
   sourceVersion=${sourceVersion//"v"/}
   sourceFile="OpenColorIO-$sourceVersion"
@@ -1119,7 +1131,7 @@ if [[ $_sOCIOInstallDir = "" ]]; then
     # download if not already
     if [[ ! -f $_sTarFile ]]; then
       stepInfo $depName "Downloading $_sTarFile ..."
-      $DEBUG wget -c $_OCIO_DL
+      $DEBUG wget -c $OCIO_DL
     fi
 
     # unpack
@@ -1144,7 +1156,7 @@ if [[ $_sOCIOInstallDir = "" ]]; then
   _sOCIOInstallDir=$_sInstallDir
 
   # clean step
-  $DEBUG cleanInstallStep
+  cleanInstallStep
 fi
 
 
@@ -1156,7 +1168,7 @@ if [[ $_sOIIOInstallDir = "" ]]; then
 
   # setup
   depName=$_OIIO
-  _sTarFile=${_OIIO_DL##*/}
+  _sTarFile=${OIIO_DL##*/}
   sourceFile=${_sTarFile//".tar.gz"/}
   _sSourceDir="$_sDependenciesDir/$sourceFile"
   _sInstallDir="$_sDependenciesDir/$depName-install"
@@ -1188,7 +1200,7 @@ if [[ $_sOIIOInstallDir = "" ]]; then
     # download if not already
     if [[ ! -f $_sTarFile ]]; then
       stepInfo $depName "Downloading $_sTarFile ..."
-      $DEBUG wget -c $_OIIO_DL
+      $DEBUG wget -c $OIIO_DL
     fi
 
     # unpack
@@ -1218,7 +1230,7 @@ if [[ $_sOIIOInstallDir = "" ]]; then
   _sOIIOInstallDir=$_sInstallDir
 
   # clean step
-  $DEBUG cleanInstallStep
+  cleanInstallStep
 fi
 
 
@@ -1230,7 +1242,7 @@ if [[ $_sPartIOInstallDir = "" ]]; then
 
   # setup
   depname=$_PARTIO
-  _sTarFile=${_PARTIO_DL##*/}
+  _sTarFile=${PARTIO_DL##*/}
   sourceVersion=${_sTarFile//".tar.gz"/}
   sourceVersion=${sourceVersion//"v"/}
   sourceFile="partio-$sourceVersion"
@@ -1259,7 +1271,7 @@ if [[ $_sPartIOInstallDir = "" ]]; then
     # download if not already
     if [[ ! -f $_sTarFile ]]; then
       stepInfo $depname "Downloading $_sTarFile ..."
-      $DEBUG wget -c $_PARTIO_DL
+      $DEBUG wget -c $PARTIO_DL
     fi
 
     # unpack
@@ -1279,7 +1291,7 @@ if [[ $_sPartIOInstallDir = "" ]]; then
   _sPartIOInstallDir=$_sInstallDir
 
   # clean step
-  $DEBUG cleanInstallStep
+  cleanInstallStep
 fi
 
 
@@ -1291,7 +1303,7 @@ if [[ $_sOSLInstallDir = "" ]]; then
 
   # setup
   depName=$_OSL
-  _sTarFile=${_OSL_DL##*/}
+  _sTarFile=${OSL_DL##*/}
   sourceVersion=${_sTarFile//".tar.gz"/}
   sourceVersion=${sourceVersion//"v"/}
   sourceFile="OpenShadingLanguage-$sourceVersion"
@@ -1323,7 +1335,7 @@ if [[ $_sOSLInstallDir = "" ]]; then
     # download if not already
     if [[ ! -f $_sTarFile ]]; then
       stepInfo $depName "Downloading $_sTarFile ..."
-      $DEBUG wget -c $_OSL_DL
+      $DEBUG wget -c $OSL_DL
     fi
 
     # unpack
@@ -1387,7 +1399,7 @@ if [[ $_sOSLInstallDir = "" ]]; then
   _sOSLInstallDir=$_sInstallDir
 
   # clean step
-  $DEBUG cleanInstallStep
+  cleanInstallStep
 fi
 
 
@@ -1399,7 +1411,7 @@ if [[ $_sXercesInstallDir = "" ]]; then
 
   # setup
   depName=$_XERCES
-  _sTarFile=${_XERCES_DL##*/}
+  _sTarFile=${XERCES_DL##*/}
   sourceVersion=${_sTarFile//".tar.gz"/}
   sourceVersion=${sourceVersion//"v"/}
   sourceFile="xerces-c-$sourceVersion"
@@ -1425,7 +1437,7 @@ if [[ $_sXercesInstallDir = "" ]]; then
     # download if not already
     if [[ ! -f $_sTarFile ]]; then
       stepInfo $depName "Downloading $_sTarFile ..."
-      $DEBUG wget -c $_XERCES_DL
+      $DEBUG wget -c $XERCES_DL
     fi
 
     # unpack
@@ -1451,7 +1463,7 @@ if [[ $_sXercesInstallDir = "" ]]; then
   _sXercesInstallDir=$_sInstallDir
 
   # clean step
-  $DEBUG cleanInstallStep
+  cleanInstallStep
 fi
 
 
@@ -1487,7 +1499,7 @@ if [[ true = false && $_sTODOInstallDir = "" ]]; then
     # download if not already
     if [[ ! -f $_sTarFile ]]; then
       stepInfo $depName "Downloading $_sTarFile ..."
-      $DEBUG wget -c $_TODO_DL
+      $DEBUG wget -c $TODO_DL
     fi
 
     # unpack
@@ -1504,7 +1516,7 @@ if [[ true = false && $_sTODOInstallDir = "" ]]; then
   _sTODOInstallDir=$_sInstallDir
 
   # clean step
-  $DEBUG cleanInstallStep
+  cleanInstallStep
 fi
 
 
