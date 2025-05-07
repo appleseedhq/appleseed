@@ -35,27 +35,45 @@
 #include "foundation/math/vector.h"
 #include "foundation/memory/memory.h"
 #include "foundation/meshio/imeshbuilder.h"
-#include "foundation/meshio/objmeshfilelexer.h"
 
 // Standard headers.
 #include <cstring>
 #include <map>
 #include <utility>
 #include <vector>
+#include <iostream>
 
 namespace foundation
 {
     struct PLYMeshFileReader::Impl
     {
-        const std::string m_filename;
-        const int         m_options;
+        const int       m_options;
+        IMeshBuilder&   m_builder;
 
-        Impl(const std::string& filename, const int options)
-          : m_filename(filename)
-          , m_options(options)
+        Impl(
+            const int options,
+            IMeshBuilder& builder)
+        : m_options(options)
+        , m_builder(builder)
         {
         }
 
-        void read(IMeshBuilder& builder);
     };
-}
+
+    PLYMeshFileReader::PLYMeshFileReader(
+        const std::string&  filename,
+        const int           options
+    )
+    : m_filename(filename)
+    , m_options(options)
+    {
+    }
+
+    void PLYMeshFileReader::read(IMeshBuilder& builder)
+    {
+        Impl impl(m_options, builder);
+
+        std::cout << "PLY mesh file reader should parse the file now." << std::endl;
+    }
+
+    } // namespace foundation

@@ -53,11 +53,8 @@ class PLYMeshFileReader
         const std::string&   filename,
         const int            options = 0);
 
-    // Destructor.
-    ~PLYMeshFileReader() override;
-
     // // Read a mesh.
-    // void read(IMeshBuilder& builder) override;
+    void read(IMeshBuilder& builder) override;
 
   private:
     struct Impl;
