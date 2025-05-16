@@ -78,6 +78,13 @@ namespace foundation
 
         std::cout << "PLY mesh file reader should parse the file now." << std::endl;
         happly::PLYData plyIn(m_filename);
+
+        std::vector<std::string> element_names = plyIn.getElementNames();
+        for (const auto& element_name : element_names)
+        {
+            std::cout << "Element name: " << element_name << std::endl;
+        }
+
         std::cout << "happly works!" << std::endl;
     }
 
