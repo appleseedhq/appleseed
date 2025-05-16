@@ -36,6 +36,9 @@
 #include "foundation/memory/memory.h"
 #include "foundation/meshio/imeshbuilder.h"
 
+// third-party headers.
+#include "happly.h"
+
 // Standard headers.
 #include <cstring>
 #include <map>
@@ -74,6 +77,8 @@ namespace foundation
         Impl impl(m_options, builder);
 
         std::cout << "PLY mesh file reader should parse the file now." << std::endl;
+        happly::PLYData plyIn(m_filename);
+        std::cout << "happly works!" << std::endl;
     }
 
     } // namespace foundation
