@@ -7,12 +7,64 @@ set -e
 # README
 # ================================================================
 # This script can be used to install Appleseed and all of its dependencies.
+#
+# Easiest is to run it from Appleseed's root directory -- e.g. `./scripts/Ubuntu_20.04_setup/setup.sh`.
+#
 # Use -h or --help to get a list of all possible arguments and options.
+#
+#
+# Below are constants which may be set by the user (though everything can also be set -- and is preferred to be set -- via flags).
+#
+# All variables beginning with `_` are internal variables and should NOT manually be changed, unless you know what you are doing!
 # 
 # Note: This script has only been tested on Ubuntu 22.04!
 
-# This text is also displayed if the script is called with no arguments.
+# ================================================================
+# Set Constants
+# ================================================================
 
+# README: YOU CAN CHANGE THESE VARIABLES
+
+# Note: Flags will overwrite the values here.
+
+# Preview Mode
+# Can be set using the `--preview` flag.
+# If DEBUG is set to `echo` most commands (e.g. rm, wget, or running scripts) will only be printed and not executed.
+DEBUG=
+#DEBUG=echo
+
+# Build Type
+# Can be set using the `-b` or `--build` flag.
+BUILD_TYPE="Ship"
+
+# C and C++ Compiler
+# Can be set using the `--cc` and `--cxx` flags respectively.
+# Note: If not set here, or via flags, will search for it in `/usr/bin`.
+C_COMPILER=
+CXX_COMPILER=
+
+# Optional Components
+# Can be set using their flags (e.g. `--bench`, `--client`, etc.).
+# Note: If at least one such flag is set, it will ONLY build those mentioned (via flag) optional components.
+WITH_BENCH=ON
+WITH_CLIENT=ON
+WITH_STUDIO=ON
+WITH_TOOLS=ON
+WITH_PYTHON2_BINDINGS=ON
+WITH_EMBREE=ON
+
+# Download Links
+BOOST_DL="https://github.com/boostorg/boost/releases/download/boost-1.88.0/boost-1.88.0-b2-nodocs.tar.gz"
+EMBREE_DL="https://github.com/RenderKit/embree/releases/download/v4.4.0/embree-4.4.0.x86_64.linux.tar.gz"
+IMATH_DL="https://github.com/AcademySoftwareFoundation/Imath/releases/download/v3.1.12/Imath-3.1.12.tar.gz"
+OCIO_DL="https://github.com/AcademySoftwareFoundation/OpenColorIO/archive/refs/tags/v2.4.2.tar.gz"
+OEXR_DL="https://github.com/AcademySoftwareFoundation/openexr/releases/download/v3.3.3/openexr-3.3.3.tar.gz"
+OIIO_DL="https://github.com/AcademySoftwareFoundation/OpenImageIO/releases/download/v2.5.18.0/OpenImageIO-2.5.18.0.tar.gz"
+OSL_DL="https://github.com/AcademySoftwareFoundation/OpenShadingLanguage/archive/refs/tags/v1.13.12.0.tar.gz" # TODO: update to 1.14
+PARTIO_DL="https://github.com/wdas/partio/archive/refs/tags/v1.19.0.tar.gz"
+XERCES_DL="https://github.com/apache/xerces-c/archive/refs/tags/v3.3.0.tar.gz"
+
+# README: YOU SHOULD NOT CHANGE ANY OF THE VARIABLES BELOW, UNLESS YOU KNOW WHAT YOU ARE DOING.
 
 # ================================================================
 # Constants
@@ -22,16 +74,21 @@ set -e
 # (If `fixOSL1957.cpp` is not found in ROOT, it will also be searched for in the script's directory.)
 _SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
+# DEPENDENCIES_DIR relative to ROOT
+_DEFAULT_DEPENDENCIES_DIR_NAME="dependencies"
+
+# C++ Standard
+# Note: Building has only been tested for C++ standard 17.
+#       C++ standard 17 is the minimum requirement for many of the dependencies build here and thus is our minimum requirement.
+_CXX_STD=17
+
+# ----------------------------------------------------------------
+# Cosmetic Constants
+# ----------------------------------------------------------------
+# These constants are only for cosmetics (formatting, how things are named or colored, etc.).
+
 # "Main Name" of the "master script".
 _NAME="SETUP"
-# If _DEBUG is set to `echo` most commands (e.g. rm, wget, or running scripts) will only be printed and not executed.
-# Note: The former "debug mode" was renamed to "preview mode".
-_DEBUG=
-#_DEBUG=echo
-
-# DEPENDENCIES_DIR relative to APPLESEED_ROOT
-_DEFAULT_DEPENDENCIES_DIR_NAME="dependencies"
-_CXX_STD=17
 
 # Appleseed (Name)
 _APPLESEED=Appleseed
@@ -46,17 +103,6 @@ _OPENEXR=OpenEXR
 _OSL=OSL
 _PARTIO=PartIO
 _XERCES=Xerces
-
-# Dependencies Releases Links
-_BOOST_DL="https://github.com/boostorg/boost/releases/download/boost-1.88.0/boost-1.88.0-b2-nodocs.tar.gz"
-_EMBREE_DL="https://github.com/RenderKit/embree/releases/download/v4.4.0/embree-4.4.0.x86_64.linux.tar.gz"
-_IMATH_DL="https://github.com/AcademySoftwareFoundation/Imath/releases/download/v3.1.12/Imath-3.1.12.tar.gz"
-_OCIO_DL="https://github.com/AcademySoftwareFoundation/OpenColorIO/archive/refs/tags/v2.4.2.tar.gz"
-_OEXR_DL="https://github.com/AcademySoftwareFoundation/openexr/releases/download/v3.3.3/openexr-3.3.3.tar.gz"
-_OIIO_DL="https://github.com/AcademySoftwareFoundation/OpenImageIO/releases/download/v2.5.18.0/OpenImageIO-2.5.18.0.tar.gz"
-_OSL_DL="https://github.com/AcademySoftwareFoundation/OpenShadingLanguage/archive/refs/tags/v1.13.12.0.tar.gz" # TODO: update to 1.14
-_PARTIO_DL="https://github.com/wdas/partio/archive/refs/tags/v1.19.0.tar.gz"
-_XERCES_DL="https://github.com/apache/xerces-c/archive/refs/tags/v3.3.0.tar.gz"
 
 # Colors
 _COLOR_CLEAR='\033[0m'
@@ -73,13 +119,8 @@ _COLOR_DEFAULT=$_COLOR_PURPLE
 _COLOR_INSTALL_DIR=$_COLOR_CYAN
 
 # ================================================================
-# Variables and Default Values
+# Internal Variables
 # ================================================================
-
-_sCCompiler=""
-_sCXXCompiler=""
-
-_sBuildType="Ship"
 
 _sRoot=$(pwd)
 _sDependenciesDir=""
@@ -96,18 +137,12 @@ _bNewBuild=false
 _bNuke=false
 _sVerbose=""
 
-#utilities
+# utilities
 _bCollect=false
 _sCollectType="copy" # options: "copy" | "link"
 
-# appleseed optional components
-_sWithAll=ON
-_sWithClient=OFF
-_sWithStudio=OFF
-_sWithBench=OFF
-_sWithTools=OFF
-_sWithPython2Bindings=OFF
-_sWithEmbree=OFF
+# "no optional components flags seen" variable
+_bNoOptCompFlags=true
 
 # dependency install directories
 _sBoostInstallDir=""
@@ -144,19 +179,43 @@ _sCollectLibPath=""
 # Helper Functions
 # ----------------------------------------------------------------
 
-cleanInstallStep() {
-  $_DEBUG cd $_sDependenciesDir
+optCompFlagCheck() {
+  # If this is called (meaning a "optional component flag" is being handled by `handle_options`) then chick if `_bNoOptCompFlags` is true.
+  # If it is, that means this is the first "optional component flag" seen. In this case all "WITH_X" variables are set to OFF and `_bNoOptCompFlags` is set to false. The appropriate "WITH_X" flag should then set to ON by `handle_options`.
+  # Else nothing happens. (All "WITH_X" variables were already set to OFF once and should now be set to ON by `handle_options` when an appropriate "optional component flag" is seen.)
+  if [ $_bNoOptCompFlags == true ]; then
+    WITH_BENCH=OFF
+    WITH_CLIENT=OFF
+    WITH_STUDIO=OFF
+    WITH_TOOLS=OFF
+    WITH_PYTHON2_BINDINGS=OFF
+    WITH_EMBREE=OFF
 
-  rm -f  $_sTarFile
-  rm -fr $_sSourceDir
-  rm -fr $_sBuildDir
+    _bNoOptCompFlags=false
+  fi
+}
+
+cleanInstallStep() {
+  if [[ $DEBUG != "" ]]; then echo "cleanInstallStep"; fi
+  $DEBUG cd $_sDependenciesDir
+
+  $DEBUG rm -f  $_sTarFile
+  if [[ $_sSourceDir != $_sDependenciesDir ]]; then
+    $DEBUG rm -fr $_sSourceDir
+  fi
+  if [[ $_sBuildDir != $_sDependenciesDir ]]; then
+    $DEBUG rm -fr $_sBuildDir
+  fi
+  # Here we check if the source/build dir is != the deps dir.
+  # -> Source/build dir is == the deps dir can happen if a "X_DL" variable is set wrongly.
+  # With that we prevent the dependencies dir from being completely deleted by accident.
 
   _sTarFile=""
   _sSourceDir=""
   _sBuildDir=""
   _sInstallDir=""
 
-  $_DEBUG cd $_sRoot
+  $DEBUG cd $_sRoot
 }
 
 collect() {
@@ -169,31 +228,31 @@ collect() {
 
   # bins
   if [ -d "$installDir/bin" ]; then
-    $_DEBUG cd $installDir/bin
+    $DEBUG cd $installDir/bin
     for bin in $(ls -p | grep -v /); do
-      $_DEBUG $op $(pwd)/$bin $_sCollectBinPath/$bin
+      $DEBUG $op $(pwd)/$bin $_sCollectBinPath/$bin
     done
-    $_DEBUG cd ..
+    $DEBUG cd ..
   fi
 
   # include
-  $_DEBUG cd $installDir/include
+  $DEBUG cd $installDir/include
   for header in $(ls); do
-    $_DEBUG $op $(pwd)/$header $_sCollectIncPath/$header
+    $DEBUG $op $(pwd)/$header $_sCollectIncPath/$header
   done
-  $_DEBUG cd ..
+  $DEBUG cd ..
 
   # libs
-  $_DEBUG cd $installDir/lib
+  $DEBUG cd $installDir/lib
   for lib in $(ls -p | grep -v /); do
-    $_DEBUG $op $(pwd)/$lib $_sCollectLibPath/$lib
+    $DEBUG $op $(pwd)/$lib $_sCollectLibPath/$lib
   done
-  $_DEBUG cd ..
+  $DEBUG cd ..
 }
 
 nuke() {
-  $_DEBUG rm -fr $_sRoot/build
-  $_DEBUG rm -fr $_sDependenciesDir
+  $DEBUG rm -fr $_sRoot/build
+  $DEBUG rm -fr $_sDependenciesDir
   echo "Removed \"$_sRoot/build\", \"$_sDependenciesDir\". Exiting."
   exit 0
 }
@@ -204,6 +263,7 @@ nuke() {
 
 # Prints a "step info" of the form '~~> [Name] Step Message'.
 stepInfo() {
+  # $1 name $2 message (optional) $3 color 
   if [[ $3 = "" ]]; then
     printf "${_COLOR_DEFAULT}~~> [$1] $2${_COLOR_CLEAR}\n"
   else
@@ -214,6 +274,7 @@ stepInfo() {
 
 # Makes a fully capitalized "root variable name" of the form 'NAME_ROOT'.
 rootVarName() {
+  # $1 name
   echo $1"_ROOT" | tr a-z A-Z
 }
 
@@ -227,7 +288,7 @@ dependencyInstallInfo() {
 }
 
 optionalComponentBuildInfo() {
-  # $1 _NAME, $2 _sWithCOMPONENT
+  # $1 _NAME, $2 WITH_X
   if [ $2 = ON ]; then echo "    $1"; fi
 }
 
@@ -244,7 +305,7 @@ usage() {
   echo "  --cxx               Specify a c++ compiler (path to). (Will use the g++ compiler by default.)"
   echo "  -d, --deps   DEPS   Specify the directory containing the install directories of dependencies (who's install directory are not explicitly given with one of the arguments below). (Defaults to \"ROOT/$_DEFAULT_DEPENDENCIES_DIR_NAME\".)"
   echo "  -r, --root   ROOT   Specify the Appleseed root directory. (Defaults to the current working directory.)"
-  echo "  -s, --source SOURCE Specify a source for appleseed. This may be a Git HTTPS or SSH link, or a TAR or ZIP file."
+  echo "  -s, --source SOURCE Specify a source for Appleseed. This may be a Git HTTPS or SSH link, or a TAR or ZIP file."
   echo "                      The script will then clone/unpack the source using ROOT as the root directory."
 printf "                      ${_COLOR_ORANGE}Warning: Fetching a new Appleseed repository source fill remove **everything** in ROOT.${_COLOR_CLEAR}\n"
   echo "  --branch            Specify a branch for SOURCE, if it is a Git link. (Defaults to specifying no branch.)"
@@ -262,7 +323,7 @@ printf "                      ${_COLOR_ORANGE}Warning: Fetching a new Appleseed 
   echo ""
   echo "Options:"
   echo "  -h, --help          Display this help message."
-  echo "  -n, --new           Delete appleseed build directory to start new."
+  echo "  -n, --new           Delete Appleseed's build directory to start new."
   echo "  --no-install        Do not install any missing dependencies, exit instead."
   echo "  --nuke              Remove all directories (and their contents) created by this script."
   echo "  --preview           Run in *preview mode*, where most commands (e.g. rm, wget, or running scripts) are only printed and not executed."
@@ -305,7 +366,7 @@ handle_options() {
             usage
             exit 1
         fi
-        _sBuildType=$(extract_argument $@)
+        BUILD_TYPE=$(extract_argument $@)
         shift
         ;;
       --cc)
@@ -314,7 +375,7 @@ handle_options() {
             usage
             exit 1
         fi
-        _sCCompiler=$(extract_argument $@)
+        C_COMPILER=$(extract_argument $@)
         shift
         ;;
       --cxx)
@@ -323,7 +384,7 @@ handle_options() {
             usage
             exit 1
         fi
-        _sCXXCompiler=$(extract_argument $@)
+        CXX_COMPILER=$(extract_argument $@)
         shift
         ;;
       -d | --deps)
@@ -460,7 +521,7 @@ handle_options() {
         _bNuke=true
         ;;
       --preview)
-        _DEBUG=echo
+        DEBUG=echo
         ;;
       -s | --source)
         _bSource=true
@@ -483,30 +544,30 @@ handle_options() {
         _sCollectType="link"
         ;;
       # Optional Components
+      --bench)
+        optCompFlagCheck
+        WITH_BENCH=ON
+        ;;
       --client)
-        _sWithClient=ON
-        _sWithAll=OFF
+        optCompFlagCheck
+        WITH_CLIENT=ON
         ;;
       --studio)
-        _sWithStudio=ON
-        _sWithPython2Bindings=ON # required for studio
-        _sWithAll=OFF
-        ;;
-      --bench)
-        _sWithBench=ON
-        _sWithAll=OFF
+        optCompFlagCheck
+        WITH_STUDIO=ON
+        WITH_PYTHON2_BINDINGS=ON
         ;;
       --tools)
-        _sWithTools=ON
-        _sWithAll=OFF
+        optCompFlagCheck
+        WITH_TOOLS=ON
         ;;
       --python2-bindings)
-        _sWithTools=ON
-        _sWithAll=OFF
+        optCompFlagCheck
+        WITH_PYTHON2_BINDINGS=ON
         ;;
       --embree)
-        _sWithEmbree=ON
-        _sWithAll=OFF
+        optCompFlagCheck
+        WITH_PYTHON2_BINDINGS=ON
         ;;
       *)
         echo "Invalid option: $1" >&2
@@ -556,7 +617,7 @@ fi
 
 # Debug Mode
 
-if [[ $_DEBUG != "" ]]; then
+if [[ $DEBUG != "" ]]; then
   printf "${_COLOR_PINK}*Script running in PREVIEW MODE.*${_COLOR_CLEAR}\n"
 fi
 
@@ -589,7 +650,7 @@ if [[ $sRemoveSuffix != "" ]]; then
 fi
 
 if [[ $_sAppleseedSource == "" ]] && [ ! -f $_sRoot/src/appleseed/main/dllmain.cpp ]; then
-  echo "Error: \"$_sAppleseedSource\" is not a valid ROOT directory. Exiting."
+  echo "Error: \"$_sRoot\" is not a valid ROOT directory. Exiting."
   exit 1
 fi
 
@@ -606,8 +667,8 @@ fi
 
 stepInfo $_NAME "Confirm settings ..."
 
-if [ -n $_sBuildType ]; then
-  echo "  Build type: $_sBuildType"
+if [ -n $BUILD_TYPE ]; then
+  echo "  Build type: $BUILD_TYPE"
 fi
 
 if [ $_bClang = true ]; then
@@ -642,25 +703,13 @@ dependencyInstallInfo $_PARTIO  $_sPartIOInstallDir
 dependencyInstallInfo $_XERCES  $_sXercesInstallDir
 
 # Optional Dependencies
-
-# _sWithAll is ON by default.
-if [ $_sWithAll = ON ]; then
-  echo "  Building all available optional dependencies."
-  _sWithClient=ON
-  _sWithStudio=ON
-  _sWithBench=ON
-  _sWithTools=ON
-  _sWithPython2Bindings=ON
-  _sWithEmbree=ON
-else
-  echo "  Building the following optional dependencies:"
-  optionalComponentBuildInfo Client             $_sWithClient
-  optionalComponentBuildInfo Studio             $_sWithStudio
-  optionalComponentBuildInfo Bench              $_sWithBench
-  optionalComponentBuildInfo Tools              $_sWithTools
-  optionalComponentBuildInfo "Python2 Bindings" $_sWithPython2Bindings
-  optionalComponentBuildInfo Embree             $_sWithEmbree
-fi
+echo "  Building the following optional dependencies:"
+optionalComponentBuildInfo Client             $WITH_CLIENT
+optionalComponentBuildInfo Studio             $WITH_STUDIO
+optionalComponentBuildInfo Bench              $WITH_BENCH
+optionalComponentBuildInfo Tools              $WITH_TOOLS
+optionalComponentBuildInfo "Python2 Bindings" $WITH_PYTHON2_BINDINGS
+optionalComponentBuildInfo Embree             $WITH_EMBREE
 
 if [ $_bAsk = true ]; then
   # Checkpoint
@@ -688,45 +737,45 @@ if [[ $_sAppleseedSource != "" ]]; then
 
   if [[ $_sAppleseedSource =~ ^git@.* ]] || [[ $_sAppleseedSource =~ ^https.* ]]; then
     stepInfo $_NAME "Cloning Appleseed into \"$_sRoot\" ..."
-    $_DEBUG cd $_sRoot
-    $_DEBUG rm -fr *
-    $_DEBUG cd ..
+    $DEBUG cd $_sRoot
+    $DEBUG rm -fr *
+    $DEBUG cd ..
     branch=""
     if [[ $_sAppleseedSourceGitBranch != "" ]]; then
       branch="--branch $_sAppleseedSourceGitBranch"
     fi
-    $_DEBUG git clone $_sAppleseedSource $branch
+    $DEBUG git clone $_sAppleseedSource $branch
 
   elif [[ $_sAppleseedSource =~ ^.*\.zip ]]; then
     stepInfo $_NAME "Unzipping into \"$_sRoot\" ..."
-    $_DEBUG cd $_sRoot
-    $_DEBUG cd ..
-    $_DEBUG rm -fr appleseed
+    $DEBUG cd $_sRoot
+    $DEBUG cd ..
+    $DEBUG rm -fr appleseed
     bn=$(basename $_sAppleseedSource)
     bn=${bn//".zip"/}
-    $_DEBUG unzip -q -d "." $_sAppleseedSource
-    $_DEBUG mv ./$bn ./appleseed # rename
+    $DEBUG unzip -q -d "." $_sAppleseedSource
+    $DEBUG mv ./$bn ./appleseed # rename
 
   elif [[ $_sAppleseedSource =~ ^.*\.tar\.gz ]]; then
     stepInfo $_NAME "Unpacking into \"$_sRoot\" ..."
-    $_DEBUG cd $_sRoot
-    $_DEBUG cd ..
-    $_DEBUG rm -fr appleseed
+    $DEBUG cd $_sRoot
+    $DEBUG cd ..
+    $DEBUG rm -fr appleseed
     bn=$(basename $_sAppleseedSource)
     echo $bn
     bn=${bn//".tar.gz"/}
-    $_DEBUG tar -zxf $_sAppleseedSource -C "."
-    $_DEBUG mv ./$bn ./appleseed # rename
+    $DEBUG tar -zxf $_sAppleseedSource -C "."
+    $DEBUG mv ./$bn ./appleseed # rename
 
   elif [[ $_sAppleseedSource =~ ^.*\.tar ]]; then
     stepInfo $_NAME "Unpacking into \"$_sRoot\" ..."
-    $_DEBUG cd $_sRoot
-    $_DEBUG cd ..
-    $_DEBUG rm -fr appleseed
+    $DEBUG cd $_sRoot
+    $DEBUG cd ..
+    $DEBUG rm -fr appleseed
     bn=$(basename $_sAppleseedSource)
     bn=${bn//".tar"/}
-    $_DEBUG tar -xf $_sAppleseedSource -C "."
-    $_DEBUG mv ./$bn ./appleseed # rename
+    $DEBUG tar -xf $_sAppleseedSource -C "."
+    $DEBUG mv ./$bn ./appleseed # rename
 
   else
     echo "Error: Could not handle SOURCE: \"$_sAppleseedSource\". Exiting."
@@ -738,33 +787,33 @@ if [[ $_sAppleseedSource != "" ]]; then
 fi
 
 # Create `dependencies` directory, if it does not exits.
-$_DEBUG cd $_sRoot
-$_DEBUG mkdir -p $_sDependenciesDir
+$DEBUG cd $_sRoot
+$DEBUG mkdir -p $_sDependenciesDir
 
 # build essentials
-$_DEBUG sudo apt install -y build-essential cmake
+$DEBUG sudo apt install -y build-essential cmake
 
-if [[ $_sCCompiler == "" ]]; then
+if [[ $C_COMPILER == "" ]]; then
   if [ $_bClang = true ]; then
-    _sCCompiler=/usr/bin/clang
-    _sCXXCompiler=/usr/bin/clang++
+    C_COMPILER=/usr/bin/clang
+    CXX_COMPILER=/usr/bin/clang++
   else
-    _sCCompiler=/usr/bin/gcc
-    _sCXXCompiler=/usr/bin/g++
+    C_COMPILER=/usr/bin/gcc
+    CXX_COMPILER=/usr/bin/g++
   fi
 fi
 # check compiler
-if [ ! -f $_sCCompiler ]; then
-  echo "Error: Could not find C compiler \"$_sCCompiler\". Exiting."
+if [ ! -f $C_COMPILER ]; then
+  echo "Error: Could not find C compiler \"$C_COMPILER\". Exiting."
   exit 1
 fi
-if [ ! -f $_sCXXCompiler ]; then
-  echo "Error: Could not find C++ compiler \"$_sCXXCompiler\". Exiting."
+if [ ! -f $CXX_COMPILER ]; then
+  echo "Error: Could not find C++ compiler \"$CXX_COMPILER\". Exiting."
   exit 1
 fi
 # set compiler vars
-export CC=$_sCCompiler
-export CXX=$_sCXXCompiler
+export CC=$C_COMPILER
+export CXX=$CXX_COMPILER
 
 stepInfo $_NAME "Setup complete."
 
@@ -782,7 +831,7 @@ if [[ $_sBoostInstallDir = "" ]]; then
 
   # setup
   depName=$_BOOST
-  _sTarFile=${_BOOST_DL##*/}
+  _sTarFile=${BOOST_DL##*/}
   sourceFile=${_sTarFile//"-b2-nodocs.tar.gz"/} # boost specific
   sourceVersion=${sourceFile//"boost-"/}
   _sSourceDir="$_sDependenciesDir/$sourceFile"
@@ -801,36 +850,36 @@ if [[ $_sBoostInstallDir = "" ]]; then
     fi
 
     # apt install dependencies (needed for python bindings with appleseed)
-    $_DEBUG sudo apt install -y \
+    $DEBUG sudo apt install -y \
       python2.7-dev \
       pybind11-dev
 
     # Remove any files left from a previous failed install.
-    $_DEBUG rm -fr $_sSourceDir
-    $_DEBUG rm -fr $_sInstallDir
+    $DEBUG rm -fr $_sSourceDir
+    $DEBUG rm -fr $_sInstallDir
     
     # Install Boost
     stepInfo $_NAME "Installing $depName ..."
 
-    $_DEBUG cd $_sDependenciesDir
+    $DEBUG cd $_sDependenciesDir
     
     # download if not already
     if [[ ! -f $_sTarFile ]]; then
       stepInfo $depName "Downloading $_sTarFile ..."
-      $_DEBUG wget -c $_BOOST_DL
+      $DEBUG wget -c $BOOST_DL
     fi
 
     # unpack
     stepInfo $depName "Unpacking $_sTarFile ..."
-    $_DEBUG tar -zxf $_sTarFile
+    $DEBUG tar -zxf $_sTarFile
 
-    $_DEBUG cd $_sSourceDir
+    $DEBUG cd $_sSourceDir
 
     stepInfo $depName "Installing from \"$_sSourceDir\" ..."
-    $_DEBUG ./bootstrap.sh --prefix=$_sInstallDir --with-toolset=$toolset --with-python-version=2.7
+    $DEBUG ./bootstrap.sh --prefix=$_sInstallDir --with-toolset=$toolset --with-python-version=2.7
 
     # Configure/check configuration of project for Python 2.7
-    if [[ $_DEBUG = "" ]]; then
+    if [[ $DEBUG = "" ]]; then
       if grep -Fxq "# Python 2.7 Config" "project-config.jam"
       then
         echo "Already configured for Python 2.7 in \`project-config.jam\`."
@@ -844,7 +893,7 @@ if [[ $_sBoostInstallDir = "" ]]; then
       fi
     fi
 
-    $_DEBUG ./b2 toolset=$toolset cxxflags="-std=c++$_CXX_STD" install
+    $DEBUG ./b2 toolset=$toolset cxxflags="-std=c++$_CXX_STD" install
     # Installed Boost
   fi
   
@@ -853,18 +902,18 @@ if [[ $_sBoostInstallDir = "" ]]; then
   stepInfo $_NAME "$depName installed in \"$_sInstallDir\" with config file in \"$_sBoostConfigDir\"." $_COLOR_INSTALL_DIR
 
   # clean step
-  $_DEBUG cleanInstallStep
+  cleanInstallStep
 fi
 
 # ----------------------------------------------------------------
 # Embree
 # ----------------------------------------------------------------
 
-if [[ $_sEmbreeInstallDir = "" && $_sWithEmbree = ON ]]; then
+if [[ $_sEmbreeInstallDir = "" && $WITH_EMBREE = ON ]]; then
 
   # setup
   depName=$_EMBREE
-  _sTarFile=${_EMBREE_DL##*/}
+  _sTarFile=${EMBREE_DL##*/}
   tarFileDir="$_sDependenciesDir/$_sTarFile"
   sourceFile=${_sTarFile//".x86_64.linux.tar.gz"/}
   sourceVersion=${sourceFile//"embree-"/}
@@ -879,32 +928,32 @@ if [[ $_sEmbreeInstallDir = "" && $_sWithEmbree = ON ]]; then
     fi
 
     # Remove any files left from a previous failed install.
-    $_DEBUG rm -fr $_sSourceDir
-    $_DEBUG rm -fr $_sInstallDir
+    $DEBUG rm -fr $_sSourceDir
+    $DEBUG rm -fr $_sInstallDir
     
     # Install Embree
     stepInfo $_NAME "Installing $depName ..."
 
-    $_DEBUG cd $_sDependenciesDir
+    $DEBUG cd $_sDependenciesDir
     
     # download if not already
     if [[ ! -f $_sTarFile ]]; then
       stepInfo $depName "Downloading $_sTarFile ..."
-      $_DEBUG wget -c $_EMBREE_DL
+      $DEBUG wget -c $EMBREE_DL
     fi
 
-    $_DEBUG mkdir $sourceFile
-    $_DEBUG cd $sourceFile
+    $DEBUG mkdir $sourceFile
+    $DEBUG cd $sourceFile
 
     # unpack
     stepInfo $depName "Unpacking $_sTarFile ..."
-    $_DEBUG tar -zxf $tarFileDir
+    $DEBUG tar -zxf $tarFileDir
 
-    $_DEBUG cd ..
+    $DEBUG cd ..
 
     # install
     stepInfo $depName "Installing from \"$sourceFile\" ..."
-    $_DEBUG source "$sourceFile/embree-vars.sh"
+    $DEBUG source "$sourceFile/embree-vars.sh"
   fi
 
   _sEmbreeInstallDir=$_sInstallDir
@@ -913,7 +962,7 @@ if [[ $_sEmbreeInstallDir = "" && $_sWithEmbree = ON ]]; then
 
   # clean step
   _sSourceDir="" # else the install directory is removed
-  $_DEBUG cleanInstallStep
+  cleanInstallStep
 fi
 
 
@@ -925,7 +974,7 @@ if [[ $_sImathInstallDir = "" ]]; then
 
   # setup
   depName=$_IMATH
-  _sTarFile=${_IMATH_DL##*/}
+  _sTarFile=${IMATH_DL##*/}
   sourceFile=${_sTarFile//".tar.gz"/}
   _sSourceDir="$_sDependenciesDir/$sourceFile"
   _sInstallDir="$_sDependenciesDir/$depName-install"
@@ -938,46 +987,46 @@ if [[ $_sImathInstallDir = "" ]]; then
     fi
 
     # Remove any files left from a previous failed install.
-    $_DEBUG rm -fr $_sSourceDir
-    $_DEBUG rm -fr $_sInstallDir
+    $DEBUG rm -fr $_sSourceDir
+    $DEBUG rm -fr $_sInstallDir
 
     # Build Directory
     _sBuildDir="$_sDependenciesDir/$_IMATH-build"
     if [ -d $_sBuildDir ]; then
-      $_DEBUG rm -fr $_sBuildDir
+      $DEBUG rm -fr $_sBuildDir
     fi
-    $_DEBUG mkdir -p $_sBuildDir
+    $DEBUG mkdir -p $_sBuildDir
     
     # Install Imath
     stepInfo $_NAME "Installing $depName ..."
 
-    $_DEBUG cd $_sDependenciesDir
+    $DEBUG cd $_sDependenciesDir
     
     # download if not already
     if [[ ! -f $_sTarFile ]]; then
       stepInfo $depName "Downloading $_sTarFile ..."
-      $_DEBUG wget -c $_IMATH_DL
+      $DEBUG wget -c $IMATH_DL
     fi
 
     # unpack
     stepInfo $depName "Unpacking $_sTarFile ..."
-    $_DEBUG tar -zxf $_sTarFile
+    $DEBUG tar -zxf $_sTarFile
 
     stepInfo $depName "Installing from \"$_sSourceDir\" ..."
 
-    $_DEBUG cd $_sBuildDir
+    $DEBUG cd $_sBuildDir
 
-    $_DEBUG cmake $_sSourceDir --install-prefix $_sInstallDir \
+    $DEBUG cmake $_sSourceDir --install-prefix $_sInstallDir \
       -DCMAKE_CXX_STANDARD=$_CXX_STD \
       -DIMATH_CXX_STANDARD=$_CXX_STD
-    $_DEBUG cmake --build $_sBuildDir --target install --config Release -j$(nproc)
+    $DEBUG cmake --build $_sBuildDir --target install --config Release -j$(nproc)
   fi
 
   stepInfo $_NAME "$depName installed in \"$_sInstallDir\"." $_COLOR_INSTALL_DIR
   _sImathInstallDir=$_sInstallDir
 
   # clean step
-  $_DEBUG cleanInstallStep
+  cleanInstallStep
 fi
 
 
@@ -989,7 +1038,7 @@ if [[ $_sOpenEXRInstallDir = "" ]]; then
 
   # setup
   depName=$_OPENEXR
-  _sTarFile=${_OEXR_DL##*/}
+  _sTarFile=${OEXR_DL##*/}
   sourceFile=${_sTarFile//".tar.gz"/}
   _sSourceDir="$_sDependenciesDir/$sourceFile"
   _sInstallDir="$_sDependenciesDir/$depName-install"
@@ -1002,47 +1051,47 @@ if [[ $_sOpenEXRInstallDir = "" ]]; then
     fi
 
     # Remove any files left from a previous failed install.
-    $_DEBUG rm -fr $_sSourceDir
-    $_DEBUG rm -fr $_sInstallDir
+    $DEBUG rm -fr $_sSourceDir
+    $DEBUG rm -fr $_sInstallDir
 
     # Build Directory
     _sBuildDir="$_sDependenciesDir/$_OPENEXR-build"
     if [ -d $_sBuildDir ]; then
-      $_DEBUG rm -fr $_sBuildDir
+      $DEBUG rm -fr $_sBuildDir
     fi
-    $_DEBUG mkdir -p $_sBuildDir
+    $DEBUG mkdir -p $_sBuildDir
     
     # Install OpenEXR
     stepInfo $_NAME "Installing $depName ..."
 
-    $_DEBUG cd $_sDependenciesDir
+    $DEBUG cd $_sDependenciesDir
     
     # download if not already
     if [[ ! -f $_sTarFile ]]; then
       stepInfo $depName "Downloading $_sTarFile ..."
-      $_DEBUG wget -c $_OEXR_DL
+      $DEBUG wget -c $OEXR_DL
     fi
 
     # unpack
     stepInfo $depName "Unpacking $_sTarFile ..."
-    $_DEBUG tar -zxf $_sTarFile
+    $DEBUG tar -zxf $_sTarFile
 
     stepInfo $depName "Installing from \"$_sSourceDir\" ..."
 
-    $_DEBUG cd $_sBuildDir
+    $DEBUG cd $_sBuildDir
 
-    $_DEBUG cmake $_sSourceDir --install-prefix $_sInstallDir \
+    $DEBUG cmake $_sSourceDir --install-prefix $_sInstallDir \
       -DCMAKE_CXX_STANDARD=$_CXX_STD \
       -DOPENEXR_CXX_STANDARD=$_CXX_STD \
       -DImath_ROOT=$_sImathInstallDir
-    $_DEBUG cmake --build $_sBuildDir --target install --config Release -j$(nproc)
+    $DEBUG cmake --build $_sBuildDir --target install --config Release -j$(nproc)
   fi
 
   stepInfo $_NAME "$depName installed in \"$_sInstallDir\"." $_COLOR_INSTALL_DIR
   _sOpenEXRInstallDir=$_sInstallDir
 
   # clean step
-  $_DEBUG cleanInstallStep
+  cleanInstallStep
 fi
 
 
@@ -1054,7 +1103,7 @@ if [[ $_sOCIOInstallDir = "" ]]; then
 
   # setup
   depName=$_OCIO
-  _sTarFile=${_OCIO_DL##*/}
+  _sTarFile=${OCIO_DL##*/}
   sourceVersion=${_sTarFile//".tar.gz"/}
   sourceVersion=${sourceVersion//"v"/}
   sourceFile="OpenColorIO-$sourceVersion"
@@ -1069,50 +1118,50 @@ if [[ $_sOCIOInstallDir = "" ]]; then
     fi
 
     # Remove any files left from a previous failed install.
-    $_DEBUG rm -fr $_sSourceDir
-    $_DEBUG rm -fr $_sInstallDir
+    $DEBUG rm -fr $_sSourceDir
+    $DEBUG rm -fr $_sInstallDir
 
     # Build Directory
     _sBuildDir="$_sDependenciesDir/$_OCIO-build"
     if [ -d $_sBuildDir ]; then
-      $_DEBUG rm -fr $_sBuildDir
+      $DEBUG rm -fr $_sBuildDir
     fi
-    $_DEBUG mkdir -p $_sBuildDir
+    $DEBUG mkdir -p $_sBuildDir
     
     # Install OpenColorIO
     stepInfo $_NAME "Installing $depName ..."
 
-    $_DEBUG cd $_sDependenciesDir
+    $DEBUG cd $_sDependenciesDir
     
     # download if not already
     if [[ ! -f $_sTarFile ]]; then
       stepInfo $depName "Downloading $_sTarFile ..."
-      $_DEBUG wget -c $_OCIO_DL
+      $DEBUG wget -c $OCIO_DL
     fi
 
     # unpack
     stepInfo $depName "Unpacking $_sTarFile ..."
-    $_DEBUG tar -zxf $_sTarFile
+    $DEBUG tar -zxf $_sTarFile
 
-    $_DEBUG cd $_sSourceDir
+    $DEBUG cd $_sSourceDir
 
     stepInfo $depName "Installing from \"$_sSourceDir\" ..."
 
-    $_DEBUG cd $_sBuildDir
+    $DEBUG cd $_sBuildDir
 
-    $_DEBUG cmake $_sSourceDir \
+    $DEBUG cmake $_sSourceDir \
       -DCMAKE_CXX_STANDARD=$_CXX_STD \
       -DCMAKE_INSTALL_PREFIX=$_sInstallDir \
       -DImath_ROOT=$_sImathInstallDir \
       -DOCIO_BUILD_PYTHON=OFF
-    $_DEBUG make install -j$(nproc)
+    $DEBUG make install -j$(nproc)
   fi
 
   stepInfo $_NAME "$depName installed in \"$_sInstallDir\"." $_COLOR_INSTALL_DIR
   _sOCIOInstallDir=$_sInstallDir
 
   # clean step
-  $_DEBUG cleanInstallStep
+  cleanInstallStep
 fi
 
 
@@ -1124,7 +1173,7 @@ if [[ $_sOIIOInstallDir = "" ]]; then
 
   # setup
   depName=$_OIIO
-  _sTarFile=${_OIIO_DL##*/}
+  _sTarFile=${OIIO_DL##*/}
   sourceFile=${_sTarFile//".tar.gz"/}
   _sSourceDir="$_sDependenciesDir/$sourceFile"
   _sInstallDir="$_sDependenciesDir/$depName-install"
@@ -1137,7 +1186,7 @@ if [[ $_sOIIOInstallDir = "" ]]; then
     fi
 
     # apt install dependencies
-    $_DEBUG sudo apt install -y \
+    $DEBUG sudo apt install -y \
       python2.7-dev \
       pybind11-dev \
       zlib1g \
@@ -1145,31 +1194,31 @@ if [[ $_sOIIOInstallDir = "" ]]; then
       libtiff5-dev
 
     # Remove any files left from a previous failed install.
-    $_DEBUG rm -fr $_sSourceDir
-    $_DEBUG rm -fr $_sInstallDir
+    $DEBUG rm -fr $_sSourceDir
+    $DEBUG rm -fr $_sInstallDir
     
     # Install OpenImageIO
     stepInfo $_NAME "Installing $depName ..."
 
-    $_DEBUG cd $_sDependenciesDir
+    $DEBUG cd $_sDependenciesDir
     
     # download if not already
     if [[ ! -f $_sTarFile ]]; then
       stepInfo $depName "Downloading $_sTarFile ..."
-      $_DEBUG wget -c $_OIIO_DL
+      $DEBUG wget -c $OIIO_DL
     fi
 
     # unpack
     stepInfo $depName "Unpacking $_sTarFile ..."
-    $_DEBUG tar -zxf $_sTarFile
+    $DEBUG tar -zxf $_sTarFile
 
-    $_DEBUG cd $_sSourceDir
+    $DEBUG cd $_sSourceDir
 
     stepInfo $depName "Installing from \"$_sSourceDir\" ..."
 
-    $_DEBUG cd $_sSourceDir
+    $DEBUG cd $_sSourceDir
     
-    $_DEBUG cmake -B build -S $_sSourceDir \
+    $DEBUG cmake -B build -S $_sSourceDir \
         -DCMAKE_CXX_STANDARD=$_CXX_STD \
         -DCMAKE_CXX_FLAGS=-D_GLIBCXX_USE_CXX11_ABI=1 \
         -DCMAKE_INSTALL_PREFIX=$_sInstallDir \
@@ -1179,14 +1228,14 @@ if [[ $_sOIIOInstallDir = "" ]]; then
         -DImath_ROOT=$_sImathInstallDir \
         -DOpenEXR_ROOT=$_sOpenEXRInstallDir \
         -DOpenColorIO_ROOT=$_sOCIOInstallDir
-    $_DEBUG cmake --build build --target install -j$(nproc)
+    $DEBUG cmake --build build --target install -j$(nproc)
   fi
 
   stepInfo $_NAME "$depName installed in \"$_sInstallDir\"." $_COLOR_INSTALL_DIR
   _sOIIOInstallDir=$_sInstallDir
 
   # clean step
-  $_DEBUG cleanInstallStep
+  cleanInstallStep
 fi
 
 
@@ -1198,7 +1247,7 @@ if [[ $_sPartIOInstallDir = "" ]]; then
 
   # setup
   depname=$_PARTIO
-  _sTarFile=${_PARTIO_DL##*/}
+  _sTarFile=${PARTIO_DL##*/}
   sourceVersion=${_sTarFile//".tar.gz"/}
   sourceVersion=${sourceVersion//"v"/}
   sourceFile="partio-$sourceVersion"
@@ -1213,41 +1262,41 @@ if [[ $_sPartIOInstallDir = "" ]]; then
     fi
 
     # apt install dependencies
-    $_DEBUG sudo apt install -y freeglut3-dev
+    $DEBUG sudo apt install -y freeglut3-dev
 
     # Remove any files left from a previous failed install.
-    $_DEBUG rm -fr $_sSourceDir
-    $_DEBUG rm -fr $_sInstallDir
+    $DEBUG rm -fr $_sSourceDir
+    $DEBUG rm -fr $_sInstallDir
     
     # Install PartIO
     stepInfo $_NAME "Installing $depname ..."
 
-    $_DEBUG cd $_sDependenciesDir
+    $DEBUG cd $_sDependenciesDir
     
     # download if not already
     if [[ ! -f $_sTarFile ]]; then
       stepInfo $depname "Downloading $_sTarFile ..."
-      $_DEBUG wget -c $_PARTIO_DL
+      $DEBUG wget -c $PARTIO_DL
     fi
 
     # unpack
     stepInfo $depname "Unpacking $_sTarFile ..."
-    $_DEBUG tar -zxf $_sTarFile
+    $DEBUG tar -zxf $_sTarFile
 
-    $_DEBUG cd $_sSourceDir
+    $DEBUG cd $_sSourceDir
 
     stepInfo $depname "Installing from \"$_sSourceDir\" ..."
     
-    $_DEBUG cd $_sSourceDir
+    $DEBUG cd $_sSourceDir
 
-    $_DEBUG make CXXFLAGS_STD=c++$_CXX_STD prefix=$_sInstallDir install -j$(nproc)
+    $DEBUG make CXXFLAGS_STD=c++$_CXX_STD prefix=$_sInstallDir install -j$(nproc)
   fi
 
   stepInfo $_NAME "$depname installed in \"$_sInstallDir\"." $_COLOR_INSTALL_DIR
   _sPartIOInstallDir=$_sInstallDir
 
   # clean step
-  $_DEBUG cleanInstallStep
+  cleanInstallStep
 fi
 
 
@@ -1259,7 +1308,7 @@ if [[ $_sOSLInstallDir = "" ]]; then
 
   # setup
   depName=$_OSL
-  _sTarFile=${_OSL_DL##*/}
+  _sTarFile=${OSL_DL##*/}
   sourceVersion=${_sTarFile//".tar.gz"/}
   sourceVersion=${sourceVersion//"v"/}
   sourceFile="OpenShadingLanguage-$sourceVersion"
@@ -1274,46 +1323,46 @@ if [[ $_sOSLInstallDir = "" ]]; then
     fi
 
     # apt install dependencies
-    $_DEBUG sudo apt install -y \
+    $DEBUG sudo apt install -y \
       flex \
       libbison-dev \
       libpugixml-dev
 
     # Remove any files left from a previous failed install.
-    $_DEBUG rm -fr $_sSourceDir
-    $_DEBUG rm -fr $_sInstallDir
+    $DEBUG rm -fr $_sSourceDir
+    $DEBUG rm -fr $_sInstallDir
     
     # Install OpenShadingLangauge
     stepInfo $_NAME "Installing $depName ..."
 
-    $_DEBUG cd $_sDependenciesDir
+    $DEBUG cd $_sDependenciesDir
     
     # download if not already
     if [[ ! -f $_sTarFile ]]; then
       stepInfo $depName "Downloading $_sTarFile ..."
-      $_DEBUG wget -c $_OSL_DL
+      $DEBUG wget -c $OSL_DL
     fi
 
     # unpack
     stepInfo $depName "Unpacking $_sTarFile ..."
-    $_DEBUG tar -zxf $_sTarFile
+    $DEBUG tar -zxf $_sTarFile
 
     # LLVM Check
     if [[ -d $_sDependenciesDir/OSL-LLVM-intall || -d $_sSourceDir/src/build-scripts/llvm-install/ ]]; then
         stepInfo $depName "LLVM (via OSL's build script) already built." $_COLOR_GRAY
     else
         # apt install dependencies
-        $_DEBUG sudo apt install -y curl
+        $DEBUG sudo apt install -y curl
 
         stepInfo $depName "Building LLVM via OSL's build script..."
-        $_DEBUG cd $_sSourceDir/src/build-scripts/
-        $_DEBUG bash build_llvm.bash
+        $DEBUG cd $_sSourceDir/src/build-scripts/
+        $DEBUG bash build_llvm.bash
 
-        $_DEBUG cp -r $_sSourceDir/src/build-scripts/llvm-install/  $_sDependenciesDir/OSL-LLVM-intall
+        $DEBUG cp -r $_sSourceDir/src/build-scripts/llvm-install/  $_sDependenciesDir/OSL-LLVM-intall
         stepInfo $depName "Built LLVM via OSL's build script."
     fi
 
-    $_DEBUG cd $_sSourceDir
+    $DEBUG cd $_sSourceDir
 
     # Fix OSL issue #1957
     stepInfo $depName "Fixing OSL issue #1957 ..."
@@ -1330,15 +1379,15 @@ if [[ $_sOSLInstallDir = "" ]]; then
     fi
     stepInfo $depName "Found patch file \`fixOSL1957.cpp\` in \"$_sOSLPatchFilePath\"."
     # `llvm_util.cpp` with "fixed" version
-    $_DEBUG cp -f $_sOSLPatchFilePath "$_sSourceDir/src/liboslexec/llvm_util.cpp"
+    $DEBUG cp -f $_sOSLPatchFilePath "$_sSourceDir/src/liboslexec/llvm_util.cpp"
     stepInfo $depName "Fixed OSL issue #1957."
     # done
 
     stepInfo $depName "Installing from \"$_sSourceDir\" ..."
     
-    $_DEBUG cd $_sSourceDir
+    $DEBUG cd $_sSourceDir
 
-    $_DEBUG cmake -B build -S . \
+    $DEBUG cmake -B build -S . \
       -DCMAKE_CXX_STANDARD=$_CXX_STD \
       -DCMAKE_INSTALL_PREFIX=$_sInstallDir \
       -DBoost_ROOT=$_sBoostInstallDir \
@@ -1348,14 +1397,14 @@ if [[ $_sOSLInstallDir = "" ]]; then
       -DOpenImageIO_ROOT=$_sOIIOInstallDir/lib/cmake/OpenImageIO \
       -DLLVM_ROOT=$_sDependenciesDir/OSL-LLVM-intall \
       -Dpartio_ROOT=$_sPartIOInstallDir
-    $_DEBUG cmake --build build --target install -j$(nproc)
+    $DEBUG cmake --build build --target install -j$(nproc)
   fi
 
   stepInfo $_NAME "$depName installed in \"$_sInstallDir\"." $_COLOR_INSTALL_DIR
   _sOSLInstallDir=$_sInstallDir
 
   # clean step
-  $_DEBUG cleanInstallStep
+  cleanInstallStep
 fi
 
 
@@ -1367,7 +1416,7 @@ if [[ $_sXercesInstallDir = "" ]]; then
 
   # setup
   depName=$_XERCES
-  _sTarFile=${_XERCES_DL##*/}
+  _sTarFile=${XERCES_DL##*/}
   sourceVersion=${_sTarFile//".tar.gz"/}
   sourceVersion=${sourceVersion//"v"/}
   sourceFile="xerces-c-$sourceVersion"
@@ -1382,44 +1431,44 @@ if [[ $_sXercesInstallDir = "" ]]; then
     fi
 
     # Remove any files left from a previous failed install.
-    $_DEBUG rm -fr $_sSourceDir
-    $_DEBUG rm -fr $_sInstallDir
+    $DEBUG rm -fr $_sSourceDir
+    $DEBUG rm -fr $_sInstallDir
     
     # Install Xerces
     stepInfo $_NAME "Installing $depName ..."
 
-    $_DEBUG cd $_sDependenciesDir
+    $DEBUG cd $_sDependenciesDir
     
     # download if not already
     if [[ ! -f $_sTarFile ]]; then
       stepInfo $depName "Downloading $_sTarFile ..."
-      $_DEBUG wget -c $_XERCES_DL
+      $DEBUG wget -c $XERCES_DL
     fi
 
     # unpack
     stepInfo $depName "Unpacking $_sTarFile ..."
-    $_DEBUG tar -zxf $_sTarFile
+    $DEBUG tar -zxf $_sTarFile
 
-    $_DEBUG cd $_sSourceDir
+    $DEBUG cd $_sSourceDir
 
     stepInfo $depName "Installing from \"$_sSourceDir\" ..."
     
-    $_DEBUG cd $_sSourceDir
+    $DEBUG cd $_sSourceDir
 
-    $_DEBUG mkdir build
+    $DEBUG mkdir build
 
-    $_DEBUG cmake -G "Unix Makefiles" -S . -B build \
+    $DEBUG cmake -G "Unix Makefiles" -S . -B build \
       -DCMAKE_BUILD_TYPE=Ship \
       -DCMAKE_CXX_STANDARD=$_CXX_STD \
       -DCMAKE_INSTALL_PREFIX=$_sInstallDir
-    $_DEBUG cmake --build build --target install -j$(nproc)
+    $DEBUG cmake --build build --target install -j$(nproc)
   fi
 
   stepInfo $_NAME "$depName installed in \"$_sInstallDir\"." $_COLOR_INSTALL_DIR
   _sXercesInstallDir=$_sInstallDir
 
   # clean step
-  $_DEBUG cleanInstallStep
+  cleanInstallStep
 fi
 
 
@@ -1444,25 +1493,25 @@ if [[ true = false && $_sTODOInstallDir = "" ]]; then
     fi
 
     # Remove any files left from a previous failed install.
-    $_DEBUG rm -fr $_sSourceDir
-    $_DEBUG rm -fr $_sInstallDir
+    $DEBUG rm -fr $_sSourceDir
+    $DEBUG rm -fr $_sInstallDir
     
     # Install TODO
     stepInfo $_NAME "Installing $depName ..."
 
-    $_DEBUG cd $_sDependenciesDir
+    $DEBUG cd $_sDependenciesDir
     
     # download if not already
     if [[ ! -f $_sTarFile ]]; then
       stepInfo $depName "Downloading $_sTarFile ..."
-      $_DEBUG wget -c $_TODO_DL
+      $DEBUG wget -c $TODO_DL
     fi
 
     # unpack
     stepInfo $depName "Unpacking $_sTarFile ..."
-    $_DEBUG tar -zxf $_sTarFile
+    $DEBUG tar -zxf $_sTarFile
 
-    $_DEBUG cd $_sSourceDir
+    $DEBUG cd $_sSourceDir
 
     stepInfo $depName "Installing from \"$_sSourceDir\" ..."
     # TODO: install instructions
@@ -1472,7 +1521,7 @@ if [[ true = false && $_sTODOInstallDir = "" ]]; then
   _sTODOInstallDir=$_sInstallDir
 
   # clean step
-  $_DEBUG cleanInstallStep
+  cleanInstallStep
 fi
 
 
@@ -1490,7 +1539,7 @@ stepInfo $_NAME "Dependencies installed."
 stepInfo $_NAME "Building $_APPLESEED ..."
 
 # apt install dependencies
-$_DEBUG sudo apt install -y \
+$DEBUG sudo apt install -y \
   freeglut3-dev \
   libpng-dev \
   libpython2.7-dev \
@@ -1500,26 +1549,26 @@ $_DEBUG sudo apt install -y \
   zlib1g-dev
    
 
-$_DEBUG cd $_sRoot
+$DEBUG cd $_sRoot
 
 if [ ! -d ./build ]; then
   _bNewBuild=true # build new if no build directory exists yet
 fi
 
 if [ $_bNewBuild = true ]; then
-  $_DEBUG rm -fr build;
+  $DEBUG rm -fr build;
 fi
 
-$_DEBUG mkdir -p build
-$_DEBUG cd build
+$DEBUG mkdir -p build
+$DEBUG cd build
 
 # cmake
 if [ $_bNewBuild = true ]; then
   stepInfo $_APPLESEED "Configuring CMake ..."
-  $_DEBUG cmake \
+  $DEBUG cmake \
     -Wno-dev \
     -DWARNINGS_AS_ERRORS=OFF \
-    -DCMAKE_BUILD_TYPE=$_sBuildType \
+    -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
     -DCMAKE_CXX_FLAGS=-D_GLIBCXX_USE_CXX11_ABI=1 \
     -DCMAKE_PREFIX_PATH=/usr/include/x86_64-linux-gnu/qt5 \
     -DUSE_SSE42=ON \
@@ -1535,24 +1584,24 @@ if [ $_bNewBuild = true ]; then
     -DOPENIMAGEIO_OIIOTOOL=$_sOIIOInstallDir/bin/oiiotool \
     -DOSL_DIR=$_sOSLInstallDir/lib/cmake/OSL \
     -DXerces_DIR=$_sXercesInstallDir/lib/cmake/XercesC \
-    -DWITH_CLI=$_sWithClient \
-    -DWITH_STUDIO=$_sWithStudio \
-    -DWITH_BENCH=$_sWithBench \
-    -DWITH_TOOLS=$_sWithTools \
-    -DWITH_PYTHON2_BINDINGS=$_sWithPython2Bindings \
+    -DWITH_CLI=$WITH_CLIENT \
+    -DWITH_STUDIO=$WITH_STUDIO \
+    -DWITH_BENCH=$WITH_BENCH \
+    -DWITH_TOOLS=$WITH_TOOLS \
+    -DWITH_PYTHON2_BINDINGS=$WITH_PYTHON2_BINDINGS \
     -DWITH_PYTHON3_BINDINGS=OFF \
-    -DWITH_EMBREE=$_sWithEmbree \
+    -DWITH_EMBREE=$WITH_EMBREE \
     -DWITH_GPU=OFF \
     -DWITH_SPECTRAL_SUPPORT=OFF \
     ..
   stepInfo $_APPLESEED "Configured CMake."
 fi
 
-if [[ -f $_sRoot/sandbox/lib/$_sBuildType/libappleseed.so && $_bNewBuild = false ]]; then
+if [[ -f $_sRoot/sandbox/lib/$BUILD_TYPE/libappleseed.so && $_bNewBuild = false ]]; then
   stepInfo $_NAME "Appleseed is already built. (Add -n or --new to re-build.)"
 else
   stepInfo $_APPLESEED "Building ..."
-  $_DEBUG make $_sVerbose -j$(nproc)
+  $DEBUG make $_sVerbose -j$(nproc)
   stepInfo $_APPLESEED "Built $_APPLESEED."
 fi
 
@@ -1584,7 +1633,7 @@ if [[ $_bCollect = true ]]; then
   cd $_sDependenciesDir
 
   collect $_sCollectType $_sBoostInstallDir
-  if [[ $_sWithEmbree = ON ]]; then collect $_sCollectType $_sEmbreeInstallDir; fi
+  if [[ $WITH_EMBREE = ON ]]; then collect $_sCollectType $_sEmbreeInstallDir; fi
   collect $_sCollectType $_sOCIOInstallDir
   collect $_sCollectType $_sOIIOInstallDir
   collect $_sCollectType $_sOpenEXRInstallDir
