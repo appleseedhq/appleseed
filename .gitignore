@@ -1,4 +1,5 @@
 build/
+collected-deps/
 dependencies/
 sandbox/shaders/
 *.pyc
