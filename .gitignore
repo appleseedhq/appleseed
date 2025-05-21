@@ -1,4 +1,5 @@
 build/
+dependencies/
 sandbox/shaders/
 *.pyc
 __pycache__
