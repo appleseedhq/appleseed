@@ -45,11 +45,13 @@ if (WITH_PYTHON2_BINDINGS)
 endif ()
 
 if (WITH_PYTHON3_BINDINGS)
+    set(Python3_FIND_STRATEGY LOCATION)
+
     find_package (Python3 REQUIRED)
     find_package (OpenGL REQUIRED)
 
     if (Boost_VERSION GREATER_EQUAL 106700)
-        set (BOOST_NEEDED_LIBS ${BOOST_NEEDED_LIBS} python37)
+        set (BOOST_NEEDED_LIBS ${BOOST_NEEDED_LIBS} python)
     else ()
         set (BOOST_NEEDED_LIBS ${BOOST_NEEDED_LIBS} python3)
     endif ()

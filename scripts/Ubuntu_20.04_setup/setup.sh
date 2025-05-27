@@ -51,6 +51,7 @@ WITH_CLIENT=ON
 WITH_STUDIO=ON
 WITH_TOOLS=ON
 WITH_PYTHON2_BINDINGS=ON
+WITH_PYTHON3_BINDINGS=OFF
 WITH_EMBREE=ON
 
 # Download Links
@@ -183,12 +184,13 @@ optCompFlagCheck() {
   # If this is called (meaning a "optional component flag" is being handled by `handle_options`) then chick if `_bNoOptCompFlags` is true.
   # If it is, that means this is the first "optional component flag" seen. In this case all "WITH_X" variables are set to OFF and `_bNoOptCompFlags` is set to false. The appropriate "WITH_X" flag should then set to ON by `handle_options`.
   # Else nothing happens. (All "WITH_X" variables were already set to OFF once and should now be set to ON by `handle_options` when an appropriate "optional component flag" is seen.)
-  if [ $_bNoOptCompFlags == true ]; then
+  if [ $_bNoOptCompFlags = true ]; then
     WITH_BENCH=OFF
     WITH_CLIENT=OFF
     WITH_STUDIO=OFF
     WITH_TOOLS=OFF
     WITH_PYTHON2_BINDINGS=OFF
+    WITH_PYTHON3_BINDINGS=OFF
     WITH_EMBREE=OFF
 
     _bNoOptCompFlags=false
@@ -207,7 +209,7 @@ cleanInstallStep() {
     $DEBUG rm -fr $_sBuildDir
   fi
   # Here we check if the source/build dir is != the deps dir.
-  # -> Source/build dir is == the deps dir can happen if a "X_DL" variable is set wrongly.
+  # -> Source/build dir is = the deps dir can happen if a "X_DL" variable is set wrongly.
   # With that we prevent the dependencies dir from being completely deleted by accident.
 
   _sTarFile=""
@@ -337,7 +339,8 @@ printf "                      ${_COLOR_ORANGE}Warning: Fetching a new Appleseed 
   echo "  --studio            Built the studio (WITH_STUDIO=ON)."
   echo "  --bench             Built the bench (WITH_BENCH=ON)."
   echo "  --tools             Built the tools (WITH_TOOLS=ON)."
-  echo "  --python2-bindings  Built the Python 2.7 bindings (WITH_PYTHON2_BINDINGS=ON)."
+  echo "  --python2-bindings  Built the Python 2.7 bindings (WITH_PYTHON2_BINDINGS=ON; exclusive with Python 3 bindings)."
+  echo "  --python3-bindings  Built the Python  3  bindings (WITH_PYTHON3_BINDINGS=ON; exclusive with Python 2 bindings)."
   echo "  --embree            Built with Embree (WITH_EMBREE=ON)."
   echo ""
   echo "Utilities:"
@@ -348,7 +351,7 @@ printf "                      ${_COLOR_ORANGE}Warning: Fetching a new Appleseed 
 
 # Extract options and arguments
 has_argument() {
-  [[ ("$1" == *=* && -n ${1#*=}) || ( ! -z "$2" && "$2" != -*)  ]];
+  [[ ("$1" = *=* && -n ${1#*=}) || ( ! -z "$2" && "$2" != -*)  ]];
 }
 
 extract_argument() {
@@ -555,7 +558,9 @@ handle_options() {
       --studio)
         optCompFlagCheck
         WITH_STUDIO=ON
-        WITH_PYTHON2_BINDINGS=ON
+        if [[ $WITH_PYTHON2_BINDINGS = OFF ]] && [[ $WITH_PYTHON3_BINDINGS = OFF ]]; then
+          WITH_PYTHON2_BINDINGS=ON
+        fi
         ;;
       --tools)
         optCompFlagCheck
@@ -564,10 +569,18 @@ handle_options() {
       --python2-bindings)
         optCompFlagCheck
         WITH_PYTHON2_BINDINGS=ON
+        WITH_PYTHON3_BINDINGS=OFF
+        ;;
+      --python3-bindings)
+        optCompFlagCheck
+        WITH_PYTHON3_BINDINGS=ON
+        WITH_PYTHON2_BINDINGS=OFF
         ;;
       --embree)
         optCompFlagCheck
-        WITH_PYTHON2_BINDINGS=ON
+        if [[ $WITH_PYTHON2_BINDINGS = OFF ]] && [[ $WITH_PYTHON3_BINDINGS = OFF ]]; then
+          WITH_PYTHON2_BINDINGS=ON
+        fi
         ;;
       *)
         echo "Invalid option: $1" >&2
@@ -649,7 +662,7 @@ if [[ $sRemoveSuffix != "" ]]; then
   done
 fi
 
-if [[ $_sAppleseedSource == "" ]] && [ ! -f $_sRoot/src/appleseed/main/dllmain.cpp ]; then
+if [[ $_sAppleseedSource = "" ]] && [ ! -f $_sRoot/src/appleseed/main/dllmain.cpp ]; then
   echo "Error: \"$_sRoot\" is not a valid ROOT directory. Exiting."
   exit 1
 fi
@@ -709,6 +722,7 @@ optionalComponentBuildInfo Studio             $WITH_STUDIO
 optionalComponentBuildInfo Bench              $WITH_BENCH
 optionalComponentBuildInfo Tools              $WITH_TOOLS
 optionalComponentBuildInfo "Python2 Bindings" $WITH_PYTHON2_BINDINGS
+optionalComponentBuildInfo "Python3 Bindings" $WITH_PYTHON3_BINDINGS
 optionalComponentBuildInfo Embree             $WITH_EMBREE
 
 if [ $_bAsk = true ]; then
@@ -793,7 +807,7 @@ $DEBUG mkdir -p $_sDependenciesDir
 # build essentials
 $DEBUG sudo apt install -y build-essential cmake
 
-if [[ $C_COMPILER == "" ]]; then
+if [[ $C_COMPILER = "" ]]; then
   if [ $_bClang = true ]; then
     C_COMPILER=/usr/bin/clang
     CXX_COMPILER=/usr/bin/clang++
@@ -851,8 +865,18 @@ if [[ $_sBoostInstallDir = "" ]]; then
 
     # apt install dependencies (needed for python bindings with appleseed)
     $DEBUG sudo apt install -y \
-      python2.7-dev \
       pybind11-dev
+
+    # Python Difference
+    pythonVersion=
+    if [[ $WITH_PYTHON2_BINDINGS = ON ]]; then
+      $DEBUG sudo apt install -y python2.7-dev
+      pythonVersion=2.7
+    elif [[ $WITH_PYTHON3_BINDINGS = ON ]]; then
+      $DEBUG sudo apt install -y python3-dev
+      pythonVersion=$(python3 --version | cut -d" " -f2 | cut -d"." -f1,2) # first cut away the "Python" (in "Python 3.X.X"), then cut away the last version number (in "3.X.X")
+      stepInfo $_NAME For Python 3 bindings, detected Python $pythonVersion.
+    fi
 
     # Remove any files left from a previous failed install.
     $DEBUG rm -fr $_sSourceDir
@@ -876,24 +900,26 @@ if [[ $_sBoostInstallDir = "" ]]; then
     $DEBUG cd $_sSourceDir
 
     stepInfo $depName "Installing from \"$_sSourceDir\" ..."
-    $DEBUG ./bootstrap.sh --prefix=$_sInstallDir --with-toolset=$toolset --with-python-version=2.7
 
-    # Configure/check configuration of project for Python 2.7
-    if [[ $DEBUG = "" ]]; then
-      if grep -Fxq "# Python 2.7 Config" "project-config.jam"
-      then
-        echo "Already configured for Python 2.7 in \`project-config.jam\`."
-      else
-        echo "# Python 2.7 Config"                          >> project-config.jam
-        echo "import toolset : using ;"                     >> project-config.jam
-        echo "using python : 2.7 : /usr/bin/python2.7 ;"    >> project-config.jam
-        echo ""                                             >> project-config.jam
+    $DEBUG ./bootstrap.sh --prefix=$_sInstallDir --with-toolset=$toolset --with-python-version=$pythonVersion
 
-        echo "Added configuration for Python 2.7 to project-config.jam"
-      fi
-    fi
+    ## Configure/check configuration of project for Python
+    #if [[ $DEBUG = "" ]] && [[ $WITH_PYTHON3_BINDINGS = ON ]]; then
+    #  if grep -Fxq "# Python $pythonVersion Config" "project-config.jam"
+    #  then
+    #    stepInfo $depName "Already configured for Python $pythonVersion in \`project-config.jam\`."
+    #  else
+    #    echo "# Python $pythonVersion Config"                                   >> project-config.jam
+    #    echo "import toolset : using ;"                                         >> project-config.jam
+    #    echo "using python : $pythonVersion : /usr/bin/python$pythonVersion ;"  >> project-config.jam
+    #    echo ""                                                                 >> project-config.jam
+#
+    #    stepInfo $depName "Added configuration for Python $pythonVersion to project-config.jam"
+    #  fi
+    #fi
 
-    $DEBUG ./b2 toolset=$toolset cxxflags="-std=c++$_CXX_STD" install
+    $DEBUG ./b2 toolset=$toolset cxxflags="-std=c++$_CXX_STD" install -j$(nproc)
+    
     # Installed Boost
   fi
   
@@ -1589,7 +1615,8 @@ if [ $_bNewBuild = true ]; then
     -DWITH_BENCH=$WITH_BENCH \
     -DWITH_TOOLS=$WITH_TOOLS \
     -DWITH_PYTHON2_BINDINGS=$WITH_PYTHON2_BINDINGS \
-    -DWITH_PYTHON3_BINDINGS=OFF \
+    -DWITH_PYTHON3_BINDINGS=$WITH_PYTHON3_BINDINGS \
+    -DWITH_PYTHON3_BINDINGS=ON \
     -DWITH_EMBREE=$WITH_EMBREE \
     -DWITH_GPU=OFF \
     -DWITH_SPECTRAL_SUPPORT=OFF \
