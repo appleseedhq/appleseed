@@ -1,5 +1,6 @@
 #include "foundation/meshio/meshbuilderbase.h"
 #include "foundation/meshio/plymeshfilereader.h"
+#include "foundation/platform/types.h"
 #include "foundation/utility/test.h"
 
 #include <iostream>
@@ -82,6 +83,32 @@ TEST_SUITE(Foundation_Mesh_PLYMeshFileReader)
         PLYMeshFileReader reader(igd_ply);
         MeshBuilder builder;
         reader.read(builder);
+
+        assert(builder.m_meshes.size() == 1);
+        
+        FILE* f = fopen("output.cpp", "wt");
+        assert(f);
+
+        const Mesh& m = builder.m_meshes.front();
+
+        fprintf(f, "static const float Vertices[] =\n{\n");
+        for (const auto& v : m.m_vertices)
+        {
+            fprintf(f, "    %.7ff, %.7ff, %.7ff,\n", v.x, v.y, v.z);
+        }
+        fprintf(f, "};\n\n");
+
+        fprintf(f, "static const size_t Triangles[] =\n{\n");
+        for (const auto& face : m.m_faces)
+        {
+            fprintf(
+                f,
+                "    " FMT_SIZE_T ", " FMT_SIZE_T ", " FMT_SIZE_T ",\n",
+                face.m_vertices[0], face.m_vertices[1], face.m_vertices[2]);
+        }
+        fprintf(f, "};\n");
+
+        fclose(f);
     }
 
 }
