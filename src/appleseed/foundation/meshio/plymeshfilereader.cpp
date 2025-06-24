@@ -128,11 +128,13 @@ namespace foundation
         for (const auto& vertex : vertices)
         {
             impl.m_vertices.push_back(Vector3d(vertex[0], vertex[1], vertex[2]));
+            impl.m_builder.push_vertex(Vector3d(vertex[0], vertex[1], vertex[2]));
         }
 
         for (const auto& vertex_normal : vertex_normals)
         {
             impl.m_normals.push_back(Vector3d(vertex_normal[0], vertex_normal[1], vertex_normal[2]));
+            impl.m_builder.push_vertex_normal(Vector3d(vertex_normal[0], vertex_normal[1], vertex_normal[2]));
         }
         for (const auto& face : faces)
         {
