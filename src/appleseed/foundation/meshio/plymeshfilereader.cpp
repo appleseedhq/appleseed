@@ -53,14 +53,44 @@ namespace foundation
         const int       m_options;
         IMeshBuilder&   m_builder;
 
+        // Current state.
+        bool            m_inside_mesh_def;      // currently inside a mesh definition?
+        std::string     m_current_mesh_name;    // name of the current mesh
+
+        // Features defined in the file.
+        std::vector<Vector3d>   m_vertices;
+        std::vector<Vector3d>   m_normals;
+        std::vector<Vector2d>   m_tex_coords;
+
         Impl(
             const int options,
             IMeshBuilder& builder)
         : m_options(options)
         , m_builder(builder)
+        , m_inside_mesh_def(false)
+        , m_current_mesh_name("default_mesh_name")
         {
         }
 
+        void ensure_mesh_def()
+        {
+            if (!m_inside_mesh_def)
+            {
+                // Begin the definition of the new mesh.
+                m_builder.begin_mesh(m_current_mesh_name.c_str());
+                m_inside_mesh_def = true;
+            }
+        }
+
+        void end_mesh_def()
+        {
+            if (m_inside_mesh_def)
+            {
+                // End the current mesh definition.
+                m_builder.end_mesh();
+                m_inside_mesh_def = false;
+            }
+        }
     };
 
     PLYMeshFileReader::PLYMeshFileReader(
@@ -84,6 +114,34 @@ namespace foundation
         {
             std::cout << "Element name: " << element_name << std::endl;
         }
+
+        // 1) Read all vertices and faces as one mesh.
+        // 2) Add group mapping to ply
+        // 3) Create a mesh for each group.
+
+        std::vector<std::array<double, 3>> vertices = plyIn.getVertexPositions<double>();
+        std::vector<std::array<double, 3>> vertex_normals = plyIn.getVertexNormals<double>();
+        std::vector<std::vector<size_t>> faces = plyIn.getFaceIndices();
+
+        impl.ensure_mesh_def();
+
+        for (const auto& vertex : vertices)
+        {
+            impl.m_vertices.push_back(Vector3d(vertex[0], vertex[1], vertex[2]));
+        }
+
+        for (const auto& vertex_normal : vertex_normals)
+        {
+            impl.m_normals.push_back(Vector3d(vertex_normal[0], vertex_normal[1], vertex_normal[2]));
+        }
+        for (const auto& face : faces)
+        {
+            impl.m_builder.begin_face(face.size());
+            impl.m_builder.set_face_vertices(&face.front());
+            impl.m_builder.end_face();
+        }
+
+        impl.end_mesh_def();
 
         std::cout << "happly works!" << std::endl;
     }
