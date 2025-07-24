@@ -50,8 +50,8 @@ WITH_BENCH=ON
 WITH_CLIENT=ON
 WITH_STUDIO=ON
 WITH_TOOLS=ON
-WITH_PYTHON2_BINDINGS=ON
-WITH_PYTHON3_BINDINGS=OFF
+WITH_PYTHON2_BINDINGS=OFF
+WITH_PYTHON3_BINDINGS=ON
 WITH_EMBREE=ON
 
 # Download Links
@@ -66,6 +66,15 @@ PARTIO_DL="https://github.com/wdas/partio/archive/refs/tags/v1.19.0.tar.gz"
 XERCES_DL="https://github.com/apache/xerces-c/archive/refs/tags/v3.3.0.tar.gz"
 
 # README: YOU SHOULD NOT CHANGE ANY OF THE VARIABLES BELOW, UNLESS YOU KNOW WHAT YOU ARE DOING.
+
+# ----------------------------------------------------------------
+# Check Validity of Set Constants
+# ----------------------------------------------------------------
+
+# Checking if `DEBUG` is set correctly, since it is called before most commands (e.g. rm, wget, or running scripts) and thus might cause big problems if set incorrectly.
+if [[ $DEBUG != "" && $DEBUG != "echo" ]]; then
+  echo "Invalid value for \`DEBUG\`! Must either be empty \"\" or \"echo\" (is \"$DEBUG\")."
+fi
 
 # ================================================================
 # Constants
@@ -142,6 +151,9 @@ _sVerbose=""
 _bCollect=false
 _sCollectType="copy" # options: "copy" | "link"
 
+# "need python bindings" variable
+_bNeedPythonBindings=true
+
 # "no optional components flags seen" variable
 _bNoOptCompFlags=true
 
@@ -190,6 +202,7 @@ optCompFlagCheck() {
     WITH_STUDIO=OFF
     WITH_TOOLS=OFF
     WITH_PYTHON2_BINDINGS=OFF
+    WITH_PYTHON3_BINDINGS=OFF
     WITH_PYTHON3_BINDINGS=OFF
     WITH_EMBREE=OFF
 
@@ -339,8 +352,8 @@ printf "                      ${_COLOR_ORANGE}Warning: Fetching a new Appleseed 
   echo "  --studio            Built the studio (WITH_STUDIO=ON)."
   echo "  --bench             Built the bench (WITH_BENCH=ON)."
   echo "  --tools             Built the tools (WITH_TOOLS=ON)."
-  echo "  --python2-bindings  Built the Python 2.7 bindings (WITH_PYTHON2_BINDINGS=ON; exclusive with Python 3 bindings)."
-  echo "  --python3-bindings  Built the Python  3  bindings (WITH_PYTHON3_BINDINGS=ON; exclusive with Python 2 bindings)."
+  echo "  --python2-bindings  Built the Python 2.7 bindings (WITH_PYTHON2_BINDINGS=ON); exclusive with Python 3 bindings."
+  echo "  --python3-bindings  Build the Python 3 bindings (WITH_PYTHON3_BINDINGS=ON); exclusive with Python 2.7 bindings."
   echo "  --embree            Built with Embree (WITH_EMBREE=ON)."
   echo ""
   echo "Utilities:"
@@ -558,9 +571,7 @@ handle_options() {
       --studio)
         optCompFlagCheck
         WITH_STUDIO=ON
-        if [[ $WITH_PYTHON2_BINDINGS = OFF ]] && [[ $WITH_PYTHON3_BINDINGS = OFF ]]; then
-          WITH_PYTHON2_BINDINGS=ON
-        fi
+        _bNeedPythonBindings=ON
         ;;
       --tools)
         optCompFlagCheck
@@ -573,14 +584,12 @@ handle_options() {
         ;;
       --python3-bindings)
         optCompFlagCheck
-        WITH_PYTHON3_BINDINGS=ON
         WITH_PYTHON2_BINDINGS=OFF
+        WITH_PYTHON3_BINDINGS=ON
         ;;
       --embree)
         optCompFlagCheck
-        if [[ $WITH_PYTHON2_BINDINGS = OFF ]] && [[ $WITH_PYTHON3_BINDINGS = OFF ]]; then
-          WITH_PYTHON2_BINDINGS=ON
-        fi
+        _bNeedPythonBindings=ON
         ;;
       *)
         echo "Invalid option: $1" >&2
@@ -591,6 +600,16 @@ handle_options() {
     shift
   done
 }
+
+# ----------------------------------------------------------------
+# Check for Python Bindings
+# ----------------------------------------------------------------
+
+if [ $_bNeedPythonBindings = true ]; then
+  if [[ $WITH_PYTHON2_BINDINGS = false && $WITH_PYTHON2_BINDINGS = false ]]; then
+    WITH_PYTHON2_BINDINGS=ON # Python 2 bindings as default, if Python bindings are needed but none was specified.
+  fi
+fi
 
 
 # ================================================================
@@ -1616,7 +1635,6 @@ if [ $_bNewBuild = true ]; then
     -DWITH_TOOLS=$WITH_TOOLS \
     -DWITH_PYTHON2_BINDINGS=$WITH_PYTHON2_BINDINGS \
     -DWITH_PYTHON3_BINDINGS=$WITH_PYTHON3_BINDINGS \
-    -DWITH_PYTHON3_BINDINGS=ON \
     -DWITH_EMBREE=$WITH_EMBREE \
     -DWITH_GPU=OFF \
     -DWITH_SPECTRAL_SUPPORT=OFF \
