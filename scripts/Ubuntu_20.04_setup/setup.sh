@@ -920,24 +920,32 @@ if [[ $_sBoostInstallDir = "" ]]; then
 
     stepInfo $depName "Installing from \"$_sSourceDir\" ..."
 
-    $DEBUG ./bootstrap.sh --prefix=$_sInstallDir --with-toolset=$toolset --with-python-version=$pythonVersion
+    $DEBUG ./bootstrap.sh --prefix=$_sInstallDir --with-toolset=$toolset \
+      --with-python=/usr/bin/python3 \
+      --with-python-version=$pythonVersion
+
+    # TODO: clean up below
+    # ./bootstrap.sh --with-python=/home/rl/miniconda3/envs/xxx/bin/python3.11 --with-python-root=/home/rl/miniconda3/envs/xxx --with-python-version=3.11 --with-libraries=python --with-icu --with-icu=/home/rl/miniconda3/envs/xxx/lib --prefix=/home/rl/3Boost --exec-prefix=/home/rl/3Boost --libdir=/home/rl/3Boost/lib --includedir=/home/rl/3Boost/include
 
     ## Configure/check configuration of project for Python
-    #if [[ $DEBUG = "" ]] && [[ $WITH_PYTHON3_BINDINGS = ON ]]; then
-    #  if grep -Fxq "# Python $pythonVersion Config" "project-config.jam"
-    #  then
-    #    stepInfo $depName "Already configured for Python $pythonVersion in \`project-config.jam\`."
-    #  else
-    #    echo "# Python $pythonVersion Config"                                   >> project-config.jam
-    #    echo "import toolset : using ;"                                         >> project-config.jam
-    #    echo "using python : $pythonVersion : /usr/bin/python$pythonVersion ;"  >> project-config.jam
-    #    echo ""                                                                 >> project-config.jam
-#
-    #    stepInfo $depName "Added configuration for Python $pythonVersion to project-config.jam"
-    #  fi
-    #fi
+    if [[ $DEBUG = "" ]] && [[ $WITH_PYTHON3_BINDINGS = ON ]]; then
+      if grep -Fxq "# Python $pythonVersion Config" "project-config.jam"
+      then
+        stepInfo $depName "Already configured for Python $pythonVersion in \`project-config.jam\`."
+      else
+        echo "# Python $pythonVersion Config"                                   >> project-config.jam
+        echo "import toolset : using ;"                                         >> project-config.jam
+        echo "using python : $pythonVersion : /usr/bin/python$pythonVersion ;"  >> project-config.jam
+        echo ""                                                                 >> project-config.jam
+
+        stepInfo $depName "Added configuration for Python $pythonVersion to project-config.jam"
+      fi
+    fi
 
     $DEBUG ./b2 toolset=$toolset cxxflags="-std=c++$_CXX_STD" install -j$(nproc)
+
+    # TODO: clean up below
+    # ./b2 --with-python --prefix=/home/rl/3Boost  --stagedir=/home/rl/3Boost/stage  stage --build-type=complete  --build-dir=/home/rl/3Boost-build --layout=versioned --variant=release --link=shared threading=single,multi runtime-link=static,shared
     
     # Installed Boost
   fi
@@ -1232,11 +1240,16 @@ if [[ $_sOIIOInstallDir = "" ]]; then
 
     # apt install dependencies
     $DEBUG sudo apt install -y \
-      python2.7-dev \
       pybind11-dev \
       zlib1g \
       zlib1g-dev \
       libtiff5-dev
+
+    if [[ $WITH_PYTHON2_BINDINGS = ON ]]; then
+      $DEBUG sudo apt install -y python2.7-dev
+    elif [[ $WITH_PYTHON3_BINDINGS = ON ]]; then
+      $DEBUG sudo apt install -y python3-dev
+    fi
 
     # Remove any files left from a previous failed install.
     $DEBUG rm -fr $_sSourceDir
@@ -1587,12 +1600,17 @@ stepInfo $_NAME "Building $_APPLESEED ..."
 $DEBUG sudo apt install -y \
   freeglut3-dev \
   libpng-dev \
-  libpython2.7-dev \
   liblz4-dev \
   qtbase5-dev \
   zlib1g \
   zlib1g-dev
-   
+
+if [[ $WITH_PYTHON2_BINDINGS = ON ]]; then
+  $DEBUG sudo apt install -y python2.7-dev
+elif [[ $WITH_PYTHON3_BINDINGS = ON ]]; then
+  $DEBUG sudo apt install -y python3-dev
+fi
+
 
 $DEBUG cd $_sRoot
 
@@ -1642,13 +1660,32 @@ if [ $_bNewBuild = true ]; then
   stepInfo $_APPLESEED "Configured CMake."
 fi
 
-if [[ -f $_sRoot/sandbox/lib/$BUILD_TYPE/libappleseed.so && $_bNewBuild = false ]]; then
-  stepInfo $_NAME "Appleseed is already built. (Add -n or --new to re-build.)"
-else
+# Small helper function to call `make` for Appleseed and print its step infos.
+buildAppleseed() {
   stepInfo $_APPLESEED "Building ..."
   $DEBUG make $_sVerbose -j$(nproc)
   stepInfo $_APPLESEED "Built $_APPLESEED."
+}
+
+if [[ -f $_sRoot/sandbox/lib/$BUILD_TYPE/libappleseed.so && $_bNewBuild = false ]]; then
+  stepInfo $_NAME "Appleseed is already built. (Add -n or --new to re-build.)"
+  if [ $_bAsk = true ]; then
+    printf "${_COLOR_RED}Do you wish to continue?\n"
+    select strictreply in "Yes" "No"; do
+      relaxedreply=${strictreply:-$REPLY}
+      case $relaxedreply in
+        Yes | YES | yes | y ) buildAppleseed;;
+        No  | NO  | no  | n ) echo "Exiting."; exit 0;;
+      esac
+    done
+  else
+    buildAppleseed
+  fi
+else
+  buildAppleseed
 fi
+
+export CPLUS_INCLUDE_PATH="$CPLUS_INCLUDE_PATH:/usr/include/python3.10/"
 
 # ----------------------------------------------------------------
 # Done
