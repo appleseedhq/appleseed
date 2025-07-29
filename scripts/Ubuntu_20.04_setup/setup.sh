@@ -203,7 +203,6 @@ optCompFlagCheck() {
     WITH_TOOLS=OFF
     WITH_PYTHON2_BINDINGS=OFF
     WITH_PYTHON3_BINDINGS=OFF
-    WITH_PYTHON3_BINDINGS=OFF
     WITH_EMBREE=OFF
 
     _bNoOptCompFlags=false
@@ -606,7 +605,7 @@ handle_options() {
 # ----------------------------------------------------------------
 
 if [ $_bNeedPythonBindings = true ]; then
-  if [[ $WITH_PYTHON2_BINDINGS = false && $WITH_PYTHON2_BINDINGS = false ]]; then
+  if [[ $WITH_PYTHON2_BINDINGS = OFF && $WITH_PYTHON3_BINDINGS = OFF ]]; then
     WITH_PYTHON2_BINDINGS=ON # Python 2 bindings as default, if Python bindings are needed but none was specified.
   fi
 fi
@@ -1678,7 +1677,6 @@ else
   buildAppleseed
 fi
 
-export CPLUS_INCLUDE_PATH="$CPLUS_INCLUDE_PATH:/usr/include/python3.10/"
 
 # ----------------------------------------------------------------
 # Done
