@@ -50,8 +50,8 @@ WITH_BENCH=ON
 WITH_CLIENT=ON
 WITH_STUDIO=ON
 WITH_TOOLS=ON
-WITH_PYTHON2_BINDINGS=OFF
-WITH_PYTHON3_BINDINGS=ON
+WITH_PYTHON2_BINDINGS=ON
+WITH_PYTHON3_BINDINGS=OFF
 WITH_EMBREE=ON
 
 # Download Links
@@ -570,6 +570,7 @@ handle_options() {
       --studio)
         optCompFlagCheck
         WITH_STUDIO=ON
+        WITH_PYTHON2_BINDINGS=ON # TODO: Studio currently requires Python 2.7; update this.
         _bNeedPythonBindings=ON
         ;;
       --tools)
