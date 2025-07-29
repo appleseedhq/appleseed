@@ -894,7 +894,7 @@ if [[ $_sBoostInstallDir = "" ]]; then
     elif [[ $WITH_PYTHON3_BINDINGS = ON ]]; then
       $DEBUG sudo apt install -y python3-dev
       pythonVersion=$(python3 --version | cut -d" " -f2 | cut -d"." -f1,2) # first cut away the "Python" (in "Python 3.X.X"), then cut away the last version number (in "3.X.X")
-      stepInfo $_NAME For Python 3 bindings, detected Python $pythonVersion.
+      stepInfo $_NAME "For Python 3 bindings, detected Python $pythonVersion."
     fi
 
     # Remove any files left from a previous failed install.
@@ -920,33 +920,26 @@ if [[ $_sBoostInstallDir = "" ]]; then
 
     stepInfo $depName "Installing from \"$_sSourceDir\" ..."
 
-    $DEBUG ./bootstrap.sh --prefix=$_sInstallDir --with-toolset=$toolset \
-      --with-python=/usr/bin/python3 \
-      --with-python-version=$pythonVersion
+    $DEBUG ./bootstrap.sh --prefix=$_sInstallDir --with-toolset=$toolset
 
-    # TODO: clean up below
-    # ./bootstrap.sh --with-python=/home/rl/miniconda3/envs/xxx/bin/python3.11 --with-python-root=/home/rl/miniconda3/envs/xxx --with-python-version=3.11 --with-libraries=python --with-icu --with-icu=/home/rl/miniconda3/envs/xxx/lib --prefix=/home/rl/3Boost --exec-prefix=/home/rl/3Boost --libdir=/home/rl/3Boost/lib --includedir=/home/rl/3Boost/include
-
-    ## Configure/check configuration of project for Python
-    if [[ $DEBUG = "" ]] && [[ $WITH_PYTHON3_BINDINGS = ON ]]; then
-      if grep -Fxq "# Python $pythonVersion Config" "project-config.jam"
-      then
-        stepInfo $depName "Already configured for Python $pythonVersion in \`project-config.jam\`."
-      else
-        echo "# Python $pythonVersion Config"                                   >> project-config.jam
-        echo "import toolset : using ;"                                         >> project-config.jam
-        echo "using python : $pythonVersion : /usr/bin/python$pythonVersion ;"  >> project-config.jam
-        echo ""                                                                 >> project-config.jam
-
-        stepInfo $depName "Added configuration for Python $pythonVersion to project-config.jam"
+    # Configure/check configuration of project for Python
+    if [[ $DEBUG = "" ]]; then # do not change files if in preview (debug) mode
+      if [[ $WITH_PYTHON2_BINDINGS = ON ]] || [[ $WITH_PYTHON3_BINDINGS = ON ]]; then
+        if grep -Fxq "# Python $pythonVersion Config" "project-config.jam"
+        then
+          stepInfo $depName "Already configured for Python $pythonVersion in \`project-config.jam\`."
+        else
+          echo ""                                                                >> project-config.jam
+          echo "# Python $pythonVersion Config"                                  >> project-config.jam
+          echo "import toolset : using ;"                                        >> project-config.jam
+          echo "using python : $pythonVersion : /usr/bin/python$pythonVersion ;" >> project-config.jam
+          echo ""                                                                >> project-config.jam
+          stepInfo $depName "Added configuration for Python $pythonVersion to project-config.jam"
+        fi
       fi
     fi
 
     $DEBUG ./b2 toolset=$toolset cxxflags="-std=c++$_CXX_STD" install -j$(nproc)
-
-    # TODO: clean up below
-    # ./b2 --with-python --prefix=/home/rl/3Boost  --stagedir=/home/rl/3Boost/stage  stage --build-type=complete  --build-dir=/home/rl/3Boost-build --layout=versioned --variant=release --link=shared threading=single,multi runtime-link=static,shared
-    
     # Installed Boost
   fi
   
