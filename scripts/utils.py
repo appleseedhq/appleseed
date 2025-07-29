@@ -27,19 +27,24 @@
 # THE SOFTWARE.
 #
 
-from __future__ import print_function
 import datetime
 import platform
 
 
 def get_python_version():
-    return "{0} ({1})".format(platform.python_version(), platform.platform())
+    return f"{platform.python_version()} ({platform.platform()})"
 
 
-def print_runtime_details(script, version, script_path, current_time=datetime.datetime.now(), print_function=print):
-    print_function("{0} version {1}".format(script, version))
-    print_function("  Script Path    : {0}".format(script_path))
-    print_function("  Current Time   : {0}".format(current_time))
-    print_function("  Python Version : {0}".format(get_python_version()))
-    print_function()
+def print_runtime_details(script, version, script_path, current_time=datetime.datetime.now()):
+    print(f"{script} version {version}")
+    print(f"  Script Path    : {script_path}")
+    print(f"  Current Time   : {current_time}")
+    print(f"  Python Version : {get_python_version()}")
+    print()
+
+if __name__ == "__main__":
+    print_runtime_details("Script", "1.0", "/path/to/script.py")
+
+
+
 

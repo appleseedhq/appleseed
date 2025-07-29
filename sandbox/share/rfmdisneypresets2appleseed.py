@@ -55,7 +55,7 @@ def main():
     for root, dirname, files in os.walk(args.directory):
         for filename in files:
             if filename.endswith(".mel"):
-                print "Processing file: " + os.path.join(root, filename)
+                print("Processing file: " + os.path.join(root, filename))
 
                 material_name = filename.replace(".mel", "")
 
@@ -75,7 +75,7 @@ def main():
 
                 # Check if the material is a Disney BRDF
                 if not DISNEY_BRDF_KEYS.issubset(set(params.keys())):
-                    print "Error: material preset %s is not a Disney BRDF." % material_name
+                    print(f"Error: material preset {material_name} is not a Disney BRDF.")
 
                     if args.stop_error:
                         sys.exit(1)
@@ -84,7 +84,7 @@ def main():
 
                 # Check the material for possible incompatibilities
                 if params["emitColorR"] != "0.0" or params["emitColorG"] != "0.0" or params["emitColorB"] != "0.0":
-                    print "Error: material %s preset uses emision." % material_name
+                    print(f"Error: material {material_name} preset uses emision.")
 
                     if args.stop_error:
                         sys.exit(1)
@@ -92,13 +92,13 @@ def main():
                 # Subsurface color is missing in appleseed's Disney BRDF implementation.
                 if params["subsurface"] != "0.0":
                     if params["subsurfaceColorR"] != params["baseColorR"] or params["subsurfaceColorG"] != params["baseColorG"] or params["subsurfaceColorB"] != params["baseColorB"]:
-                        print "Error: material preset %s uses subsurface color." % material_name
+                        print(f"Error: material preset {material_name} uses subsurface color.")
 
                         if args.stop_error:
                             sys.exit(-1)
 
                 out_filename = os.path.join(args.output_directory, material_name + ".dmt")
-                print "Generating file: " + out_filename
+                print("Generating file: " + out_filename)
 
                 out_file = open(out_filename, "w")
 
@@ -133,3 +133,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
