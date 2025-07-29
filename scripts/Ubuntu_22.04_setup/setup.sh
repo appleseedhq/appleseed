@@ -8,7 +8,7 @@ set -e
 # ================================================================
 # This script can be used to install Appleseed and all of its dependencies.
 #
-# Easiest is to run it from Appleseed's root directory -- e.g. `./scripts/Ubuntu_20.04_setup/setup.sh`.
+# Easiest is to run it from Appleseed's root directory -- e.g. `./scripts/Ubuntu_22.04_setup/setup.sh`.
 #
 # Use -h or --help to get a list of all possible arguments and options.
 #
@@ -657,8 +657,8 @@ fi
 
 sRemoveSuffix=""
 case $_sRoot in
-  *scripts/Ubuntu_20.04_setup/) sRemoveSuffix=scripts/Ubuntu_20.04_setup/;;
-  *scripts/Ubuntu_20.04_setup)  sRemoveSuffix=scripts/Ubuntu_20.04_setup;;
+  *scripts/Ubuntu_22.04_setup/) sRemoveSuffix=scripts/Ubuntu_22.04_setup/;;
+  *scripts/Ubuntu_22.04_setup)  sRemoveSuffix=scripts/Ubuntu_22.04_setup;;
   *scripts/)                    sRemoveSuffix=scripts/;;
   *scripts)                     sRemoveSuffix=scripts;;
   *);; # pass
@@ -1420,8 +1420,8 @@ if [[ $_sOSLInstallDir = "" ]]; then
     # check for patch file
     if [ -f $_sRoot/fixOSL1957.cpp ]; then
       _sOSLPatchFilePath="$_sRoot/fixOSL1957.cpp"
-    elif [ -f $_sRoot/scripts/Ubuntu_20.04_setup/fixOSL1957.cpp ]; then
-      _sOSLPatchFilePath="$_sRoot/scripts/Ubuntu_20.04_setup/fixOSL1957.cpp"
+    elif [ -f $_sRoot/scripts/Ubuntu_22.04_setup/fixOSL1957.cpp ]; then
+      _sOSLPatchFilePath="$_sRoot/scripts/Ubuntu_22.04_setup/fixOSL1957.cpp"
     elif [ -f $_SCRIPT_DIR/fixOSL1957.cpp ]; then
       _sOSLPatchFilePath="$_SCRIPT_DIR/fixOSL1957.cpp"
     else
