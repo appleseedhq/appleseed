@@ -123,7 +123,7 @@ class RendererServices
     bool get_matrix(
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
-        OIIO::ustring               from,
+        OIIO::ustringhash           from,
         float                       time) override;
 
     // Get the 4x4 matrix that transforms points from "common" space to
@@ -134,7 +134,7 @@ class RendererServices
     bool get_inverse_matrix(
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
-        OSL::ustring                to,
+        OSL::ustringhash            to,
         float                       time) override;
 
     // Get the 4x4 matrix that transforms 'from' to "common" space.
@@ -144,7 +144,7 @@ class RendererServices
     bool get_matrix(
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
-        OIIO::ustring               from) override;
+        OIIO::ustringhash           from) override;
 
     // Get the 4x4 matrix that transforms points from "common" space to
     // the named 'to' coordinate system.  Since there is no time value
@@ -156,7 +156,7 @@ class RendererServices
     bool get_inverse_matrix(
         OSL::ShaderGlobals*         sg,
         OSL::Matrix44&              result,
-        OSL::ustring                to) override;
+        OSL::ustringhash            to) override;
 
     // Transform points Pin[0..npoints-1] in named coordinate system
     // 'from' into 'to' coordinates, storing the result in Pout[] using
@@ -183,8 +183,8 @@ class RendererServices
     // two spaces.
     bool transform_points(
         OSL::ShaderGlobals*         sg,
-        OSL::ustring                from,
-        OSL::ustring                to,
+        OSL::ustringhash            from,
+        OSL::ustringhash            to,
         float                       time,
         const OSL::Vec3*            Pin,
         OSL::Vec3*                  Pout,
@@ -208,8 +208,8 @@ class RendererServices
     // called for "sourced" messages, not ordinary intra-group messages.
     bool getmessage(
         OSL::ShaderGlobals*         sg,
-        OIIO::ustring               source,
-        OIIO::ustring               name,
+        OIIO::ustringhash           source,
+        OIIO::ustringhash           name,
         OIIO::TypeDesc              type,
         void*                       val,
         bool                        derivatives) override;
@@ -229,9 +229,9 @@ class RendererServices
     bool get_attribute(
         OSL::ShaderGlobals*         sg,
         bool                        derivatives,
-        OIIO::ustring               object,
+        OIIO::ustringhash           object,
         OIIO::TypeDesc              type,
-        OIIO::ustring               name,
+        OIIO::ustringhash           name,
         void*                       val) override;
 
     // Similar to get_attribute();  this method will return the 'index'
@@ -239,9 +239,9 @@ class RendererServices
     bool get_array_attribute(
         OSL::ShaderGlobals*         sg,
         bool                        derivatives,
-        OIIO::ustring               object,
+        OIIO::ustringhash           object,
         OIIO::TypeDesc              type,
-        OIIO::ustring               name,
+        OIIO::ustringhash           name,
         int                         index,
         void*                       val) override;
 
@@ -250,7 +250,7 @@ class RendererServices
     // as well. Return false if no user-data with the given name and type was found.
     bool get_userdata(
         bool                        derivatives,
-        OIIO::ustring               name,
+        OIIO::ustringhash           name,
         OIIO::TypeDesc              type,
         OSL::ShaderGlobals*         sg,
         void*                       val) override;
@@ -260,21 +260,21 @@ class RendererServices
     typedef bool (RendererServices::*AttrGetterFun)(
         OSL::ShaderGlobals*         sg,
         bool                        derivs,
-        OIIO::ustring               object,
+        OIIO::ustringhash           object,
         OIIO::TypeDesc              type,
-        OIIO::ustring               name,
+        OIIO::ustringhash           name,
         void*                       val) const;
 
-    typedef std::unordered_map<OIIO::ustring, AttrGetterFun, OIIO::ustringHash> AttrGetterMapType;
+    typedef std::unordered_map<OIIO::ustringhash, AttrGetterFun> AttrGetterMapType;
 
     typedef bool (RendererServices::*UserDataGetterFun)(
         bool                        derivatives,
-        OIIO::ustring               name,
+        OIIO::ustringhash           name,
         OIIO::TypeDesc              type,
         OSL::ShaderGlobals*         sg,
         void*                       val) const;
 
-    typedef std::unordered_map<OIIO::ustring, UserDataGetterFun, OIIO::ustringHash> UserDataGetterMapType;
+    typedef std::unordered_map<OIIO::ustringhash, UserDataGetterFun> UserDataGetterMapType;
 
     OIIO::TextureSystem&            m_texture_sys;
     AttrGetterMapType               m_global_attr_getters;
@@ -291,9 +291,9 @@ class RendererServices
         bool get_attr_##name(                   \
             OSL::ShaderGlobals*     sg,         \
             bool                    derivs,     \
-            OIIO::ustring           object,     \
+            OIIO::ustringhash       object,     \
             OIIO::TypeDesc          type,       \
-            OIIO::ustring           name,       \
+            OIIO::ustringhash       name,       \
             void*                   val) const
 
     // Object attributes.
@@ -340,7 +340,7 @@ class RendererServices
     #define DECLARE_USER_DATA_GETTER(name)      \
         bool get_user_data_##name(              \
             bool                    derivatives,\
-            OIIO::ustring           name,       \
+            OIIO::ustringhash       name,       \
             OIIO::TypeDesc          type,       \
             OSL::ShaderGlobals*     sg,         \
             void*                   val) const

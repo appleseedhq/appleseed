@@ -42,7 +42,7 @@ TEST_SUITE(Foundation_Platform_SharedLibrary)
     const char* TestLibraryName = "libc.dylib";
     const char* TestSymbolName = "printf";
 #else
-    const char* TestLibraryName = "libdl.so";
+    const char* TestLibraryName = "libdl.so.2";
     const char* TestSymbolName = "dlopen";
 #endif
 

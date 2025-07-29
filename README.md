@@ -2,6 +2,10 @@
 
 ![Interior Scene by Juan Carlos Gutiérrez](https://github.com/appleseedhq/appleseedhq.github.io/raw/master/img/renders/jc-interior.jpg)
 
+## Using OSL v1.13.12.0
+
+Using OSL v1.13.12.0 as the newest minor version of OSL -- v1.14 -- has raised the Python minimum to 3.7 (from 2.7).
+
 ## Overview
 
 appleseed is an open source, physically-based global illumination rendering engine primarily designed for animation and visual effects.

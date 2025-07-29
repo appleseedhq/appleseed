@@ -33,8 +33,7 @@
 # This module can take the following variables to define
 # custom search locations:
 #
-#   ILMBASE_ROOT
-#   ILMBASE_LOCATION
+#   IMATH_LOCATION
 #
 # This module defines the following variables:
 #
@@ -43,34 +42,18 @@
 #   IMATH_LIBRARIES     List of Imath libraries to link against
 #
 
+
 include (FindPackageHandleStandardArgs)
 
-find_path (IMATH_INCLUDE_DIR NAMES ImathVec.h
-           PATH_SUFFIXES OpenEXR
-           HINTS ${ILMBASE_ROOT}
-                 ${ILMBASE_LOCATION}
+find_path (IMATH_INCLUDE_DIR NAMES Imath/ImathVec.h
+           HINTS ${IMATH_LOCATION}/include
                  /usr/local/include
                  /usr/include
 )
 
-find_library (IMATH_HALF_LIBRARY NAMES Half-2_3 Half-2_2 Half
+find_library (IMATH_MATH_LIBRARY NAMES Imath
               PATH_SUFFIXES lib64 lib
-              HINTS ${ILMBASE_ROOT}
-                    ${ILMBASE_LOCATION}
-                    /usr/local
-                    /usr
-)
-find_library (IMATH_IEX_LIBRARY NAMES Iex-2_3 Iex-2_2 Iex
-              PATH_SUFFIXES lib64 lib
-              HINTS ${ILMBASE_ROOT}
-                    ${ILMBASE_LOCATION}
-                    /usr/local
-                    /usr
-)
-find_library (IMATH_MATH_LIBRARY NAMES Imath-2_3 Imath-2_2 Imath
-              PATH_SUFFIXES lib64 lib
-              HINTS ${ILMBASE_ROOT}
-                    ${ILMBASE_LOCATION}
+              HINTS ${IMATH_LOCATION}
                     /usr/local
                     /usr
 )
@@ -78,17 +61,16 @@ find_library (IMATH_MATH_LIBRARY NAMES Imath-2_3 Imath-2_2 Imath
 # Handle the QUIETLY and REQUIRED arguments and set IMATH_FOUND.
 find_package_handle_standard_args (IMATH DEFAULT_MSG
     IMATH_INCLUDE_DIR
-    IMATH_HALF_LIBRARY
-    IMATH_IEX_LIBRARY
     IMATH_MATH_LIBRARY
 )
 
 # Set the output variables.
 if (IMATH_FOUND)
-    set (IMATH_INCLUDE_DIRS ${IMATH_INCLUDE_DIR})
+    set (IMATH_INCLUDE_DIRS
+        ${IMATH_INCLUDE_DIR}
+        ${IMATH_INCLUDE_DIR}/Imath
+    )
     set (IMATH_LIBRARIES
-        ${IMATH_HALF_LIBRARY}
-        ${IMATH_IEX_LIBRARY}
         ${IMATH_MATH_LIBRARY}
     )
 else ()
@@ -98,7 +80,5 @@ endif ()
 
 mark_as_advanced (
     IMATH_INCLUDE_DIR
-    IMATH_HALF_LIBRARY
-    IMATH_IEX_LIBRARY
     IMATH_MATH_LIBRARY
 )

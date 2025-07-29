@@ -33,7 +33,6 @@
 # This module can take the following variables to define
 # custom search locations:
 #
-#   OPENEXR_ROOT
 #   OPENEXR_LOCATION
 
 # This module defines the following variables:
@@ -43,20 +42,22 @@
 #   OPENEXR_LIBRARIES       List of OpenEXR libraries to link against
 #
 
+# If OPENEXR_ROOT is defined, it will try to look for OpenEXR libs there
+# as well.
+
 include (FindPackageHandleStandardArgs)
 
 find_path (OPENEXR_INCLUDE_DIR NAMES ImfHeader.h
            PATH_SUFFIXES OpenEXR
-           HINTS ${OPENEXR_ROOT}/include
-                 ${OPENEXR_LOCATION}/include
+           HINTS ${OPENEXR_LOCATION}/include
                  /usr/local/include
                  /usr/include
 )
 
-find_library (OPENEXR_IMF_LIBRARY NAMES IlmImf-2_3 IlmImf-2_2 IlmImf
+# TODO: rename OPENEXR_IMF_LIBRARY
+find_library (OPENEXR_IMF_LIBRARY NAMES OpenEXR
               PATH_SUFFIXES lib64 lib
-              HINTS ${OPENEXR_ROOT}
-                    ${OPENEXR_LOCATION}
+              HINTS ${OPENEXR_LOCATION}
                     /usr/local
                     /usr
 )
@@ -64,8 +65,14 @@ find_library (OPENEXR_IMF_LIBRARY NAMES IlmImf-2_3 IlmImf-2_2 IlmImf
 find_library (OPENEXR_THREADS_LIBRARY
               NAMES IlmThread-2_3 IlmThread-2_2 IlmThread
               PATH_SUFFIXES lib64 lib
-              HINTS ${OPENEXR_ROOT}
-                    ${OPENEXR_LOCATION}
+              HINTS ${OPENEXR_LOCATION}
+                    /usr/local
+                    /usr
+)
+
+find_library (IMATH_IEX_LIBRARY NAMES Iex-2_3 Iex-2_2 Iex
+              PATH_SUFFIXES lib64 lib
+              HINTS ${OPENEXR_LOCATION}
                     /usr/local
                     /usr
 )
@@ -75,12 +82,17 @@ find_package_handle_standard_args (OPENEXR DEFAULT_MSG
     OPENEXR_INCLUDE_DIR
     OPENEXR_IMF_LIBRARY
     OPENEXR_THREADS_LIBRARY
+    IMATH_IEX_LIBRARY
 )
 
 # Set the output variables.
 if (OPENEXR_FOUND)
     set (OPENEXR_INCLUDE_DIRS ${OPENEXR_INCLUDE_DIR})
-    set (OPENEXR_LIBRARIES  ${OPENEXR_IMF_LIBRARY} ${OPENEXR_THREADS_LIBRARY})
+    set (OPENEXR_LIBRARIES
+        ${OPENEXR_IMF_LIBRARY}
+        ${OPENEXR_THREADS_LIBRARY}
+        ${IMATH_IEX_LIBRARY}
+    )
 else ()
     set (OPENEXR_INCLUDE_DIRS)
     set (OPENEXR_LIBRARIES)
@@ -90,4 +102,5 @@ mark_as_advanced (
     OPENEXR_INCLUDE_DIR
     OPENEXR_IMF_LIBRARY
     OPENEXR_THREADS_LIBRARY
+    IMATH_IEX_LIBRARY
 )

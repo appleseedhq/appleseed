@@ -179,26 +179,26 @@ macro (link_against_embree target)
 endmacro ()
 
 macro (link_against_lz4 target)
-    target_link_libraries (${target} ${LZ4_LIBRARY})
+    target_link_libraries (${target} lz4)
 endmacro ()
 
 macro (link_against_ocio target)
-    target_link_libraries (${target} ${OPENCOLORIO_LIBRARIES})
+    target_link_libraries (${target} OpenColorIO::OpenColorIO)
 endmacro ()
 
 macro (link_against_oiio target)
-    target_link_libraries (${target} ${OPENIMAGEIO_LIBRARIES})
+    target_link_libraries (${target} OpenImageIO_Util OpenImageIO)
 endmacro ()
 
 macro (link_against_openexr target)
     target_link_libraries (${target}
-        ${IMATH_LIBRARIES}
-        ${OPENEXR_LIBRARIES}
+        Imath::Imath
+        OpenEXR::OpenEXR
     )
 endmacro ()
 
 macro (link_against_osl target)
-    target_link_libraries (${target} ${OSL_EXEC_LIBRARY} ${OSL_COMP_LIBRARY} ${OSL_QUERY_LIBRARY})
+    target_link_libraries (${target} oslexec oslcomp oslquery)
 endmacro ()
 
 macro (link_against_xercesc target)

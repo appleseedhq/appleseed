@@ -277,7 +277,7 @@ std::unique_ptr<VoxelGrid> read_fluid_file(
 
     fclose(file);
 
-    return read == needed ? move(grid) : std::unique_ptr<VoxelGrid>(nullptr);
+    return read == needed ? std::move(grid) : std::unique_ptr<VoxelGrid>(nullptr);
 }
 
 void write_voxel_grid(
