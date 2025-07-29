@@ -96,7 +96,9 @@ void GenericMeshFileReader::read(IMeshBuilder& builder)
     }
     else if (extension == ".ply")
     {
+        PLYMeshFileReader reader(impl->m_filename);
         std::cout << "Reading PLY file: " << std::endl;
+        reader.read(builder);
     }
     else
     {

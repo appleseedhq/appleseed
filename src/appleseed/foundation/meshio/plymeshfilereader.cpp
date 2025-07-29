@@ -136,6 +136,7 @@ namespace foundation
             impl.m_normals.push_back(Vector3d(vertex_normal[0], vertex_normal[1], vertex_normal[2]));
             impl.m_builder.push_vertex_normal(Vector3d(vertex_normal[0], vertex_normal[1], vertex_normal[2]));
         }
+        
         for (const auto& face : faces)
         {
             impl.m_builder.begin_face(face.size());
