@@ -84,7 +84,7 @@ def main():
 
                 # Check the material for possible incompatibilities
                 if params["emitColorR"] != "0.0" or params["emitColorG"] != "0.0" or params["emitColorB"] != "0.0":
-                    print "Error: material %s preset uses emision." % material_name
+                    print "Error: material %s preset uses emission." % material_name
 
                     if args.stop_error:
                         sys.exit(1)

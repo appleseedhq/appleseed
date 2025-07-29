@@ -657,7 +657,7 @@ namespace
         const ImageAttributes& exr_attributes = std::get<2>(checkpoint_props[0]);
         const std::string initial_layer_name = std::get<0>(checkpoint_props[0]);
 
-        // Check for atttributes.
+        // Check for attributes.
         if (!exr_attributes.exist("appleseed:LastPass"))
         {
             RENDERER_LOG_ERROR("incorrect checkpoint: some attributes are missing.");

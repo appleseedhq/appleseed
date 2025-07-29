@@ -1884,7 +1884,7 @@ namespace
 
                     move_if_exist(root, "passes", gfr, "passes");
 
-                    // Remove the dictionnary from the root if it's empty.
+                    // Remove the dictionary from the root if it's empty.
                     if (gfr.empty())
                         root.dictionaries().remove("generic_frame_renderer");
                 }

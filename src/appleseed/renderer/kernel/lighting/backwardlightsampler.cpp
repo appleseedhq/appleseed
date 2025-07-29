@@ -63,7 +63,7 @@ Dictionary BackwardLightSampler::get_params_metadata()
             .insert("values", "cdf|lighttree")
             .insert("default", "cdf")
             .insert("label", "Light Sampler")
-            .insert("help", "Light sampling algoritm")
+            .insert("help", "Light sampling algorithm")
             .insert(
                 "options",
                 Dictionary()
@@ -178,7 +178,7 @@ BackwardLightSampler::BackwardLightSampler(
     }
     else
     {
-        // Prepare the light-emitting shapes CDF for smapling.
+        // Prepare the light-emitting shapes CDF for sampling.
         if (m_emitting_shapes_cdf.valid())
             m_emitting_shapes_cdf.prepare();
 
