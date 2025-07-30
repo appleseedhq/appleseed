@@ -1,4 +1,6 @@
 build/
+collected-deps/
+dependencies/
 sandbox/shaders/
 *.pyc
 __pycache__
