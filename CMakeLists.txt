@@ -368,6 +368,11 @@ include_directories (
     dependencies/Happly
 )
 
+# OkayPly include
+include_directories (
+    dependencies/OkayPly
+)
+
 if (WITH_EMBREE)
     if (USE_FIND_PACKAGE_FOR_EMBREE)
         include_directories (${EMBREE_INCLUDE_DIRS})
@@ -851,3 +856,4 @@ if (INSTALL_API_EXAMPLES)
         DESTINATION .
     )
 endif ()
+
