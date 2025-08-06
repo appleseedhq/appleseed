@@ -183,6 +183,8 @@ namespace
         DenoiserOutputs outputs;
         outputs.m_pDenoisedColors = &dst;
 
+        // IDEA: Put StatMC Denoiser here (as an option).
+
         std::unique_ptr<IDenoiser> denoiser;
 
         if (options.m_num_scales > 1)
