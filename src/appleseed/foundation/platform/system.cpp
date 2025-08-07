@@ -71,7 +71,9 @@
     #include <sys/param.h>
     #include <sys/sysctl.h>
     #include <sys/types.h>
+#ifdef APPLESEED_X86
     #include <cpuid.h>
+#endif
 
 // Linux.
 #elif defined __linux__
@@ -285,6 +287,7 @@ std::uint64_t System::get_peak_process_virtual_memory_size()
 
 namespace
 {
+#ifdef APPLESEED_X86
     // EAX is set to the value of `index`. Results are returned in `cpuinfo`:
     //   cpuinfo[0] == EAX
     //   cpuinfo[1] == EBX
@@ -307,6 +310,7 @@ namespace
         __asm__ __volatile__("xgetbv" : "=a"(eax), "=d"(edx) : "c"(index));
         return (static_cast<std::uint64_t>(edx) << 32) | eax;
     }
+#endif
 
     std::size_t get_system_value(const char* name)
     {
