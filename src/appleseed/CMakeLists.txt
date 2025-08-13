@@ -1198,6 +1198,23 @@ source_group ("renderer\\kernel\\lighting\\pt" FILES
     ${renderer_kernel_lighting_pt_sources}
 )
 
+set (renderer_kernel_lighting_gpt_sources
+    renderer/kernel/lighting/gpt/gptlightingengine.cpp
+    renderer/kernel/lighting/gpt/gptlightingengine.h
+    renderer/kernel/lighting/gpt/gptparameters.h
+    renderer/kernel/lighting/gpt/gptparameters.cpp
+    renderer/kernel/lighting/gpt/gptpasscallback.h
+    renderer/kernel/lighting/gpt/gptpasscallback.cpp
+    renderer/kernel/lighting/gpt/pathguidedsampler.h
+    renderer/kernel/lighting/gpt/pathguidedsampler.cpp
+)
+list (APPEND appleseed_sources
+    ${renderer_kernel_lighting_gpt_sources}
+)
+source_group ("renderer\\kernel\\lighting\\gpt" FILES
+    ${renderer_kernel_lighting_gpt_sources}
+)
+
 set (renderer_kernel_lighting_sppm_sources
     renderer/kernel/lighting/sppm/sppmimporton.h
     renderer/kernel/lighting/sppm/sppmimportonmap.cpp
@@ -1230,6 +1247,7 @@ set (renderer_kernel_lighting_sources
     renderer/kernel/lighting/directlightingintegrator.h
     renderer/kernel/lighting/forwardlightsampler.cpp
     renderer/kernel/lighting/forwardlightsampler.h
+    renderer/kernel/lighting/guidedpathtracer.h
     renderer/kernel/lighting/ilightingengine.h
     renderer/kernel/lighting/imagebasedlighting.cpp
     renderer/kernel/lighting/imagebasedlighting.h
@@ -1251,6 +1269,8 @@ set (renderer_kernel_lighting_sources
     renderer/kernel/lighting/pathvertex.cpp
     renderer/kernel/lighting/pathvertex.h
     renderer/kernel/lighting/scatteringmode.h
+    renderer/kernel/lighting/sdtree.h
+    renderer/kernel/lighting/sdtree.cpp
     renderer/kernel/lighting/tracer.cpp
     renderer/kernel/lighting/tracer.h
     renderer/kernel/lighting/volumelightingintegrator.cpp
@@ -1407,6 +1427,10 @@ set (renderer_kernel_rendering_sources
     renderer/kernel/rendering/tilecallbackcollection.h
     renderer/kernel/rendering/timedrenderercontroller.cpp
     renderer/kernel/rendering/timedrenderercontroller.h
+    renderer/kernel/rendering/variancetrackingshadingresultframebuffer.cpp
+    renderer/kernel/rendering/variancetrackingshadingresultframebuffer.h
+    renderer/kernel/rendering/variancetrackingshadingresultframebufferfactory.cpp
+    renderer/kernel/rendering/variancetrackingshadingresultframebufferfactory.h
 )
 list (APPEND appleseed_sources
     ${renderer_kernel_rendering_sources}

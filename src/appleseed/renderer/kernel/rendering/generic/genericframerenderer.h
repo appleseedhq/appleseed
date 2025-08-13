@@ -43,6 +43,7 @@ namespace renderer      { class IPassCallback; }
 namespace renderer      { class IShadingResultFrameBufferFactory; }
 namespace renderer      { class ITileCallbackFactory; }
 namespace renderer      { class ITileRendererFactory; }
+namespace renderer      { class IRendererController; }
 
 namespace renderer
 {

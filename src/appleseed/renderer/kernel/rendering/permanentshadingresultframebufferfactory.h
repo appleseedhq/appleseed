@@ -71,6 +71,9 @@ class PermanentShadingResultFrameBufferFactory
     void destroy(
         ShadingResultFrameBuffer*   framebuffer) override;
 
+    size_t get_total_channel_count(
+        const size_t aov_count) const override;
+
   private:
     std::vector<ShadingResultFrameBuffer*> m_framebuffers;
 };

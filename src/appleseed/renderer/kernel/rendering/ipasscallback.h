@@ -60,7 +60,8 @@ class APPLESEED_DLLSYMBOL IPassCallback
         foundation::IAbortSwitch&   abort_switch) = 0;
 
     // This method is called at the end of a pass.
-    virtual void on_pass_end(
+    // A return value of true indicates that 
+    virtual bool on_pass_end(
         const Frame&                frame,
         foundation::JobQueue&       job_queue,
         foundation::IAbortSwitch&   abort_switch) = 0;
