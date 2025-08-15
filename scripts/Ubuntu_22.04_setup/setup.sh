@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -e
+#set -x # HELPFUL: "Print a trace of simple commands, for commands, case commands, select commands, and arithmetic for commands and their arguments or associated word lists to the standard error after they are expanded and before they are executed. The shell prints the expanded value of the PS4 variable before the command and its expanded arguments. "
 
 
 # ================================================================
@@ -43,6 +44,15 @@ BUILD_TYPE="Ship"
 C_COMPILER=
 CXX_COMPILER=
 
+# CUDA Architecture Number
+# Can be sset using the `--cuda-arch-number` flag.
+# Note: Only required for OpenCV for the StatMC Denoiser.
+CUDA_ARCH_NUM=86
+
+# Number of Processors [Jobs] used for building with CMake.
+# Note: `nproc` prints the number of processing units available to the current process, which may be less than the number of online processors.
+NUM_PROCESSORS=$(nproc)
+
 # Optional Components
 # Can be set using their flags (e.g. `--bench`, `--client`, etc.).
 # Note: If at least one such flag is set, it will ONLY build those mentioned (via flag) optional components.
@@ -53,6 +63,7 @@ WITH_TOOLS=ON
 WITH_PYTHON2_BINDINGS=OFF
 WITH_PYTHON3_BINDINGS=ON
 WITH_EMBREE=ON
+WITH_STATMC=ON
 
 # Download Links
 BOOST_DL="https://github.com/boostorg/boost/releases/download/boost-1.88.0/boost-1.88.0-b2-nodocs.tar.gz"
@@ -61,8 +72,10 @@ IMATH_DL="https://github.com/AcademySoftwareFoundation/Imath/releases/download/v
 OCIO_DL="https://github.com/AcademySoftwareFoundation/OpenColorIO/archive/refs/tags/v2.4.2.tar.gz"
 OEXR_DL="https://github.com/AcademySoftwareFoundation/openexr/releases/download/v3.3.3/openexr-3.3.3.tar.gz"
 OIIO_DL="https://github.com/AcademySoftwareFoundation/OpenImageIO/releases/download/v2.5.18.0/OpenImageIO-2.5.18.0.tar.gz"
+OPENCV_DL="https://github.com/opencv/opencv/archive/refs/tags/4.8.1.tar.gz"
 OSL_DL="https://github.com/AcademySoftwareFoundation/OpenShadingLanguage/archive/refs/tags/v1.13.12.0.tar.gz" # TODO: update to 1.14
 PARTIO_DL="https://github.com/wdas/partio/archive/refs/tags/v1.19.0.tar.gz"
+STATMC_OPENCV_CONTIB_DL="https://github.com/cg-tuwien/StatMC-opencv_contrib/archive/refs/heads/master.zip"
 XERCES_DL="https://github.com/apache/xerces-c/archive/refs/tags/v3.3.0.tar.gz"
 HAPPLY_RP="https://github.com/MarcusTU/happly"
 
@@ -93,6 +106,11 @@ _DEFAULT_DEPENDENCIES_DIR_NAME="dependencies"
 #       C++ standard 17 is the minimum requirement for many of the dependencies build here and thus is our minimum requirement.
 _CXX_STD=17
 
+# CMAKE Binary
+# CMake binary. Use this constant to set a different cmake version (by binary) manually.
+#_CMAKE=cmake
+_CMAKE=/home/masc/workspace/students/2025-alex-statmc/cmake-3.22/cmake-3.22.1-linux-x86_64/bin/cmake
+
 # ----------------------------------------------------------------
 # Cosmetic Constants
 # ----------------------------------------------------------------
@@ -110,9 +128,11 @@ _EMBREE=Embree
 _IMATH=Imath
 _OCIO=OpenColorIO
 _OIIO=OpenImageIO
+_OPENCV=OpenCV
 _OPENEXR=OpenEXR
 _OSL=OSL
 _PARTIO=PartIO
+_STATMC=StatMC
 _XERCES=Xerces
 _HAPPLY=Happly
 
@@ -165,6 +185,7 @@ _sEmbreeInstallDir=""
 _sImathInstallDir=""
 _sOCIOInstallDir=""
 _sOIIOInstallDir=""
+_sOpenCVInstallDir=""
 _sOpenEXRInstallDir=""
 _sOSLInstallDir=""
 _sPartIOInstallDir=""
@@ -207,6 +228,7 @@ optCompFlagCheck() {
     WITH_PYTHON2_BINDINGS=OFF
     WITH_PYTHON3_BINDINGS=OFF
     WITH_EMBREE=OFF
+    WITH_STATMC=OFF
 
     _bNoOptCompFlags=false
   fi
@@ -320,7 +342,9 @@ usage() {
   echo "  -b, --build         Specify a build type. (Defaults to \"Ship\".)"
   echo "  --cc                Specify a c compiler (path to). (Will use the gcc compiler by default.)"
   echo "  --cxx               Specify a c++ compiler (path to). (Will use the g++ compiler by default.)"
+  echo "  --cuda-arch-num     Specify your CUDA architecture number. (Only requried for OpenCV for the StatMC Denoiser. Defaults to 86.)"
   echo "  -d, --deps   DEPS   Specify the directory containing the install directories of dependencies (who's install directory are not explicitly given with one of the arguments below). (Defaults to \"ROOT/$_DEFAULT_DEPENDENCIES_DIR_NAME\".)"
+  echo "  -j, --jobs          Specify the number of CMake jobs. (Uses the output of \`nproc\` by default.)"
   echo "  -r, --root   ROOT   Specify the Appleseed root directory. (Defaults to the current working directory.)"
   echo "  -s, --source SOURCE Specify a source for Appleseed. This may be a Git HTTPS or SSH link, or a TAR or ZIP file."
   echo "                      The script will then clone/unpack the source using ROOT as the root directory."
@@ -333,6 +357,7 @@ printf "                      ${_COLOR_ORANGE}Warning: Fetching a new Appleseed 
   echo "  --imath-install"
   echo "  --ocio-install"
   echo "  --oiio-install"
+  echo "  --opencv-install"
   echo "  --openexr-install"
   echo "  --osl-install"
   echo "  --partio-install"
@@ -358,6 +383,7 @@ printf "                      ${_COLOR_ORANGE}Warning: Fetching a new Appleseed 
   echo "  --python2-bindings  Built the Python 2.7 bindings (WITH_PYTHON2_BINDINGS=ON); exclusive with Python 3 bindings."
   echo "  --python3-bindings  Build the Python 3 bindings (WITH_PYTHON3_BINDINGS=ON); exclusive with Python 2.7 bindings."
   echo "  --embree            Built with Embree (WITH_EMBREE=ON)."
+  echo "  --statmc-denoiser   Build the StatMC Denoiser (WITH_STATMC=ON)."
   echo ""
   echo "Utilities:"
   echo "  --collect           (See --collect-link.)"
@@ -406,6 +432,15 @@ handle_options() {
         CXX_COMPILER=$(extract_argument $@)
         shift
         ;;
+      --cuda-arch-number)
+        if ! has_argument $@; then
+            echo "CUDA architecture number was given no value." >&2
+            usage
+            exit 1
+        fi
+        CUDA_ARCH_NUM=$(extract_argument $@)
+        shift
+        ;;
       -d | --deps)
         if ! has_argument $@; then
             echo "DEPS was given no value." >&2
@@ -416,6 +451,15 @@ handle_options() {
         _sDependenciesDir=$(extract_argument $@)
         echo "Extracted:" $_sDependenciesDir
         _bCustomDependenciesDir=true
+        shift
+        ;;
+      -j | --jobs)
+        if ! has_argument $@; then
+            echo "JOBS was given no value." >&2
+            usage
+            exit 1
+        fi
+        NUM_PROCESSORS=$(extract_argument $@)
         shift
         ;;
       -r | --root)
@@ -489,6 +533,15 @@ handle_options() {
             exit 1
         fi
         _sOIIOInstallDir=$(extract_argument $@)
+        shift
+        ;;
+      --opencv-install)
+        if ! has_argument $@; then
+            echo "$(rootVarName $_OPENCV)" >&2
+            usage
+            exit 1
+        fi
+        _sOpenCVInstallDir=$(extract_argument $@)
         shift
         ;;
       --openexr-install)
@@ -605,6 +658,10 @@ handle_options() {
       --embree)
         optCompFlagCheck
         _bNeedPythonBindings=ON
+        ;;
+      --statmc-denoiser)
+        optCompFlagCheck
+        WITH_STATMC=ON
         ;;
       *)
         echo "Invalid option: $1" >&2
@@ -744,6 +801,7 @@ dependencyInstallInfo $_BOOST   $_sBoostInstallDir
 dependencyInstallInfo $_EMBREE  $_sEmbreeInstallDir
 dependencyInstallInfo $_OCIO    $_sOCIOInstallDir
 dependencyInstallInfo $_OIIO    $_sOIIOInstallDir
+dependencyInstallInfo $_OPENCV  $_sOpenCVInstallDir
 dependencyInstallInfo $_OPENEXR $_sOpenEXRInstallDir
 dependencyInstallInfo $_OSL     $_sOSLInstallDir
 dependencyInstallInfo $_PARTIO  $_sPartIOInstallDir
@@ -759,6 +817,7 @@ optionalComponentBuildInfo Tools              $WITH_TOOLS
 optionalComponentBuildInfo "Python2 Bindings" $WITH_PYTHON2_BINDINGS
 optionalComponentBuildInfo "Python3 Bindings" $WITH_PYTHON3_BINDINGS
 optionalComponentBuildInfo Embree             $WITH_EMBREE
+optionalComponentBuildInfo "StatMC Denoiser"  $WITH_STATMC
 
 if [ $_bAsk = true ]; then
   # Checkpoint
@@ -956,7 +1015,7 @@ if [[ $_sBoostInstallDir = "" ]]; then
       fi
     fi
 
-    $DEBUG ./b2 toolset=$toolset cxxflags="-std=c++$_CXX_STD" install -j$(nproc)
+    $DEBUG ./b2 toolset=$toolset cxxflags="-std=c++$_CXX_STD" install -j$NUM_PROCESSORS
     # Installed Boost
   fi
   
@@ -1079,10 +1138,10 @@ if [[ $_sImathInstallDir = "" ]]; then
 
     $DEBUG cd $_sBuildDir
 
-    $DEBUG cmake $_sSourceDir --install-prefix $_sInstallDir \
+    $DEBUG $_CMAKE $_sSourceDir --install-prefix $_sInstallDir \
       -DCMAKE_CXX_STANDARD=$_CXX_STD \
       -DIMATH_CXX_STANDARD=$_CXX_STD
-    $DEBUG cmake --build $_sBuildDir --target install --config Release -j$(nproc)
+    $DEBUG $_CMAKE --build $_sBuildDir --target install --config Release -j$NUM_PROCESSORS
   fi
 
   stepInfo $_NAME "$depName installed in \"$_sInstallDir\"." $_COLOR_INSTALL_DIR
@@ -1143,11 +1202,11 @@ if [[ $_sOpenEXRInstallDir = "" ]]; then
 
     $DEBUG cd $_sBuildDir
 
-    $DEBUG cmake $_sSourceDir --install-prefix $_sInstallDir \
+    $DEBUG $_CMAKE $_sSourceDir --install-prefix $_sInstallDir \
       -DCMAKE_CXX_STANDARD=$_CXX_STD \
       -DOPENEXR_CXX_STANDARD=$_CXX_STD \
       -DImath_ROOT=$_sImathInstallDir
-    $DEBUG cmake --build $_sBuildDir --target install --config Release -j$(nproc)
+    $DEBUG $_CMAKE --build $_sBuildDir --target install --config Release -j$NUM_PROCESSORS
   fi
 
   stepInfo $_NAME "$depName installed in \"$_sInstallDir\"." $_COLOR_INSTALL_DIR
@@ -1212,13 +1271,13 @@ if [[ $_sOCIOInstallDir = "" ]]; then
 
     $DEBUG cd $_sBuildDir
 
-    $DEBUG cmake $_sSourceDir \
+    $DEBUG $_CMAKE $_sSourceDir \
       -DCMAKE_CXX_STANDARD=$_CXX_STD \
       -DCMAKE_INSTALL_PREFIX=$_sInstallDir \
       -DImath_ROOT=$_sImathInstallDir \
       -DOpenEXR_ROOT=$_sOpenEXRInstallDir \
       -DOCIO_BUILD_PYTHON=OFF
-    $DEBUG make install -j$(nproc)
+    $DEBUG make install -j$NUM_PROCESSORS
   fi
 
   stepInfo $_NAME "$depName installed in \"$_sInstallDir\"." $_COLOR_INSTALL_DIR
@@ -1288,7 +1347,7 @@ if [[ $_sOIIOInstallDir = "" ]]; then
 
     $DEBUG cd $_sSourceDir
     
-    $DEBUG cmake -B build -S $_sSourceDir \
+    $DEBUG $_CMAKE -B build -S $_sSourceDir \
         -DCMAKE_CXX_STANDARD=$_CXX_STD \
         -DCMAKE_CXX_FLAGS=-D_GLIBCXX_USE_CXX11_ABI=1 \
         -DCMAKE_INSTALL_PREFIX=$_sInstallDir \
@@ -1298,7 +1357,7 @@ if [[ $_sOIIOInstallDir = "" ]]; then
         -DImath_ROOT=$_sImathInstallDir \
         -DOpenEXR_ROOT=$_sOpenEXRInstallDir \
         -DOpenColorIO_ROOT=$_sOCIOInstallDir
-    $DEBUG cmake --build build --target install -j$(nproc)
+    $DEBUG $_CMAKE --build build --target install -j$NUM_PROCESSORS
   fi
 
   stepInfo $_NAME "$depName installed in \"$_sInstallDir\"." $_COLOR_INSTALL_DIR
@@ -1359,7 +1418,7 @@ if [[ $_sPartIOInstallDir = "" ]]; then
     
     $DEBUG cd $_sSourceDir
 
-    $DEBUG make CXXFLAGS_STD=c++$_CXX_STD prefix=$_sInstallDir install -j$(nproc)
+    $DEBUG make CXXFLAGS_STD=c++$_CXX_STD prefix=$_sInstallDir install -j$NUM_PROCESSORS
   fi
 
   stepInfo $_NAME "$depname installed in \"$_sInstallDir\"." $_COLOR_INSTALL_DIR
@@ -1457,7 +1516,7 @@ if [[ $_sOSLInstallDir = "" ]]; then
     
     $DEBUG cd $_sSourceDir
 
-    $DEBUG cmake -B build -S . \
+    $DEBUG $_CMAKE -B build -S . \
       -DCMAKE_CXX_STANDARD=$_CXX_STD \
       -DCMAKE_INSTALL_PREFIX=$_sInstallDir \
       -DBoost_ROOT=$_sBoostInstallDir \
@@ -1467,7 +1526,7 @@ if [[ $_sOSLInstallDir = "" ]]; then
       -DOpenImageIO_ROOT=$_sOIIOInstallDir/lib/cmake/OpenImageIO \
       -DLLVM_ROOT=$_sDependenciesDir/OSL-LLVM-intall \
       -Dpartio_ROOT=$_sPartIOInstallDir
-    $DEBUG cmake --build build --target install -j$(nproc)
+    $DEBUG $_CMAKE --build build --target install -j$NUM_PROCESSORS
   fi
 
   stepInfo $_NAME "$depName installed in \"$_sInstallDir\"." $_COLOR_INSTALL_DIR
@@ -1527,11 +1586,11 @@ if [[ $_sXercesInstallDir = "" ]]; then
 
     $DEBUG mkdir build
 
-    $DEBUG cmake -G "Unix Makefiles" -S . -B build \
+    $DEBUG $_CMAKE -G "Unix Makefiles" -S . -B build \
       -DCMAKE_BUILD_TYPE=Ship \
       -DCMAKE_CXX_STANDARD=$_CXX_STD \
       -DCMAKE_INSTALL_PREFIX=$_sInstallDir
-    $DEBUG cmake --build build --target install -j$(nproc)
+    $DEBUG $_CMAKE --build build --target install -j$NUM_PROCESSORS
   fi
 
   stepInfo $_NAME "$depName installed in \"$_sInstallDir\"." $_COLOR_INSTALL_DIR
@@ -1563,6 +1622,129 @@ if [[ $_sHapplyInstallDir = "" ]]; then
 fi
 
 
+# ----------------------------------------------------------------
+# OpenCV w/ StatMC Contribution
+# ----------------------------------------------------------------
+
+# --- StatMC OpenCV Contribution
+
+statMCOpenCVContrib=""
+
+if [[ $WITH_STATMC = ON ]]; then
+
+  # NOTE: The StatMC OpenCV Contribution is not actually installed. It is downloaded and build along OpenCV below as an "extra module" of OpenCV.
+
+  # setup
+  depName=$_STATMC
+  _sTarFile=${STATMC_OPENCV_CONTIB_DL##*/}
+  sourceFile=${_sTarFile//".zip"/}
+  _sSourceDir="$_sDependenciesDir/$sourceFile"
+  _sInstallDir="$_sDependenciesDir/$depName-install"
+
+  # check for StatMC OpenCV Contribution installation in _sInstallDir (via existence of lib file)
+  if [ ! -f $_sDependenciesDir/StatMC-opencv_contrib-master/CONTRIBUTING.md ]; then
+    if [ $_bInstallDependencies = false ]; then
+      echo "Error: Could not find a $depName source in \"$_sDependenciesDir\". Exiting."
+      exit 1
+    fi
+
+    # Remove any files left from a previous failed install.
+    $DEBUG rm -fr $_sSourceDir
+    $DEBUG rm -fr $_sInstallDir
+    
+    # Download StatMC OpenCV Contribution
+    stepInfo $_NAME "Downloading $depName ..."
+
+    $DEBUG cd $_sDependenciesDir
+    
+    # download if not already
+    if [[ ! -f $_sTarFile ]]; then
+      stepInfo $depName "Downloading $_sTarFile ..."
+      $DEBUG wget -c $STATMC_OPENCV_CONTIB_DL
+    fi
+
+    # unpack
+    stepInfo $depName "Unpacking $_sTarFile ..."
+    $DEBUG unzip -o $_sTarFile
+  fi
+
+  stepInfo $_NAME "$depName source in \"$_sSourceDir\"." $_COLOR_INSTALL_DIR
+
+  statMCOpenCVContrib="$_sDependenciesDir/StatMC-opencv_contrib-master"
+
+  # clean step
+  cleanInstallStep
+fi
+
+# --- OpenCV
+
+if [[ $_sOpenCVInstallDir = "" && $WITH_STATMC = ON ]]; then
+
+  # setup
+  depName=$_OPENCV
+  _sTarFile=${OPENCV_DL##*/}
+  sourceVersion=${_sTarFile//".tar.gz"/}
+  sourceFile="opencv-$sourceVersion"
+  _sSourceDir="$_sDependenciesDir/$sourceFile"
+  _sInstallDir="$_sDependenciesDir/$depName-install"
+
+  # check for OpenCV installation in _sInstallDir (via existence of lib file)
+  if [ ! -f $_sInstallDir/lib/libopencv_core.so ]; then
+    if [ $_bInstallDependencies = false ]; then
+      echo "Error: Could not find a $depName installation in \"$_sDependenciesDir\". Exiting."
+      exit 1
+    fi
+
+    # Remove any files left from a previous failed install.
+    $DEBUG rm -fr $_sSourceDir
+    $DEBUG rm -fr $_sInstallDir
+    
+    # Install OpenCV
+    stepInfo $_NAME "Installing $depName ..."
+
+    $DEBUG cd $_sDependenciesDir
+    
+    # download if not already
+    if [[ ! -f $_sTarFile ]]; then
+      stepInfo $depName "Downloading $_sTarFile ..."
+      $DEBUG wget -c $OPENCV_DL
+    fi
+
+    # unpack
+    stepInfo $depName "Unpacking $_sTarFile ..."
+    $DEBUG tar -zxf $_sTarFile
+
+    $DEBUG cd $_sBuildDir
+
+    echo "statMCOpenCVContrib: $statMCOpenCVContrib"
+
+    stepInfo $depName "Installing from \"$_sSourceDir\" ..."
+    $DEBUG $_CMAKE \
+      -DCMAKE_C_COMPILER=$C_COMPILER \
+      -DCMAKE_CXX_COMPILER=$CXX_COMPILER \
+      -DCMAKE_C_STANDARD=$_CXX_STD \
+      -DCMAKE_CXX_STANDARD=$_CXX_STD \
+      -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -march=native" \
+      -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -march=native" \
+      -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc \
+      -DCMAKE_CUDA_HOST_COMPILER=/usr/bin/clang++ \
+      -DCMAKE_CUDA_ARCHITECTURES=$CUDA_ARCH_NUM \
+      -DWITH_CUDA=ON \
+      -DWITH_CUBLAS=ON \
+      -DOPENCV_EXTRA_MODULES_PATH=$statMCOpenCVContrib/modules \
+      -DBUILD_LIST=cudaarithm,cudev,cudaimgproc,highgui,ximgproc \
+      $_sSourceDir
+    $DEBUG make -j$NUM_PROCESSORS
+  fi
+
+  stepInfo $_NAME "$depName installed in \"$_sInstallDir\"." $_COLOR_INSTALL_DIR
+  _sOpenCVInstallDir=$_sInstallDir
+
+  # clean step
+  #cleanInstallStep
+fi
+
+
 # The following is a template for installing dependencies. (It is not run [see `true = false`].)
 # ----------------------------------------------------------------
 # *Template*
@@ -1571,8 +1753,8 @@ fi
 if [[ true = false && $_sTODOInstallDir = "" ]]; then
 
   # setup
-  depName=_TODO
-  _sTarFile=${_TODO_DL##*/}
+  depName=$_TODO
+  _sTarFile=${TODO_DL##*/}
   _sSourceDir=TODO
   _sInstallDir="$_sDependenciesDir/$depName-install"
 
@@ -1660,7 +1842,7 @@ $DEBUG cd build
 # cmake
 if [ $_bNewBuild = true ]; then
   stepInfo $_APPLESEED "Configuring CMake ..."
-  $DEBUG cmake \
+  $DEBUG $_CMAKE \
     -Wno-dev \
     -DWARNINGS_AS_ERRORS=OFF \
     -DCMAKE_BUILD_TYPE=$BUILD_TYPE \
@@ -1696,7 +1878,7 @@ fi
 # Small helper function to call `make` for Appleseed and print its step infos.
 buildAppleseed() {
   stepInfo $_APPLESEED "Building ..."
-  $DEBUG make $_sVerbose -j$(nproc)
+  $DEBUG make $_sVerbose -j$NUM_PROCESSORS
   stepInfo $_APPLESEED "Built $_APPLESEED."
 }
 
@@ -1747,6 +1929,7 @@ if [[ $_bCollect = true ]]; then
   cd $_sDependenciesDir
 
   collect $_sCollectType $_sBoostInstallDir
+  # TODO: collect StatMC
   if [[ $WITH_EMBREE = ON ]]; then collect $_sCollectType $_sEmbreeInstallDir; fi
   collect $_sCollectType $_sOCIOInstallDir
   collect $_sCollectType $_sOIIOInstallDir
