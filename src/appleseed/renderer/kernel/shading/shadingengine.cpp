@@ -38,6 +38,8 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingray.h"
 #include "renderer/kernel/shading/shadingresult.h"
+#include "renderer/kernel/shading/shadowcatcher.h"
+#include "renderer/modeling/color/colorspace.h"
 #include "renderer/modeling/environment/environment.h"
 #include "renderer/modeling/environmentshader/environmentshader.h"
 #include "renderer/modeling/input/source.h"
@@ -181,6 +183,10 @@ bool ShadingEngine::shade_hit_point(
             }
         }
 
+        ShadowCatcher shadow_catcher;
+        if (strcmp(shading_point.get_object_instance().get_name(), "Box001_sc_inst") == 0)
+            shadow_catcher.m_enabled = true;
+
         // Execute the surface shader.
         ShadingComponents shading_components;
         AOVComponents aov_components;
@@ -191,7 +197,8 @@ bool ShadingEngine::shade_hit_point(
             shading_point,
             shading_result,
             shading_components,
-            aov_components);
+            aov_components,
+            shadow_catcher);
 
         // Accumulate shading components and AOV components into the shading result and AOVs.
         aov_accumulators.write(
@@ -200,6 +207,17 @@ bool ShadingEngine::shade_hit_point(
             shading_components,
             aov_components,
             shading_result);
+
+        // If it's shadow catcher
+        // find light radiance value without material impact
+        // find light radiance value without calculating transmission, which should give us light value with no shadows
+        // based on these two values find "shadow value" and apply it to alpha value
+        if (strcmp(shading_point.get_object_instance().get_name(), "Box001_sc_inst") == 0)
+        {
+            shading_result.m_main.a = 1.0f - shadow_catcher.m_shadow_ratio;
+
+            return true;
+        }
 
         // Apply alpha premultiplication.
         shading_result.apply_alpha_premult();

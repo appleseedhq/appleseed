@@ -125,6 +125,8 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
     const MISHeuristic              mis_heuristic,
     const Dual3d&                   outgoing,
     DirectShadingComponents&        radiance,
+    Spectrum&                       unshaded_radiance,
+    Spectrum&                       shaded_radiance,
     LightPathStream*                light_path_stream) const
 {
     radiance.set(0.0f);
@@ -152,6 +154,8 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
                 sample,
                 outgoing,
                 radiance,
+                unshaded_radiance,
+                shaded_radiance,
                 light_path_stream);
         }
     }
@@ -182,6 +186,8 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
                     mis_heuristic,
                     outgoing,
                     lightset_radiance,
+                    unshaded_radiance,
+                    shaded_radiance,
                     light_path_stream);
             }
             else
@@ -191,6 +197,8 @@ void DirectLightingIntegrator::compute_outgoing_radiance_light_sampling_low_vari
                     sample,
                     outgoing,
                     lightset_radiance,
+                    unshaded_radiance,
+                    shaded_radiance,
                     light_path_stream);
             }
         }
@@ -206,6 +214,8 @@ void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling_low_v
     SamplingContext&                sampling_context,
     const Dual3d&                   outgoing,
     DirectShadingComponents&        radiance,
+    Spectrum&                       unshaded_radiance,
+    Spectrum&                       shaded_radiance,
     LightPathStream*                light_path_stream) const
 {
     compute_outgoing_radiance_material_sampling(
@@ -220,6 +230,8 @@ void DirectLightingIntegrator::compute_outgoing_radiance_combined_sampling_low_v
         MISPower2,
         outgoing,
         radiance_light_sampling,
+        unshaded_radiance,
+        shaded_radiance,
         light_path_stream);
 
     radiance += radiance_light_sampling;
@@ -342,6 +354,8 @@ void DirectLightingIntegrator::add_emitting_shape_sample_contribution(
     const MISHeuristic              mis_heuristic,
     const Dual3d&                   outgoing,
     DirectShadingComponents&        radiance,
+    Spectrum&                       unshaded_radiance,
+    Spectrum&                       shaded_radiance,
     LightPathStream*                light_path_stream) const
 {
     const Material* material = sample.m_shape->get_material();
@@ -408,10 +422,6 @@ void DirectLightingIntegrator::add_emitting_shape_sample_contribution(
         sample.m_point,
         transmission);
 
-    // Discard occluded samples.
-    if (is_zero(transmission))
-        return;
-
     // Evaluate the BSDF (or volume).
     DirectShadingComponents material_value;
     const float material_probability =
@@ -421,8 +431,6 @@ void DirectLightingIntegrator::add_emitting_shape_sample_contribution(
             m_light_sampling_modes,
             material_value);
     assert(material_probability >= 0.0f);
-    if (material_probability == 0.0f)
-        return;
 
     // Build a shading point on the light source.
     ShadingPoint light_shading_point;
@@ -457,9 +465,19 @@ void DirectLightingIntegrator::add_emitting_shape_sample_contribution(
             m_light_sample_count * sample.m_probability,
             m_material_sample_count * material_probability * g);
 
+    unshaded_radiance += edf_value; // *((mis_weight * g) / (sample.m_probability * contribution_prob));
+
+    // Discard occluded samples.
+    if (is_zero(transmission))
+        return;
+
+    if (material_probability == 0.0f)
+        return;
+
     // Add the contribution of this sample to the illumination.
     edf_value *= transmission;
     edf_value *= (mis_weight * g) / (sample.m_probability * contribution_prob);
+    shaded_radiance += edf_value;
     madd(radiance, material_value, edf_value);
 
     // Record light path event.
@@ -478,6 +496,8 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     const LightSample&              sample,
     const Dual3d&                   outgoing,
     DirectShadingComponents&        radiance,
+    Spectrum&                       unshaded_radiance,
+    Spectrum&                       shaded_radiance,
     LightPathStream*                light_path_stream) const
 {
     const Light* light = sample.m_light;
@@ -507,6 +527,15 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     // Compute the incoming direction in world space.
     const Vector3d incoming = -emission_direction;
 
+    // Add the contribution of this sample to the illumination.
+    const float attenuation = light->compute_distance_attenuation(
+        m_material_sampler.get_point(), emission_position);
+
+    // Store unshaded light value for shadow catcher
+    Spectrum unshaded_light_value(light_value);
+    unshaded_light_value *= attenuation;
+    unshaded_radiance += unshaded_light_value;
+
     // Compute the transmission factor between the light sample and the shading point.
     Spectrum transmission;
     if (light->get_flags() & Light::CastShadows)
@@ -534,11 +563,9 @@ void DirectLightingIntegrator::add_non_physical_light_sample_contribution(
     if (material_probability == 0.0f)
         return;
 
-    // Add the contribution of this sample to the illumination.
-    const float attenuation = light->compute_distance_attenuation(
-        m_material_sampler.get_point(), emission_position);
     light_value *= transmission;
     light_value *= attenuation / (sample.m_probability * probability);
+    shaded_radiance += light_value;
     madd(radiance, material_value, light_value);
 
     // Record light path event.

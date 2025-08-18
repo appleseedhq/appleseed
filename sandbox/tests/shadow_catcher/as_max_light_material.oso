@@ -1,0 +1,29 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.10.5
+# options: -O2 -DNDEBUG -IE:/GIT/appleseed/appleseed/src/appleseed.shaders/include -o E:/GIT/appleseed/appleseed/sandbox/shaders/max/as_max_light_material.oso
+shader as_max_light_material
+param	closure color	BSDF			%read{5,5} %write{2147483647,-1}
+param	float	Emission	1		%read{2,2} %write{2147483647,-1}
+param	color	Color	1 1 1		%read{2,2} %write{2147483647,-1}
+oparam	closure color	ClosureOut			%read{2147483647,-1} %write{4,5}
+local	color	___354_E	%read{4,4} %write{2,2}
+temp	int	$tmp1	%read{1,1} %write{0,0}
+const	string	$const1	"light"		%read{0,0} %write{2147483647,-1}
+temp	closure color	$tmp2	%read{4,4} %write{3,3}
+const	string	$const2	"emission"		%read{3,3} %write{2147483647,-1}
+code ___main___
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_light_material.osl:37
+#     if (raytype("light"))
+	raytype		$tmp1 $const1 	%filename{"E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_light_material.osl"} %line{37} %argrw{"wr"}
+	if		$tmp1 5 6 	%argrw{"r"}
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_light_material.osl:39
+#         color E = Emission * Color;
+	mul		___354_E Emission Color 	%line{39} %argrw{"wrr"}
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_light_material.osl:40
+#         ClosureOut = E * emission();
+	closure		$tmp2 $const2 	%line{40} %argrw{"wr"}
+	mul		ClosureOut $tmp2 ___354_E 	%argrw{"wrr"}
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_light_material.osl:43
+#         ClosureOut = BSDF;
+	assign		ClosureOut BSDF 	%line{43} %argrw{"wr"}
+	end

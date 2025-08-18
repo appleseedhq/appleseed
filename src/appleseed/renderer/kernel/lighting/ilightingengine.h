@@ -42,6 +42,7 @@ namespace renderer      { class PixelContext; }
 namespace renderer      { class ShadingComponents; }
 namespace renderer      { class ShadingContext; }
 namespace renderer      { class ShadingPoint; }
+namespace renderer      { class ShadowCatcher; }
 
 namespace renderer
 {
@@ -64,7 +65,8 @@ class ILightingEngine
         const ShadingContext&     shading_context,
         const ShadingPoint&       shading_point,
         ShadingComponents&        radiance,           // output radiance, in W.sr^-1.m^-2
-        AOVComponents&            aov_components) = 0;
+        AOVComponents&            aov_components,
+        ShadowCatcher&            shadow_catcher) = 0;
 
     // Retrieve performance statistics.
     virtual foundation::StatisticsVector get_statistics() const = 0;
