@@ -36,6 +36,7 @@
 
 // Standard headers.
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <limits>
 
@@ -246,6 +247,23 @@ Color3f ColorMap::evaluate_palette(float x) const
     const float w = x - ix;
 
     return lerp(m_palette[ix], m_palette[ix + 1], w);
+}
+
+std::array<float,4> ColorMap::compute_tile_highlight_color(const size_t thread_index, const size_t thread_count)
+{
+    // Choose one color per thread (see https://www.shadertoy.com/view/wlKXDm).
+    std::array<float,4> frame_color;
+
+    assert(thread_count != 0);
+
+    float t = 2 * 3.14159265359f * (thread_index / static_cast<float>(thread_count));
+    float cos_t = std::cos(t);
+    float sin_t = std::sin(t);
+    frame_color[0] = 0.5f + (0.5f * cos_t);
+    frame_color[1] = 0.5f + (0.5f * (-0.5f * cos_t - 0.866f * sin_t));
+    frame_color[2] = 0.5f + (0.5f * (-0.5f * cos_t + 0.866f * sin_t));
+    frame_color[3] = 1.0f;
+    return frame_color;
 }
 
 AABB2u ColorMap::get_full_crop_window(const Image& image)
