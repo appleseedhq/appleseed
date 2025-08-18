@@ -1895,8 +1895,11 @@ source_group ("renderer\\modeling\\input" FILES
 )
 
 set (renderer_modeling_light_sources
+    renderer/modeling/light/ArHosekSkyModelData_Spectral.h
     renderer/modeling/light/directionallight.cpp
     renderer/modeling/light/directionallight.h
+    renderer/modeling/light/HosekSun.cpp
+    renderer/modeling/light/HosekSun.h
     renderer/modeling/light/ilightfactory.cpp
     renderer/modeling/light/ilightfactory.h
     renderer/modeling/light/light.cpp
@@ -1912,6 +1915,8 @@ set (renderer_modeling_light_sources
     renderer/modeling/light/maxspotlight.h
     renderer/modeling/light/pointlight.cpp
     renderer/modeling/light/pointlight.h
+    renderer/modeling/light/PreethamSun.cpp
+    renderer/modeling/light/PreethamSun.h
     renderer/modeling/light/spotlight.cpp
     renderer/modeling/light/spotlight.h
     renderer/modeling/light/sunlight.cpp

@@ -77,4 +77,94 @@ void ILightFactory::add_common_input_metadata(DictionaryArray& metadata)
             .insert("help", "If enabled, this light casts shadows"));
 }
 
+void ILightFactory::add_common_sun_input_metadata(foundation::DictionaryArray& metadata)
+{
+    metadata.push_back(
+        Dictionary()
+        .insert("name", "environment_edf")
+        .insert("label", "Bind To")
+        .insert("type", "entity")
+        .insert("entity_types",
+            Dictionary().insert("environment_edf", "Environment EDFs"))
+        .insert("use", "optional")
+        .insert("help", "If an environment EDF is bound, use the sun angles and turbidity values from the environment"));
+
+    metadata.push_back(
+        Dictionary()
+        .insert("name", "visible")
+        .insert("label", "Visible")
+        .insert("type", "boolean")
+        .insert("use", "optional")
+        .insert("default", "true")
+        .insert("help", "Make the sun visible to the camera"));
+
+    metadata.push_back(
+        Dictionary()
+        .insert("name", "turbidity")
+        .insert("label", "Turbidity")
+        .insert("type", "numeric")
+        .insert("min",
+            Dictionary()
+            .insert("value", "1.0")
+            .insert("type", "hard"))
+        .insert("max",
+            Dictionary()
+            .insert("value", "10.0")
+            .insert("type", "hard"))
+        .insert("use", "required")
+        .insert("default", "2.0")
+        .insert("help", "Atmospheric haziness"));
+
+    metadata.push_back(
+        Dictionary()
+        .insert("name", "radiance_multiplier")
+        .insert("label", "Radiance Multiplier")
+        .insert("type", "numeric")
+        .insert("min",
+            Dictionary()
+            .insert("value", "0.0")
+            .insert("type", "hard"))
+        .insert("max",
+            Dictionary()
+            .insert("value", "10.0")
+            .insert("type", "soft"))
+        .insert("use", "optional")
+        .insert("default", "1.0")
+        .insert("help", "Light intensity multiplier"));
+
+    metadata.push_back(
+        Dictionary()
+        .insert("name", "size_multiplier")
+        .insert("label", "Size Multiplier")
+        .insert("type", "numeric")
+        .insert("min",
+            Dictionary()
+            .insert("value", "0.0")
+            .insert("type", "hard"))
+        .insert("max",
+            Dictionary()
+            .insert("value", "100.0")
+            .insert("type", "soft"))
+        .insert("use", "optional")
+        .insert("default", "1.0")
+        .insert("help", "The size multiplier allows to make the sun bigger or smaller, hence making it cast softer or harder shadows"));
+
+    metadata.push_back(
+        Dictionary()
+        .insert("name", "distance")
+        .insert("label", "Distance")
+        .insert("type", "numeric")
+        .insert("min",
+            Dictionary()
+            .insert("value", "0.0")
+            .insert("type", "hard"))
+        .insert("max",
+            Dictionary()
+            .insert("value", "500.0")
+            .insert("type", "soft"))
+        .insert("use", "optional")
+        .insert("default", "149.6")
+        .insert("help", "Distance between Sun and scene (millions of km)"));
+}
+
 }   // namespace renderer
