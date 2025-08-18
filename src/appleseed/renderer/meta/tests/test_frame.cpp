@@ -94,7 +94,8 @@ TEST_SUITE(Renderer_Modeling_Frame_Frame)
                     ParamArray()
                         .insert("resolution", "64 64")
                         .insert("output_filename", (m_output_directory / "default-main.png").string()),
-                    aovs);
+                    aovs,
+                    AOVContainer());
 
             m_frame->clear_main_and_aov_images();
         }

@@ -34,6 +34,7 @@
 #include "renderer/global/globallogger.h"
 #include "renderer/global/globaltypes.h"
 #include "renderer/modeling/aov/aov.h"
+#include "renderer/modeling/aov/lpeaov.h"
 #include "renderer/modeling/aov/aovfactoryregistrar.h"
 #include "renderer/modeling/aov/iaovfactory.h"
 #include "renderer/modeling/bsdf/bsdf.h"
@@ -377,6 +378,8 @@ namespace
         ElementAlpha,
         ElementAOV,
         ElementAOVs,
+        ElementLPEAOV,
+        ElementLPEAOVs,
         ElementAssembly,
         ElementAssemblyInstance,
         ElementAssignMaterial,
@@ -2530,6 +2533,119 @@ namespace
 
 
     //
+    // <lpeaov> element handler.
+    //
+    class LPEAOVElementHandler
+            : public ParametrizedElementHandler
+    {
+    public:
+        explicit LPEAOVElementHandler(ParseContext& context)
+            : m_context(context)
+        {
+        }
+
+        void start_element(const Attributes &attrs) override
+        {
+            ParametrizedElementHandler::start_element(attrs);
+
+            m_aov.reset();
+
+            m_name = ParametrizedElementHandler::get_value(attrs, "name");
+            m_rule = ParametrizedElementHandler::get_value(attrs, "rule");
+        }
+
+        void end_element() override
+        {
+            ParametrizedElementHandler::end_element();
+
+            const IAOVFactory* factory =
+                    m_context.get_project().get_factory_registrar<AOV>().lookup("lpeaov");
+
+            if (factory)
+            {
+                m_params.insert("name", m_name);
+                m_params.insert("rule", m_rule);
+                m_aov = factory->create(m_params);
+            }
+            else
+            {
+                RENDERER_LOG_ERROR(
+                            "while defining lpe aov: invalid model \"%s\".",
+                            "lpe_aov");
+                m_context.get_event_counters().signal_error();
+            }
+        }
+
+        auto_release_ptr<LPEAOV> get_aov()
+        {
+            return m_aov;
+        }
+
+    protected:
+        ParseContext&               m_context;
+        auto_release_ptr<LPEAOV>    m_aov;
+        std::string                 m_name;
+        std::string                 m_rule;
+    };
+
+    //
+    // <lpeaovs> element handler.
+    //
+
+    class LPEAOVsElementHandler
+            : public ElementHandlerBaseType
+    {
+    public:
+        explicit LPEAOVsElementHandler(ParseContext& context)
+            : m_context(context)
+            , m_lpeaovs(nullptr)
+        {
+        }
+
+        void set_aov_container(AOVContainer* aovs)
+        {
+            m_lpeaovs = aovs;
+        }
+
+        void end_child_element(
+                const ProjectElementID  element,
+                ElementHandlerType*     handler) override
+        {
+            assert(m_lpeaovs);
+
+            switch (element)
+            {
+            case ElementLPEAOV:
+            {
+                auto_release_ptr<AOV> aov(
+                            static_cast<LPEAOVElementHandler*>(handler)->get_aov());
+
+                if (aov.get() != nullptr)
+                {
+                    if (m_lpeaovs->get_by_name(aov->get_name()) == nullptr)
+                        m_lpeaovs->insert(aov);
+                    else
+                    {
+                        RENDERER_LOG_ERROR(
+                                    "an aov with the path \"%s\" already exists.",
+                                    aov->get_path().c_str());
+                        m_context.get_event_counters().signal_error();
+                    }
+                }
+            }
+                break;
+
+                assert_otherwise;
+            }
+        }
+
+    private:
+        ParseContext& m_context;
+        AOVContainer* m_lpeaovs;
+    };
+
+
+    //
     // <post_processing_stage> element handler.
     //
 
@@ -2635,6 +2751,7 @@ namespace
                     m_name.c_str(),
                     m_params,
                     m_aovs,
+                    m_lpe_aovs,
                     m_context.get_project().search_paths());
 
             m_frame->post_processing_stages().swap(m_post_processing_stages);
@@ -2653,6 +2770,14 @@ namespace
                     aovs_handler->set_aov_container(&m_aovs);
                 }
                 break;
+
+              case ElementLPEAOVs:
+                {
+                    LPEAOVsElementHandler* aovs_handler =
+                        static_cast<LPEAOVsElementHandler*>(handler);
+                    aovs_handler->set_aov_container(&m_lpe_aovs);
+                }
+                    break;
 
               case ElementPostProcessingStages:
                 {
@@ -2678,6 +2803,10 @@ namespace
                 // Nothing to do, AOVs were directly inserted into the project.
                 break;
 
+              case ElementLPEAOVs:
+                // Nothing to do, same as AOVs
+                break;
+
               case ElementPostProcessingStages:
                 // Nothing to do, post-processing stages were directly inserted into the project.
                 break;
@@ -2698,6 +2827,7 @@ namespace
         auto_release_ptr<Frame>         m_frame;
         std::string                     m_name;
         AOVContainer                    m_aovs;
+        AOVContainer                    m_lpe_aovs;
         PostProcessingStageContainer    m_post_processing_stages;
     };
 
@@ -3028,6 +3158,8 @@ namespace
             register_factory_helper<ValuesElementHandler>("alpha", ElementAlpha);
             register_factory_helper<AOVElementHandler>("aov", ElementAOV);
             register_factory_helper<AOVsElementHandler>("aovs", ElementAOVs);
+            register_factory_helper<LPEAOVElementHandler>("lpeaov", ElementLPEAOV);
+            register_factory_helper<LPEAOVsElementHandler>("lpeaovs", ElementLPEAOVs);
             register_factory_helper<AssemblyElementHandler>("assembly", ElementAssembly);
             register_factory_helper<AssemblyInstanceElementHandler>("assembly_instance", ElementAssemblyInstance);
             register_factory_helper<AssignMaterialElementHandler>("assign_material", ElementAssignMaterial);

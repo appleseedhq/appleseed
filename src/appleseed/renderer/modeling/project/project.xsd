@@ -333,6 +333,22 @@
                                                         </xsd:sequence>
                                                     </xsd:complexType>
                                                 </xsd:element>
+                                                <xsd:element name="lpeaovs" minOccurs="0">
+                                                    <xsd:complexType>
+                                                        <xsd:sequence>
+                                                            <xsd:element name="lpeaov" minOccurs="0" maxOccurs="unbounded">
+                                                                <xsd:complexType>
+                                                                    <xsd:complexContent>
+                                                                        <xsd:extension base="parameterSet">
+                                                                            <xsd:attribute name="name" type="xsd:string" use="required"/>
+                                                                            <xsd:attribute name="rule" type="xsd:string" use="required"/>
+                                                                        </xsd:extension>
+                                                                    </xsd:complexContent>
+                                                                </xsd:complexType>
+                                                            </xsd:element>
+                                                        </xsd:sequence>
+                                                    </xsd:complexType>
+                                                </xsd:element>
                                                 <xsd:element name="post_processing_stages" minOccurs="0">
                                                     <xsd:complexType>
                                                         <xsd:sequence>
