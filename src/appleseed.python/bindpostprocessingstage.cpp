@@ -82,6 +82,7 @@ void bind_post_processing_stage()
         .def("__init__", bpy::make_constructor(create_post_processing_stage))
         .def("get_model", &PostProcessingStage::get_model)
         .def("get_order", &PostProcessingStage::get_order);
+        // @Note: this might need to be updated if a "real_time_preview" flag is added.
 
     bind_typed_entity_vector<PostProcessingStage>("PostProcessingStageContainer");
 

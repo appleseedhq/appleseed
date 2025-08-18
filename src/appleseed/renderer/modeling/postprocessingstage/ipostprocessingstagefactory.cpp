@@ -56,6 +56,14 @@ void IPostProcessingStageFactory::add_common_input_metadata(DictionaryArray& met
             .insert("use", "required")
             .insert("help", "Determines the order in which this stage is applied")
             .insert("default", "0"));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "real_time_preview")
+            .insert("label", "Real-time Preview")
+            .insert("type", "boolean")
+            .insert("use", "required")
+            .insert("default", "false"));
 }
 
 }   // namespace renderer

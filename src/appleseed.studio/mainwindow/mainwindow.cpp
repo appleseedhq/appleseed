@@ -778,6 +778,10 @@ void MainWindow::update_project_explorer()
             SLOT(slot_project_modified()));
 
         connect(
+            m_project_explorer, SIGNAL(signal_post_processing_stage_modified(const std::uint64_t)),
+            SLOT(slot_post_processing_stage_modified(const std::uint64_t)));
+
+        connect(
             m_project_explorer, SIGNAL(signal_frame_modified()),
             SLOT(slot_frame_modified()));
     }
@@ -1264,6 +1268,25 @@ void MainWindow::start_rendering(const RenderingMode rendering_mode)
         m_render_tabs["RGB"]);
 }
 
+namespace
+{
+    auto_release_ptr<Frame> make_temporary_frame_copy(const Frame& frame)
+    {
+        // todo: creating a frame with denoising enabled is very expensive, see benchmark_frame.cpp.
+        ParamArray params_copy(frame.get_parameters());
+        params_copy.remove_path("denoiser");
+
+        // Make a temporary copy of the frame.
+        // Render info, AOVs and other data are not copied.
+        auto_release_ptr<Frame> working_frame =
+            FrameFactory::create((std::string(frame.get_name()) + "_copy").c_str(), params_copy);
+
+        working_frame->image().copy_from(frame.image());
+
+        return working_frame;
+    }
+}
+
 void MainWindow::apply_false_colors_settings()
 {
     Project* project = m_project_manager.get_project();
@@ -1277,15 +1300,7 @@ void MainWindow::apply_false_colors_settings()
 
     if (false_colors_enabled)
     {
-        // Make a temporary copy of the frame.
-        // Render info, AOVs and other data are not copied.
-        // todo: creating a frame with denoising enabled is very expensive, see benchmark_frame.cpp.
-        auto_release_ptr<Frame> working_frame =
-            FrameFactory::create(
-                (std::string(frame->get_name()) + "_copy").c_str(),
-                frame->get_parameters()
-                    .remove_path("denoiser"));
-        working_frame->image().copy_from(frame->image());
+        auto_release_ptr<Frame> working_frame = make_temporary_frame_copy(*frame);
 
         // Create post-processing stage.
         auto_release_ptr<PostProcessingStage> stage(
@@ -1595,6 +1610,28 @@ void MainWindow::slot_project_modified()
     m_project_manager.set_project_dirty_flag();
 
     update_window_title();
+}
+
+void MainWindow::slot_post_processing_stage_modified(const std::uint64_t stage_uid)
+{
+    Project* project = m_project_manager.get_project();
+    assert(project != nullptr);
+
+    Frame* frame = project->get_frame();
+    assert(frame != nullptr);
+
+    auto_release_ptr<Frame> working_frame = make_temporary_frame_copy(*frame);
+
+    // Preview the post-processing stage that was modified.
+    for (PostProcessingStage& stage : frame->post_processing_stages())
+    {
+        if (stage.get_uid() == stage_uid) {
+            apply_post_processing_stage(stage, working_frame.ref());
+            return;
+        }
+    }
+
+    assert(false);
 }
 
 void MainWindow::slot_toggle_project_file_monitoring(const bool checked)
