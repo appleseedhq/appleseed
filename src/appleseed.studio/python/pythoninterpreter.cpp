@@ -88,7 +88,7 @@ MainWindow* PythonInterpreter::get_main_window() const
 
 namespace
 {
-    bf::path compute_site_packages_path()
+    bf::path compute_root_path()
     {
         // Start with the absolute path to appleseed.studio's executable.
         bf::path base_path(get_executable_path());
@@ -97,11 +97,22 @@ namespace
         base_path = base_path.parent_path();
 
         // Go up in the hierarchy until bin/ is found.
-        while (base_path.filename() != "bin")
+#ifdef __APPLE__
+        while (base_path.has_parent_path() && base_path.filename() != "bin" && base_path.filename() != "MacOS")
+#else
+        while (base_path.has_parent_path() && base_path.filename() != "bin")
+#endif
             base_path = base_path.parent_path();
 
         // One more step up to reach the parent of bin/.
         base_path = base_path.parent_path();
+
+        return base_path;
+    }
+
+    bf::path compute_site_packages_path()
+    {
+        const bf::path base_path(compute_root_path());
 
         // Compute full path.
         const bf::path site_pkg_path = base_path / "lib" / "python" / "site-packages";
@@ -111,47 +122,20 @@ namespace
 
     bf::path compute_appleseed_python_module_path()
     {
-        // Start with the absolute path to appleseed.studio's executable.
-        bf::path base_path(get_executable_path());
-        bf::path lib_path;
-
-        // Strip appleseed.studio's executable filename from the path.
-        base_path = base_path.parent_path();
-
-        // Go up in the hierarchy until bin/ is found.
-        while (base_path.filename() != "bin")
-        {
-            lib_path = base_path.filename() / lib_path;
-            base_path = base_path.parent_path();
-        }
-
-        // One more step up to reach the parent of bin/.
-        lib_path = "lib" / lib_path;
-        base_path = base_path.parent_path();
+        const bf::path base_path(compute_root_path());
 
         // Compute full path.
-        lib_path = base_path / lib_path / "python";
+        const bf::path lib_path = base_path / "lib" / "python";
 
         return safe_weakly_canonical(lib_path);
     }
 
     bf::path compute_bundled_plugins_path()
     {
-        // Start with the absolute path to appleseed.studio's executable.
-        bf::path base_path(get_executable_path());
-
-        // Strip appleseed.studio's executable filename from the path.
-        base_path = base_path.parent_path();
-
-        // Go up in the hierarchy until bin directory is found.
-        while (base_path.filename() != "bin")
-            base_path = base_path.parent_path();
-
-        // One more step up to reach the parent of bin directory.
-        base_path = base_path.parent_path();
+        const bf::path base_path(compute_root_path());
 
         // Compute full path.
-        bf::path plugins_path = base_path / "studio" / "plugins";
+        const bf::path plugins_path = base_path / "studio" / "plugins";
 
         return safe_weakly_canonical(plugins_path);
     }

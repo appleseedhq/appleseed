@@ -136,9 +136,11 @@ namespace
         {
             // PYTHONHOME not set or empty: use the Python installation bundled with appleseed.studio.
 
-#if defined _WIN32 || __APPLE__
-            // On Windows and macOS, Python's standard libraries are located in python27/Lib/.
+#if defined _WIN32
+            // On Windows, Python's standard libraries are located in python27/Lib/.
             bf::path python_path = bf::path(Application::get_root_path()) / "python27";
+#elif defined __APPLE__
+            bf::path python_path = bf::path(Application::get_root_path()) / "python27/Frameworks/Python.framework/Versions/2.7";
 #else
             // On Linux, Python's standard libraries are located in lib/python2.7/.
             bf::path python_path = bf::path(Application::get_root_path());
@@ -335,6 +337,14 @@ int main(int argc, char* argv[])
     default_format.setVersion(3, 3);
     default_format.setProfile(QSurfaceFormat::CoreProfile);
     QSurfaceFormat::setDefaultFormat(default_format);
+
+#ifdef __APPLE__
+    // Add bin path to Qt LibraryPath so Qt can find local platforms/libqcocoa.dylib plugin
+    // https://doc.qt.io/archives/qt-5.11/osx-deployment.html#application-dependencies
+
+    bf::path platform_path =  bf::path(Application::get_root_path()) / "bin";
+    QCoreApplication::addLibraryPath(QString::fromStdString(platform_path.make_preferred().string()));
+#endif
 
     // Construct the Qt application.
     QApplication application(argc, argv);

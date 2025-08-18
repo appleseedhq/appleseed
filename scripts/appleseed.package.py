@@ -35,6 +35,7 @@ import argparse
 import colorama
 import fnmatch
 import glob
+import json
 import os
 import platform
 import re
@@ -146,7 +147,8 @@ def copy_glob(input_pattern, output_path):
 
 
 def make_writable(filepath):
-    os.chmod(filepath, stat.S_IRUSR | stat.S_IWUSR)
+    st = os.stat(filepath)
+    os.chmod(filepath, st.st_mode | stat.S_IRUSR | stat.S_IWUSR)
 
 
 def merge_tree(src, dst, symlinks=False, ignore=None):
@@ -195,6 +197,7 @@ def merge_tree(src, dst, symlinks=False, ignore=None):
 # -------------------------------------------------------------------------------------------------
 # Settings.
 # -------------------------------------------------------------------------------------------------
+
 
 class Settings:
 
@@ -245,8 +248,9 @@ class Settings:
 
 class PackageInfo:
 
-    def __init__(self, settings, no_zip):
+    def __init__(self, settings, no_zip, no_app=True):
         self.no_zip = no_zip
+        self.no_app = no_app
         self.settings = settings
 
     def load(self):
@@ -260,8 +264,16 @@ class PackageInfo:
         os.chdir(old_path)
 
     def build_package_path(self):
+        if os.name == 'nt':
+            ext = "zip"
+        else:
+            if not self.no_app:
+                ext = 'dmg'
+            else:
+                ext = "tar.gz"
+
         package_dir = "appleseed-{0}".format(self.version)
-        package_name = "appleseed-{0}-{1}.zip".format(self.version, self.settings.platform)
+        package_name = "appleseed-{0}-{1}.{2}".format(self.version, self.settings.platform, ext)
         self.package_path = os.path.join(self.settings.package_output_path, package_dir, package_name)
 
     def print_summary(self):
@@ -309,12 +321,13 @@ class PackageBuilder:
         if self.package_info.no_zip:
             self.deploy_stage_to_package_directory()
         else:
-            self.build_final_zip_file()
+            self.build_final_archive_file()
         self.remove_stage()
 
     def remove_leftovers(self):
         progress("Removing leftovers from previous invocations")
         safe_delete_directory("appleseed")
+        safe_delete_directory("appleseed.app")
         safe_delete_file("sandbox.zip")
         safe_delete_file(self.package_info.package_path)
 
@@ -489,16 +502,27 @@ class PackageBuilder:
         progress("Removing existing package directory")
         safe_delete_directory(package_directory)
         progress("Deploying staging directory to package directory")
-        shutil.copytree("appleseed", package_directory)
+        if self.package_info.no_app:
+            shutil.copytree("appleseed", package_directory, symlinks=True)
+        else:
+            shutil.copytree("appleseed.app", package_directory + ".app", symlinks=True)
 
-    def build_final_zip_file(self):
-        progress("Building final zip file from staging directory")
+    def build_final_archive_file(self):
+        progress("Building final archive file from staging directory")
         package_base_path = os.path.splitext(self.package_info.package_path)[0]
-        archive_util.make_zipfile(package_base_path, "appleseed")
+        if os.name == 'nt':
+            archive_util.make_zipfile(package_base_path, "appleseed")
+        elif not self.package_info.no_app:
+            background_icon_path = os.path.join(self.settings.appleseed_path, "resources/logo/appleseed-drive-background.png")
+            drive_icon_path = os.path.join(self.settings.appleseed_path, "resources/logo/appleseed-drive.png")
+            self._create_dmg('appleseed.app', self.package_info.package_path, background_icon_path, drive_icon_path)
+        else:
+            archive_util.make_tarball(package_base_path, "appleseed")
 
     def remove_stage(self):
         progress("Deleting staging directory")
         safe_delete_directory("appleseed")
+        safe_delete_directory("appleseed.app")
 
     def run(self, cmdline):
         trace("  Running command line: {0}".format(cmdline))
@@ -583,13 +607,7 @@ class MacPackageBuilder(PackageBuilder):
 
     SYSTEM_LIBS_PREFIXES = [
         "/System/Library/",
-        "/usr/lib/libcurl",
-        "/usr/lib/libc++",
-        "/usr/lib/libbz2",
-        "/usr/lib/libSystem",
-        "/usr/lib/libz",
-        "/usr/lib/libncurses",
-        "/usr/lib/libobjc.A.dylib"
+        "/usr/lib"
     ]
 
     QT_FRAMEWORKS = [
@@ -609,6 +627,9 @@ class MacPackageBuilder(PackageBuilder):
         self.__add_python_to_stage()
         self.__fixup_binaries()
         os.rename("appleseed/bin/appleseed.studio", "appleseed/bin/appleseed-studio")
+        if not self.package_info.no_app:
+            icon_path = os.path.join(self.settings.appleseed_path, "resources/logo/appleseed-seeds-2048.png")
+            self.__create_app('appleseed', "appleseed.app", icon_path)
 
     def __add_dependencies_to_stage(self):
         progress("Mac-specific: Adding dependencies to staging directory")
@@ -622,28 +643,33 @@ class MacPackageBuilder(PackageBuilder):
         safe_make_directory("appleseed/bin/platforms")
         qt_platform_plugins_path = os.path.join(self.settings.qt_runtime_path, "plugins", "platforms")
         shutil.copy(os.path.join(qt_platform_plugins_path, "libqcocoa.dylib"), "appleseed/bin/platforms")
-        shutil.copy(os.path.join(qt_platform_plugins_path, "libqminimal.dylib"), "appleseed/bin/platforms")
-        shutil.copy(os.path.join(qt_platform_plugins_path, "libqoffscreen.dylib"), "appleseed/bin/platforms")
-        shutil.copy(os.path.join(qt_platform_plugins_path, "libqwebgl.dylib"), "appleseed/bin/platforms")
+
+        # Add other platform plugins only if they exists
+        for platform_plugin in ["libqminimal.dylib", "libqoffscreen.dylib", "libqwebgl.dylib"]:
+            platform_plugin_path = os.path.join(qt_platform_plugins_path, platform_plugin)
+            if os.path.exists(platform_plugin_path):
+                shutil.copy(platform_plugin_path, "appleseed/bin/platforms")
 
         self.add_unix_dependencies_to_stage(self.get_paths_to_binaries())
 
-        # Python framework (TODO: currently hardcoded to /usr/local/opt/python@2/Frameworks/Python.framework/Versions/2.7/Python).
-        framework_name = "Python"
-        framework_dir = framework_name + ".framework"
-        src_filepath = os.path.join("/usr/local/opt/python@2/Frameworks", framework_dir, "Versions", "2.7", framework_name)
-        dest_path = os.path.join("appleseed", "lib", framework_dir, "Versions", "2.7")
-        safe_make_directory(dest_path)
-        shutil.copy(src_filepath, dest_path)
-        make_writable(os.path.join(dest_path, framework_name))
-
     def __add_python_to_stage(self):
         progress("Mac-specific: Adding Python 2.7 to staging directory")
-        safe_make_directory("appleseed/python27")
-        shutil.copytree(os.path.join(self.settings.python_path, "bin"), "appleseed/python27/bin")
-        shutil.copytree(os.path.join(self.settings.python_path, "include"), "appleseed/python27/include")
-        shutil.copytree(os.path.join(self.settings.python_path, "lib"), "appleseed/python27/lib")
-        shutil.copytree(os.path.join(self.settings.python_path, "share"), "appleseed/python27/share")
+
+        # Python framework (TODO: currently hardcoded to Python 2.7).
+        # This assumes a homebrew install of python
+        python_dir = "appleseed/python27"
+        safe_make_directory(python_dir)
+
+        # just copy everything
+        merge_tree(self.settings.python_path, python_dir, symlinks=True)
+
+        # Homebrew will create a symlink for site-packages.
+        # Replace it with a empty directory if found
+        python_home = os.path.join(python_dir, "Frameworks/Python.framework/Versions/2.7")
+        site_packages_path = os.path.join(python_home, "lib/python2.7/site-packages")
+        if os.path.islink(site_packages_path):
+            os.remove(site_packages_path)
+            safe_make_directory(site_packages_path)
 
     def __copy_qt_framework(self, framework_name):
         framework_dir = framework_name + ".framework"
@@ -668,41 +694,66 @@ class MacPackageBuilder(PackageBuilder):
         self.__change_qt_framework_paths_in_qt_frameworks()
 
     def set_libraries_ids(self):
-        for dirpath, dirnames, filenames in os.walk("appleseed/lib"):
-            for filename in filenames:
-                ext = os.path.splitext(filename)[1]
-                if ext == ".dylib" or ext == ".so":
-                    lib_path = os.path.join(dirpath, filename)
-                    self.__set_library_id(lib_path, filename)
+        for lib_dir in ("appleseed/lib", 'appleseed/python27', 'appleseed/bin/platforms'):
+            for dirpath, dirnames, filenames in os.walk(lib_dir):
+                for filename in filenames:
+                    ext = os.path.splitext(filename)[1]
+                    if ext == ".dylib" or ext == ".so":
+                        lib_path = os.path.join(dirpath, filename)
+                        self.__set_library_id(lib_path, filename)
 
     def set_qt_framework_ids(self):
         for framework in self.QT_FRAMEWORKS:
             self.__set_library_id("appleseed/lib/{0}.framework/Versions/5/{0}".format(framework), "{0}.framework/Versions/5/{0}".format(framework))
-        self.__set_library_id("appleseed/lib/Python.framework/Versions/2.7/Python", "Python.framework/Versions/2.7/Python")
+        self.__set_library_id("appleseed/python27/Frameworks/Python.framework/Versions/2.7/Python", "Python.framework/Versions/2.7/Python")
 
     def __change_library_paths_in_libraries(self):
-        for dirpath, dirnames, filenames in os.walk("appleseed/lib"):
-            for filename in filenames:
-                ext = os.path.splitext(filename)[1]
-                if ext == ".dylib" or ext == ".so":
-                    lib_path = os.path.join(dirpath, filename)
-                    self.__change_library_paths_in_binary(lib_path)
-                    self.__change_qt_framework_paths_in_binary(lib_path)
+        for lib_dir in ("appleseed/lib", 'appleseed/python27'):
+            for dirpath, dirnames, filenames in os.walk(lib_dir):
+                for filename in filenames:
+                    ext = os.path.splitext(filename)[1]
+                    if ext == ".dylib" or ext == ".so":
+                        lib_path = os.path.join(dirpath, filename)
+                        self.__change_library_paths_in_binary(lib_path)
+                        self.__change_qt_framework_paths_in_binary(lib_path)
 
     def __change_library_paths_in_executables(self):
-        for dirpath, dirnames, filenames in os.walk("appleseed/bin"):
-            for filename in filenames:
-                ext = os.path.splitext(filename)[1]
-                if ext != ".py" and ext != ".conf":
-                    exe_path = os.path.join(dirpath, filename)
-                    self.__change_library_paths_in_binary(exe_path)
-                    self.__change_qt_framework_paths_in_binary(exe_path)
+        for bin_dir in ("appleseed/bin", "appleseed/python27/bin", "appleseed/python27/Frameworks/Python.framework/Versions/2.7/bin"):
+            for dirpath, dirnames, filenames in os.walk(bin_dir):
+                for filename in filenames:
+                    ext = os.path.splitext(filename)[1]
+                    if ext != ".py" and ext != ".conf":
+                        exe_path = os.path.join(dirpath, filename)
+                        self.__change_library_paths_in_binary(exe_path)
+                        self.__change_qt_framework_paths_in_binary(exe_path)
+
+    def __change_python_library_path(self, bin_path):
+        if os.path.islink(bin_path):
+            return
+
+        python_lib = "appleseed/python27/Frameworks/Python.framework/Versions/2.7/Python"
+
+        bin_dir = os.path.dirname(bin_path)
+        path_to_python_lib = os.path.relpath(python_lib, bin_dir)
+
+        # print(bin_dir, path_to_appleseed_lib)
+
+        for lib_path in self.__iter_all_dependencies(bin_path):
+            lib_name = os.path.basename(lib_path)
+            if lib_name == 'Python':
+                self.__change_library_path(bin_path, lib_path,  "@loader_path/{0}".format(path_to_python_lib))
 
     # Can be used on executables and dynamic libraries.
     def __change_library_paths_in_binary(self, bin_path):
-        progress("  Patching {0}".format(bin_path))
+        if os.path.islink(bin_path):
+            return
+
+        progress("  Patching {0}".format(os.path.abspath(bin_path)))
+        make_writable(bin_path)
+
         bin_dir = os.path.dirname(bin_path)
         path_to_appleseed_lib = os.path.relpath("appleseed/lib/", bin_dir)
+
         # fix_paths set to False because we must retrieve the unmodified dependency in order to replace it by the correct one.
         for lib_path in self.get_dependencies_for_file(bin_path, fix_paths=False, verbose=False):
             lib_name = os.path.basename(lib_path)
@@ -711,44 +762,83 @@ class MacPackageBuilder(PackageBuilder):
             else:
                 self.__change_library_path(bin_path, lib_path, "@loader_path/{0}/{1}".format(path_to_appleseed_lib, lib_name))
 
+        self.__change_python_library_path(bin_path)
+        self.__delete_rpaths(bin_path)
+
     # Can be used on executables and dynamic libraries.
     def __change_qt_framework_paths_in_binary(self, bin_path):
         for fwk_path in self.__get_qt_frameworks_for_file(bin_path):
             fwk_name = re.search(r"(Qt.*)\.framework", fwk_path).group(1)
             self.__change_library_path(bin_path, fwk_path, "@executable_path/../lib/{0}.framework/Versions/5/{0}".format(fwk_name))
-        self.__change_library_path(bin_path, "/usr/local/opt/python@2/Frameworks/Python.framework/Versions/2.7/Python",
-                                   "@executable_path/../lib/Python.framework/Versions/2.7/Python")
+
+        self.__change_python_library_path(bin_path)
+        self.__delete_rpaths(bin_path)
 
     def __change_qt_framework_paths_in_qt_frameworks(self):
         for framework in self.QT_FRAMEWORKS:
             self.__change_qt_framework_paths_in_binary("appleseed/lib/{0}.framework/Versions/5/{0}".format(framework))
-        self.__change_qt_framework_paths_in_binary("appleseed/lib/Python.framework/Versions/2.7/Python")
+        self.__change_qt_framework_paths_in_binary("appleseed/python27/Frameworks/Python.framework/Versions/2.7/Python")
 
     def __set_library_id(self, target, name):
+        if os.path.islink(target):
+            return
+        make_writable(target)
         self.run('install_name_tool -id "{0}" {1}'.format(name, target))
+
+    def __delete_rpaths(self, target):
+        for path in self.__get_lib_search_paths(target, use_env=False):
+            self.run('install_name_tool -delete_rpath "{0}" "{1}"'.format(path, target))
 
     def __change_library_path(self, target, old, new):
         self.run('install_name_tool -change "{0}" "{1}" {2}'.format(old, new, target))
 
-    def get_dependencies_for_file(self, filepath, fix_paths=True, verbose=True):
-        filename = os.path.basename(filepath)
+    def __get_lib_search_paths(self, filepath, use_env=True):
+        returncode, out, err = self.run_subprocess(["otool", "-l", filepath])
+        if returncode != 0:
+            fatal("Failed to invoke otool(1) to get rpath for {0}: {1}".format(filepath, err))
 
-        loader_path = os.path.dirname(filepath)
-        rpath = "/usr/local/lib/"  # TODO: a great simplification
+        lc_path_found = False
 
-        if verbose:
-            trace("  Gathering dependencies for file")
-            trace("      {0}".format(filepath))
-            trace("  with @loader_path set to")
-            trace("      {0}".format(loader_path))
-            trace("  and @rpath hardcoded to")
-            trace("      {0}".format(rpath))
+        rpaths = []
+        # parse otool output for rpaths, there can be multiple
+        for line in out.split("\n"):
+            line = line.strip()
 
+            if lc_path_found and line.startswith("path"):
+                path_split = line.split(' ')
+                if len(path_split) < 2:
+                    fatal("Failed to parse line from otool(1) output: " + line)
+                rpaths.append(path_split[1])
+                lc_path_found = False
+
+            if line == "cmd LC_RPATH":
+                lc_path_found = True
+
+        search_paths = []
+        if use_env:
+            DYLD_LIBRARY_PATH = os.environ.get("DYLD_LIBRARY_PATH", "").split(":")
+            DYLD_FALLBACK_LIBRARY_PATH = os.environ.get("DYLD_FALLBACK_LIBRARY_PATH", "").split(":")
+
+            # DYLD_LIBRARY_PATH overides rpaths
+            for path in DYLD_LIBRARY_PATH:
+                if os.path.exists(path):
+                    search_paths.append(path)
+
+        for path in rpaths:
+            if os.path.exists(path):
+                search_paths.append(path)
+
+        if use_env:
+            for path in DYLD_FALLBACK_LIBRARY_PATH:
+                if os.path.exists(path):
+                    search_paths.append(path)
+
+        return search_paths
+
+    def __iter_all_dependencies(self, filepath):
         returncode, out, err = self.run_subprocess(["otool", "-L", filepath])
         if returncode != 0:
             fatal("Failed to invoke otool(1) to get dependencies for {0}: {1}".format(filepath, err))
-
-        libs = set()
 
         for line in out.split("\n")[1:]:    # skip the first line
             line = line.strip()
@@ -764,9 +854,33 @@ class MacPackageBuilder(PackageBuilder):
             lib = m.group(1)
 
             # Ignore self-references (why do these happen?).
-            if lib == filename:
+            if lib == filepath:
                 continue
 
+            yield lib
+
+    def get_dependencies_for_file(self, filepath, fix_paths=True, verbose=True):
+        filename = os.path.basename(filepath)
+
+        loader_path = os.path.dirname(filepath)
+        search_paths = self.__get_lib_search_paths(filepath)
+
+        if verbose:
+            trace("  Gathering dependencies for file")
+            trace("      {0}".format(filepath))
+            trace("  with @loader_path set to")
+            trace("      {0}".format(loader_path))
+            trace("  and rpath search path to:")
+            for path in search_paths:
+                trace("    {0}".format(path))
+
+        returncode, out, err = self.run_subprocess(["otool", "-L", filepath])
+        if returncode != 0:
+            fatal("Failed to invoke otool(1) to get dependencies for {0}: {1}".format(filepath, err))
+
+        libs = set()
+
+        for lib in self.__iter_all_dependencies(filepath):
             # Ignore system libs.
             if self.__is_system_lib(lib):
                 continue
@@ -780,21 +894,43 @@ class MacPackageBuilder(PackageBuilder):
             if re.search(r"Python\.framework", lib):
                 continue
 
+            # Ignore self-references (why do these happen?).
+            if os.path.basename(lib) == os.path.basename(filepath):
+                continue
+
             if fix_paths:
-                # Handle libs relative to @loader_path.
-                lib = lib.replace("@loader_path", loader_path)
-
-                # Handle libs relative to @rpath.
-                lib = lib.replace("@rpath", rpath)
-
-                # Try to handle other relative libs.
-                if not os.path.isabs(lib):
-                    candidate = os.path.join(loader_path, lib)
-                    if not os.path.exists(candidate):
-                        candidate = os.path.join("/usr/local/lib/", lib)
-                    if os.path.exists(candidate):
-                        info("  Resolved relative dependency {0} as {1}".format(lib, candidate))
+                # handle no search paths case
+                if not search_paths:
+                    fixed_lib = lib.replace("@loader_path", loader_path)
+                    if os.path.exists(fixed_lib):
+                        lib = fixed_lib
+                    else:
+                        # Try to handle other relative libs.
+                        candidate = os.path.join(loader_path, fixed_lib)
+                        if not os.path.exists(candidate):
+                            fatal("Unable to resolve lib {}".format(lib))
                         lib = candidate
+
+                for path in search_paths:
+                    # Handle libs relative to @loader_path.
+                    fixed_lib = lib.replace("@loader_path", loader_path)
+
+                    # Handle libs relative to @rpath.
+                    fixed_lib = fixed_lib.replace("@rpath", path)
+
+                    if os.path.exists(fixed_lib):
+                        lib = fixed_lib
+                        break
+
+                    # Try to handle other relative libs.
+                    elif not os.path.isabs(fixed_lib):
+                        candidate = os.path.join(loader_path, fixed_lib)
+                        if not os.path.exists(candidate):
+                            candidate = os.path.join(path, fixed_lib)
+                        if os.path.exists(candidate):
+                            info("Resolved relative dependency {0} as {1}".format(fixed_lib, candidate))
+                            lib = candidate
+                            break
 
             libs.add(lib)
 
@@ -811,29 +947,13 @@ class MacPackageBuilder(PackageBuilder):
             for lib in libs:
                 if not os.path.isfile(lib):
                     warning("  Dependency {0} could not be found on disk".format(lib))
+                    warning("   searchpaths: {0}".format(search_paths))
 
         return libs
 
     def __get_qt_frameworks_for_file(self, filepath):
-        returncode, out, err = self.run_subprocess(["otool", "-L", filepath])
-        if returncode != 0:
-            fatal("Failed to invoke otool(1) to get dependencies for {0}: {1}".format(filepath, err))
-
         libs = set()
-
-        for line in out.split("\n")[1:]:    # skip the first line
-            line = line.strip()
-
-            # Ignore empty lines.
-            if len(line) == 0:
-                continue
-
-            # Parse the line.
-            m = re.match(r"(.*) \(compatibility version .*, current version .*\)", line)
-            if not m:
-                fatal("Failed to parse line from otool(1) output: {0}".format(line))
-            lib = m.group(1)
-
+        for lib in self.__iter_all_dependencies(filepath):
             if re.search(r"Qt.*\.framework", lib):
                 libs.add(lib)
 
@@ -844,6 +964,99 @@ class MacPackageBuilder(PackageBuilder):
             if lib.startswith(prefix):
                 return True
         return False
+
+    def __create_icon(self, image, icon_path):
+        icon_set = "appleseed.iconset"
+        safe_make_directory(icon_set)
+
+        for size in (16, 32, 64, 128, 256, 1024, 2048):
+            if size < 1024:
+                name = "icon_{0}x{0}.png".format(size)
+                cmd = ['sips', '-z', str(size), str(size), image, '--out', os.path.join(icon_set, name)]
+                # pipe stderr to stdout to silence verbosity
+                subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+            if size > 16:
+                name = "icon_{0}x{0}@2x.png".format(size/2)
+                cmd = ['sips', '-z', str(size), str(size), image, '--out', os.path.join(icon_set, name)]
+                # pipe stderr to stdout to silence verbosity
+                subprocess.check_output(cmd, stderr=subprocess.STDOUT)
+
+        subprocess.check_call(['iconutil', '--convert', 'icns', icon_set, '-o', icon_path])
+        safe_delete_directory(icon_set)
+
+    def __create_app(self, staging_dir, app_path, icon_path):
+        # cleanup old app
+        safe_delete_directory(app_path)
+
+        contents = os.path.join(app_path, "Contents")
+
+        shutil.move(staging_dir, contents)
+
+        resources = os.path.join(contents, "Resources")
+        safe_make_directory(resources)
+
+        macos = os.path.join(contents, "MacOS")
+        safe_make_directory(macos)
+
+        # relative symlink for executable
+        os.symlink('../bin/appleseed-studio', os.path.join(macos, 'appleseed'))
+
+        icon = os.path.join(resources, "appleseed.icns")
+        self.__create_icon(icon_path, icon)
+
+        with open(os.path.join(contents, "Info.plist"), 'wb') as f:
+            f.write(b'<?xml version="1.0" encoding="UTF-8"?>\n')
+            f.write(b'<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n')
+            f.write(b'<plist version="1.0">\n')
+            f.write(b'<dict>\n')
+            f.write(b'  <key>NSPrincipalClass</key>\n')
+            f.write(b'  <string>NSApplication</string>\n')
+            f.write(b'  <key>CFBundlePackageType</key>\n')
+            f.write(b'  <string>APPL</string>\n')
+            f.write(b'  <key>CFBundleExecutable</key>\n')
+            f.write(b'  <string>appleseed</string>\n')
+            f.write(b'  <key>CFBundleIconFile</key>\n')
+            f.write(b'  <string>appleseed.icns</string>\n')
+            f.write(b'  <key>CFBundleIdentifier</key>\n')
+            f.write(b'  <string>net.appleseedhq.appleseed</string>\n')
+            f.write(b'  <key>CFBundleShortVersionString</key>\n')
+            f.write(b'  <string>2.1.0</string>\n')
+            f.write(b'</dict>\n')
+            f.write(b'</plist>\n')
+
+    def _create_dmg(self, app_path, dmg_path, background_path, drive_icon_path):
+        drive_icon = 'appleseed-drive.icns'
+        self.__create_icon(drive_icon_path, drive_icon)
+
+        settings = {
+            "title": "appleseed",
+            "background":  background_path,
+            "icon": drive_icon,
+            "format": "UDZO",
+            "compression-level": 9,
+            "window": {"position": {"x": 100, "y": 100}, "size": {"width": 640, "height": 280}},
+            "contents": [
+                {"x": 140, "y": 120, "type": "file", "path": app_path},
+                {"x": 500, "y": 120, "type": "link", "path": "/Applications"},
+            ]
+        }
+
+        settings_file = "settings.json"
+        with open(settings_file, 'wb') as f:
+            json.dump(settings, f)
+
+        output_dir = os.path.dirname(dmg_path)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        # use dmgbuild to create disk image
+        # https://github.com/al45tair/dmgbuild
+        cmd = ['dmgbuild', '-s', settings_file, 'appleseed', dmg_path]
+        subprocess.check_call(cmd)
+
+        # cleanup
+        safe_delete_file(drive_icon)
+        safe_delete_file(settings_file)
 
 
 # -------------------------------------------------------------------------------------------------
@@ -922,7 +1135,8 @@ class LinuxPackageBuilder(PackageBuilder):
         for dirpath, dirnames, filenames in os.walk(root_path):
             for filename in filenames:
                 ext = os.path.splitext(filename)[1]
-                if ext != ".py" and ext != ".conf" and not self.__is_shared_lib(filename):  # need to skip shared libs because we don't want to patch Qt plugins
+                # need to skip shared libs because we don't want to patch Qt plugins
+                if ext != ".py" and ext != ".conf" and not self.__is_shared_lib(filename):
                     self.run("patchelf --set-rpath '{0}' {1}".format(rpath, os.path.join(dirpath, filename)))
                 else:
                     trace("  Skipping {0}".format(filename))
@@ -994,10 +1208,14 @@ def main():
     parser = argparse.ArgumentParser(description="build an appleseed package from sources")
 
     parser.add_argument("--nozip", help="do not build a final zip file. Files will be copied to staging directory only", action="store_true")
+    parser.add_argument("--noapp", help="do not build a macOS app. Files will be stored in directory format only", action="store_true")
 
     args = parser.parse_args()
 
     no_zip = args.nozip
+    no_app = True
+    if sys.platform == 'darwin':
+        no_app = args.noapp
 
     print_runtime_details("appleseed.package", VERSION, os.path.realpath(__file__))
 
@@ -1006,13 +1224,15 @@ def main():
     print("  - Make sure there are no obsolete binaries in sandbox/bin/ and sandbox/lib/")
     print("  - You may need to run this tool with sudo on Linux and macOS")
     print("  - On Linux, you may need to set $LD_LIBRARY_PATH to allow ldd(1) to find third party shared libraries")
+    print("  - On macOS, you may need to set $DYLD_LIBRARY_PATH to allow script to find third party shared libraries")
+    print("  - You need to have dmgbuild installed and in $PATH on macOS to build .dmg file: pip install dmgbuild")
     print("")
 
     settings = Settings()
     settings.load()
     settings.print_summary()
 
-    package_info = PackageInfo(settings, no_zip)
+    package_info = PackageInfo(settings, no_zip,  no_app)
     package_info.load()
     package_info.print_summary()
 
