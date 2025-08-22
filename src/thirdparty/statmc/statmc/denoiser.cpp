@@ -1,5 +1,5 @@
 // TODO: Proper Head
-// TODO: Proper citation of https://github.com/cg-tuwien/StatMC-opencv_contrib. This is taken from their example.
+// TODO: Proper citation of https://github.com/cg-tuwien/StatMC-opencv_contrib. The code here is written after their example.
 
 
 // Interface header.
@@ -14,23 +14,26 @@ using cv::Mat, cv::Mat_, cv::imread, cv::IMREAD_UNCHANGED;
 using cv::cuda::GpuMat, cv::cuda::PtrStepSzb, cv::cuda::Stream;
 using Vec3 = cv::Vec<float, 3>;
 
+
+namespace
+{
 struct float3 {
     float x, y, z;
 };
 
 
-void inline alloc(Mat mat, vector<Mat> &mats, vector<GpuMat> &gpuMats) {
+void alloc(Mat mat, vector<Mat> &mats, vector<GpuMat> &gpuMats) {
     mats.emplace_back(mat);
     gpuMats.emplace_back(GpuMat(mat.rows, mat.cols, mat.type()));
 }
 
-void inline alloc(string filename, vector<Mat> &mats, vector<GpuMat> &gpuMats, int type = -1) {
-    Mat mat = imread(filename, IMREAD_UNCHANGED);
-    mat.convertTo(mat, type);
-    alloc(mat, mats, gpuMats);
-}
+// void alloc(string filename, vector<Mat> &mats, vector<GpuMat> &gpuMats, int type = -1) {
+//     Mat mat = imread(filename, IMREAD_UNCHANGED);
+//     mat.convertTo(mat, type);
+//     alloc(mat, mats, gpuMats);
+// }
 
-void inline uploadGPUPtrs(vector<GpuMat> &gpuMats, GpuMat &gpuPtrs, Stream stream) {
+void uploadGPUPtrs(vector<GpuMat> &gpuMats, GpuMat &gpuPtrs, Stream stream) {
     Mat gpuPtrsCPU = Mat(1, gpuMats.size(), CV_8UC(sizeof(PtrStepSzb)));
     PtrStepSzb *gpuPtrsCPUPtr = gpuPtrsCPU.ptr<PtrStepSzb>();
     for (auto &gpuMat : gpuMats)
@@ -38,26 +41,29 @@ void inline uploadGPUPtrs(vector<GpuMat> &gpuMats, GpuMat &gpuPtrs, Stream strea
     gpuPtrs.upload(gpuPtrsCPU, stream);
 }
 
-void inline uploadGBufferChannelCounts(vector<GpuMat> &gpuMats, GpuMat &channelCounts, Stream stream) {
+void uploadGBufferChannelCounts(vector<GpuMat> &gpuMats, GpuMat &channelCounts, Stream stream) {
     Mat channelCountsCPU = Mat(1, gpuMats.size(), CV_8UC1);
     unsigned char *channelCountsCPUPtr = channelCountsCPU.ptr<unsigned char>();
     for (auto &gpuMat : gpuMats)
         *channelCountsCPUPtr++ = gpuMat.channels();
     channelCounts.upload(channelCountsCPU, stream);
 }
-
+} // namespace
 
 namespace statmc {
 
 bool Denoiser::denoise()
 {
-    string prefix = "staircase";
-    string suffix = "16";
-    vector<string> indices = {"0", "1"}; // We denoise two different renderings with these indices.
-    int nRenderings = indices.size();
+    // string prefix = "staircase";
+    // string suffix = "16";
+    // vector<string> indices = {"0", "1"}; // We denoise two different renderings with these indices.
+    // int nRenderings = indices.size();
+
+    int nRenderings = 1; // TODO: Are more possible/sensical in Appleseed usage?
 
     // Set denoising parameters
-    float ciZValue = 1.95996f;
+    // TODO: Make arguments.
+    float ciZValue = 1.95996f; // Note: Not Used
     float sd = 10.f;
     int radius = 20;
     float normalSD = 0.1f;
@@ -88,26 +94,26 @@ bool Denoiser::denoise()
     vector<GpuMat> gpuDiscriminators;
     vector<GpuMat> gpuDenoisedFilms;
 
-    for (auto &index : indices) {
-        alloc(prefix + "-" + index + "-" + suffix + "-film.pfm",       films, gpuFilms);
-        alloc(prefix + "-" + index + "-" + suffix + "-t0-b0-n.pfm",    ns,    gpuNs, CV_32SC1);
-        alloc(prefix + "-" + index + "-" + suffix + "-t0-b0-mean.pfm", means, gpuMeans);
-        alloc(prefix + "-" + index + "-" + suffix + "-t0-b0-m2.pfm",   m2s,   gpuM2s);
-        alloc(prefix + "-" + index + "-" + suffix + "-t0-b0-m3.pfm",   m3s,   gpuM3s);
-    }
+    // for (auto &index : indices) {
+    //     alloc(prefix + "-" + index + "-" + suffix + "-film.pfm",       films, gpuFilms);
+    //     alloc(prefix + "-" + index + "-" + suffix + "-t0-b0-n.pfm",    ns,    gpuNs, CV_32SC1);
+    //     alloc(prefix + "-" + index + "-" + suffix + "-t0-b0-mean.pfm", means, gpuMeans);
+    //     alloc(prefix + "-" + index + "-" + suffix + "-t0-b0-m2.pfm",   m2s,   gpuM2s);
+    //     alloc(prefix + "-" + index + "-" + suffix + "-t0-b0-m3.pfm",   m3s,   gpuM3s);
+    // }
 
-    // We use the same set of G-buffers to denoise both renderings.
-    alloc(prefix + "-0-" + suffix + "-t1-b0-film-mean.pfm", gBuffers, gpuGBuffers);
-    alloc(prefix + "-0-" + suffix + "-t2-b0-film-mean.pfm", gBuffers, gpuGBuffers);
+    // // We use the same set of G-buffers to denoise both renderings.
+    // alloc(prefix + "-0-" + suffix + "-t1-b0-film-mean.pfm", gBuffers, gpuGBuffers);
+    // alloc(prefix + "-0-" + suffix + "-t2-b0-film-mean.pfm", gBuffers, gpuGBuffers);
 
     int width = films[0].cols;
     int height = films[1].rows;
 
-    for (auto &index : indices) {
+    // for (auto &index : indices) {
         alloc(Mat_<Vec3>(height, width), meanCorrs,      gpuMeanCorrs);
         alloc(Mat_<Vec3>(height, width), discriminators, gpuDiscriminators);
         alloc(Mat_<Vec3>(height, width), denoisedFilms,  gpuDenoisedFilms);
-    }
+    // }
 
 
     // Upload vectors containing pointers to GPU buffers
@@ -161,6 +167,21 @@ bool Denoiser::denoise()
     };
     gBufferDRFactors.upload(Mat(drFactors), stream);
 
+    /** In Variables
+     * - film           -> filmGPUPtrs
+     * - ns             -> nGPUPtrs
+     * - mean           -> meanGPUPtrs
+     * - m2             -> m2GPUPtrs
+     * - m3             -> m3GPUPtrs
+     * - gBuffers       -> gBufferGPUPtrs, gBufferChannelCounts
+     * Denoising Parameters
+     * - radius
+     * - sd, normalSD, albedoSD -> dsFactor
+     */
+
+    /** Constants
+     * nRenderings = 1 (?)
+     */
 
     // Denoise
     cv::cuda::stat_denoiser::filter<float3>(
@@ -185,11 +206,11 @@ bool Denoiser::denoise()
     );
 
 
-    // Write denoised images to disk
-    for (int i = 0; i < nRenderings; i++) {
-        gpuDenoisedFilms[i].download(denoisedFilms[i], stream);
-        imwrite(prefix + "-" + indices[i] + "-" + suffix + "-film-f.pfm", denoisedFilms[i]);
-    }
+    // // Write denoised images to disk
+    // for (int i = 0; i < nRenderings; i++) {
+    //     gpuDenoisedFilms[i].download(denoisedFilms[i], stream);
+    //     imwrite(prefix + "-" + indices[i] + "-" + suffix + "-film-f.pfm", denoisedFilms[i]);
+    // }
 }
 
 } // namespace std
