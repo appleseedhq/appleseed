@@ -63,6 +63,7 @@ WITH_TOOLS=ON
 WITH_PYTHON2_BINDINGS=OFF
 WITH_PYTHON3_BINDINGS=ON
 WITH_EMBREE=ON
+WITH_GPU=OFF
 WITH_STATMC=ON
 
 # Download Links
@@ -228,6 +229,7 @@ optCompFlagCheck() {
     WITH_PYTHON2_BINDINGS=OFF
     WITH_PYTHON3_BINDINGS=OFF
     WITH_EMBREE=OFF
+    WITH_GPU=OFF
     WITH_STATMC=OFF
 
     _bNoOptCompFlags=false
@@ -383,6 +385,7 @@ printf "                      ${_COLOR_ORANGE}Warning: Fetching a new Appleseed 
   echo "  --python2-bindings  Built the Python 2.7 bindings (WITH_PYTHON2_BINDINGS=ON); exclusive with Python 3 bindings."
   echo "  --python3-bindings  Build the Python 3 bindings (WITH_PYTHON3_BINDINGS=ON); exclusive with Python 2.7 bindings."
   echo "  --embree            Built with Embree (WITH_EMBREE=ON)."
+  echo "  --gpu               Build with GPU (WITH_GPU=ON)."
   echo "  --statmc-denoiser   Build the StatMC Denoiser (WITH_STATMC=ON)."
   echo ""
   echo "Utilities:"
@@ -657,7 +660,11 @@ handle_options() {
         ;;
       --embree)
         optCompFlagCheck
-        _bNeedPythonBindings=ON
+        WITH_EMBREE=ON
+        ;;
+      --gpu)
+        optCompFlagCheck
+        WITH_GPU=ON
         ;;
       --statmc-denoiser)
         optCompFlagCheck
@@ -817,6 +824,7 @@ optionalComponentBuildInfo Tools              $WITH_TOOLS
 optionalComponentBuildInfo "Python2 Bindings" $WITH_PYTHON2_BINDINGS
 optionalComponentBuildInfo "Python3 Bindings" $WITH_PYTHON3_BINDINGS
 optionalComponentBuildInfo Embree             $WITH_EMBREE
+optionalComponentBuildInfo GPU                $WITH_GPU
 optionalComponentBuildInfo "StatMC Denoiser"  $WITH_STATMC
 
 if [ $_bAsk = true ]; then
@@ -1740,7 +1748,21 @@ if [[ $_sOpenCVInstallDir = "" && $WITH_STATMC = ON ]]; then
   _sOpenCVInstallDir=$_sInstallDir
 
   # clean step
-  cleanInstallStep
+  # miniCleanInstallStep start
+  # Note: Cut down form of `cleanInstallStep`, as OpenCV requires its source folder to work.
+    if [[ $DEBUG != "" ]]; then echo "cleanInstallStep"; fi
+    
+    $DEBUG cd $_sDependenciesDir
+
+    $DEBUG rm -f  $_sTarFile
+
+    _sTarFile=""
+    _sSourceDir=""
+    _sBuildDir=""
+    _sInstallDir=""
+
+    $DEBUG cd $_sRoot
+  # miniCleanInstallStep end
 fi
 
 # The following is a template for installing dependencies. (It is not run [see `true = false`].)
@@ -1867,7 +1889,8 @@ if [ $_bNewBuild = true ]; then
     -DWITH_PYTHON2_BINDINGS=$WITH_PYTHON2_BINDINGS \
     -DWITH_PYTHON3_BINDINGS=$WITH_PYTHON3_BINDINGS \
     -DWITH_EMBREE=$WITH_EMBREE \
-    -DWITH_GPU=OFF \
+    -DWITH_GPU=$WITH_GPU \
+    -DWITH_STATMC=$WITH_STATMC \
     -DWITH_SPECTRAL_SUPPORT=OFF \
     -Dhapply_ROOT=$_sHapplyInstallDir \
     ..
