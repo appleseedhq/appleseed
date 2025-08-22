@@ -1638,18 +1638,16 @@ if [[ $WITH_STATMC = ON ]]; then
   depName=$_STATMC
   _sTarFile=${STATMC_OPENCV_CONTIB_DL##*/}
   sourceFile=${_sTarFile//".zip"/}
-  _sSourceDir="$_sDependenciesDir/$sourceFile"
-  _sInstallDir="$_sDependenciesDir/$depName-install"
+  _sInstallDir="$_sDependenciesDir/StatMC-opencv_contrib-master"
 
   # check for StatMC OpenCV Contribution installation in _sInstallDir (via existence of lib file)
-  if [ ! -f $_sDependenciesDir/StatMC-opencv_contrib-master/CONTRIBUTING.md ]; then
+  if [ ! -f $_sInstallDir/CONTRIBUTING.md ]; then
     if [ $_bInstallDependencies = false ]; then
       echo "Error: Could not find a $depName source in \"$_sDependenciesDir\". Exiting."
       exit 1
     fi
 
     # Remove any files left from a previous failed install.
-    $DEBUG rm -fr $_sSourceDir
     $DEBUG rm -fr $_sInstallDir
     
     # Download StatMC OpenCV Contribution
@@ -1668,15 +1666,17 @@ if [[ $WITH_STATMC = ON ]]; then
     $DEBUG unzip -o $_sTarFile
   fi
 
-  stepInfo $_NAME "$depName source in \"$_sSourceDir\"." $_COLOR_INSTALL_DIR
+  stepInfo $_NAME "$depName source in \"$_sInstallDir\"." $_COLOR_INSTALL_DIR
 
-  statMCOpenCVContrib="$_sDependenciesDir/StatMC-opencv_contrib-master"
+  statMCOpenCVContrib=$_sInstallDir
 
   # clean step
   cleanInstallStep
 fi
 
 # --- OpenCV
+
+# TODO: Is this really the correct way to do it? (See "Note" below.)
 
 if [[ $_sOpenCVInstallDir = "" && $WITH_STATMC = ON ]]; then
 
@@ -1686,7 +1686,7 @@ if [[ $_sOpenCVInstallDir = "" && $WITH_STATMC = ON ]]; then
   sourceVersion=${_sTarFile//".tar.gz"/}
   sourceFile="opencv-$sourceVersion"
   _sSourceDir="$_sDependenciesDir/$sourceFile"
-  _sInstallDir="$_sDependenciesDir/$depName-install"
+  _sInstallDir="$_sDependenciesDir/$depName-install" # Note: Doubles as build directory for OpenCV's case.
 
   # check for OpenCV installation in _sInstallDir (via existence of lib file)
   if [ ! -f $_sInstallDir/lib/libopencv_core.so ]; then
@@ -1714,9 +1714,8 @@ if [[ $_sOpenCVInstallDir = "" && $WITH_STATMC = ON ]]; then
     stepInfo $depName "Unpacking $_sTarFile ..."
     $DEBUG tar -zxf $_sTarFile
 
-    $DEBUG cd $_sBuildDir
-
-    echo "statMCOpenCVContrib: $statMCOpenCVContrib"
+    $DEBUG mkdir -p $_sInstallDir
+    $DEBUG cd $_sInstallDir
 
     stepInfo $depName "Installing from \"$_sSourceDir\" ..."
     $DEBUG $_CMAKE \
@@ -1741,9 +1740,8 @@ if [[ $_sOpenCVInstallDir = "" && $WITH_STATMC = ON ]]; then
   _sOpenCVInstallDir=$_sInstallDir
 
   # clean step
-  #cleanInstallStep
+  cleanInstallStep
 fi
-
 
 # The following is a template for installing dependencies. (It is not run [see `true = false`].)
 # ----------------------------------------------------------------
@@ -1855,6 +1853,7 @@ if [ $_bNewBuild = true ]; then
     -DEmbree_DIR=$_sEmbreeConfigDir \
     -DImath_ROOT=$_sImathInstallDir/lib/cmake/Imath \
     -DOpenColorIO_DIR=$_sOCIOInstallDir/lib/cmake/OpenColorIO \
+    -DOpenCV_DIR=$_sOpenCVInstallDir \
     -DOpenEXR_ROOT=$_sOpenEXRInstallDir/lib/cmake/OpenEXR \
     -DOpenImageIO_DIR=$_sOIIOInstallDir/lib/cmake/OpenImageIO \
     -DOPENIMAGEIO_IDIFF=$_sOIIOInstallDir/bin/idiff \
