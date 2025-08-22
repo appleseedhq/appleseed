@@ -379,6 +379,10 @@ include_directories (
     ${happly_ROOT}
 )
 
+if (WITH_STATMC)
+    include_directories ( src/thirdparty/statmc )
+endif ()
+
 if (WITH_EMBREE)
     if (USE_FIND_PACKAGE_FOR_EMBREE)
         include_directories (${EMBREE_INCLUDE_DIRS})
@@ -698,6 +702,10 @@ endmacro ()
 add_subdirectory (src/thirdparty/bcd)
 add_subdirectory (src/thirdparty/glad)
 add_subdirectory (src/thirdparty/murmurhash3)
+
+if (WITH_STATMC)
+    add_subdirectory (src/thirdparty/statmc)
+endif ()
 
 add_subdirectory (src/appleseed)
 add_subdirectory (src/appleseed.shaders)

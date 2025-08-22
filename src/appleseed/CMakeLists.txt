@@ -39,12 +39,6 @@ if (WITH_GPU)
     )
 endif ()
 
-if (WITH_STATMC)
-    include_directories(
-        ${OpenCV_INCLUDE_DIRS}
-    )
-endif ()
-
 
 #--------------------------------------------------------------------------------------------------
 # Source files.
@@ -2400,7 +2394,7 @@ endif ()
 
 if (WITH_STATMC)
     target_link_libraries (appleseed
-        ${OpenCV_LIBS}
+        statmc
     )
 endif ()
 

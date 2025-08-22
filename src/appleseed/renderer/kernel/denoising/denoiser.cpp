@@ -45,9 +45,9 @@
 #include "bcd/SpikeRemovalFilter.h"
 #include "bcd/Utils.h"
 
-// OpenCV headers.
-#include "opencv2/cudaimgproc.hpp"
-#include "opencv2/imgcodecs.hpp"
+// StatMC headers.
+// TODO: Make this only be added if (cmake) WITH_STATMC = ON.
+#include "statmc/denoiser.h"
 
 // Standard headers.
 #include <cmath>
