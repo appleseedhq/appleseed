@@ -352,9 +352,13 @@ if (USE_FIND_PACKAGE_FOR_TIFF)
     find_package (TIFF REQUIRED)
 endif ()
 
-if (USE_FIND_PACKAGE_FOR_OCV)
-    find_package(OpenCV CONFIG REQUIRED)
-    find_package_handle_standard_args(OpenCV CONFIG_MODE)
+if (WITH_STATMC)
+    if (USE_FIND_PACKAGE_FOR_OCV)
+        find_package(OpenCV CONFIG REQUIRED)
+        find_package_handle_standard_args(OpenCV CONFIG_MODE)
+        MESSAGE(STATUS "OpenCV Include dirs ${OpenCV_INCLUDE_DIRS}")
+        MESSAGE(STATUS "OpencV LINK LIBRARIES ${OpenCV_LIBS}")
+    endif()
 endif()
 
 

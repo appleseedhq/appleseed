@@ -45,6 +45,10 @@
 #include "bcd/SpikeRemovalFilter.h"
 #include "bcd/Utils.h"
 
+// OpenCV headers.
+#include "opencv2/cudaimgproc.hpp"
+#include "opencv2/imgcodecs.hpp"
+
 // Standard headers.
 #include <cmath>
 #include <memory>
