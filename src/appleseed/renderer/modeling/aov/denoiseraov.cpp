@@ -83,6 +83,10 @@ namespace
             const float    max_value,
             Deepimf&       sum_accum,
             Deepimf&       covariance_accum,
+            Deepimf&       n_accum,
+            Deepimf&       m1_accum,
+            Deepimf&       m2_accum,
+            Deepimf&       m3_accum,
             Deepimf&       histograms)
           : m_num_bins(num_bins)
           , m_gamma(gamma)
@@ -91,6 +95,10 @@ namespace
           , m_samples_channel_index(3 * num_bins)
           , m_sum_accum(sum_accum)
           , m_covariance_accum(covariance_accum)
+          , m_n_accum(n_accum)
+          , m_m1_accum(m1_accum)
+          , m_m2_accum(m2_accum)
+          , m_m3_accum(m3_accum)
           , m_histograms(histograms)
         {
         }
@@ -156,6 +164,43 @@ namespace
             m_covariance_accum.get(pi.y, pi.x, c_yz) += m_accum.g * m_accum.b;
             m_covariance_accum.get(pi.y, pi.x, c_xz) += m_accum.r * m_accum.b;
             m_covariance_accum.get(pi.y, pi.x, c_xy) += m_accum.r * m_accum.g;
+
+            // IDEA: Add m1, m2, m3 here?!
+            float &n = m_n_accum.get(pi.y, pi.x, 0);
+            
+            // Use Meng's algorithm (https://arxiv.org/abs/1510.04923).
+            n++;
+            // delta
+            const float d_0 = m_accum.r - m_m1_accum.get(pi.y, pi.x, 0);
+            const float d_1 = m_accum.r - m_m1_accum.get(pi.y, pi.x, 1);
+            const float d_2 = m_accum.r - m_m1_accum.get(pi.y, pi.x, 2);
+            // delta^2
+            const float d2_0 = d_0 * d_0;
+            const float d2_1 = d_1 * d_1;
+            const float d2_2 = d_2 * d_2;
+            // delta / n
+            const float dN_0 = d_0 / n;
+            const float dN_1 = d_1 / n;
+            const float dN_2 = d_2 / n;
+            // (delta / 2)^2
+            const float dN2_0 = dN_0 * dN_0;
+            const float dN2_1 = dN_1 * dN_1;
+            const float dN2_2 = dN_2 * dN_2;
+
+            // mean (m1)
+            m_m1_accum.get(pi.y, pi.x, 0) += dN_0;
+            m_m1_accum.get(pi.y, pi.x, 1) += dN_1;
+            m_m1_accum.get(pi.y, pi.x, 2) += dN_2;
+
+            // variance (m2)
+            m_m2_accum.get(pi.y, pi.x, 0) += d_0 * (d_0 - dN_0);
+            m_m2_accum.get(pi.y, pi.x, 1) += d_1 * (d_1 - dN_1);
+            m_m2_accum.get(pi.y, pi.x, 2) += d_2 * (d_2 - dN_2);
+
+            // skewness (m3)
+            m_m3_accum.get(pi.y, pi.x, 0) += - 3.f * dN_0 * m_m2_accum.get(pi.y, pi.x, 0) + d_0 * (d_0 - dN2_0);
+            m_m3_accum.get(pi.y, pi.x, 1) += - 3.f * dN_1 * m_m2_accum.get(pi.y, pi.x, 1) + d_1 * (d_1 - dN2_1);
+            m_m3_accum.get(pi.y, pi.x, 2) += - 3.f * dN_2 * m_m2_accum.get(pi.y, pi.x, 2) + d_2 * (d_2 - dN2_2);
 
             // Fill histogram: code from BCD's SampleAccumulator class.
             for (size_t c = 0; c < 3; ++c)
@@ -249,6 +294,12 @@ namespace
         Deepimf&        m_sum_accum;
         Deepimf&        m_covariance_accum;
 
+        // IDEAD: m1, m2, m3 here
+        Deepimf&        m_n_accum;      // number of samples
+        Deepimf&        m_m1_accum;     // mean (central moment of order 1)
+        Deepimf&        m_m2_accum;     // variance (central moment of order 2)
+        Deepimf&        m_m3_accum;     // skewness (central moment of order 3)
+
         Deepimf&        m_histograms;
 
         bool outside_tile(const Vector2i& pi) const
@@ -277,6 +328,12 @@ struct DenoiserAOV::Impl
 
     Deepimf m_sum_accum;
     Deepimf m_covariance_accum;
+    // IDEA: Extend by m1, m2, m3?
+    //  -> How is m_sum_accum caluclated?
+    Deepimf m_n_accum;
+    Deepimf m_m1_accum;
+    Deepimf m_m2_accum;
+    Deepimf m_m3_accum;
 
     Deepimf m_histograms;
 };
@@ -330,6 +387,10 @@ void DenoiserAOV::create_image(
 
     impl->m_sum_accum.resize(w, h, 3);
     impl->m_covariance_accum.resize(w, h, 6);
+    impl->m_n_accum.resize(w, h, 3);
+    impl->m_m1_accum.resize(w, h, 3);
+    impl->m_m2_accum.resize(w, h, 3);
+    impl->m_m3_accum.resize(w, h, 3);
     impl->m_histograms.resize(w, h, 3 * bins + 1);
 
     clear_image();
@@ -339,6 +400,10 @@ void DenoiserAOV::clear_image()
 {
     impl->m_sum_accum.fill(0.0f);
     impl->m_covariance_accum.fill(0.0f);
+    impl->m_n_accum.fill(0.0f);
+    impl->m_m1_accum.fill(0.0f);
+    impl->m_m2_accum.fill(0.0f);
+    impl->m_m3_accum.fill(0.0f);
     impl->m_histograms.fill(0.0f);
 }
 
@@ -398,6 +463,36 @@ Deepimf& DenoiserAOV::sum_image()
     return impl->m_sum_accum;
 }
 
+const Deepimf& DenoiserAOV::m1_image() const
+{
+    return impl->m_m1_accum;
+}
+
+Deepimf& DenoiserAOV::m1_image()
+{
+    return impl->m_m1_accum;
+}
+
+const Deepimf& DenoiserAOV::m2_image() const
+{
+    return impl->m_m2_accum;
+}
+
+Deepimf& DenoiserAOV::m2_image()
+{
+    return impl->m_m2_accum;
+}
+
+const Deepimf& DenoiserAOV::m3_image() const
+{
+    return impl->m_m3_accum;
+}
+
+Deepimf& DenoiserAOV::m3_image()
+{
+    return impl->m_m3_accum;
+}
+
 void DenoiserAOV::extract_num_samples_image(bcd::Deepimf& num_samples_image) const
 {
     const int w = impl->m_histograms.getWidth();
@@ -444,6 +539,10 @@ void DenoiserAOV::compute_covariances_image(Deepimf& covariances_image) const
                         ? 1.0f
                         : 1.0f / (1.0f - rcp_sample_count);
 
+                // IDEA: Isn't this waht we want to do?!
+                //  -> Problem: m_sum_accum is just one value, so variance, etc. can't be calucated from this ...
+                //      -> Investigate: Where and how is m_sum_accum calculated?
+                // TODO: redundant with aov m1 (mean)
                 // Compute the mean.
                 float mean[3];
                 for (int k = 0; k < 3; ++k)
@@ -543,6 +642,10 @@ auto_release_ptr<AOVAccumulator> DenoiserAOV::create_accumulator() const
             impl->m_max_value,
             impl->m_sum_accum,
             impl->m_covariance_accum,
+            impl->m_n_accum,
+            impl->m_m1_accum,
+            impl->m_m2_accum,
+            impl->m_m3_accum,
             impl->m_histograms));
 }
 

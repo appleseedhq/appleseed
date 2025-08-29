@@ -1,9 +1,13 @@
+
 // TODO: Proper Head
 // TODO: Proper citation of https://github.com/cg-tuwien/StatMC-opencv_contrib. The code here is written after their example.
 
 
 // Interface header.
 #include "denoiser.h"
+
+// BCD headers.
+#include "bcd/DeepImage.h"
 
 // OpenCV headers.
 #include <opencv2/cudaimgproc.hpp>
@@ -27,11 +31,26 @@ void alloc(Mat mat, vector<Mat> &mats, vector<GpuMat> &gpuMats) {
     gpuMats.emplace_back(GpuMat(mat.rows, mat.cols, mat.type()));
 }
 
-// void alloc(string filename, vector<Mat> &mats, vector<GpuMat> &gpuMats, int type = -1) {
-//     Mat mat = imread(filename, IMREAD_UNCHANGED);
-//     mat.convertTo(mat, type);
-//     alloc(mat, mats, gpuMats);
-// }
+#if 0 // TODO: remove unneded alloc
+void alloc(string filename, vector<Mat> &mats, vector<GpuMat> &gpuMats, int type = -1) {
+    Mat mat = imread(filename, IMREAD_UNCHANGED);
+    mat.convertTo(mat, type);
+    alloc(mat, mats, gpuMats);
+}
+#endif
+
+void alloc(const bcd::Deepimf *deepimf, vector<Mat> mats, vector<GpuMat> &gpuMats, int type = -1) {
+    Mat mat;
+
+    mat.create(deepimf->getHeight(), deepimf->getWidth(), type);
+
+    const float* pDeepimfData = deepimf->getDataPtr();
+    const uchar* pMatData = mat.ptr();
+
+    pMatData = (uchar*) pDeepimfData; // TODO: only *half sure* this is valid ...
+
+    alloc(mat, mats, gpuMats);
+}
 
 void uploadGPUPtrs(vector<GpuMat> &gpuMats, GpuMat &gpuPtrs, Stream stream) {
     Mat gpuPtrsCPU = Mat(1, gpuMats.size(), CV_8UC(sizeof(PtrStepSzb)));
@@ -48,11 +67,11 @@ void uploadGBufferChannelCounts(vector<GpuMat> &gpuMats, GpuMat &channelCounts, 
         *channelCountsCPUPtr++ = gpuMat.channels();
     channelCounts.upload(channelCountsCPU, stream);
 }
-} // namespace
+} // namespace (ananymous)
 
 namespace statmc {
 
-bool Denoiser::denoise()
+bool Denoiser::denoise(DenoiserInputs stat_inputs)
 {
     // string prefix = "staircase";
     // string suffix = "16";
@@ -102,12 +121,20 @@ bool Denoiser::denoise()
     //     alloc(prefix + "-" + index + "-" + suffix + "-t0-b0-m3.pfm",   m3s,   gpuM3s);
     // }
 
+    alloc(m_inputs.m_pColors,           films, gpuFilms);
+    alloc(m_inputs.m_pNbOfSamples,      ns,    gpuNs);
+    // TODO: these are 3-dim images (r,g,b) - shoud they be???
+    alloc(m_stat_inputs.m_pMeans,       means, gpuMeans);
+    alloc(m_stat_inputs.m_pVariances,   m2s,   gpuM2s);
+    alloc(m_stat_inputs.m_pSkewdnesses, m3s,   gpuM3s);
+
+
     // // We use the same set of G-buffers to denoise both renderings.
     // alloc(prefix + "-0-" + suffix + "-t1-b0-film-mean.pfm", gBuffers, gpuGBuffers);
     // alloc(prefix + "-0-" + suffix + "-t2-b0-film-mean.pfm", gBuffers, gpuGBuffers);
 
-    int width = films[0].cols;
-    int height = films[1].rows;
+    int width  = m_inputs.m_pColors->getWidth();
+    int height = m_inputs.m_pColors->getHeight();
 
     // for (auto &index : indices) {
         alloc(Mat_<Vec3>(height, width), meanCorrs,      gpuMeanCorrs);

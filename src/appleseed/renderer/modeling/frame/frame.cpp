@@ -510,6 +510,9 @@ void Frame::denoise(
         num_samples_image,
         impl->m_denoiser_aov->histograms_image(),
         covariances_image,
+        impl->m_denoiser_aov->m1_image(),
+        impl->m_denoiser_aov->m2_image(),
+        impl->m_denoiser_aov->m3_image(),
         options,
         abort_switch);
 
@@ -523,6 +526,9 @@ void Frame::denoise(
                 num_samples_image,
                 impl->m_denoiser_aov->histograms_image(),
                 covariances_image,
+                impl->m_denoiser_aov->m1_image(),
+                impl->m_denoiser_aov->m2_image(),
+                impl->m_denoiser_aov->m3_image(),
                 options,
                 abort_switch);
         }
