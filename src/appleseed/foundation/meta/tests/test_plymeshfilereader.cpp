@@ -1,6 +1,5 @@
 #include "foundation/meshio/meshbuilderbase.h"
 #include "foundation/meshio/plymeshfilereader.h"
-#include "foundation/meshio/plymeshfilereader_okply.h"
 #include "foundation/platform/types.h"
 #include "foundation/utility/test.h"
 
@@ -111,45 +110,4 @@ TEST_SUITE(Foundation_Mesh_PLYMeshFileReader)
 
         fclose(f);
     }
-
-    TEST_CASE(ReadCubeMeshFile_OkayPly)
-    {
-        std::cout << "TEST OkayPLY!" << std::endl;
-
-        const std::string igd_ply = "/home/petra/Documents/Projects/SimVision/2025-21-04 Example ply with additional data/Endmill_48_everything.ply";
-        const std::string test_ply = "unit tests/inputs/test_plymeshfilereader_cube.ply";
-
-
-
-        PLYMeshFileReader_OkayPLY reader(igd_ply);
-        MeshBuilder builder;
-        reader.read(builder);
-
-        // assert(builder.m_meshes.size() == 1);
-        
-        // FILE* f = fopen("output.cpp", "wt");
-        // assert(f);
-
-        // const Mesh& m = builder.m_meshes.front();
-
-        // fprintf(f, "static const float Vertices[] =\n{\n");
-        // for (const auto& v : m.m_vertices)
-        // {
-        //     fprintf(f, "    %.7ff, %.7ff, %.7ff,\n", v.x, v.y, v.z);
-        // }
-        // fprintf(f, "};\n\n");
-
-        // fprintf(f, "static const size_t Triangles[] =\n{\n");
-        // for (const auto& face : m.m_faces)
-        // {
-        //     fprintf(
-        //         f,
-        //         "    " FMT_SIZE_T ", " FMT_SIZE_T ", " FMT_SIZE_T ",\n",
-        //         face.m_vertices[0], face.m_vertices[1], face.m_vertices[2]);
-        // }
-        // fprintf(f, "};\n");
-
-        // fclose(f);
-    }
-
 }

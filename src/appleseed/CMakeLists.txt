@@ -499,8 +499,6 @@ set (foundation_meshio_sources
     foundation/meshio/objmeshfilereader.h
     foundation/meshio/plymeshfilereader.cpp
     foundation/meshio/plymeshfilereader.h
-    foundation/meshio/plymeshfilereader_okply.cpp
-    foundation/meshio/plymeshfilereader_okply.h
     foundation/meshio/objmeshfilewriter.cpp
     foundation/meshio/objmeshfilewriter.h
 )
