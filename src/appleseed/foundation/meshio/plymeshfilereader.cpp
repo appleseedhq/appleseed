@@ -107,13 +107,18 @@ namespace foundation
         Impl impl(m_options, builder);
 
         std::cout << "PLY mesh file reader should parse the file now." << std::endl;
-        happly::PLYData plyIn(m_filename);
+        bool verbose = true;
+        happly::PLYData plyIn(m_filename, verbose);
 
         std::vector<std::string> element_names = plyIn.getElementNames();
         for (const auto& element_name : element_names)
         {
             std::cout << "Element name: " << element_name << std::endl;
         }
+
+        const auto plyIn.getElement("group").getProperty("group_id");
+        const auto plyIn.getElement("group").getProperty("group_name");
+        const auto plyIn.getElement("group").getProperty("face_indices");
 
         // 1) Read all vertices and faces as one mesh.
         // 2) Add group mapping to ply
@@ -122,6 +127,10 @@ namespace foundation
         std::vector<std::array<double, 3>> vertices = plyIn.getVertexPositions<double>();
         std::vector<std::array<double, 3>> vertex_normals = plyIn.getVertexNormals<double>();
         std::vector<std::vector<size_t>> faces = plyIn.getFaceIndices();
+
+        // get groups
+        // for each group create a new mesh
+        // for each face add face to mesh (it should reference m_vertices from impl to get vertex coordinates and faces to get vertex indices)
 
         impl.ensure_mesh_def();
 
