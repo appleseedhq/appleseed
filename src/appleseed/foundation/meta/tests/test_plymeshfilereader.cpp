@@ -79,8 +79,8 @@ TEST_SUITE(Foundation_Mesh_PLYMeshFileReader)
         std::cout << "TEST PLY!" << std::endl;
 
         const std::string igd_ply = "/home/petra/Documents/Projects/SimVision/2025-21-04 Example ply with additional data/Endmill_48_everything.ply";
-        const std::string test_ply = "unit tests/inputs/test_plymeshfilereader_cube.ply";
-        PLYMeshFileReader reader(igd_ply);
+        const std::string test_ply = "unit tests/inputs/test_plymeshfilereader_ascii_cube_groups.ply";
+        PLYMeshFileReader reader(test_ply);
         MeshBuilder builder;
         reader.read(builder);
 
