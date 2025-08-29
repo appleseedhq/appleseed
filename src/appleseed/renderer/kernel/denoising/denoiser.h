@@ -74,6 +74,9 @@ bool denoise_beauty_image(
     bcd::Deepimf&               num_samples,
     bcd::Deepimf&               histograms,
     bcd::Deepimf&               covariances,
+    bcd::Deepimf&               m1_means,
+    bcd::Deepimf&               m2_variance,
+    bcd::Deepimf&               m3_skewness,
     const DenoiserOptions&      options,
     foundation::IAbortSwitch*   abort_switch);
 
@@ -82,6 +85,9 @@ bool denoise_aov_image(
     const bcd::Deepimf&         num_samples,
     const bcd::Deepimf&         histograms,
     const bcd::Deepimf&         covariances,
+    const bcd::Deepimf&         m1_means,
+    const bcd::Deepimf&         m2_variance,
+    const bcd::Deepimf&         m3_skewness,
     const DenoiserOptions&      options,
     foundation::IAbortSwitch*   abort_switch);
 

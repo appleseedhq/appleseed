@@ -164,6 +164,9 @@ namespace
         const Deepimf&          num_samples,
         const Deepimf&          histograms,
         const Deepimf&          covariances,
+        const Deepimf&          m1_means,
+        const Deepimf&          m2_variance,
+        const Deepimf&          m3_skewness,
         const DenoiserOptions&  options,
         IAbortSwitch*           abort_switch,
         Deepimf&                dst)
@@ -173,6 +176,11 @@ namespace
         inputs.m_pNbOfSamples = &num_samples;
         inputs.m_pHistograms = &histograms;
         inputs.m_pSampleCovariances = &covariances;
+
+        statmc::DenoiserInputs statmc_inputs;
+        statmc_inputs.m_pMeans = &m1_means;
+        statmc_inputs.m_pVariances = &m2_variance;
+        statmc_inputs.m_pSkewdnesses = &m3_skewness;
 
         DenoiserParameters parameters;
         parameters.m_histogramDistanceThreshold = options.m_histogram_patch_distance_threshold;
@@ -189,10 +197,17 @@ namespace
 
         std::unique_ptr<IDenoiser> denoiser;
 
+        #if 0 // remove this for testing // TODO: make proper
         if (options.m_num_scales > 1)
             denoiser.reset(new MultiscaleDenoiser(static_cast<int>(options.m_num_scales)));
         else
             denoiser.reset(new Denoiser());
+        #endif
+
+        statmc::Denoiser* statmc_denoiser = new statmc::Denoiser();
+        statmc_denoiser->setStatInputs(statmc_inputs); // TODO: better way to do this?
+
+        denoiser.reset(statmc_denoiser); // StatMC Denoiser
 
         DenoiserCallbacks callbacks(abort_switch);
         denoiser->setCallbacks(&callbacks);
@@ -203,7 +218,7 @@ namespace
 
         if (!denoiser->inputsOutputsAreOk())
             return false;
-
+        
         return denoiser->denoise();
     }
 
@@ -214,6 +229,9 @@ bool denoise_beauty_image(
     Deepimf&                num_samples,
     Deepimf&                histograms,
     Deepimf&                covariances,
+    Deepimf&                m1_means,
+    Deepimf&                m2_variance,
+    Deepimf&                m3_skewness,
     const DenoiserOptions&  options,
     IAbortSwitch*           abort_switch)
 {
@@ -238,6 +256,9 @@ bool denoise_beauty_image(
             num_samples,
             histograms,
             covariances,
+            m1_means,
+            m2_variance,
+            m3_skewness,
             options,
             abort_switch,
             dst);
@@ -253,6 +274,9 @@ bool denoise_aov_image(
     const Deepimf&          num_samples,
     const Deepimf&          histograms,
     const Deepimf&          covariances,
+    bcd::Deepimf&           m1_means,
+    bcd::Deepimf&           m2_variance,
+    bcd::Deepimf&           m3_skewness,
     const DenoiserOptions&  options,
     IAbortSwitch*           abort_switch)
 {
@@ -274,6 +298,9 @@ bool denoise_aov_image(
             num_samples,
             histograms,
             covariances,
+            m1_means,
+            m2_variance,
+            m3_skewness,
             options,
             abort_switch,
             dst);
