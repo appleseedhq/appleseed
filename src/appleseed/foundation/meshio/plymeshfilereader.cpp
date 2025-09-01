@@ -126,14 +126,13 @@ namespace foundation
         std::vector<std::vector<size_t>> faces = plyIn.getFaceIndices();
         if (plyIn.hasElement("group"))
         {
-            std::vector<size_t> group_ids = get_group_ids(plyIn);
             std::vector<std::string> group_names = get_group_names(plyIn);
             std::vector<std::vector<size_t>> group_faces = get_group_faces(plyIn);
 
             std::cout << "Groups:" << std::endl;
-            for (size_t i = 0; i < group_ids.size(); i++)
+            for (size_t i = 0; i < group_names.size(); i++)
             {
-                std::cout << "Group id: " << group_ids[i] << ", name: ";
+                std::cout << "Group id: " << i << ", name: ";
                 std::cout << group_names[i] << std::endl;
 
                 for (const auto fi : group_faces[i])
@@ -170,12 +169,6 @@ namespace foundation
         impl.end_mesh_def();
 
         std::cout << "happly works!" << std::endl;
-    }
-    
-    std::vector<size_t> PLYMeshFileReader::get_group_ids(
-        happly::PLYData& ply_input) const
-    {
-        return ply_input.getElement("group").getProperty<size_t>("group_id");
     }
     
     std::vector<std::string> PLYMeshFileReader::get_group_names(
