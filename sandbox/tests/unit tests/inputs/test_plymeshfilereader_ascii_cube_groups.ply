@@ -11,7 +11,6 @@ property float nz
 element face 12
 property list uchar uint vertex_indices
 element group 3
-property uchar group_id
 property list uchar uchar group_name
 property list uchar uint face_indices
 end_header
@@ -51,6 +50,6 @@ end_header
 3 9 21 10
 3 12 22 13
 3 15 23 16
-0 6 71 114 111 117 112 49 4 0 1 2 3
-1 6 71 114 111 117 112 50 4 4 5 6 7
-2 6 71 114 111 117 112 51 4 8 9 10 11
+6 71 114 111 117 112 49 4 0 1 2 3
+6 71 114 111 117 112 50 4 4 5 6 7
+6 71 114 111 117 112 51 4 8 9 10 11
