@@ -102,6 +102,11 @@ class APPLESEED_DLLSYMBOL MeshBuilderBase
     void end_mesh() override
     {
     }
+
+    void output_mesh_info() override
+    {
+    }
+
 };
 
 }   // namespace foundation

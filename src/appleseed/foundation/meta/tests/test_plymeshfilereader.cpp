@@ -72,6 +72,17 @@ TEST_SUITE(Foundation_Mesh_PLYMeshFileReader)
                 face.m_vertices[i] = vertices[i];
         }
 
+        void output_mesh_info() override
+        {
+            std::cout << "MESH OUTPUT WTF " << std::endl;
+            for (const auto& mesh : m_meshes)
+            {
+                std::cout << "Mesh name " << mesh.m_name << std::endl;
+                std::cout << "Vertices " << mesh.m_vertices.size() << std::endl;
+                std::cout << "Vertex normals " << mesh.m_vertex_normals.size() << std::endl;
+                std::cout << "Faces " << mesh.m_faces.size() << std::endl;
+            }
+        }
     };
 
     TEST_CASE(ReadCubeMeshFile)
