@@ -34,6 +34,9 @@
 #include "foundation/meshio/imeshfilereader.h"
 #include "foundation/platform/compiler.h"
 
+// third-party headers.
+#include "happly.h"
+
 // Standard headers.
 #include <cstddef>
 #include <string>
@@ -53,10 +56,19 @@ class PLYMeshFileReader
         const std::string&   filename,
         const int            options = 0);
 
-    // // Read a mesh.
+    // Read a mesh.
     void read(IMeshBuilder& builder) override;
 
   private:
+    std::vector<size_t> get_group_ids(
+        happly::PLYData& ply_input) const;
+
+    std::vector<std::string> get_group_names(
+        happly::PLYData& ply_input) const;
+
+    std::vector<std::vector<size_t>> get_group_faces(
+        happly::PLYData& ply_input) const;
+
     struct Impl;
 
     const std::string  m_filename;

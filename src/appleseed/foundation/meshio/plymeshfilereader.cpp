@@ -36,9 +36,6 @@
 #include "foundation/memory/memory.h"
 #include "foundation/meshio/imeshbuilder.h"
 
-// third-party headers.
-#include "happly.h"
-
 // Standard headers.
 #include <cstring>
 #include <map>
@@ -116,9 +113,9 @@ namespace foundation
             std::cout << "Element name: " << element_name << std::endl;
         }
 
-        const auto plyIn.getElement("group").getProperty("group_id");
-        const auto plyIn.getElement("group").getProperty("group_name");
-        const auto plyIn.getElement("group").getProperty("face_indices");
+        // const auto plyIn.getElement("group").getProperty("group_id");
+        // const auto plyIn.getElement("group").getProperty("group_name");
+        // const auto plyIn.getElement("group").getProperty("face_indices");
 
         // 1) Read all vertices and faces as one mesh.
         // 2) Add group mapping to ply
@@ -127,6 +124,23 @@ namespace foundation
         std::vector<std::array<double, 3>> vertices = plyIn.getVertexPositions<double>();
         std::vector<std::array<double, 3>> vertex_normals = plyIn.getVertexNormals<double>();
         std::vector<std::vector<size_t>> faces = plyIn.getFaceIndices();
+        if (plyIn.hasElement("group"))
+        {
+            std::vector<size_t> group_ids = get_group_ids(plyIn);
+            std::vector<std::string> group_names = get_group_names(plyIn);
+            std::vector<std::vector<size_t>> group_faces = get_group_faces(plyIn);
+
+            std::cout << "Groups:" << std::endl;
+            for (size_t i = 0; i < group_ids.size(); i++)
+            {
+                std::cout << "Group id: " << group_ids[i] << ", name: ";
+                std::cout << group_names[i] << std::endl;
+
+                for (const auto fi : group_faces[i])
+                    std::cout << fi << " ";
+                std::cout << std::endl;
+            }
+        }
 
         // get groups
         // for each group create a new mesh
@@ -157,5 +171,35 @@ namespace foundation
 
         std::cout << "happly works!" << std::endl;
     }
+    
+    std::vector<size_t> PLYMeshFileReader::get_group_ids(
+        happly::PLYData& ply_input) const
+    {
+        return ply_input.getElement("group").getProperty<size_t>("group_id");
+    }
+    
+    std::vector<std::string> PLYMeshFileReader::get_group_names(
+        happly::PLYData& ply_input) const
+    {
+        std::vector<
+            std::vector<size_t>> group_names_raw =
+                ply_input.getElement("group").getListProperty<size_t>("group_name");
+        
+        // Works for ASCII (0–127) and UTF-8 as long as the file stored UTF-8 bytes.
+        std::vector<std::string> names;
+        names.reserve(group_names_raw.size());
+        for (const auto& bytes : group_names_raw)
+        {
+            names.emplace_back(bytes.begin(), bytes.end());
+        }
 
-    } // namespace foundation
+        return names;
+    }
+    
+    std::vector<std::vector<size_t>> PLYMeshFileReader::get_group_faces(
+        happly::PLYData& ply_input) const
+    {
+        return ply_input.getElement("group").getListProperty<size_t>("face_indices");
+    }
+
+} // namespace foundation
