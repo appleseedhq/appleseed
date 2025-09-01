@@ -86,7 +86,7 @@ TEST_SUITE(Foundation_Mesh_PLYMeshFileReader)
 
         assert(builder.m_meshes.size() == 1);
         
-        FILE* f = fopen("output.cpp", "wt");
+        FILE* f = fopen("output.txt", "wt");
         assert(f);
 
         const Mesh& m = builder.m_meshes.front();
