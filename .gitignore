@@ -6,3 +6,4 @@ __pycache__
 dependencies/
 scratch_data/
 dependencies/
+*.txt

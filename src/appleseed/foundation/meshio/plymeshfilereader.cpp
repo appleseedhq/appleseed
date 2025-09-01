@@ -107,12 +107,6 @@ namespace foundation
         bool verbose = true;
         happly::PLYData plyIn(m_filename, verbose);
 
-        std::vector<std::string> element_names = plyIn.getElementNames();
-        for (const auto& element_name : element_names)
-        {
-            std::cout << "Element name: " << element_name << std::endl;
-        }
-
         // const auto plyIn.getElement("group").getProperty("group_id");
         // const auto plyIn.getElement("group").getProperty("group_name");
         // const auto plyIn.getElement("group").getProperty("face_indices");
@@ -124,6 +118,17 @@ namespace foundation
         std::vector<std::array<double, 3>> vertices = plyIn.getVertexPositions<double>();
         std::vector<std::array<double, 3>> vertex_normals = plyIn.getVertexNormals<double>();
         std::vector<std::vector<size_t>> faces = plyIn.getFaceIndices();
+
+        impl.m_vertices.reserve(vertices.size());
+        for (const auto& v : vertices) {
+            impl.m_vertices.emplace_back(v[0], v[1], v[2]);
+        }
+
+        impl.m_normals.reserve(vertex_normals.size());
+        for (const auto& vn : vertex_normals) {
+            impl.m_normals.emplace_back(vn[0], vn[1], vn[2]);
+        }
+
         if (plyIn.hasElement("group"))
         {
             std::vector<std::string> group_names = get_group_names(plyIn);
@@ -135,38 +140,68 @@ namespace foundation
                 std::cout << "Group id: " << i << ", name: ";
                 std::cout << group_names[i] << std::endl;
 
-                for (const auto fi : group_faces[i])
+                for (const auto& fi : group_faces[i])
                     std::cout << fi << " ";
                 std::cout << std::endl;
             }
+
+            for (size_t i = 0; i < group_names.size(); i++)
+            {
+                std::cout << "Processing group " << group_names[i] << std::endl;
+                impl.m_current_mesh_name = group_names[i];
+                impl.ensure_mesh_def();
+    
+                for (const auto& face_idx : group_faces[i])
+                {
+                    std::cout << "Processing face idx " << face_idx << std::endl;
+                    const auto& face = faces[face_idx];
+                    impl.m_builder.begin_face(face.size());
+                    impl.m_builder.set_face_vertices(&face.front());
+                    impl.m_builder.end_face();
+
+                    std::vector<size_t> face_vertices = faces[face_idx];
+                    for (const auto& v_idx : face_vertices)
+                    {
+                        impl.m_builder.push_vertex(
+                            Vector3d(
+                                vertices[v_idx][0],
+                                vertices[v_idx][1],
+                                vertices[v_idx][2]));
+                        impl.m_builder.push_vertex_normal(
+                            Vector3d(
+                                vertex_normals[v_idx][0],
+                                vertex_normals[v_idx][1],
+                                vertex_normals[v_idx][2]));
+                    }
+                }
+                impl.end_mesh_def();
+                std::cout << "Ending mesh " << std::endl;
+            }
         }
-
-        // get groups
-        // for each group create a new mesh
-        // for each face add face to mesh (it should reference m_vertices from impl to get vertex coordinates and faces to get vertex indices)
-
-        impl.ensure_mesh_def();
-
-        for (const auto& vertex : vertices)
+        else
         {
-            impl.m_vertices.push_back(Vector3d(vertex[0], vertex[1], vertex[2]));
-            impl.m_builder.push_vertex(Vector3d(vertex[0], vertex[1], vertex[2]));
+            impl.ensure_mesh_def();
+    
+            for (const auto& vertex : vertices)
+            {
+                impl.m_vertices.push_back(Vector3d(vertex[0], vertex[1], vertex[2]));
+                impl.m_builder.push_vertex(Vector3d(vertex[0], vertex[1], vertex[2]));
+            }
+    
+            for (const auto& vertex_normal : vertex_normals)
+            {
+                impl.m_normals.push_back(Vector3d(vertex_normal[0], vertex_normal[1], vertex_normal[2]));
+                impl.m_builder.push_vertex_normal(Vector3d(vertex_normal[0], vertex_normal[1], vertex_normal[2]));
+            }
+    
+            for (const auto& face : faces)
+            {
+                impl.m_builder.begin_face(face.size());
+                impl.m_builder.set_face_vertices(&face.front());
+                impl.m_builder.end_face();
+            }
+            impl.end_mesh_def();
         }
-
-        for (const auto& vertex_normal : vertex_normals)
-        {
-            impl.m_normals.push_back(Vector3d(vertex_normal[0], vertex_normal[1], vertex_normal[2]));
-            impl.m_builder.push_vertex_normal(Vector3d(vertex_normal[0], vertex_normal[1], vertex_normal[2]));
-        }
-        
-        for (const auto& face : faces)
-        {
-            impl.m_builder.begin_face(face.size());
-            impl.m_builder.set_face_vertices(&face.front());
-            impl.m_builder.end_face();
-        }
-
-        impl.end_mesh_def();
 
         std::cout << "happly works!" << std::endl;
     }

@@ -91,6 +91,8 @@ class APPLESEED_DLLSYMBOL IMeshBuilder
 
     // End the definition of the mesh.
     virtual void end_mesh() = 0;
+
+    virtual void output_mesh_info(){};
 };
 
 }   // namespace foundation
