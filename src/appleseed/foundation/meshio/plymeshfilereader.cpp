@@ -202,8 +202,6 @@ namespace foundation
             }
             impl.end_mesh_def();
         }
-
-        std::cout << "happly works!" << std::endl;
     }
     
     std::vector<std::string> PLYMeshFileReader::get_group_names(
@@ -227,7 +225,19 @@ namespace foundation
     std::vector<std::vector<size_t>> PLYMeshFileReader::get_group_faces(
         happly::PLYData& ply_input) const
     {
-        return ply_input.getElement("group").getListProperty<size_t>("face_indices");
+        std::vector<size_t> face_groups = ply_input.getElement("face").getProperty<size_t>("group_index");
+        const size_t max_group_idx = *std::max_element(face_groups.begin(), face_groups.end());
+
+        // Group by value
+        std::vector<std::vector<size_t>> group_faces;
+        group_faces.resize(max_group_idx + 1);
+        for (size_t face_idx = 0; face_idx < face_groups.size(); face_idx++)
+        {
+            const size_t group_idx = face_groups[face_idx];
+            group_faces[group_idx].push_back(face_idx);
+        }
+        
+        return group_faces;
     }
 
 } // namespace foundation
