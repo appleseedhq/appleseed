@@ -4,6 +4,7 @@ sandbox/shaders/
 __pycache__
 .vscode/
 dependencies/
+collected-deps/
 scratch_data/
 dependencies/
 *.txt
