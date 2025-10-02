@@ -199,6 +199,7 @@ namespace foundation
             {
                 impl.m_builder.begin_face(face.size());
                 impl.m_builder.set_face_vertices(&face.front());
+                impl.m_builder.set_face_vertex_normals(&face.front());
                 impl.m_builder.set_face_material(default_slot);
                 impl.m_builder.end_face();
             }
