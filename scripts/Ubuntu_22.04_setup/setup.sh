@@ -707,9 +707,6 @@ if [ $_bCustomDependenciesDir = false ]; then
   _sDependenciesDir=$_sRoot/$_DEFAULT_DEPENDENCIES_DIR_NAME
 fi
 
-_sDependenciesDir=$(realpath $_sRoot/dependencies)
-echo "Dependencies Directory: $_sDependenciesDir"
-
 # ----------------------------------------------------------------
 # Echo Settings
 # ----------------------------------------------------------------
@@ -733,6 +730,7 @@ echo "  Root Directory: \"$_sRoot\""
 if [[ $_sAppleseedSource != "" ]]; then
   echo "  Appleseed Source: \"$_sAppleseedSource\""
 fi
+echo "Dependencies Directory: $_sDependenciesDir"
 
 echo "  Install Directories:"
 printf "${_COLOR_GRAY}  Note: If no install directory is given, it is searched in \"$_sDependenciesDir\" for an installation."
@@ -1559,6 +1557,7 @@ if [[ $_sHapplyInstallDir = "" ]]; then
     fi
 
   stepInfo $_NAME "$depName cloned to \"$_sSourceDir\"." $_COLOR_INSTALL_DIR
+  _sHapplyInstallDir=$_sSourceDir
 fi
 
 
