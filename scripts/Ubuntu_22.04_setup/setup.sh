@@ -707,10 +707,7 @@ if [ $_bCustomDependenciesDir = false ]; then
   _sDependenciesDir=$_sRoot/$_DEFAULT_DEPENDENCIES_DIR_NAME
 fi
 
-<<<<<<< HEAD:scripts/Ubuntu_20.04_setup/setup.sh
-=======
 _sDependenciesDir=$(realpath $_sRoot/dependencies)
->>>>>>> osl-update:scripts/Ubuntu_22.04_setup/setup.sh
 echo "Dependencies Directory: $_sDependenciesDir"
 
 # ----------------------------------------------------------------
@@ -1552,13 +1549,8 @@ if [[ $_sHapplyInstallDir = "" ]]; then
 
   # setup
   depName=$_HAPPLY
-<<<<<<< HEAD:scripts/Ubuntu_20.04_setup/setup.sh
-  _sSourceDir="$_sDependenciesDir/$depName"
-  _sHapplyInstallDir=$_sSourceDir
-=======
   _sRepo=${HAPPLY_RP##*/}
   _sSourceDir="$_sDependenciesDir/$depName"
->>>>>>> osl-update:scripts/Ubuntu_22.04_setup/setup.sh
 
   # clone repository if not already
     if [ ! -d $_sSourceDir ]; then
@@ -1566,14 +1558,9 @@ if [[ $_sHapplyInstallDir = "" ]]; then
         $_DEBUG git clone $HAPPLY_RP $_sSourceDir  
     fi
 
-<<<<<<< HEAD:scripts/Ubuntu_20.04_setup/setup.sh
-  stepInfo $_NAME "$depName cloned to \"$_sSourceDir\"."
-fi
-=======
   stepInfo $_NAME "$depName cloned to \"$_sSourceDir\"." $_COLOR_INSTALL_DIR
 fi
 
->>>>>>> osl-update:scripts/Ubuntu_22.04_setup/setup.sh
 
 # The following is a template for installing dependencies. (It is not run [see `true = false`].)
 # ----------------------------------------------------------------
