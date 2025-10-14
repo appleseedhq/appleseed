@@ -134,46 +134,56 @@ namespace foundation
             std::vector<std::string> group_names = get_group_names(plyIn);
             std::vector<std::vector<size_t>> group_faces = get_group_faces(plyIn);
 
-            std::cout << "Groups:" << std::endl;
-            for (size_t i = 0; i < group_names.size(); i++)
-            {
-                std::cout << "Group id: " << i << ", name: ";
-                std::cout << group_names[i] << std::endl;
-
-                for (const auto& fi : group_faces[i])
-                    std::cout << fi << " ";
-                std::cout << std::endl;
-            }
+            size_t              index_in_mesh; // index in the internal mesh (in `impl.m_builder`), as opposed to the index in the ply file
+            std::vector<size_t> face_vertex_indices;
 
             for (size_t i = 0; i < group_names.size(); i++)
             {
                 std::cout << "Processing group " << group_names[i] << std::endl;
                 impl.m_current_mesh_name = group_names[i];
                 impl.ensure_mesh_def();
+                const size_t default_slot = impl.m_builder.push_material_slot("default");
     
                 for (const auto& face_idx : group_faces[i])
                 {
                     std::cout << "Processing face idx " << face_idx << std::endl;
+                    std::cout << "Vertices:";
 
                     std::vector<size_t> face_vertices = faces[face_idx];
                     for (const auto& v_idx : face_vertices)
                     {
-                        impl.m_builder.push_vertex(
+                        index_in_mesh = impl.m_builder.push_vertex(
                             Vector3d(
                                 vertices[v_idx][0],
                                 vertices[v_idx][1],
                                 vertices[v_idx][2]));
+
+                                std::cout << " (" << vertices[v_idx][0] << ", " << vertices[v_idx][1] << ", " << vertices[v_idx][2] << ")";
+                                
                         impl.m_builder.push_vertex_normal(
                             Vector3d(
                                 vertex_normals[v_idx][0],
                                 vertex_normals[v_idx][1],
                                 vertex_normals[v_idx][2]));
+
+                        face_vertex_indices.emplace_back(index_in_mesh);
                     }
 
-                    const auto& face = faces[face_idx];
-                    impl.m_builder.begin_face(face.size());
-                    impl.m_builder.set_face_vertices(&face.front());
+                    std::cout << std::endl;
+
+                    std::cout << "Face Size: " << face_vertex_indices.size() << std::endl;
+                    std::cout << "Face Front:";
+                    for (const auto& fvi : face_vertex_indices)
+                        std::cout << " " << fvi;
+                    std:: cout << std::endl;
+
+                    impl.m_builder.begin_face(face_vertex_indices.size());
+                    impl.m_builder.set_face_vertices(&face_vertex_indices.front());
+                    impl.m_builder.set_face_vertex_normals(&face_vertex_indices.front());
+                    impl.m_builder.set_face_material(default_slot);
                     impl.m_builder.end_face();
+
+                    face_vertex_indices.clear();
                 }
                 impl.end_mesh_def();
                 std::cout << "Ending mesh " << std::endl;
