@@ -154,10 +154,6 @@ namespace foundation
                 for (const auto& face_idx : group_faces[i])
                 {
                     std::cout << "Processing face idx " << face_idx << std::endl;
-                    const auto& face = faces[face_idx];
-                    impl.m_builder.begin_face(face.size());
-                    impl.m_builder.set_face_vertices(&face.front());
-                    impl.m_builder.end_face();
 
                     std::vector<size_t> face_vertices = faces[face_idx];
                     for (const auto& v_idx : face_vertices)
@@ -173,6 +169,11 @@ namespace foundation
                                 vertex_normals[v_idx][1],
                                 vertex_normals[v_idx][2]));
                     }
+
+                    const auto& face = faces[face_idx];
+                    impl.m_builder.begin_face(face.size());
+                    impl.m_builder.set_face_vertices(&face.front());
+                    impl.m_builder.end_face();
                 }
                 impl.end_mesh_def();
                 std::cout << "Ending mesh " << std::endl;
@@ -181,26 +182,29 @@ namespace foundation
         else
         {
             impl.ensure_mesh_def();
-    
+            const size_t default_slot = impl.m_builder.push_material_slot("default");
+
             for (const auto& vertex : vertices)
             {
-                impl.m_vertices.push_back(Vector3d(vertex[0], vertex[1], vertex[2]));
                 impl.m_builder.push_vertex(Vector3d(vertex[0], vertex[1], vertex[2]));
             }
     
             for (const auto& vertex_normal : vertex_normals)
             {
-                impl.m_normals.push_back(Vector3d(vertex_normal[0], vertex_normal[1], vertex_normal[2]));
                 impl.m_builder.push_vertex_normal(Vector3d(vertex_normal[0], vertex_normal[1], vertex_normal[2]));
+                std::cout << "Pushing normal " << vertex_normal[0] << ", " << vertex_normal[1] << ", " << vertex_normal[2] << std::endl;
             }
     
             for (const auto& face : faces)
             {
                 impl.m_builder.begin_face(face.size());
                 impl.m_builder.set_face_vertices(&face.front());
+                impl.m_builder.set_face_material(default_slot);
                 impl.m_builder.end_face();
             }
             impl.end_mesh_def();
+
+            impl.ensure_mesh_def();
         }
     }
     

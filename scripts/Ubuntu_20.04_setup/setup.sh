@@ -673,6 +673,7 @@ if [ $_bCustomDependenciesDir = false ]; then
   _sDependenciesDir=$_sRoot/$_DEFAULT_DEPENDENCIES_DIR_NAME
 fi
 
+echo "Dependencies Directory: $_sDependenciesDir"
 
 # ----------------------------------------------------------------
 # Echo Settings
@@ -1494,6 +1495,7 @@ if [[ $_sHapplyInstallDir = "" ]]; then
   # setup
   depName=$_HAPPLY
   _sSourceDir="$_sDependenciesDir/$depName"
+  _sHapplyInstallDir=$_sSourceDir
 
   # clone repository if not already
     if [ ! -d $_sSourceDir ]; then
@@ -1625,6 +1627,7 @@ if [ $_bNewBuild = true ]; then
     -DWITH_EMBREE=$WITH_EMBREE \
     -DWITH_GPU=OFF \
     -DWITH_SPECTRAL_SUPPORT=OFF \
+    -Dhapply_ROOT=$_sHapplyInstallDir \
     ..
   stepInfo $_APPLESEED "Configured CMake."
 fi

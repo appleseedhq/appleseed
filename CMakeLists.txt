@@ -365,7 +365,7 @@ include_directories (
 
 # Happly include
 include_directories (
-    dependencies/Happly
+    ${happly_ROOT}
 )
 
 if (WITH_EMBREE)
