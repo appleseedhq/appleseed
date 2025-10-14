@@ -63,6 +63,8 @@ OIIO_DL="https://github.com/AcademySoftwareFoundation/OpenImageIO/releases/downl
 OSL_DL="https://github.com/AcademySoftwareFoundation/OpenShadingLanguage/archive/refs/tags/v1.13.12.0.tar.gz" # TODO: update to 1.14
 PARTIO_DL="https://github.com/wdas/partio/archive/refs/tags/v1.19.0.tar.gz"
 XERCES_DL="https://github.com/apache/xerces-c/archive/refs/tags/v3.3.0.tar.gz"
+HAPPLY_RP="https://github.com/MarcusTU/happly"
+OKAYPLY_RP="https://github.com/MarsReloaded/okayply.git"
 
 # README: YOU SHOULD NOT CHANGE ANY OF THE VARIABLES BELOW, UNLESS YOU KNOW WHAT YOU ARE DOING.
 
@@ -103,6 +105,8 @@ _OPENEXR=OpenEXR
 _OSL=OSL
 _PARTIO=PartIO
 _XERCES=Xerces
+_HAPPLY=Happly
+_OKAYPLY=OkayPly
 
 # Colors
 _COLOR_CLEAR='\033[0m'
@@ -154,6 +158,8 @@ _sOpenEXRInstallDir=""
 _sOSLInstallDir=""
 _sPartIOInstallDir=""
 _sXercesInstallDir=""
+_sHapplyInstallDir=""
+_sOkayPlyInstallDir=""
 
 _sBoostConfigDir="" # is version dependent
 _sEmbreeConfigDir="" # is version dependent
@@ -320,6 +326,8 @@ printf "                      ${_COLOR_ORANGE}Warning: Fetching a new Appleseed 
   echo "  --osl-install"
   echo "  --partio-install"
   echo "  --xerces-install"
+  echo "  --happly-install"
+  echo "  --okply-install"
   echo ""
   echo "Options:"
   echo "  -h, --help          Display this help message."
@@ -504,6 +512,24 @@ handle_options() {
             exit 1
         fi
         _sXercesInstallDir=$(extract_argument $@)
+        shift
+        ;;
+      --happly-install)
+        if ! has_argument $@; then
+            echo "$(rootVarName $_HAPPLY)" >&2
+            usage
+            exit 1
+        fi
+        _sHapplyInstallDir=$(extract_argument $@)
+        shift
+        ;;
+      --okply-install)
+        if ! has_argument $@; then
+            echo "$(rootVarName $_HAPPLY)" >&2
+            usage
+            exit 1
+        fi
+        _sHapplyInstallDir=$(extract_argument $@)
         shift
         ;;
       # Options
@@ -701,6 +727,8 @@ dependencyInstallInfo $_OPENEXR $_sOpenEXRInstallDir
 dependencyInstallInfo $_OSL     $_sOSLInstallDir
 dependencyInstallInfo $_PARTIO  $_sPartIOInstallDir
 dependencyInstallInfo $_XERCES  $_sXercesInstallDir
+dependencyInstallInfo $_HAPPLY  $_sHapplyInstallDir
+dependencyInstallInfo $_OKAYPLY   $_sOkayPlyInstallDir
 
 # Optional Dependencies
 echo "  Building the following optional dependencies:"
@@ -1469,6 +1497,47 @@ if [[ $_sXercesInstallDir = "" ]]; then
 
   # clean step
   cleanInstallStep
+fi
+
+# ----------------------------------------------------------------
+# Happly
+# ----------------------------------------------------------------
+
+if [[ $_sHapplyInstallDir = "" ]]; then
+
+  # setup
+  depName=$_HAPPLY
+  _sSourceDir="$_sDependenciesDir/$depName"
+
+  # clone repository if not already
+    if [ ! -d $_sSourceDir ]; then
+        echo "clone $HAPPLY_RP to $_sSourceDir"
+        $_DEBUG git clone $HAPPLY_RP $_sSourceDir  
+    fi
+
+  stepInfo $_NAME "$depName cloned to \"$_sSourceDir\"."
+fi
+
+# ----------------------------------------------------------------
+# OkayPly
+# ----------------------------------------------------------------
+
+if [[ $_sOKpplyInstallDir = "" ]]; then
+
+  # setup
+  depName=$_OKAYPLY
+  _sSourceDir="$_sDependenciesDir/$depName"
+
+  # clone repository if not already
+    if [ ! -d $_sSourceDir ]; then
+        echo "clone $OKAYPLY_RP to $_sSourceDir"
+        $_DEBUG git clone $OKAYPLY_RP $_sSourceDir  
+    fi
+
+    # apt install dependencies
+    $DEBUG sudo apt install -y libfmt-dev
+
+  stepInfo $_NAME "$depName cloned to \"$_sSourceDir\"."
 fi
 
 
