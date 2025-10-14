@@ -8,7 +8,7 @@ set -e
 # ================================================================
 # This script can be used to install Appleseed and all of its dependencies.
 #
-# Easiest is to run it from Appleseed's root directory -- e.g. `./scripts/Ubuntu_20.04_setup/setup.sh`.
+# Easiest is to run it from Appleseed's root directory -- e.g. `./scripts/Ubuntu_22.04_setup/setup.sh`.
 #
 # Use -h or --help to get a list of all possible arguments and options.
 #
@@ -51,6 +51,7 @@ WITH_CLIENT=ON
 WITH_STUDIO=ON
 WITH_TOOLS=ON
 WITH_PYTHON2_BINDINGS=ON
+WITH_PYTHON3_BINDINGS=OFF
 WITH_EMBREE=ON
 
 # Download Links
@@ -66,6 +67,15 @@ XERCES_DL="https://github.com/apache/xerces-c/archive/refs/tags/v3.3.0.tar.gz"
 HAPPLY_RP="https://github.com/MarcusTU/happly"
 
 # README: YOU SHOULD NOT CHANGE ANY OF THE VARIABLES BELOW, UNLESS YOU KNOW WHAT YOU ARE DOING.
+
+# ----------------------------------------------------------------
+# Check Validity of Set Constants
+# ----------------------------------------------------------------
+
+# Checking if `DEBUG` is set correctly, since it is called before most commands (e.g. rm, wget, or running scripts) and thus might cause big problems if set incorrectly.
+if [[ $DEBUG != "" && $DEBUG != "echo" ]]; then
+  echo "Invalid value for \`DEBUG\`! Must either be empty \"\" or \"echo\" (is \"$DEBUG\")."
+fi
 
 # ================================================================
 # Constants
@@ -143,6 +153,9 @@ _sVerbose=""
 _bCollect=false
 _sCollectType="copy" # options: "copy" | "link"
 
+# "need python bindings" variable
+_bNeedPythonBindings=true
+
 # "no optional components flags seen" variable
 _bNoOptCompFlags=true
 
@@ -186,12 +199,13 @@ optCompFlagCheck() {
   # If this is called (meaning a "optional component flag" is being handled by `handle_options`) then chick if `_bNoOptCompFlags` is true.
   # If it is, that means this is the first "optional component flag" seen. In this case all "WITH_X" variables are set to OFF and `_bNoOptCompFlags` is set to false. The appropriate "WITH_X" flag should then set to ON by `handle_options`.
   # Else nothing happens. (All "WITH_X" variables were already set to OFF once and should now be set to ON by `handle_options` when an appropriate "optional component flag" is seen.)
-  if [ $_bNoOptCompFlags == true ]; then
+  if [ $_bNoOptCompFlags = true ]; then
     WITH_BENCH=OFF
     WITH_CLIENT=OFF
     WITH_STUDIO=OFF
     WITH_TOOLS=OFF
     WITH_PYTHON2_BINDINGS=OFF
+    WITH_PYTHON3_BINDINGS=OFF
     WITH_EMBREE=OFF
 
     _bNoOptCompFlags=false
@@ -210,7 +224,7 @@ cleanInstallStep() {
     $DEBUG rm -fr $_sBuildDir
   fi
   # Here we check if the source/build dir is != the deps dir.
-  # -> Source/build dir is == the deps dir can happen if a "X_DL" variable is set wrongly.
+  # -> Source/build dir is = the deps dir can happen if a "X_DL" variable is set wrongly.
   # With that we prevent the dependencies dir from being completely deleted by accident.
 
   _sTarFile=""
@@ -341,7 +355,8 @@ printf "                      ${_COLOR_ORANGE}Warning: Fetching a new Appleseed 
   echo "  --studio            Built the studio (WITH_STUDIO=ON)."
   echo "  --bench             Built the bench (WITH_BENCH=ON)."
   echo "  --tools             Built the tools (WITH_TOOLS=ON)."
-  echo "  --python2-bindings  Built the Python 2.7 bindings (WITH_PYTHON2_BINDINGS=ON)."
+  echo "  --python2-bindings  Built the Python 2.7 bindings (WITH_PYTHON2_BINDINGS=ON); exclusive with Python 3 bindings."
+  echo "  --python3-bindings  Build the Python 3 bindings (WITH_PYTHON3_BINDINGS=ON); exclusive with Python 2.7 bindings."
   echo "  --embree            Built with Embree (WITH_EMBREE=ON)."
   echo ""
   echo "Utilities:"
@@ -352,7 +367,7 @@ printf "                      ${_COLOR_ORANGE}Warning: Fetching a new Appleseed 
 
 # Extract options and arguments
 has_argument() {
-  [[ ("$1" == *=* && -n ${1#*=}) || ( ! -z "$2" && "$2" != -*)  ]];
+  [[ ("$1" = *=* && -n ${1#*=}) || ( ! -z "$2" && "$2" != -*)  ]];
 }
 
 extract_argument() {
@@ -570,7 +585,8 @@ handle_options() {
       --studio)
         optCompFlagCheck
         WITH_STUDIO=ON
-        WITH_PYTHON2_BINDINGS=ON
+        WITH_PYTHON2_BINDINGS=ON # TODO: Studio currently requires Python 2.7; update this.
+        _bNeedPythonBindings=ON
         ;;
       --tools)
         optCompFlagCheck
@@ -579,10 +595,16 @@ handle_options() {
       --python2-bindings)
         optCompFlagCheck
         WITH_PYTHON2_BINDINGS=ON
+        WITH_PYTHON3_BINDINGS=OFF
+        ;;
+      --python3-bindings)
+        optCompFlagCheck
+        WITH_PYTHON2_BINDINGS=OFF
+        WITH_PYTHON3_BINDINGS=ON
         ;;
       --embree)
         optCompFlagCheck
-        WITH_PYTHON2_BINDINGS=ON
+        _bNeedPythonBindings=ON
         ;;
       *)
         echo "Invalid option: $1" >&2
@@ -593,6 +615,16 @@ handle_options() {
     shift
   done
 }
+
+# ----------------------------------------------------------------
+# Check for Python Bindings
+# ----------------------------------------------------------------
+
+if [ $_bNeedPythonBindings = true ]; then
+  if [[ $WITH_PYTHON2_BINDINGS = OFF && $WITH_PYTHON3_BINDINGS = OFF ]]; then
+    WITH_PYTHON2_BINDINGS=ON # Python 2 bindings as default, if Python bindings are needed but none was specified.
+  fi
+fi
 
 
 # ================================================================
@@ -640,8 +672,8 @@ fi
 
 sRemoveSuffix=""
 case $_sRoot in
-  *scripts/Ubuntu_20.04_setup/) sRemoveSuffix=scripts/Ubuntu_20.04_setup/;;
-  *scripts/Ubuntu_20.04_setup)  sRemoveSuffix=scripts/Ubuntu_20.04_setup;;
+  *scripts/Ubuntu_22.04_setup/) sRemoveSuffix=scripts/Ubuntu_22.04_setup/;;
+  *scripts/Ubuntu_22.04_setup)  sRemoveSuffix=scripts/Ubuntu_22.04_setup;;
   *scripts/)                    sRemoveSuffix=scripts/;;
   *scripts)                     sRemoveSuffix=scripts;;
   *);; # pass
@@ -664,7 +696,7 @@ if [[ $sRemoveSuffix != "" ]]; then
   done
 fi
 
-if [[ $_sAppleseedSource == "" ]] && [ ! -f $_sRoot/src/appleseed/main/dllmain.cpp ]; then
+if [[ $_sAppleseedSource = "" ]] && [ ! -f $_sRoot/src/appleseed/main/dllmain.cpp ]; then
   echo "Error: \"$_sRoot\" is not a valid ROOT directory. Exiting."
   exit 1
 fi
@@ -675,6 +707,10 @@ if [ $_bCustomDependenciesDir = false ]; then
   _sDependenciesDir=$_sRoot/$_DEFAULT_DEPENDENCIES_DIR_NAME
 fi
 
+<<<<<<< HEAD:scripts/Ubuntu_20.04_setup/setup.sh
+=======
+_sDependenciesDir=$(realpath $_sRoot/dependencies)
+>>>>>>> osl-update:scripts/Ubuntu_22.04_setup/setup.sh
 echo "Dependencies Directory: $_sDependenciesDir"
 
 # ----------------------------------------------------------------
@@ -726,6 +762,7 @@ optionalComponentBuildInfo Studio             $WITH_STUDIO
 optionalComponentBuildInfo Bench              $WITH_BENCH
 optionalComponentBuildInfo Tools              $WITH_TOOLS
 optionalComponentBuildInfo "Python2 Bindings" $WITH_PYTHON2_BINDINGS
+optionalComponentBuildInfo "Python3 Bindings" $WITH_PYTHON3_BINDINGS
 optionalComponentBuildInfo Embree             $WITH_EMBREE
 
 if [ $_bAsk = true ]; then
@@ -811,7 +848,7 @@ $DEBUG mkdir -p $_sDependenciesDir
 # build essentials
 $DEBUG sudo apt install -y build-essential cmake
 
-if [[ $C_COMPILER == "" ]]; then
+if [[ $C_COMPILER = "" ]]; then
   if [ $_bClang = true ]; then
     C_COMPILER=/usr/bin/clang
     CXX_COMPILER=/usr/bin/clang++
@@ -869,8 +906,18 @@ if [[ $_sBoostInstallDir = "" ]]; then
 
     # apt install dependencies (needed for python bindings with appleseed)
     $DEBUG sudo apt install -y \
-      python2.7-dev \
       pybind11-dev
+
+    # Python Difference
+    pythonVersion=
+    if [[ $WITH_PYTHON2_BINDINGS = ON ]]; then
+      $DEBUG sudo apt install -y python2.7-dev
+      pythonVersion=2.7
+    elif [[ $WITH_PYTHON3_BINDINGS = ON ]]; then
+      $DEBUG sudo apt install -y python3-dev
+      pythonVersion=$(python3 --version | cut -d" " -f2 | cut -d"." -f1,2) # first cut away the "Python" (in "Python 3.X.X"), then cut away the last version number (in "3.X.X")
+      stepInfo $_NAME "For Python 3 bindings, detected Python $pythonVersion."
+    fi
 
     # Remove any files left from a previous failed install.
     $DEBUG rm -fr $_sSourceDir
@@ -894,24 +941,27 @@ if [[ $_sBoostInstallDir = "" ]]; then
     $DEBUG cd $_sSourceDir
 
     stepInfo $depName "Installing from \"$_sSourceDir\" ..."
-    $DEBUG ./bootstrap.sh --prefix=$_sInstallDir --with-toolset=$toolset --with-python-version=2.7
 
-    # Configure/check configuration of project for Python 2.7
-    if [[ $DEBUG = "" ]]; then
-      if grep -Fxq "# Python 2.7 Config" "project-config.jam"
-      then
-        echo "Already configured for Python 2.7 in \`project-config.jam\`."
-      else
-        echo "# Python 2.7 Config"                          >> project-config.jam
-        echo "import toolset : using ;"                     >> project-config.jam
-        echo "using python : 2.7 : /usr/bin/python2.7 ;"    >> project-config.jam
-        echo ""                                             >> project-config.jam
+    $DEBUG ./bootstrap.sh --prefix=$_sInstallDir --with-toolset=$toolset
 
-        echo "Added configuration for Python 2.7 to project-config.jam"
+    # Configure/check configuration of project for Python
+    if [[ $DEBUG = "" ]]; then # do not change files if in preview (debug) mode
+      if [[ $WITH_PYTHON2_BINDINGS = ON ]] || [[ $WITH_PYTHON3_BINDINGS = ON ]]; then
+        if grep -Fxq "# Python $pythonVersion Config" "project-config.jam"
+        then
+          stepInfo $depName "Already configured for Python $pythonVersion in \`project-config.jam\`."
+        else
+          echo ""                                                                >> project-config.jam
+          echo "# Python $pythonVersion Config"                                  >> project-config.jam
+          echo "import toolset : using ;"                                        >> project-config.jam
+          echo "using python : $pythonVersion : /usr/bin/python$pythonVersion ;" >> project-config.jam
+          echo ""                                                                >> project-config.jam
+          stepInfo $depName "Added configuration for Python $pythonVersion to project-config.jam"
+        fi
       fi
     fi
 
-    $DEBUG ./b2 toolset=$toolset cxxflags="-std=c++$_CXX_STD" install
+    $DEBUG ./b2 toolset=$toolset cxxflags="-std=c++$_CXX_STD" install -j$(nproc)
     # Installed Boost
   fi
   
@@ -1205,11 +1255,16 @@ if [[ $_sOIIOInstallDir = "" ]]; then
 
     # apt install dependencies
     $DEBUG sudo apt install -y \
-      python2.7-dev \
       pybind11-dev \
       zlib1g \
       zlib1g-dev \
       libtiff5-dev
+
+    if [[ $WITH_PYTHON2_BINDINGS = ON ]]; then
+      $DEBUG sudo apt install -y python2.7-dev
+    elif [[ $WITH_PYTHON3_BINDINGS = ON ]]; then
+      $DEBUG sudo apt install -y python3-dev
+    fi
 
     # Remove any files left from a previous failed install.
     $DEBUG rm -fr $_sSourceDir
@@ -1387,8 +1442,8 @@ if [[ $_sOSLInstallDir = "" ]]; then
     # check for patch file
     if [ -f $_sRoot/fixOSL1957.cpp ]; then
       _sOSLPatchFilePath="$_sRoot/fixOSL1957.cpp"
-    elif [ -f $_sRoot/scripts/Ubuntu_20.04_setup/fixOSL1957.cpp ]; then
-      _sOSLPatchFilePath="$_sRoot/scripts/Ubuntu_20.04_setup/fixOSL1957.cpp"
+    elif [ -f $_sRoot/scripts/Ubuntu_22.04_setup/fixOSL1957.cpp ]; then
+      _sOSLPatchFilePath="$_sRoot/scripts/Ubuntu_22.04_setup/fixOSL1957.cpp"
     elif [ -f $_SCRIPT_DIR/fixOSL1957.cpp ]; then
       _sOSLPatchFilePath="$_SCRIPT_DIR/fixOSL1957.cpp"
     else
@@ -1497,8 +1552,13 @@ if [[ $_sHapplyInstallDir = "" ]]; then
 
   # setup
   depName=$_HAPPLY
+<<<<<<< HEAD:scripts/Ubuntu_20.04_setup/setup.sh
   _sSourceDir="$_sDependenciesDir/$depName"
   _sHapplyInstallDir=$_sSourceDir
+=======
+  _sRepo=${HAPPLY_RP##*/}
+  _sSourceDir="$_sDependenciesDir/$depName"
+>>>>>>> osl-update:scripts/Ubuntu_22.04_setup/setup.sh
 
   # clone repository if not already
     if [ ! -d $_sSourceDir ]; then
@@ -1506,8 +1566,14 @@ if [[ $_sHapplyInstallDir = "" ]]; then
         $_DEBUG git clone $HAPPLY_RP $_sSourceDir  
     fi
 
+<<<<<<< HEAD:scripts/Ubuntu_20.04_setup/setup.sh
   stepInfo $_NAME "$depName cloned to \"$_sSourceDir\"."
 fi
+=======
+  stepInfo $_NAME "$depName cloned to \"$_sSourceDir\"." $_COLOR_INSTALL_DIR
+fi
+
+>>>>>>> osl-update:scripts/Ubuntu_22.04_setup/setup.sh
 
 # The following is a template for installing dependencies. (It is not run [see `true = false`].)
 # ----------------------------------------------------------------
@@ -1578,12 +1644,17 @@ stepInfo $_NAME "Building $_APPLESEED ..."
 $DEBUG sudo apt install -y \
   freeglut3-dev \
   libpng-dev \
-  libpython2.7-dev \
   liblz4-dev \
   qtbase5-dev \
   zlib1g \
   zlib1g-dev
-   
+
+if [[ $WITH_PYTHON2_BINDINGS = ON ]]; then
+  $DEBUG sudo apt install -y python2.7-dev
+elif [[ $WITH_PYTHON3_BINDINGS = ON ]]; then
+  $DEBUG sudo apt install -y python3-dev
+fi
+
 
 $DEBUG cd $_sRoot
 
@@ -1625,7 +1696,7 @@ if [ $_bNewBuild = true ]; then
     -DWITH_BENCH=$WITH_BENCH \
     -DWITH_TOOLS=$WITH_TOOLS \
     -DWITH_PYTHON2_BINDINGS=$WITH_PYTHON2_BINDINGS \
-    -DWITH_PYTHON3_BINDINGS=OFF \
+    -DWITH_PYTHON3_BINDINGS=$WITH_PYTHON3_BINDINGS \
     -DWITH_EMBREE=$WITH_EMBREE \
     -DWITH_GPU=OFF \
     -DWITH_SPECTRAL_SUPPORT=OFF \
@@ -1634,13 +1705,31 @@ if [ $_bNewBuild = true ]; then
   stepInfo $_APPLESEED "Configured CMake."
 fi
 
-if [[ -f $_sRoot/sandbox/lib/$BUILD_TYPE/libappleseed.so && $_bNewBuild = false ]]; then
-  stepInfo $_NAME "Appleseed is already built. (Add -n or --new to re-build.)"
-else
+# Small helper function to call `make` for Appleseed and print its step infos.
+buildAppleseed() {
   stepInfo $_APPLESEED "Building ..."
   $DEBUG make $_sVerbose -j$(nproc)
   stepInfo $_APPLESEED "Built $_APPLESEED."
+}
+
+if [[ -f $_sRoot/sandbox/lib/$BUILD_TYPE/libappleseed.so && $_bNewBuild = false ]]; then
+  stepInfo $_NAME "Appleseed is already built. (Add -n or --new to re-build.)"
+  if [ $_bAsk = true ]; then
+    printf "${_COLOR_RED}Do you wish to continue?\n"
+    select strictreply in "Yes" "No"; do
+      relaxedreply=${strictreply:-$REPLY}
+      case $relaxedreply in
+        Yes | YES | yes | y ) buildAppleseed;;
+        No  | NO  | no  | n ) echo "Exiting."; exit 0;;
+      esac
+    done
+  else
+    buildAppleseed
+  fi
+else
+  buildAppleseed
 fi
+
 
 # ----------------------------------------------------------------
 # Done
