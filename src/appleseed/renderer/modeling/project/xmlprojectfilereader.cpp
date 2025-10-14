@@ -3119,7 +3119,7 @@ namespace
             std::unique_ptr<IElementHandlerFactory<ProjectElementID>> factory(
                 new GenericElementHandlerFactory<ElementHandler>(m_context));
 
-            register_factory(name, id, move(factory));
+            register_factory(name, id, std::move(factory));
         }
     };
 }

@@ -99,46 +99,46 @@ RendererServices::RendererServices(
   , m_texture_store(nullptr)
 {
     // Set up attribute getters.
-    m_global_attr_getters[OIIO::ustring("object:object_instance_id")] = &RendererServices::get_attr_object_instance_id;
-    m_global_attr_getters[OIIO::ustring("object:object_instance_index")] = &RendererServices::get_attr_object_instance_index;
-    m_global_attr_getters[OIIO::ustring("object:assembly_instance_id")] = &RendererServices::get_attr_assembly_instance_id;
-    m_global_attr_getters[OIIO::ustring("object:assembly_name")] = &RendererServices::get_attr_assembly_name;
-    m_global_attr_getters[OIIO::ustring("object:assembly_instance_name")] = &RendererServices::get_attr_assembly_instance_name;
-    m_global_attr_getters[OIIO::ustring("object:object_instance_name")] = &RendererServices::get_attr_object_instance_name;
-    m_global_attr_getters[OIIO::ustring("object:object_name")] = &RendererServices::get_attr_object_name;
+    m_global_attr_getters[OIIO::ustringhash("object:object_instance_id")] = &RendererServices::get_attr_object_instance_id;
+    m_global_attr_getters[OIIO::ustringhash("object:object_instance_index")] = &RendererServices::get_attr_object_instance_index;
+    m_global_attr_getters[OIIO::ustringhash("object:assembly_instance_id")] = &RendererServices::get_attr_assembly_instance_id;
+    m_global_attr_getters[OIIO::ustringhash("object:assembly_name")] = &RendererServices::get_attr_assembly_name;
+    m_global_attr_getters[OIIO::ustringhash("object:assembly_instance_name")] = &RendererServices::get_attr_assembly_instance_name;
+    m_global_attr_getters[OIIO::ustringhash("object:object_instance_name")] = &RendererServices::get_attr_object_instance_name;
+    m_global_attr_getters[OIIO::ustringhash("object:object_name")] = &RendererServices::get_attr_object_name;
 
-    m_global_attr_getters[OIIO::ustring("camera:resolution")] = &RendererServices::get_attr_camera_resolution;
-    m_global_attr_getters[OIIO::ustring("camera:projection")] = &RendererServices::get_attr_camera_projection;
-    m_global_attr_getters[OIIO::ustring("camera:pixelaspect")] = &RendererServices::get_attr_camera_pixelaspect;
-    m_global_attr_getters[OIIO::ustring("camera:screen_window")] = &RendererServices::get_attr_camera_screen_window;
-    m_global_attr_getters[OIIO::ustring("camera:fov")] = &RendererServices::get_attr_camera_fov;
-    m_global_attr_getters[OIIO::ustring("camera:clip")] = &RendererServices::get_attr_camera_clip;
-    m_global_attr_getters[OIIO::ustring("camera:clip_near")] = &RendererServices::get_attr_camera_clip_near;
-    m_global_attr_getters[OIIO::ustring("camera:clip_far")] = &RendererServices::get_attr_camera_clip_far;
-    m_global_attr_getters[OIIO::ustring("camera:shutter")] = &RendererServices::get_attr_camera_shutter;
-    m_global_attr_getters[OIIO::ustring("camera:shutter_open")] = &RendererServices::get_attr_camera_shutter_open;
-    m_global_attr_getters[OIIO::ustring("camera:shutter_close")] = &RendererServices::get_attr_camera_shutter_close;
+    m_global_attr_getters[OIIO::ustringhash("camera:resolution")] = &RendererServices::get_attr_camera_resolution;
+    m_global_attr_getters[OIIO::ustringhash("camera:projection")] = &RendererServices::get_attr_camera_projection;
+    m_global_attr_getters[OIIO::ustringhash("camera:pixelaspect")] = &RendererServices::get_attr_camera_pixelaspect;
+    m_global_attr_getters[OIIO::ustringhash("camera:screen_window")] = &RendererServices::get_attr_camera_screen_window;
+    m_global_attr_getters[OIIO::ustringhash("camera:fov")] = &RendererServices::get_attr_camera_fov;
+    m_global_attr_getters[OIIO::ustringhash("camera:clip")] = &RendererServices::get_attr_camera_clip;
+    m_global_attr_getters[OIIO::ustringhash("camera:clip_near")] = &RendererServices::get_attr_camera_clip_near;
+    m_global_attr_getters[OIIO::ustringhash("camera:clip_far")] = &RendererServices::get_attr_camera_clip_far;
+    m_global_attr_getters[OIIO::ustringhash("camera:shutter")] = &RendererServices::get_attr_camera_shutter;
+    m_global_attr_getters[OIIO::ustringhash("camera:shutter_open")] = &RendererServices::get_attr_camera_shutter_open;
+    m_global_attr_getters[OIIO::ustringhash("camera:shutter_close")] = &RendererServices::get_attr_camera_shutter_close;
 
-    m_global_attr_getters[OIIO::ustring("path:ray_depth")] = &RendererServices::get_attr_ray_depth;
-    m_global_attr_getters[OIIO::ustring("path:ray_length")] = &RendererServices::get_attr_ray_length;
-    m_global_attr_getters[OIIO::ustring("path:ray_ior")] = &RendererServices::get_attr_ray_ior;
-    m_global_attr_getters[OIIO::ustring("path:ray_has_differentials")] = &RendererServices::get_attr_ray_has_differentials;
+    m_global_attr_getters[OIIO::ustringhash("path:ray_depth")] = &RendererServices::get_attr_ray_depth;
+    m_global_attr_getters[OIIO::ustringhash("path:ray_length")] = &RendererServices::get_attr_ray_length;
+    m_global_attr_getters[OIIO::ustringhash("path:ray_ior")] = &RendererServices::get_attr_ray_ior;
+    m_global_attr_getters[OIIO::ustringhash("path:ray_has_differentials")] = &RendererServices::get_attr_ray_has_differentials;
 
-    m_global_attr_getters[OIIO::ustring("surface_shader:diffuse")] = &RendererServices::get_attr_surface_shader_diffuse;
-    m_global_attr_getters[OIIO::ustring("surface_shader:glossy")] = &RendererServices::get_attr_surface_shader_glossy;
-    m_global_attr_getters[OIIO::ustring("surface_shader:emission")] = &RendererServices::get_attr_surface_shader_emission;
+    m_global_attr_getters[OIIO::ustringhash("surface_shader:diffuse")] = &RendererServices::get_attr_surface_shader_diffuse;
+    m_global_attr_getters[OIIO::ustringhash("surface_shader:glossy")] = &RendererServices::get_attr_surface_shader_glossy;
+    m_global_attr_getters[OIIO::ustringhash("surface_shader:emission")] = &RendererServices::get_attr_surface_shader_emission;
 
-    m_global_attr_getters[OIIO::ustring("appleseed:version_major")] = &RendererServices::get_attr_appleseed_version_major;
-    m_global_attr_getters[OIIO::ustring("appleseed:version_minor")] = &RendererServices::get_attr_appleseed_version_minor;
-    m_global_attr_getters[OIIO::ustring("appleseed:version_patch")] = &RendererServices::get_attr_appleseed_version_patch;
-    m_global_attr_getters[OIIO::ustring("appleseed:version")] = &RendererServices::get_attr_appleseed_version;
+    m_global_attr_getters[OIIO::ustringhash("appleseed:version_major")] = &RendererServices::get_attr_appleseed_version_major;
+    m_global_attr_getters[OIIO::ustringhash("appleseed:version_minor")] = &RendererServices::get_attr_appleseed_version_minor;
+    m_global_attr_getters[OIIO::ustringhash("appleseed:version_patch")] = &RendererServices::get_attr_appleseed_version_patch;
+    m_global_attr_getters[OIIO::ustringhash("appleseed:version")] = &RendererServices::get_attr_appleseed_version;
 
     // Set up user data getters.
-    m_global_user_data_getters[OIIO::ustring("Tn")] = &RendererServices::get_user_data_tn;
-    m_global_user_data_getters[OIIO::ustring("Bn")] = &RendererServices::get_user_data_bn;
-    m_global_user_data_getters[OIIO::ustring("dNdu")] = &RendererServices::get_user_data_dndu;
-    m_global_user_data_getters[OIIO::ustring("dNdv")] = &RendererServices::get_user_data_dndv;
-    m_global_user_data_getters[OIIO::ustring("vertex_color")] = &RendererServices::get_user_data_vertex_color;
+    m_global_user_data_getters[OIIO::ustringhash("Tn")] = &RendererServices::get_user_data_tn;
+    m_global_user_data_getters[OIIO::ustringhash("Bn")] = &RendererServices::get_user_data_bn;
+    m_global_user_data_getters[OIIO::ustringhash("dNdu")] = &RendererServices::get_user_data_dndu;
+    m_global_user_data_getters[OIIO::ustringhash("dNdv")] = &RendererServices::get_user_data_dndv;
+    m_global_user_data_getters[OIIO::ustringhash("vertex_color")] = &RendererServices::get_user_data_vertex_color;
 }
 
 void RendererServices::initialize(TextureStore& texture_store)
@@ -240,7 +240,7 @@ bool RendererServices::get_inverse_matrix(
 bool RendererServices::get_matrix(
     OSL::ShaderGlobals*         sg,
     OSL::Matrix44&              result,
-    OIIO::ustring               from,
+    OIIO::ustringhash           from,
     float                       time)
 {
     if (from == g_camera_ustr)
@@ -258,7 +258,7 @@ bool RendererServices::get_matrix(
 bool RendererServices::get_inverse_matrix(
     OSL::ShaderGlobals*         sg,
     OSL::Matrix44&              result,
-    OSL::ustring                to,
+    OSL::ustringhash            to,
     float                       time)
 {
     if (to == g_camera_ustr)
@@ -280,7 +280,7 @@ bool RendererServices::get_inverse_matrix(
 bool RendererServices::get_matrix(
     OSL::ShaderGlobals*         sg,
     OSL::Matrix44&              result,
-    OIIO::ustring               from)
+    OIIO::ustringhash           from)
 {
     if (from == g_camera_ustr)
     {
@@ -299,7 +299,7 @@ bool RendererServices::get_matrix(
 bool RendererServices::get_inverse_matrix(
     OSL::ShaderGlobals*         sg,
     OSL::Matrix44&              result,
-    OSL::ustring                to)
+    OSL::ustringhash            to)
 {
     if (to == g_camera_ustr)
     {
@@ -340,8 +340,8 @@ namespace
 
 bool RendererServices::transform_points(
     OSL::ShaderGlobals*         sg,
-    OSL::ustring                from,
-    OSL::ustring                to,
+    OSL::ustringhash            from,
+    OSL::ustringhash            to,
     float                       time,
     const OSL::Vec3*            Pin,
     OSL::Vec3*                  Pout,
@@ -515,8 +515,8 @@ bool RendererServices::trace(
 
 bool RendererServices::getmessage(
     OSL::ShaderGlobals*         sg,
-    OIIO::ustring               source,
-    OIIO::ustring               name,
+    OIIO::ustringhash           source,
+    OIIO::ustringhash           name,
     OIIO::TypeDesc              type,
     void*                       val,
     bool                        derivatives)
@@ -559,9 +559,9 @@ bool RendererServices::getmessage(
 bool RendererServices::get_attribute(
     OSL::ShaderGlobals*         sg,
     bool                        derivatives,
-    OIIO::ustring               object,
+    OIIO::ustringhash           object,
     OIIO::TypeDesc              type,
-    OIIO::ustring               name,
+    OIIO::ustringhash           name,
     void*                       val)
 {
     // We don't support getting attributes from named objects, yet.
@@ -586,9 +586,9 @@ bool RendererServices::get_attribute(
 bool RendererServices::get_array_attribute(
     OSL::ShaderGlobals*         sg,
     bool                        derivatives,
-    OIIO::ustring               object,
+    OIIO::ustringhash           object,
     OIIO::TypeDesc              type,
-    OIIO::ustring               name,
+    OIIO::ustringhash           name,
     int                         index,
     void*                       val)
 {
@@ -597,7 +597,7 @@ bool RendererServices::get_array_attribute(
 
 bool RendererServices::get_userdata(
     bool                        derivatives,
-    OIIO::ustring               name,
+    OIIO::ustringhash           name,
     OIIO::TypeDesc              type,
     OSL::ShaderGlobals*         sg,
     void*                       val)
@@ -616,9 +616,9 @@ bool RendererServices::get_userdata(
     bool RendererServices::get_attr_##name( \
         OSL::ShaderGlobals*     sg,         \
         bool                    derivs,     \
-        OIIO::ustring           object,     \
+        OIIO::ustringhash       object,     \
         OIIO::TypeDesc          type,       \
-        OIIO::ustring           name,       \
+        OIIO::ustringhash       name,       \
         void*                   val) const
 
 IMPLEMENT_ATTR_GETTER(object_instance_id)
@@ -1108,7 +1108,7 @@ IMPLEMENT_ATTR_GETTER(appleseed_version)
 #define IMPLEMENT_USER_DATA_GETTER(name)         \
     bool RendererServices::get_user_data_##name( \
         bool                    derivatives,     \
-        OIIO::ustring           name,            \
+        OIIO::ustringhash       name,            \
         OIIO::TypeDesc          type,            \
         OSL::ShaderGlobals*     sg,              \
         void*                   val) const

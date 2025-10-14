@@ -27,43 +27,36 @@
 #
 
 
+# Find OpenColorIO headers and libraries.
 #
-# Find OpenImageIO headers and libraries.
-#
-# This module defines the following variables:
-#
-#   OPENIMAGEIO_FOUND           True if OpenImageIO was found
-#   OPENIMAGEIO_INCLUDE_DIRS    Where to find OpenImageIO header files
-#   OPENIMAGEIO_LIBRARIES       List of OpenImageIO libraries to link against
-#
+#  This module defines
+#  OPENCOLORIO_INCLUDE_DIRS - where to find OpenColorIO uncludes.
+#  OPENCOLORIO_LIBRARIES    - List of libraries when using OpenColorIO.
+#  OPENCOLORIO_FOUND        - True if OpenColorIO found.
 
+# If OCIO is defined, it will try to look for OpenEXR libs there as well.
+
+if (DEFINED OpenColorIO_ROOT)
+    list (APPEND CMAKE_PREFIX_PATH ${OpenColorIO_ROOT})
+endif()
+
+# Look for the header file.
+find_path (OPENCOLORIO_INCLUDE_DIR NAMES OpenColorIO/OpenColorIO.h)
+
+# Look for the library.
+find_library (OPENCOLORIO_LIBRARY NAMES OpenColorIO)
+
+# handle the QUIETLY and REQUIRED arguments and set OPENCOLORIO_FOUND to TRUE if all listed variables are TRUE
 include (FindPackageHandleStandardArgs)
+find_package_handle_standard_args (OPENCOLORIO DEFAULT_MSG OPENCOLORIO_LIBRARY OPENCOLORIO_INCLUDE_DIR)
 
-find_path (OPENIMAGEIO_INCLUDE_DIR NAMES OpenImageIO/imageio.h)
-
-find_library (OPENIMAGEIO_LIBRARY NAMES OpenImageIO)
-
-find_program (OPENIMAGEIO_OIIOTOOL NAMES oiiotool)
-find_program (OPENIMAGEIO_IDIFF NAMES idiff)
-
-# Handle the QUIETLY and REQUIRED arguments and set OPENIMAGEIO_FOUND.
-find_package_handle_standard_args (OPENIMAGEIO DEFAULT_MSG
-    OPENIMAGEIO_INCLUDE_DIR
-    OPENIMAGEIO_LIBRARY
-    OPENIMAGEIO_OIIOTOOL
-    OPENIMAGEIO_IDIFF
-)
-
-# Set the output variables.
-if (OPENIMAGEIO_FOUND)
-    set (OPENIMAGEIO_INCLUDE_DIRS ${OPENIMAGEIO_INCLUDE_DIR})
-    set (OPENIMAGEIO_LIBRARIES ${OPENIMAGEIO_LIBRARY})
+# Copy the results to the output variables.
+if (OPENCOLORIO_FOUND)
+    set (OPENCOLORIO_LIBRARIES ${OPENCOLORIO_LIBRARY})
+    set (OPENCOLORIO_INCLUDE_DIRS ${OPENCOLORIO_INCLUDE_DIR})
 else ()
-    set (OPENIMAGEIO_INCLUDE_DIRS)
-    set (OPENIMAGEIO_LIBRARIES)
+    set (OPENCOLORIO_LIBRARIES)
+    set (OPENCOLORIO_INCLUDE_DIRS)
 endif ()
 
-mark_as_advanced (
-    OPENIMAGEIO_INCLUDE_DIR
-    OPENIMAGEIO_LIBRARY
-)
+mark_as_advanced (OPENCOLORIO_INCLUDE_DIR OPENCOLORIO_LIBRARY)

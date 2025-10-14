@@ -189,7 +189,7 @@ struct GenericImageFileWriter::Impl
             else if (attr_name == "image_name")
                 spec.attribute("oiio:subimagename", attr_value);
             else if (attr_name == "color_space")
-                spec.attribute("oiio:ColorSpace", attr_value == "linear" ? "Linear" : attr_value);
+                spec.attribute("oiio:ColorSpace", attr_value == "linear" ? "scene_linear" : attr_value);
             else if (attr_name == "compression")
                 spec.attribute("compression", attr_value);
             else if (attr_name == "compression_quality")
