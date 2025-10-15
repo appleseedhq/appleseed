@@ -1,4 +1,3 @@
-
 //
 // This source file is part of appleseed.
 // Visit https://appleseedhq.net/ for additional information and resources.
@@ -7,6 +6,7 @@
 //
 // Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
 // Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2025 Petra Gospodnetic, Fraunhofer ITWM, Medabsy UG
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,83 +30,46 @@
 #pragma once
 
 // appleseed.foundation headers.
-#include "foundation/math/vector.h"
-#include "foundation/meshio/imeshbuilder.h"
+#include "foundation/core/exceptions/exception.h"
+#include "foundation/meshio/imeshfilereader.h"
 #include "foundation/platform/compiler.h"
 
-// appleseed.main headers.
-#include "main/dllsymbol.h"
+// third-party headers.
+#include "happly.h"
 
 // Standard headers.
 #include <cstddef>
+#include <string>
+
+// Forward declarations.
+namespace foundation    { class IMeshBuilder; }
 
 namespace foundation
 {
 
-//
-// A mesh builder that does nothing, typically serves as a base class.
-//
-
-class APPLESEED_DLLSYMBOL MeshBuilderBase
-  : public IMeshBuilder
+class PLYMeshFileReader
+  : public IMeshFileReader
 {
   public:
-    void begin_mesh(const char* name) override
-    {
-    }
+    // Constructor.
+    PLYMeshFileReader(
+        const std::string&   filename,
+        const int            options = 0);
 
-    size_t push_vertex(const Vector3d& v) override
-    {
-        return 0;
-    }
+    // Read a mesh.
+    void read(IMeshBuilder& builder) override;
 
-    size_t push_vertex_normal(const Vector3d& v) override
-    {
-        return 0;
-    }
+  private:
+    std::vector<std::string> get_group_names(
+        happly::PLYData& ply_input) const;
 
-    size_t push_tex_coords(const Vector2d& v) override
-    {
-        return 0;
-    }
+    std::vector<std::vector<size_t>> get_group_faces(
+        happly::PLYData& ply_input) const;
 
-    size_t push_material_slot(const char* name) override
-    {
-        return 0;
-    }
+    struct Impl;
 
-    void begin_face(const size_t vertex_count) override
-    {
-    }
-
-    void set_face_vertices(const size_t vertices[]) override
-    {
-    }
-
-    void set_face_vertex_normals(const size_t vertex_normals[]) override
-    {
-    }
-
-    void set_face_vertex_tex_coords(const size_t tex_coords[]) override
-    {
-    }
-
-    void set_face_material(const size_t material) override
-    {
-    }
-
-    void end_face() override
-    {
-    }
-
-    void end_mesh() override
-    {
-    }
-
-    void output_mesh_info() override
-    {
-    }
-
+    const std::string  m_filename;
+    const int          m_options;
 };
 
-}   // namespace foundation
+} // namespace foundation

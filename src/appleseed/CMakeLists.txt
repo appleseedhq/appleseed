@@ -497,6 +497,8 @@ set (foundation_meshio_sources
     foundation/meshio/objmeshfilelexer.h
     foundation/meshio/objmeshfilereader.cpp
     foundation/meshio/objmeshfilereader.h
+    foundation/meshio/plymeshfilereader.cpp
+    foundation/meshio/plymeshfilereader.h
     foundation/meshio/objmeshfilewriter.cpp
     foundation/meshio/objmeshfilewriter.h
 )
@@ -618,6 +620,7 @@ set (foundation_meta_tests_sources
     foundation/meta/tests/test_path.cpp
     foundation/meta/tests/test_permutation.cpp
     foundation/meta/tests/test_pixel.cpp
+    foundation/meta/tests/test_plymeshfilereader.cpp
     foundation/meta/tests/test_poison.cpp
     foundation/meta/tests/test_poolallocator.cpp
     foundation/meta/tests/test_population.cpp
