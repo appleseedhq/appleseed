@@ -363,6 +363,11 @@ include_directories (
     src/appleseed
 )
 
+# Happly include
+include_directories (
+    ${happly_ROOT}
+)
+
 if (WITH_EMBREE)
     if (USE_FIND_PACKAGE_FOR_EMBREE)
         include_directories (${EMBREE_INCLUDE_DIRS})
@@ -851,3 +856,4 @@ if (INSTALL_API_EXAMPLES)
         DESTINATION .
     )
 endif ()
+

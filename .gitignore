@@ -5,3 +5,8 @@ sandbox/shaders/
 *.pyc
 __pycache__
 .vscode/
+dependencies/
+collected-deps/
+scratch_data/
+dependencies/
+*.txt
