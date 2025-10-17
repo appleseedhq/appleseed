@@ -1733,11 +1733,11 @@ stepInfo $_NAME "Built $_APPLESEED."
 
 if [[ $_bCollect = true ]]; then
 
-  stepInfo "Collect Utility" "Collecting $_APPLESEED dependencies in \"$_sRoot/collected-deps\"."
+  stepInfo "Collect Utility" "Collecting $_APPLESEED dependencies in \"$_sDependenciesDir\"."
 
-  _sCollectBinPath=$_sRoot/collected-deps/bin
-  _sCollectIncPath=$_sRoot/collected-deps/include
-  _sCollectLibPath=$_sRoot/collected-deps/lib
+  _sCollectBinPath=$_sDependenciesDir/bin
+  _sCollectIncPath=$_sDependenciesDir/include
+  _sCollectLibPath=$_sDependenciesDir/lib
 
   rm -fr $_sCollectBinPath $_sCollectIncPath $_sCollectLibPath
   mkdir -p $_sCollectBinPath $_sCollectIncPath $_sCollectLibPath
