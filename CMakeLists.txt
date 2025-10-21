@@ -363,6 +363,11 @@ include_directories (
     src/appleseed
 )
 
+# Happly include
+include_directories (
+    ${happly_ROOT}
+)
+
 if (WITH_EMBREE)
     if (USE_FIND_PACKAGE_FOR_EMBREE)
         include_directories (${EMBREE_INCLUDE_DIRS})
@@ -717,13 +722,18 @@ if (WITH_PYTHON2_BINDINGS)
     endif ()
 endif ()
 
+if (WITH_PYTHON3_BINDINGS)
+    find_package (PythonLibs REQUIRED)
+    include_directories(${PYTHON_INCLUDE_DIRS})
+endif ()
+
 if (WITH_PYTHON2_BINDINGS OR WITH_PYTHON3_BINDINGS)
     add_subdirectory (src/appleseed.python)
 endif ()
 
 if (WITH_STUDIO)
-    if (NOT WITH_PYTHON2_BINDINGS)
-        message (FATAL_ERROR "Option WITH_PYTHON2_BINDINGS should be \"ON\" to build appleseed.studio.")
+    if (NOT WITH_PYTHON2_BINDINGS AND NOT WITH_PYTHON3_BINDINGS)
+        message (FATAL_ERROR "Option WITH_PYTHON2_BINDINGS or WITH_PYTHON3_BINDINGS should be \"ON\" to build appleseed.studio.")
     endif ()
     add_subdirectory (src/appleseed.studio)
 endif ()
@@ -846,3 +856,4 @@ if (INSTALL_API_EXAMPLES)
         DESTINATION .
     )
 endif ()
+

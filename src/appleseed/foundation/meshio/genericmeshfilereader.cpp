@@ -34,6 +34,7 @@
 #include "foundation/core/exceptions/exceptionunsupportedfileformat.h"
 #include "foundation/meshio/binarymeshfilereader.h"
 #include "foundation/meshio/objmeshfilereader.h"
+#include "foundation/meshio/plymeshfilereader.h"
 #include "foundation/string/string.h"
 
 // Boost headers.
@@ -41,6 +42,9 @@
 
 // Standard headers.
 #include <string>
+
+// TEMPORARY: Remove this include when the PLY reader is implemented.
+#include <iostream>
 
 namespace bf = boost::filesystem;
 
@@ -88,6 +92,12 @@ void GenericMeshFileReader::read(IMeshBuilder& builder)
     else if (extension == ".binarymesh")
     {
         BinaryMeshFileReader reader(impl->m_filename);
+        reader.read(builder);
+    }
+    else if (extension == ".ply")
+    {
+        PLYMeshFileReader reader(impl->m_filename);
+        std::cout << "Reading PLY file: " << std::endl;
         reader.read(builder);
     }
     else
