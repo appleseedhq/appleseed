@@ -1012,11 +1012,11 @@ if [[ $_sEmbreeInstallDir = "" && $WITH_EMBREE = ON ]]; then
     stepInfo $depName "Unpacking $_sTarFile ..."
     $DEBUG tar -zxf $tarFileDir
 
-    $DEBUG cd ..
-
-    # install
-    stepInfo $depName "Installing from \"$sourceFile\" ..."
-    $DEBUG source "$sourceFile/embree-vars.sh"
+    # NOTE: Source-ing the `embree-vars.sh` file, as per install instructions,
+    # here: https://github.com/RenderKit/embree?tab=readme-ov-file#linux-installation,
+    # does not work with the setup script (for reasons that elude me). As such the
+    # following line should not be re-added.
+    # $DEBUG source "$sourceFile/embree-vars.sh"
   fi
 
   _sEmbreeInstallDir=$_sInstallDir
@@ -1733,11 +1733,11 @@ stepInfo $_NAME "Built $_APPLESEED."
 
 if [[ $_bCollect = true ]]; then
 
-  stepInfo "Collect Utility" "Collecting $_APPLESEED dependencies in \"$_sRoot/collected-deps\"."
+  stepInfo "Collect Utility" "Collecting $_APPLESEED dependencies in \"$_sDependenciesDir\"."
 
-  _sCollectBinPath=$_sRoot/collected-deps/bin
-  _sCollectIncPath=$_sRoot/collected-deps/include
-  _sCollectLibPath=$_sRoot/collected-deps/lib
+  _sCollectBinPath=$_sDependenciesDir/bin
+  _sCollectIncPath=$_sDependenciesDir/include
+  _sCollectLibPath=$_sDependenciesDir/lib
 
   rm -fr $_sCollectBinPath $_sCollectIncPath $_sCollectLibPath
   mkdir -p $_sCollectBinPath $_sCollectIncPath $_sCollectLibPath
