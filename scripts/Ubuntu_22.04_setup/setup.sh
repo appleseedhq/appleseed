@@ -1012,11 +1012,11 @@ if [[ $_sEmbreeInstallDir = "" && $WITH_EMBREE = ON ]]; then
     stepInfo $depName "Unpacking $_sTarFile ..."
     $DEBUG tar -zxf $tarFileDir
 
-    $DEBUG cd ..
-
-    # install
-    stepInfo $depName "Installing from \"$sourceFile\" ..."
-    $DEBUG source "$sourceFile/embree-vars.sh"
+    # NOTE: Source-ing the `embree-vars.sh` file, as per install instructions,
+    # here: https://github.com/RenderKit/embree?tab=readme-ov-file#linux-installation,
+    # does not work with the setup script (for reasons that elude me). As such the
+    # following line should not be re-added.
+    # $DEBUG source "$sourceFile/embree-vars.sh"
   fi
 
   _sEmbreeInstallDir=$_sInstallDir
