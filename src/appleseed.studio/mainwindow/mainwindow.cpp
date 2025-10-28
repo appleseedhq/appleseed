@@ -27,6 +27,11 @@
 // THE SOFTWARE.
 //
 
+// NOTE: pythonconsolewidget.h needs to be included before QT (in maindindow.h),
+// because QT's `#define`d slots interfere with Python's slots. (see https://github.com/pybind/pybind11/issues/2305)
+// NOTE: The same problem appears in appleseed.studio/main/main.cpp and appleseed.studio/python/module.cpp.
+#include "mainwindow/pythonconsole/pythonconsolewidget.h"
+
 // Interface header.
 #include "mainwindow.h"
 
@@ -38,7 +43,6 @@
 #include "mainwindow/minimizebutton.h"
 #include "mainwindow/project/attributeeditor.h"
 #include "mainwindow/project/projectexplorer.h"
-#include "mainwindow/pythonconsole/pythonconsolewidget.h"
 #include "mainwindow/rendering/lightpathstab.h"
 #include "utility/settingskeys.h"
 

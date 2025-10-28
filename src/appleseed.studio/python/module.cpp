@@ -26,10 +26,14 @@
 // THE SOFTWARE.
 //
 
+// NOTE: pythoninterpreter.h needs to be included before QT (in maindindow.h),
+// because QT's `#define`d slots interfere with Python's slots. (see https://github.com/pybind/pybind11/issues/2305)
+// NOTE: The same problem appears in appleseed.studio/main/main.cpp and appleseed.studio/mainwindow/mainwindow.cpp.
+#include "python/pythoninterpreter.h"
+
 // appleseed.studio headers.
 #include "mainwindow/mainwindow.h"
 #include "mainwindow/minimizebutton.h"
-#include "python/pythoninterpreter.h"
 
 // appleseed.qtcommon headers.
 #include "project/projectmanager.h"
