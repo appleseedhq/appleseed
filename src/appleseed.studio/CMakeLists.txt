@@ -33,14 +33,20 @@
 #--------------------------------------------------------------------------------------------------
 
 # Boost.
-if (NOT PYTHON_MAJOR_VERSION STREQUAL "2")
-    message (FATAL_ERROR "Python 2.x needed.")
-else ()
-    if (Boost_VERSION GREATER_EQUAL 106700)
-        find_package (Boost 1.86.00 REQUIRED COMPONENTS python27)
+if (WITH_PYTHON2_BINDINGS)
+    if (NOT PYTHON_MAJOR_VERSION STREQUAL "2")
+        message (FATAL_ERROR "Python 2.x needed.")
     else ()
-        find_package (Boost 1.86.00 REQUIRED COMPONENTS python)
+        if (Boost_VERSION GREATER_EQUAL 106700)
+            find_package (Boost 1.86.00 REQUIRED COMPONENTS python27)
+        else ()
+            find_package (Boost 1.86.00 REQUIRED COMPONENTS python)
+        endif ()
     endif ()
+endif ()
+
+if (WITH_PYTHON3_BINDINGS)
+    find_package (Boost 1.86.00 REQUIRED COMPONENTS python)
 endif ()
 
 # OpenGL.
@@ -431,11 +437,14 @@ QT5_ADD_RESOURCES (appleseed.studio_resource_files
 
 add_executable (appleseed.studio
     ${appleseed.studio_sources}
-    $<TARGET_OBJECTS:appleseed.py2.obj>
     ${appleseed.studio_generated_ui_files}
     ${appleseed.studio_generated_moc_h_files}
     ${appleseed.studio_resource_files}
 )
+
+if (WITH_PYTHON2_BINDINGS)
+    add_executable ($<TARGET_OBJECTS:appleseed.py2.obj>)
+endif()
 
 set_target_properties (appleseed.studio PROPERTIES FOLDER "Applications")
 
