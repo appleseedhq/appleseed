@@ -683,7 +683,9 @@ void MainWindow::build_log_panel()
 
 void MainWindow::build_python_console_panel()
 {
-    char* python_home = Py_GetPythonHome();
+    const wchar_t* wc_python_home = Py_GetPythonHome();
+    char python_home[FOUNDATION_MAX_PATH_LENGTH + 1];
+    wcstombs(&python_home[0], wc_python_home, FOUNDATION_MAX_PATH_LENGTH + 1);
     if (python_home == nullptr)
         RENDERER_LOG_INFO("Python home not set.");
     else RENDERER_LOG_INFO("Python home set to %s.", python_home);
