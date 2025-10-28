@@ -65,7 +65,7 @@ TEST_SUITE(Foundation_Mesh_PLYMeshFileReader)
 
         void set_face_vertices(const size_t vertices[]) override
         {
-            assert(!meshes.empty());
+            assert(!m_meshes.empty());
             assert(!m_meshes.back().m_faces.empty());
             Face& face = m_meshes.back().m_faces.back();
             for (size_t i = 0; i < face.m_vertices.size(); ++i)
