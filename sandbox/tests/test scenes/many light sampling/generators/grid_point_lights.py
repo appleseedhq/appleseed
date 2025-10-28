@@ -1,4 +1,3 @@
-
 #
 # This source file is part of appleseed.
 # Visit https://appleseedhq.net/ for additional information and resources.
@@ -26,7 +25,7 @@
 # THE SOFTWARE.
 #
 
-from __future__ import print_function
+
 
 import colorsys
 import math
@@ -170,7 +169,7 @@ def build_project():
                 assembly.lights().insert(light)
 
     elif color == "mix":
-        for i in xrange(0, grid_lights_count * grid_lights_count):
+        for i in range(0, grid_lights_count * grid_lights_count):
             s = random.uniform(0, 1)
             if s < 0.65:
                 ran = random.gauss(1, 0.01)

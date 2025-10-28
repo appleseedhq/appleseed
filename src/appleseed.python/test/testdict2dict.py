@@ -41,8 +41,8 @@ class TestDict2Dict(unittest.TestCase):
     def test_roundtrip(self):
         src_params = {
             'int': 1,
-            'positive_long': long(8 * 1024 * 1024 * 1024),
-            'negative_long': long(-8 * 1024 * 1024 * 1024),
+            'positive_long': int(8 * 1024 * 1024 * 1024),
+            'negative_long': int(-8 * 1024 * 1024 * 1024),
             'float': 2.0,
             'string': 'string',
             'bool': False,

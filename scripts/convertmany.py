@@ -56,7 +56,7 @@ def walk(directory, recursive):
             for filename in filenames:
                 yield os.path.join(dirpath, filename)
     else:
-        dirpath, dirnames, filenames = os.walk(directory).next()
+        dirpath, dirnames, filenames = next(os.walk(directory))
         for filename in filenames:
             yield os.path.join(dirpath, filename)
 

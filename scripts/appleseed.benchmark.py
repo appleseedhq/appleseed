@@ -28,7 +28,6 @@
 # THE SOFTWARE.
 #
 
-from __future__ import print_function
 import argparse
 import datetime
 import os
@@ -36,7 +35,7 @@ import re
 import subprocess
 import sys
 
-from utils import print_runtime_details  # local module
+from .utils import print_runtime_details #local module
 
 
 # -------------------------------------------------------------------------------------------------
@@ -98,7 +97,7 @@ def benchmark_project(project_path, appleseed_path, appleseed_args, logger):
     command_line += ["--benchmark-mode"]
     command_line += ["-o", os.path.join("renders", project_name + ".png")]
 
-    output = subprocess.check_output(command_line, stderr=subprocess.STDOUT)
+    output = subprocess.run(command_line, capture_output=True, text=True).stdout
 
     if was_successful(output):
         process_output(output, logger)

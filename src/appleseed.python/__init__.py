@@ -1,4 +1,3 @@
-
 #
 # This source file is part of appleseed.
 # Visit https://appleseedhq.net/ for additional information and resources.
@@ -33,7 +32,7 @@
 # in that case just load the normal appleseed.python module.
 try:
     from _appleseedpythonbuiltin import *
-except:
+except ImportError:
     from sys import hexversion as appleseed_python_hexversion
 
     if appleseed_python_hexversion < 0x030000F0:
