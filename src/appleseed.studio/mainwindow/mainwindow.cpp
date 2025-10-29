@@ -688,11 +688,9 @@ void MainWindow::build_log_panel()
 void MainWindow::build_python_console_panel()
 {
     const wchar_t* wc_python_home = Py_GetPythonHome();
-    char python_home[FOUNDATION_MAX_PATH_LENGTH + 1];
-    wcstombs(&python_home[0], wc_python_home, FOUNDATION_MAX_PATH_LENGTH + 1);
-    if (python_home == nullptr)
+    if (wc_python_home == nullptr)
         RENDERER_LOG_INFO("Python home not set.");
-    else RENDERER_LOG_INFO("Python home set to %s.", python_home);
+    else RENDERER_LOG_INFO("Python home set to %s.", wc_python_home); // TODO: this may not display correctly for all unicode characters, find a working wchar_t to char conversion.
 
     PythonConsoleWidget* python_console_widget = new PythonConsoleWidget(m_ui->python_console_contents);
     python_console_widget->setObjectName("textedit_python_console");

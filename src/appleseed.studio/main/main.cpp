@@ -166,7 +166,7 @@ namespace
                 // mbstowcs( &wc[0], c, cSize );
 
                 static wchar_t wc_python_home[FOUNDATION_MAX_PATH_LENGTH + 1];
-                mbstowcs( &wc_python_home[0], python_home, FOUNDATION_MAX_PATH_LENGTH + 1 );
+                mbstowcs(wc_python_home, python_home, FOUNDATION_MAX_PATH_LENGTH + 1 );
 
                 Py_SetPythonHome(wc_python_home);
             }
