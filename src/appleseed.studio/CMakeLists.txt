@@ -435,16 +435,25 @@ QT5_ADD_RESOURCES (appleseed.studio_resource_files
 # Target.
 #--------------------------------------------------------------------------------------------------
 
-add_executable (appleseed.studio
-    ${appleseed.studio_sources}
-    ${appleseed.studio_generated_ui_files}
-    ${appleseed.studio_generated_moc_h_files}
-    ${appleseed.studio_resource_files}
-)
-
 if (WITH_PYTHON2_BINDINGS)
-    add_executable ($<TARGET_OBJECTS:appleseed.py2.obj>)
-endif()
+    add_executable (appleseed.studio
+        ${appleseed.studio_sources}
+        $<TARGET_OBJECTS:appleseed.py2.obj>
+        ${appleseed.studio_generated_ui_files}
+        ${appleseed.studio_generated_moc_h_files}
+        ${appleseed.studio_resource_files}
+    )
+endif ()
+
+if (WITH_PYTHON3_BINDINGS)
+    add_executable (appleseed.studio
+        ${appleseed.studio_sources}
+        $<TARGET_OBJECTS:appleseed.py3.obj>
+        ${appleseed.studio_generated_ui_files}
+        ${appleseed.studio_generated_moc_h_files}
+        ${appleseed.studio_resource_files}
+    )
+endif ()
 
 set_target_properties (appleseed.studio PROPERTIES FOLDER "Applications")
 
@@ -503,6 +512,13 @@ target_link_libraries (appleseed.studio
     ${OPENGL_LIBRARY}
     ${PYTHON_LIBRARIES}
 )
+
+# NOTE: While applseed.python3 links glad itself, this appears not to be transitive over <TARGET_OBJECTS:appleseed.py3.obj>, hence it is to link glad here as well.
+if (WITH_PYTHON3_BINDINGS)
+    target_link_libraries (appleseed.studio
+        glad
+    )
+endif ()
 
 
 #--------------------------------------------------------------------------------------------------

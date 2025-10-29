@@ -167,11 +167,16 @@ if (WITH_PYTHON2_BINDINGS)
 endif ()
 
 if (WITH_PYTHON3_BINDINGS)
-    add_library (appleseed.python3 MODULE
+    add_library (appleseed.py3.obj OBJECT
         ${appleseed.python_sources}
         ${blender_python_sources}
     )
 
+    add_library (appleseed.python3 MODULE
+        $<TARGET_OBJECTS:appleseed.py3.obj>
+    )
+
+    set_target_properties (appleseed.py3.obj PROPERTIES FOLDER "Python Bindings")
     set_target_properties (appleseed.python3 PROPERTIES FOLDER "Python Bindings")
 
     set_target_properties (appleseed.python3 PROPERTIES
