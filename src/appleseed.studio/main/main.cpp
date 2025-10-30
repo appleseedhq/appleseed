@@ -162,13 +162,17 @@ namespace
                     "will use Python installation expected to exist in %s.",
                     python_home);
 
-                // std::wstring wc( cSize, L'#' );
-                // mbstowcs( &wc[0], c, cSize );
-
+#if PY_MAJOR_VERSION == 2
+#pragma message "Py_SetPythonHome(python_home);"
+                Py_SetPythonHome(python_home);
+#endif
+#if PY_MAJOR_VERSION == 3
+#pragma message "Py_SetPythonHome(wc_python_home);"
                 static wchar_t wc_python_home[FOUNDATION_MAX_PATH_LENGTH + 1];
                 mbstowcs(wc_python_home, python_home, FOUNDATION_MAX_PATH_LENGTH + 1 );
 
                 Py_SetPythonHome(wc_python_home);
+#endif
             }
             else
             {

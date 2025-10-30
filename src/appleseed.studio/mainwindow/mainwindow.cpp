@@ -687,10 +687,17 @@ void MainWindow::build_log_panel()
 
 void MainWindow::build_python_console_panel()
 {
-    const wchar_t* wc_python_home = Py_GetPythonHome();
-    if (wc_python_home == nullptr)
+#if PY_MAJOR_VERSION == 2
+#pragma message "const char* python_home"
+    const char* python_home = Py_GetPythonHome();
+#endif
+#if PY_MAJOR_VERSION == 3
+#pragma message "const wchar_t* python_home"
+    const wchar_t* python_home = Py_GetPythonHome();
+#endif
+    if (python_home == nullptr)
         RENDERER_LOG_INFO("Python home not set.");
-    else RENDERER_LOG_INFO("Python home set to %s.", wc_python_home); // TODO: this may not display correctly for all unicode characters, find a working wchar_t to char conversion.
+    else RENDERER_LOG_INFO("Python home set to %s.", python_home); // TODO: for `wchar_t` this may not display correctly for all unicode characters, find a working wchar_t to char conversion.
 
     PythonConsoleWidget* python_console_widget = new PythonConsoleWidget(m_ui->python_console_contents);
     python_console_widget->setObjectName("textedit_python_console");
