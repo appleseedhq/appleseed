@@ -117,7 +117,7 @@ namespace
         ~MultiChannelExrFileWriter() override
         {
 #if OIIO_VERSION < 20000
-            // Destroy the ImageOutput stucture.
+            // Destroy the ImageOutput structure.
             if (m_writer != nullptr)
                 OIIO::ImageOutput::destroy(m_writer);
 #endif

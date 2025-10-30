@@ -194,7 +194,7 @@ namespace
         // Calculate exponent-adaptive offset.
         // Note: float is represented in memory
         // as 1 sign bit, 8 exponent bits and 23 mantissa bits.
-        // Higher 24th bit is always 1 in normalized form, hence it's ommited.
+        // Higher 24th bit is always 1 in normalized form, hence it's omitted.
         // Mantissa of constructed float will overlap no more than 11 last bits of
         // origin components due to exponent shift.
         // Mantissa of constructed float is just a

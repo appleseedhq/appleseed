@@ -441,7 +441,7 @@ epub_identifier = 'https://github.com/appleseedhq/appleseed'
 # The format is a list of tuples containing the path and title.
 #epub_pre_files = []
 
-# HTML files shat should be inserted after the pages created by sphinx.
+# HTML files that should be inserted after the pages created by sphinx.
 # The format is a list of tuples containing the path and title.
 #epub_post_files = []
 

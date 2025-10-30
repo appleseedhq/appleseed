@@ -305,7 +305,7 @@ def main():
     # Save the project to disk.
     asr.ProjectFileWriter().write(project, "output/test.appleseed")
 
-    # Remove the log target we added previosly.
+    # Remove the log target we added previously.
     asr.global_logger().remove_target(log_target)
 
 if __name__ == "__main__":

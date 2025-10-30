@@ -123,8 +123,8 @@ void ResampleX2Applier::apply(
         static_cast<float>(m_src_height - 1) / (dst_height - 1));
 
     // Note: using "dst / 2 == m_src" instead of "dst == m_src * 2" when upsampling accounts for
-    // the destination image having odd dimenion values, making "dst == 2 * m_src + 1" actually.
-    // Thus, integer truncation also allows a source image with odd dimenions when downsampling.
+    // the destination image having odd dimension values, making "dst == 2 * m_src + 1" actually.
+    // Thus, integer truncation also allows a source image with odd dimensions when downsampling.
     assert(
         m_mode == SamplingMode::DOUBLE
         ? dst_width / 2 == m_src_width && dst_height / 2 == m_src_height    // scale x2 with bilinear filtering
