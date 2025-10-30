@@ -4,6 +4,7 @@ dependencies/
 sandbox/shaders/
 *.pyc
 __pycache__
+.vs/
 .vscode/
 dependencies/
 collected-deps/
