@@ -805,7 +805,7 @@ class Writer:
         if len(data):
             compressed = compressor.compress(tostring(data))
         else:
-            compressed = ''
+            compressed = b''
         flushed = compressor.flush()
         if len(compressed) or len(flushed):
             write_chunk(outfile, 'IDAT', compressed + flushed)

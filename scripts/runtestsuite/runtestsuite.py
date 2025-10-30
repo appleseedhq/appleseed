@@ -114,7 +114,7 @@ def read_png_file(filepath):
 
 
 def write_rgba_png_file(filepath, rows):
-    width = len(rows[0]) / 4
+    width = len(rows[0]) // 4
     height = len(rows)
     writer = png.Writer(width=width, height=height, alpha=True)
     with open(filepath, 'wb') as file:
@@ -394,7 +394,7 @@ class ReportWriter:
 # --------------------------------------------------------------------------------------------------
 
 def render_project_file(args, project_filepath, output_filepath, log_filepath):
-    with open(log_filepath, "w", 0) as log_file:
+    with open(log_filepath, "w") as log_file:
         # Base command line.
         command = '"{0}" -o "{1}" "{2}"'.format(args.tool_path, output_filepath, project_filepath)
 
