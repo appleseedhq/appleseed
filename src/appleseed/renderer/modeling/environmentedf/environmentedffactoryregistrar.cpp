@@ -41,6 +41,7 @@
 #include "renderer/modeling/environmentedf/mirrorballmapenvironmentedf.h"
 #include "renderer/modeling/environmentedf/oslenvironmentedf.h"
 #include "renderer/modeling/environmentedf/preethamenvironmentedf.h"
+#include "renderer/modeling/environmentedf/nishita93environmentedf.h"
 
 // appleseed.foundation headers.
 #include "foundation/memory/autoreleaseptr.h"
@@ -73,6 +74,7 @@ EnvironmentEDFFactoryRegistrar::EnvironmentEDFFactoryRegistrar(const SearchPaths
     impl->register_factory(auto_release_ptr<FactoryType>(new MirrorBallMapEnvironmentEDFFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new OSLEnvironmentEDFFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new PreethamEnvironmentEDFFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new Nishita93EnvironmentEDFFactory()));
 }
 
 EnvironmentEDFFactoryRegistrar::~EnvironmentEDFFactoryRegistrar()
