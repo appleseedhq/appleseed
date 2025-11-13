@@ -108,6 +108,7 @@ set (sources
     bindshadercompiler.cpp
     bindshadergroup.cpp
     bindshaderquery.cpp
+    bindsunpositioner.cpp
     bindsurfaceshader.cpp
     bindtexture.cpp
     bindtilecallback.cpp

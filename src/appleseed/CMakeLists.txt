@@ -2224,6 +2224,8 @@ set (renderer_utility_sources
     renderer/utility/settingsparsing.cpp
     renderer/utility/settingsparsing.h
     renderer/utility/shadowterminator.h
+    renderer/utility/solarpositionalgorithm.cpp
+    renderer/utility/solarpositionalgorithm.h
     renderer/utility/spectrumclamp.h
     renderer/utility/stochasticcast.h
     renderer/utility/testutils.cpp
