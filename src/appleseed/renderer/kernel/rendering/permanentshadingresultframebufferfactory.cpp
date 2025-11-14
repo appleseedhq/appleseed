@@ -105,4 +105,11 @@ void PermanentShadingResultFrameBufferFactory::destroy(
 {
 }
 
+size_t PermanentShadingResultFrameBufferFactory::get_total_channel_count(
+    const size_t aov_count) const
+{
+    return ShadingResultFrameBuffer::get_total_channel_count(
+        aov_count);
+}
+
 }   // namespace renderer

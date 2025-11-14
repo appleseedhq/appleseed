@@ -939,6 +939,7 @@ namespace
             combobox->setToolTip(m_params_metadata.get_path("lighting_engine.help"));
             combobox->addItem("Unidirectional Path Tracer", "pt");
             // combobox->addItem("Bidirectional Path Tracer", "bdpt");
+            combobox->addItem("Guided Path Tracing", "gpt");
             combobox->addItem("Stochastic Progressive Photon Mapping", "sppm");
             construct(config, combobox);
         }
@@ -1080,7 +1081,7 @@ namespace
             const int DefaultMaxDiffuseBounces = 3;
 
             const int max_bounces =
-                get_config<int>(config, construct_bounce_param_path(bounce_type), default_max_bounces);
+                get_config<int>(config, construct_bounce_param_path(widget_key_prefix, bounce_type), default_max_bounces);
 
             const std::string widget_max_bounce_key = widget_key_prefix + ".bounces.max_" + bounce_type + "_bounces";
 
@@ -1107,12 +1108,12 @@ namespace
                     ? get_widget<int>(widget_key_prefix + ".bounces.max_" + bounce_type + "_bounces")
                     : -1;
 
-            set_config(config, construct_bounce_param_path(bounce_type), max_bounces);
+            set_config(config, construct_bounce_param_path(widget_key_prefix, bounce_type), max_bounces);
         }
 
-        static std::string construct_bounce_param_path(const std::string& bounce_type)
+        static std::string construct_bounce_param_path(const std::string& prefix, const std::string& bounce_type)
         {
-            return "pt.max_" + bounce_type + "_bounces";
+            return prefix + ".max_" + bounce_type + "_bounces";
         }
     };
 
@@ -1331,6 +1332,406 @@ namespace
             layout->addLayout(sublayout);
 
             sublayout->addRow(create_checkbox("advanced.record_light_paths", "Record Light Paths"));
+        }
+    };
+
+    //
+    // Guided Path Tracer panel.
+    //
+
+    class GuidedPathTracerPanel
+      : public LightingEnginePanel
+    {
+        Q_OBJECT
+
+      public:
+        explicit GuidedPathTracerPanel(const Configuration& config, QWidget* parent = nullptr)
+          : LightingEnginePanel("Guided Path Tracer", parent)
+        {
+            fold();
+
+            QVBoxLayout* layout = new QVBoxLayout();
+            container()->setLayout(layout);
+
+            create_path_guiding_settings(layout);
+
+            QGroupBox* groupbox = new QGroupBox("Components");
+            layout->addWidget(groupbox);
+
+            QVBoxLayout* sublayout = new QVBoxLayout();
+            groupbox->setLayout(sublayout);
+
+            sublayout->addWidget(create_checkbox("lighting_components.dl", "Direct Lighting"));
+            sublayout->addWidget(create_checkbox("lighting_components.ibl", "Image-Based Lighting"));
+            sublayout->addWidget(create_checkbox("lighting_components.caustics", "Caustics"));
+
+            create_separate_bounce_settings_group(layout, "gpt", "gpt.max_bounces");
+
+            create_pt_volume_settings(layout);
+            create_pt_advanced_settings(layout);
+
+            create_direct_link("lighting_components.dl",                            "gpt.enable_dl");
+            create_direct_link("lighting_components.ibl",                           "gpt.enable_ibl");
+            create_direct_link("lighting_components.caustics",                      "gpt.enable_caustics");
+
+            create_direct_link("gpt.bounces.rr_start_bounce",                       "gpt.rr_min_path_length");
+
+            create_direct_link("volume.distance_samples",                           "gpt.volume_distance_samples");
+            create_direct_link("volume.optimize_for_lights_outside_volumes",        "gpt.optimize_for_lights_outside_volumes");
+
+            create_direct_link("advanced.next_event_estimation",                    "gpt.next_event_estimation");
+
+            create_direct_link("advanced.dl.light_samples",                         "gpt.dl_light_samples");
+            create_direct_link("advanced.dl.low_light_threshold",                   "gpt.dl_low_light_threshold");
+
+            create_direct_link("advanced.ibl.env_samples",                          "gpt.ibl_env_samples");
+
+            create_direct_link("advanced.light_sampler.algorithm",                  "light_sampler.algorithm");
+            create_direct_link("advanced.light_sampler.enable_importance_sampling", "light_sampler.enable_importance_sampling");
+
+            create_direct_link("advanced.record_light_paths",                       "gpt.record_light_paths");
+
+            create_direct_link("advanced.clamp_roughness",                          "gpt.clamp_roughness");
+
+            create_direct_link("guiding.samples_per_pass",                          "gpt.samples_per_pass");
+            create_direct_link("guiding.spatial_filter",                            "gpt.spatial_filter");
+            create_direct_link("guiding.directional_filter",                        "gpt.directional_filter");
+            create_direct_link("guiding.bsdf_sampling_fraction",                    "gpt.bsdf_sampling_fraction");
+            create_direct_link("guiding.fixed_bsdf_sampling_fraction_value",        "gpt.fixed_bsdf_sampling_fraction_value");
+            create_direct_link("guiding.learning_rate",                             "gpt.learning_rate");
+            create_direct_link("guiding.iteration_progression",                     "gpt.iteration_progression");
+            create_direct_link("guiding.guided_bounce_mode",                        "gpt.guided_bounce_mode");
+            create_direct_link("guiding.save_tree_iterations",                      "gpt.save_tree_iterations");
+            create_direct_link("guiding.file_path",                                 "gpt.file_path");
+
+            load_directly_linked_values(config);
+
+            slot_changed_bsdf_sampling_fraction_mode(m_sampling_fraction_combobox->currentIndex());
+            slot_changed_save_iterations_mode(m_save_iterations_combobox->currentIndex());
+
+            load_global_max_bounce_settings(config, "gpt", "gpt.max_bounces", 8);
+            load_separate_bounce_settings(config, "gpt", "guided", 8);
+            load_separate_bounce_settings(config, "gpt", "diffuse", 3);
+            load_separate_bounce_settings(config, "gpt", "glossy", 8);
+            load_separate_bounce_settings(config, "gpt", "specular", 8);
+            load_separate_bounce_settings(config, "gpt", "volume", 8, false);
+
+            set_widget("advanced.unlimited_ray_intensity", !config.get_parameters().exist_path("gpt.max_ray_intensity"));
+            set_widget("advanced.max_ray_intensity", get_config<double>(config, "gpt.max_ray_intensity", 1.0));
+        }
+
+        void save_config(Configuration& config) const override
+        {
+            save_directly_linked_values(config);
+
+            save_bounce_settings(config, "gpt", "gpt.max_bounces");
+            save_separate_bounce_settings(config, "gpt", "guided");
+            save_separate_bounce_settings(config, "gpt", "diffuse");
+            save_separate_bounce_settings(config, "gpt", "glossy");
+            save_separate_bounce_settings(config, "gpt", "specular");
+            save_separate_bounce_settings(config, "gpt", "volume", false);
+
+            if (get_widget<bool>("advanced.unlimited_ray_intensity"))
+                config.get_parameters().remove_path("gpt.max_ray_intensity");
+            else set_config(config, "gpt.max_ray_intensity", get_widget<double>("advanced.max_ray_intensity"));
+        }
+
+      private:
+        QComboBox*                  m_sampling_fraction_combobox;
+        QDoubleSpinBox*             m_bsdf_sampling_fraction_spinbox;
+        QDoubleSpinBox*             m_learning_rate_spinbox;
+        QComboBox*                  m_save_iterations_combobox;
+        QLineEdit*                  m_path_line_edit;
+        QWidget*                    m_browse_button;
+        ParamArray                  m_file_save_settings;
+
+        void create_pt_volume_settings(QVBoxLayout* parent)
+        {
+            QGroupBox* groupbox = new QGroupBox("Participating Media");
+            parent->addWidget(groupbox);
+
+            QVBoxLayout* layout = create_vertical_layout();
+            groupbox->setLayout(layout);
+
+            QFormLayout* sublayout = create_form_layout();
+            layout->addLayout(sublayout);
+
+            QSpinBox* volume_distance_samples =
+                create_integer_input("volume.distance_samples", 1, 1000, 1);
+            volume_distance_samples->setToolTip(
+                m_params_metadata.get_path("gpt.volume_distance_samples.help"));
+            sublayout->addRow("Volume Distance Samples:", volume_distance_samples);
+
+            sublayout->addRow(
+                create_checkbox("volume.optimize_for_lights_outside_volumes", "Optimize for Lights Outside Volumes"));
+        }
+
+        void create_pt_advanced_settings(QVBoxLayout* parent)
+        {
+            CollapsibleSectionWidget* collapsible_section = new CollapsibleSectionWidget("Advanced");
+            parent->addWidget(collapsible_section);
+            
+            QVBoxLayout* layout = new QVBoxLayout();
+    
+            create_pt_advanced_nee_settings(layout);
+            create_pt_advanced_optimization_settings(layout);
+            create_pt_advanced_diag_settings(layout);
+            collapsible_section->set_content_layout(layout);
+        }
+
+        void create_pt_advanced_nee_settings(QVBoxLayout* parent)
+        {
+            QGroupBox* groupbox = create_checkable_groupbox("advanced.next_event_estimation", "Next Event Estimation");
+            parent->addWidget(groupbox);
+
+            QVBoxLayout* layout = create_vertical_layout();
+            groupbox->setLayout(layout);
+
+            create_pt_advanced_nee_lightsampler_settings(layout);
+            create_pt_advanced_nee_dl_settings(layout);
+            create_pt_advanced_nee_ibl_settings(layout);
+            create_pt_advanced_nee_max_ray_intensity_settings(layout);
+        }
+
+        void create_pt_advanced_nee_lightsampler_settings(QVBoxLayout* parent)
+        {
+            QFormLayout* sublayout = create_form_layout();
+            parent->addLayout(sublayout);
+
+            QComboBox* light_sampler = create_combobox("advanced.light_sampler.algorithm");
+            light_sampler->setToolTip(m_params_metadata.get_path("light_sampler.algorithm.help"));
+            light_sampler->addItem("CDF", "cdf");
+            light_sampler->addItem("Light Tree", "lighttree");
+            sublayout->addRow("Light Sampler:", light_sampler);
+
+            sublayout->addRow(create_checkbox("advanced.light_sampler.enable_importance_sampling", "Enable Importance Sampling"));
+        }
+
+        void create_pt_advanced_nee_dl_settings(QVBoxLayout* parent)
+        {
+            QGroupBox* groupbox = new QGroupBox("Direct Lighting");
+            parent->addWidget(groupbox);
+
+            QVBoxLayout* layout = create_vertical_layout();
+            groupbox->setLayout(layout);
+
+            QFormLayout* sublayout = create_form_layout();
+            layout->addLayout(sublayout);
+
+            QDoubleSpinBox* light_samples = create_double_input("advanced.dl.light_samples", 0.0, 1000000.0, 3, 1.0);
+            light_samples->setToolTip(m_params_metadata.get_path("gpt.dl_light_samples.help"));
+            sublayout->addRow("Light Samples:", light_samples);
+
+            QDoubleSpinBox* low_light_threshold = create_double_input("advanced.dl.low_light_threshold", 0.0, 1000.0, 3, 0.1);
+            low_light_threshold->setToolTip(m_params_metadata.get_path("gpt.dl_low_light_threshold.help"));
+            sublayout->addRow("Low Light Threshold:", low_light_threshold);
+        }
+
+        void create_pt_advanced_nee_ibl_settings(QVBoxLayout* parent)
+        {
+            QGroupBox* groupbox = new QGroupBox("Image-Based Lighting");
+            parent->addWidget(groupbox);
+
+            QVBoxLayout* layout = create_vertical_layout();
+            groupbox->setLayout(layout);
+
+            QHBoxLayout* sublayout = create_horizontal_layout();
+            layout->addLayout(sublayout);
+
+            QDoubleSpinBox* env_samples = create_double_input("advanced.ibl.env_samples", 0.0, 1000000.0, 3, 1.0);
+            env_samples->setToolTip(m_params_metadata.get_path("gpt.ibl_env_samples.help"));
+            sublayout->addLayout(create_form_layout("Environment Samples:", env_samples));
+        }
+
+        void create_pt_advanced_nee_max_ray_intensity_settings(QVBoxLayout* parent)
+        {
+            QDoubleSpinBox* max_ray_intensity = create_double_input("advanced.max_ray_intensity", 0.0, 1.0e4, 1, 0.1);
+            max_ray_intensity->setToolTip(m_params_metadata.get_path("gpt.max_ray_intensity.help"));
+
+            QCheckBox* unlimited_ray_intensity = create_checkbox("advanced.unlimited_ray_intensity", "Unlimited");
+            parent->addLayout(create_form_layout("Max Ray Intensity:", create_horizontal_group(max_ray_intensity, unlimited_ray_intensity)));
+            connect(unlimited_ray_intensity, SIGNAL(toggled(bool)), max_ray_intensity, SLOT(setDisabled(bool)));
+        }
+
+        void create_pt_advanced_optimization_settings(QVBoxLayout* parent)
+        {
+            QGroupBox* diag_groupbox = new QGroupBox("Optimizations");
+            parent->addWidget(diag_groupbox);
+
+            QVBoxLayout* layout = create_vertical_layout();
+            diag_groupbox->setLayout(layout);
+
+            QFormLayout* sublayout = create_form_layout();
+            layout->addLayout(sublayout);
+
+            sublayout->addRow(create_checkbox("advanced.clamp_roughness", "Clamp Roughness"));
+        }
+
+        void create_pt_advanced_diag_settings(QVBoxLayout* parent)
+        {
+            QGroupBox* diag_groupbox = new QGroupBox("Diagnostics");
+            parent->addWidget(diag_groupbox);
+
+            QVBoxLayout* layout = create_vertical_layout();
+            diag_groupbox->setLayout(layout);
+
+            QFormLayout* sublayout = create_form_layout();
+            layout->addLayout(sublayout);
+
+            sublayout->addRow(create_checkbox("advanced.record_light_paths", "Record Light Paths"));
+        }
+
+        void create_path_guiding_settings(QVBoxLayout* parent)
+        {
+            QGroupBox* groupbox = new QGroupBox("Path Guiding");
+            parent->insertWidget(1, groupbox);
+
+            QVBoxLayout* layout = create_vertical_layout();
+            groupbox->setLayout(layout);
+
+            QFormLayout* sublayout = create_form_layout();
+            layout->addLayout(sublayout);
+
+            QSpinBox* samples_per_pass =
+                create_integer_input("guiding.samples_per_pass", 1, 32, 1);
+            samples_per_pass->setToolTip(
+                m_params_metadata.get_path("gpt.samples_per_pass.help"));
+            //samples_per_pass->setValue(4);
+            sublayout->addRow("Samples Per Pass:", samples_per_pass);
+
+            QComboBox* spatial_filter_combobox = create_combobox("guiding.spatial_filter");
+            spatial_filter_combobox->setToolTip(m_params_metadata.get_path("gpt.spatial_filter.help"));
+            spatial_filter_combobox->addItem("Stochastic", "stochastic");
+            spatial_filter_combobox->addItem("Box", "box");
+            spatial_filter_combobox->addItem("Nearest", "nearest");
+
+            sublayout->addRow("Spatial Filter:", spatial_filter_combobox);
+
+            QComboBox* directional_filter_combobox = create_combobox("guiding.directional_filter");
+            directional_filter_combobox->setToolTip(m_params_metadata.get_path("gpt.directional_filter.help"));
+            directional_filter_combobox->addItem("Box", "box");
+            directional_filter_combobox->addItem("Nearest", "nearest");
+
+            sublayout->addRow("Directional Filter:", directional_filter_combobox);
+
+            m_sampling_fraction_combobox = create_combobox("guiding.bsdf_sampling_fraction");
+            m_sampling_fraction_combobox->setToolTip(m_params_metadata.get_path("gpt.bsdf_sampling_fraction.help"));
+            m_sampling_fraction_combobox->addItem("Learn", "learn");
+            m_sampling_fraction_combobox->addItem("Fixed", "fixed");
+
+            sublayout->addRow("BSDF Sampling Fraction Mode:", m_sampling_fraction_combobox);
+
+            m_bsdf_sampling_fraction_spinbox = 
+                create_double_input("guiding.fixed_bsdf_sampling_fraction_value", 0, 1, 2, 0.02);
+            m_bsdf_sampling_fraction_spinbox->setToolTip(
+                m_params_metadata.get_path("gpt.fixed_bsdf_sampling_fraction_value.help"));
+            //bsdf_sampling_fraction->setValue(0.5);
+            set_widget_width_for_text(m_bsdf_sampling_fraction_spinbox, "0.50", SpinBoxMargin, SpinBoxMinWidth);
+            sublayout->addRow("Fixed BSDF Sampling Fraction:", m_bsdf_sampling_fraction_spinbox);
+
+            m_learning_rate_spinbox = 
+                create_double_input("guiding.learning_rate", 0.01, 1.0, 2, 0.01);
+            m_learning_rate_spinbox->setToolTip(
+                m_params_metadata.get_path("gpt.learning_rate.help"));
+            m_learning_rate_spinbox->setValue(0.01);
+            set_widget_width_for_text(m_learning_rate_spinbox, "0.01", SpinBoxMargin, SpinBoxMinWidth);
+            sublayout->addRow("Learning Rate:", m_learning_rate_spinbox);
+
+            connect(
+                m_sampling_fraction_combobox, SIGNAL(currentIndexChanged(int)),
+                SLOT(slot_changed_bsdf_sampling_fraction_mode(const int)));
+
+            QComboBox* iteration_combobox = create_combobox("guiding.iteration_progression");
+            iteration_combobox->setToolTip(m_params_metadata.get_path("gpt.iteration_progression.help"));
+            iteration_combobox->addItem("Combine Iterations", "combine");
+            iteration_combobox->addItem("Automatic Cut-Off", "automatic");
+
+            sublayout->addRow("Iteration Progression:", iteration_combobox);
+
+            m_save_iterations_combobox = create_combobox("guiding.save_tree_iterations");
+            m_save_iterations_combobox->setToolTip(m_params_metadata.get_path("gpt.save_tree_iterations.help"));
+            m_save_iterations_combobox->addItem("None", "none");
+            m_save_iterations_combobox->addItem("All", "all");
+            m_save_iterations_combobox->addItem("Final", "final");
+
+            sublayout->addRow("Save iterations:", m_save_iterations_combobox);
+
+            QVBoxLayout* file_layout = create_vertical_layout();
+            m_path_line_edit = create_line_edit("guiding.file_path");
+            m_browse_button = new QPushButton("Browse");
+            m_browse_button->setToolTip(m_params_metadata.get_path("gpt.file_path.help"));
+            m_browse_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+            file_layout->addWidget(m_path_line_edit);
+            file_layout->addWidget(m_browse_button);
+            sublayout->addRow("File Path:", file_layout);
+
+            connect(
+                m_save_iterations_combobox, SIGNAL(currentIndexChanged(int)),
+                SLOT(slot_changed_save_iterations_mode(const int)));
+
+            connect(
+                m_browse_button, SIGNAL(pressed()),
+                SLOT(slot_browse_button_pressed()));
+
+            QComboBox* bounce_mode_combobox = create_combobox("guiding.guided_bounce_mode");
+            bounce_mode_combobox->setToolTip(m_params_metadata.get_path("gpt.guided_bounce_mode.help"));
+            bounce_mode_combobox->addItem("Learned Distribution", "learn");
+            bounce_mode_combobox->addItem("Strictly Diffuse", "strictly_diffuse");
+            bounce_mode_combobox->addItem("Strictly Glossy", "strictly_glossy");
+            bounce_mode_combobox->addItem("Prefer Diffuse", "prefer_diffuse");
+            bounce_mode_combobox->addItem("Prefer Glossy", "prefer_glossy");
+
+            sublayout->addRow("Guided Bounce Mode:", bounce_mode_combobox);
+            create_guided_bounce_settings(sublayout, "gpt");
+        }
+
+        void create_guided_bounce_settings(QFormLayout* layout, const std::string& prefix)
+        {
+            const std::string widget_base_key = prefix + ".bounces.";
+
+            QSpinBox* max_guided_bounces = create_integer_input(widget_base_key + "max_guided_bounces", 0, 100, 1);
+
+            QCheckBox* unlimited_guided_bounces = create_checkbox(widget_base_key + "unlimited_guided_bounces", "Unlimited");
+
+            layout->addRow("Max Guided Bounces:", create_horizontal_group(max_guided_bounces, unlimited_guided_bounces));
+            connect(unlimited_guided_bounces, SIGNAL(toggled(bool)), max_guided_bounces, SLOT(setDisabled(bool)));
+        }
+
+      private slots:
+        void slot_changed_bsdf_sampling_fraction_mode(const int index)
+        {
+            const QString bsdf_sampling_mode = m_sampling_fraction_combobox->itemData(index).value<QString>();
+
+            m_bsdf_sampling_fraction_spinbox->setEnabled(bsdf_sampling_mode == "fixed");
+            m_learning_rate_spinbox->setEnabled(bsdf_sampling_mode == "learn");
+        }
+
+        void slot_changed_save_iterations_mode(const int index)
+        {
+            const QString save_iterations_mode = m_save_iterations_combobox->itemData(index).value<QString>();
+
+            const bool enable_browsing = save_iterations_mode == "all" || save_iterations_mode == "final";
+            m_browse_button->setEnabled(enable_browsing);
+            m_path_line_edit->setEnabled(enable_browsing);
+        }
+
+        void slot_browse_button_pressed()
+        {
+            QFileDialog::Options options;
+
+            QString filepath =
+                get_save_filename(
+                    this,
+                    "Save...",
+                    "SD tree files (*.sdt)",
+                    m_file_save_settings,
+                    "",
+                    options);
+
+            if (!filepath.isEmpty())
+            {
+                m_path_line_edit->setText(filepath);
+            }
         }
     };
 
@@ -1801,6 +2202,7 @@ void RenderingSettingsWindow::create_panels(const Configuration& config)
     }
 
     m_panels.push_back(new UnidirectionalPathTracerPanel(config));
+    m_panels.push_back(new GuidedPathTracerPanel(config));
 
     if (!interactive)
         m_panels.push_back(new SPPMPanel(config));
