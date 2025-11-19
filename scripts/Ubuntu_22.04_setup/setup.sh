@@ -17,7 +17,7 @@ set -e
 #
 # All variables beginning with `_` are internal variables and should NOT manually be changed, unless you know what you are doing!
 # 
-# Note: This script has only been tested on Ubuntu 22.04!
+# Note: This script has only been tested on Ubuntu 22.04 and 24.04!
 
 # ================================================================
 # Set Constants
@@ -1216,6 +1216,7 @@ if [[ $_sOCIOInstallDir = "" ]]; then
       -DCMAKE_CXX_STANDARD=$_CXX_STD \
       -DCMAKE_INSTALL_PREFIX=$_sInstallDir \
       -DImath_ROOT=$_sImathInstallDir \
+      -DOpenEXR_ROOT=$_sOpenEXRInstallDir \
       -DOCIO_BUILD_PYTHON=OFF
     $DEBUG make install -j$(nproc)
   fi
@@ -1253,6 +1254,7 @@ if [[ $_sOIIOInstallDir = "" ]]; then
       pybind11-dev \
       zlib1g \
       zlib1g-dev \
+      libpng-dev \
       libtiff5-dev
 
     if [[ $WITH_PYTHON2_BINDINGS = ON ]]; then
