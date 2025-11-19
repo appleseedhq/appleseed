@@ -27,8 +27,8 @@
 # THE SOFTWARE.
 #
 
-from __future__ import division
-from __future__ import print_function
+
+
 from xml.etree.ElementTree import ElementTree
 import appleseed as asr
 import argparse
@@ -955,3 +955,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

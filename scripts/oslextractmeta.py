@@ -33,7 +33,7 @@ import os.path
 import sys
 import argparse
 try:
-    from ConfigParser import ConfigParser
+    from configparser import ConfigParser
 except:
     from configparser import ConfigParser
 import datetime
@@ -309,11 +309,15 @@ def getNumberOfShaders(jsonFile):
 
 def cleanJsonShaders(jsonDict):
     num_del = 0
-    for shaderpath in jsonDict.keys():
+    keys_to_delete = []
+    for shaderpath, _ in jsonDict.items():
         if not os.path.isfile(shaderpath):
-            del jsonDict[shaderpath]
+            keys_to_delete.append(shaderpath)
             num_del += 1
-    return (num_del, jsonDict)
+    for shaderpath in keys_to_delete:
+        del jsonDict[shaderpath]
+    return num_del, jsonDict
+
 
 
 def existsJsonShader(jsonFile, shaderName):
@@ -436,8 +440,8 @@ def main():
     # only adding new shaders
     else:
         temp_changes = changes
-        if jsonDict.has_key('shaders'):
-            existing_keys = jsonDict['shaders'].keys()
+        if 'shaders' in jsonDict:
+            existing_keys = list(jsonDict['shaders'].keys())
             for key in shaders:
                 if key not in existing_keys:
                     jsonDict['shaders'][key] = shaders[key]
@@ -468,3 +472,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

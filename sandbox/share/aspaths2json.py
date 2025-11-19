@@ -37,7 +37,7 @@ import sys
 # -------------------------------------------------------------------------------------------------
 
 def fatal(message):
-    print("Fatal: {0}. Aborting.".format(message))
+    print(f"Fatal: {message}. Aborting.")
     sys.exit(1)
 
 
@@ -213,3 +213,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

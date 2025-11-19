@@ -28,7 +28,7 @@
 # THE SOFTWARE.
 #
 
-from __future__ import print_function
+
 from distutils import archive_util, dir_util
 from xml.etree.ElementTree import ElementTree
 import argparse
@@ -45,6 +45,7 @@ import sys
 import time
 import traceback
 import zipfile
+import shutil
 
 from utils import print_runtime_details  # local module
 
@@ -62,29 +63,29 @@ VERBOSE = False
 # Utility functions.
 # -------------------------------------------------------------------------------------------------
 
-GREEN_CHECKMARK = u"{0}\u2713{1}".format(colorama.Style.BRIGHT + colorama.Fore.GREEN, colorama.Style.RESET_ALL)
-RED_CROSSMARK = u"{0}\u2717{1}".format(colorama.Style.BRIGHT + colorama.Fore.RED, colorama.Style.RESET_ALL)
+GREEN_CHECKMARK = "{0}\u2713{1}".format(colorama.Style.BRIGHT + colorama.Fore.GREEN, colorama.Style.RESET_ALL)
+RED_CROSSMARK = "{0}\u2717{1}".format(colorama.Style.BRIGHT + colorama.Fore.RED, colorama.Style.RESET_ALL)
 
 
 def trace(message):
     if VERBOSE:
-        print(u"  {0}{1}{2}".format(colorama.Style.DIM + colorama.Fore.WHITE, message, colorama.Style.RESET_ALL))
+        print("  {0}{1}{2}".format(colorama.Style.DIM + colorama.Fore.WHITE, message, colorama.Style.RESET_ALL))
 
 
 def info(message):
-    print(u"  {0}".format(message))
+    print("  {0}".format(message))
 
 
 def progress(message):
-    print(u"  {0}...".format(message))
+    print("  {0}...".format(message))
 
 
 def warning(message):
-    print(u"  {0}Warning: {1}.{2}".format(colorama.Style.BRIGHT + colorama.Fore.MAGENTA, message, colorama.Style.RESET_ALL))
+    print("  {0}Warning: {1}.{2}".format(colorama.Style.BRIGHT + colorama.Fore.MAGENTA, message, colorama.Style.RESET_ALL))
 
 
 def fatal(message):
-    print(u"{0}Fatal: {1}. Aborting.{2}".format(colorama.Style.BRIGHT + colorama.Fore.RED, message, colorama.Style.RESET_ALL))
+    print("{0}Fatal: {1}. Aborting.{2}".format(colorama.Style.BRIGHT + colorama.Fore.RED, message, colorama.Style.RESET_ALL))
     if sys.exc_info()[0]:
         print(traceback.format_exc())
     sys.exit(1)
@@ -176,7 +177,7 @@ def merge_tree(src, dst, symlinks=False, ignore=None):
                 shutil.copy2(srcname, dstname)
         # Catch the Error from the recursive copytree so that we can
         # continue with other files.
-        except Error as ex:
+        except shutil.Error as ex:
             errors.extend(ex.args[0])
         except EnvironmentError as ex:
             errors.append((srcname, dstname, str(ex)))
@@ -189,7 +190,7 @@ def merge_tree(src, dst, symlinks=False, ignore=None):
         else:
             errors.append((src, dst, str(ex)))
     if errors:
-        raise Error(errors)
+        raise shutil.Error(errors)
 
 
 # -------------------------------------------------------------------------------------------------
@@ -802,9 +803,9 @@ class MacPackageBuilder(PackageBuilder):
             trace("  Dependencies for file {0}:".format(filepath))
             for lib in libs:
                 if os.path.isfile(lib):
-                    trace(u"      {0} {1}".format(GREEN_CHECKMARK, lib))
+                    trace("      {0} {1}".format(GREEN_CHECKMARK, lib))
                 else:
-                    trace(u"      {0} {1}".format(RED_CROSSMARK, lib))
+                    trace("      {0} {1}".format(RED_CROSSMARK, lib))
 
         # Don't warn about missing dependencies if we didn't attempt to fix them.
         if fix_paths:
@@ -1032,3 +1033,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
