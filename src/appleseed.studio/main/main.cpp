@@ -163,11 +163,9 @@ namespace
                     python_home);
 
 #if PY_MAJOR_VERSION == 2
-#pragma message "Py_SetPythonHome(python_home);"
                 Py_SetPythonHome(python_home);
 #endif
 #if PY_MAJOR_VERSION == 3
-#pragma message "Py_SetPythonHome(wc_python_home);"
                 static wchar_t wc_python_home[FOUNDATION_MAX_PATH_LENGTH + 1];
                 mbstowcs(wc_python_home, python_home, FOUNDATION_MAX_PATH_LENGTH + 1 );
 

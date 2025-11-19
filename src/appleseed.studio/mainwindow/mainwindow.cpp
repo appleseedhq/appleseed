@@ -688,11 +688,9 @@ void MainWindow::build_log_panel()
 void MainWindow::build_python_console_panel()
 {
 #if PY_MAJOR_VERSION == 2
-#pragma message "const char* python_home"
     const char* python_home = Py_GetPythonHome();
 #endif
 #if PY_MAJOR_VERSION == 3
-#pragma message "const wchar_t* python_home"
     const wchar_t* python_home = Py_GetPythonHome();
 #endif
     if (python_home == nullptr)
