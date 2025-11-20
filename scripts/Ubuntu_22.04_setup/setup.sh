@@ -36,21 +36,22 @@ DEBUG=
 
 # Build Type
 # Can be set using the `-b` or `--build` flag.
-BUILD_TYPE="Ship"
+BUILD_TYPE="Debug"
 
 # C and C++ Compiler
 # Can be set using the `--cc` and `--cxx` flags respectively.
 # Note: If not set here, or via flags, will search for it in `/usr/bin`.
-C_COMPILER=
-CXX_COMPILER=
+C_COMPILER=/usr/bin/gcc-12
+CXX_COMPILER=/usr/bin/g++-12
 
 # CUDA Architecture Number
-# Can be sset using the `--cuda-arch-number` flag.
+# Can be set using the `--cuda-arch-number` flag.
 # Note: Only required for OpenCV for the StatMC Denoiser.
-CUDA_ARCH_NUM=86
+CUDA_ARCH_NUM=130
 
 # Number of Processors [Jobs] used for building with CMake.
 # Note: `nproc` prints the number of processing units available to the current process, which may be less than the number of online processors.
+#       You can set NUM_PROCESSORS via the -j/--jobs flag.
 NUM_PROCESSORS=$(nproc)
 
 # Optional Components
@@ -63,7 +64,7 @@ WITH_TOOLS=ON
 WITH_PYTHON2_BINDINGS=OFF
 WITH_PYTHON3_BINDINGS=ON
 WITH_EMBREE=ON
-WITH_GPU=OFF
+WITH_GPU=ON
 WITH_STATMC=ON
 
 # Download Links
@@ -79,6 +80,8 @@ PARTIO_DL="https://github.com/wdas/partio/archive/refs/tags/v1.19.0.tar.gz"
 STATMC_OPENCV_CONTIB_DL="https://github.com/cg-tuwien/StatMC-opencv_contrib/archive/refs/heads/master.zip"
 XERCES_DL="https://github.com/apache/xerces-c/archive/refs/tags/v3.3.0.tar.gz"
 HAPPLY_RP="https://github.com/MarcusTU/happly"
+OPTIX_RP="https://github.com/NVIDIA/optix-dev.git"
+OPTIX_RP_TAG="v9.0.0"
 
 # README: YOU SHOULD NOT CHANGE ANY OF THE VARIABLES BELOW, UNLESS YOU KNOW WHAT YOU ARE DOING.
 
@@ -108,9 +111,8 @@ _DEFAULT_DEPENDENCIES_DIR_NAME="dependencies"
 _CXX_STD=17
 
 # CMAKE Binary
-# CMake binary. Use this constant to set a different cmake version (by binary) manually.
-#_CMAKE=cmake
-_CMAKE=/home/masc/workspace/students/2025-alex-statmc/cmake-3.22/cmake-3.22.1-linux-x86_64/bin/cmake
+# CMake binary. Use this constant to set a different cmake version manually (by setting it a path to the cmake binary).
+_CMAKE=cmake
 
 # ----------------------------------------------------------------
 # Cosmetic Constants
@@ -136,6 +138,7 @@ _PARTIO=PartIO
 _STATMC=StatMC
 _XERCES=Xerces
 _HAPPLY=Happly
+_OPTIX=OptiX
 
 # Colors
 _COLOR_CLEAR='\033[0m'
@@ -192,6 +195,7 @@ _sOSLInstallDir=""
 _sPartIOInstallDir=""
 _sXercesInstallDir=""
 _sHapplyInstallDir=""
+_sOptiXInstallDir=""
 
 _sBoostConfigDir="" # is version dependent
 _sEmbreeConfigDir="" # is version dependent
@@ -592,6 +596,15 @@ handle_options() {
         _sHapplyInstallDir=$(extract_argument $@)
         shift
         ;;
+      --optix-install)
+        if ! has_argument $@; then
+            echo "$(rootVarName $_OPTIX)" >&2
+            usage
+            exit 1
+        fi
+        _sOptiXInstallDir=$(extract_argument $@)
+        shift
+        ;;
       # Options
       -h | --help)
         usage
@@ -814,6 +827,7 @@ dependencyInstallInfo $_OSL     $_sOSLInstallDir
 dependencyInstallInfo $_PARTIO  $_sPartIOInstallDir
 dependencyInstallInfo $_XERCES  $_sXercesInstallDir
 dependencyInstallInfo $_HAPPLY  $_sHapplyInstallDir
+dependencyInstallInfo $_OPTIX   $_sOptiXInstallDir
 
 # Optional Dependencies
 echo "  Building the following optional dependencies:"
@@ -1629,6 +1643,30 @@ if [[ $_sHapplyInstallDir = "" ]]; then
   _sHapplyInstallDir=$_sSourceDir
 fi
 
+# ----------------------------------------------------------------
+# OptiX
+# ----------------------------------------------------------------
+
+if [[ $_sOptiXInstallDir = "" && $WITH_GPU = ON ]]; then
+
+  # setup
+  depName=$_OPTIX
+  _sRepo=${OPTIX_RP##*/}
+  _sSourceDir="$_sDependenciesDir/$depName"
+
+  # clone repository if not already
+    if [ ! -d $_sSourceDir ]; then
+        stepInfo $depName "Clone $OPTIX_RP to $_sSourceDir"
+        $_DEBUG git clone --depth 1 --branch $OPTIX_RP_TAG $OPTIX_RP $_sSourceDir
+    fi
+
+  stepInfo $_NAME "$depName cloned to \"$_sSourceDir\"." $_COLOR_INSTALL_DIR
+  _sOptiXInstallDir=$_sSourceDir
+
+  # clean step
+  _sSourceDir="" # else the install directory is removed
+  cleanInstallStep
+fi
 
 # ----------------------------------------------------------------
 # OpenCV w/ StatMC Contribution
@@ -1893,6 +1931,7 @@ if [ $_bNewBuild = true ]; then
     -DWITH_STATMC=$WITH_STATMC \
     -DWITH_SPECTRAL_SUPPORT=OFF \
     -Dhapply_ROOT=$_sHapplyInstallDir \
+    -DOPTIXHOME=$_sOptiXInstallDir \
     ..
   stepInfo $_APPLESEED "Configured CMake."
 fi
