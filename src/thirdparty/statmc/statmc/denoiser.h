@@ -32,14 +32,19 @@ class Denoiser
 
     virtual bool denoise();
 
-    virtual bool denoise(DenoiserInputs stat_inputs);
+    // virtual bool denoise(DenoiserInputs stat_inputs);
+
+    void setInputs(const bcd::DenoiserInputs& i_rInputs)
+    {
+        m_inputs = i_rInputs;
+    }
 
     const DenoiserInputs& getStatInputs() const
     {
         return m_stat_inputs;
     }
 
-    virtual void setStatInputs(const DenoiserInputs& i_rInputs)
+    void setStatInputs(const DenoiserInputs& i_rInputs)
     {
         m_stat_inputs = i_rInputs;
     }

@@ -274,9 +274,9 @@ bool denoise_aov_image(
     const Deepimf&          num_samples,
     const Deepimf&          histograms,
     const Deepimf&          covariances,
-    bcd::Deepimf&           m1_means,
-    bcd::Deepimf&           m2_variance,
-    bcd::Deepimf&           m3_skewness,
+    const bcd::Deepimf&           m1_means,
+    const bcd::Deepimf&           m2_variance,
+    const bcd::Deepimf&           m3_skewness,
     const DenoiserOptions&  options,
     IAbortSwitch*           abort_switch)
 {

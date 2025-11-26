@@ -31,7 +31,7 @@ void alloc(Mat mat, vector<Mat> &mats, vector<GpuMat> &gpuMats) {
     gpuMats.emplace_back(GpuMat(mat.rows, mat.cols, mat.type()));
 }
 
-#if 0 // TODO: remove unneded alloc
+#if 0 // TODO: remove unneeded alloc
 void alloc(string filename, vector<Mat> &mats, vector<GpuMat> &gpuMats, int type = -1) {
     Mat mat = imread(filename, IMREAD_UNCHANGED);
     mat.convertTo(mat, type);
@@ -67,11 +67,11 @@ void uploadGBufferChannelCounts(vector<GpuMat> &gpuMats, GpuMat &channelCounts, 
         *channelCountsCPUPtr++ = gpuMat.channels();
     channelCounts.upload(channelCountsCPU, stream);
 }
-} // namespace (ananymous)
+} // namespace (anonymous)
 
 namespace statmc {
 
-bool Denoiser::denoise(DenoiserInputs stat_inputs)
+bool Denoiser::denoise()
 {
     // string prefix = "staircase";
     // string suffix = "16";
@@ -238,6 +238,8 @@ bool Denoiser::denoise(DenoiserInputs stat_inputs)
     //     gpuDenoisedFilms[i].download(denoisedFilms[i], stream);
     //     imwrite(prefix + "-" + indices[i] + "-" + suffix + "-film-f.pfm", denoisedFilms[i]);
     // }
+
+    return true;
 }
 
 } // namespace std

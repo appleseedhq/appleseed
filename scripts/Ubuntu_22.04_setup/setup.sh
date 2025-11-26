@@ -57,14 +57,14 @@ NUM_PROCESSORS=$(nproc)
 # Optional Components
 # Can be set using their flags (e.g. `--bench`, `--client`, etc.).
 # Note: If at least one such flag is set, it will ONLY build those mentioned (via flag) optional components.
-WITH_BENCH=ON
-WITH_CLIENT=ON
-WITH_STUDIO=ON
-WITH_TOOLS=ON
+WITH_BENCH=OFF # undef. ref. stat_denoiser
+WITH_CLIENT=ON # undef. ref. stat_denoiser
+WITH_STUDIO=OFF # undef. ref. stat_denoiser
+WITH_TOOLS=OFF # undef. ref. stat_denoiser
 WITH_PYTHON2_BINDINGS=OFF
 WITH_PYTHON3_BINDINGS=ON
 WITH_EMBREE=ON
-WITH_GPU=ON
+WITH_GPU=OFF
 WITH_STATMC=ON
 
 # Download Links
@@ -1641,6 +1641,10 @@ if [[ $_sHapplyInstallDir = "" ]]; then
 
   stepInfo $_NAME "$depName cloned to \"$_sSourceDir\"." $_COLOR_INSTALL_DIR
   _sHapplyInstallDir=$_sSourceDir
+
+  # clean step
+  _sSourceDir="" # else the install directory is removed
+  cleanInstallStep
 fi
 
 # ----------------------------------------------------------------
@@ -1772,7 +1776,7 @@ if [[ $_sOpenCVInstallDir = "" && $WITH_STATMC = ON ]]; then
       -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -march=native" \
       -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -march=native" \
       -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc \
-      -DCMAKE_CUDA_HOST_COMPILER=/usr/bin/clang++ \
+      -DCMAKE_CUDA_HOST_COMPILER=$CXX_COMPILER \
       -DCMAKE_CUDA_ARCHITECTURES=$CUDA_ARCH_NUM \
       -DWITH_CUDA=ON \
       -DWITH_CUBLAS=ON \
