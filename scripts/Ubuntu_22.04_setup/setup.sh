@@ -41,8 +41,8 @@ BUILD_TYPE="Debug"
 # C and C++ Compiler
 # Can be set using the `--cc` and `--cxx` flags respectively.
 # Note: If not set here, or via flags, will search for it in `/usr/bin`.
-C_COMPILER=/usr/bin/gcc-12
-CXX_COMPILER=/usr/bin/g++-12
+C_COMPILER=/usr/bin/clang-16
+CXX_COMPILER=/usr/bin/clang++-16
 
 # CUDA Architecture Number
 # Can be set using the `--cuda-arch-number` flag.
@@ -57,10 +57,10 @@ NUM_PROCESSORS=$(nproc)
 # Optional Components
 # Can be set using their flags (e.g. `--bench`, `--client`, etc.).
 # Note: If at least one such flag is set, it will ONLY build those mentioned (via flag) optional components.
-WITH_BENCH=OFF # undef. ref. stat_denoiser
-WITH_CLIENT=ON # undef. ref. stat_denoiser
-WITH_STUDIO=OFF # undef. ref. stat_denoiser
-WITH_TOOLS=OFF # undef. ref. stat_denoiser
+WITH_BENCH=ON
+WITH_CLIENT=ON
+WITH_STUDIO=ON
+WITH_TOOLS=ON
 WITH_PYTHON2_BINDINGS=OFF
 WITH_PYTHON3_BINDINGS=ON
 WITH_EMBREE=ON
@@ -74,10 +74,10 @@ IMATH_DL="https://github.com/AcademySoftwareFoundation/Imath/releases/download/v
 OCIO_DL="https://github.com/AcademySoftwareFoundation/OpenColorIO/archive/refs/tags/v2.4.2.tar.gz"
 OEXR_DL="https://github.com/AcademySoftwareFoundation/openexr/releases/download/v3.3.3/openexr-3.3.3.tar.gz"
 OIIO_DL="https://github.com/AcademySoftwareFoundation/OpenImageIO/releases/download/v2.5.18.0/OpenImageIO-2.5.18.0.tar.gz"
-OPENCV_DL="https://github.com/opencv/opencv/archive/refs/tags/4.8.1.tar.gz"
+OPENCV_DL="https://github.com/opencv/opencv/archive/refs/tags/4.10.0.tar.gz"
 OSL_DL="https://github.com/AcademySoftwareFoundation/OpenShadingLanguage/archive/refs/tags/v1.13.12.0.tar.gz" # TODO: update to 1.14
 PARTIO_DL="https://github.com/wdas/partio/archive/refs/tags/v1.19.0.tar.gz"
-STATMC_OPENCV_CONTIB_DL="https://github.com/cg-tuwien/StatMC-opencv_contrib/archive/refs/heads/master.zip"
+STATMC_OPENCV_CONTIB_DL="https://github.com/4134N4/StatMC-opencv_contrib/archive/refs/heads/main.zip" # Contrip for OpenCV 4.10
 XERCES_DL="https://github.com/apache/xerces-c/archive/refs/tags/v3.3.0.tar.gz"
 HAPPLY_RP="https://github.com/MarcusTU/happly"
 OPTIX_RP="https://github.com/NVIDIA/optix-dev.git"
@@ -1688,7 +1688,7 @@ if [[ $WITH_STATMC = ON ]]; then
   depName=$_STATMC
   _sTarFile=${STATMC_OPENCV_CONTIB_DL##*/}
   sourceFile=${_sTarFile//".zip"/}
-  _sInstallDir="$_sDependenciesDir/StatMC-opencv_contrib-master"
+  _sInstallDir="$_sDependenciesDir/StatMC-opencv_contrib-main"
 
   # check for StatMC OpenCV Contribution installation in _sInstallDir (via existence of lib file)
   if [ ! -f $_sInstallDir/CONTRIBUTING.md ]; then

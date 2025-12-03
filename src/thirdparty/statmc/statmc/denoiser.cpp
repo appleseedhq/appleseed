@@ -13,41 +13,54 @@
 #include <opencv2/cudaimgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
 
+#include <iostream>
+
 using std::string, std::vector;
 using cv::Mat, cv::Mat_, cv::imread, cv::IMREAD_UNCHANGED;
 using cv::cuda::GpuMat, cv::cuda::PtrStepSzb, cv::cuda::Stream;
 using Vec3 = cv::Vec<float, 3>;
 
-
-namespace
-{
 struct float3 {
     float x, y, z;
 };
 
+namespace
+{
 
 void alloc(Mat mat, vector<Mat> &mats, vector<GpuMat> &gpuMats) {
     mats.emplace_back(mat);
     gpuMats.emplace_back(GpuMat(mat.rows, mat.cols, mat.type()));
 }
 
-#if 0 // TODO: remove unneeded alloc
-void alloc(string filename, vector<Mat> &mats, vector<GpuMat> &gpuMats, int type = -1) {
-    Mat mat = imread(filename, IMREAD_UNCHANGED);
-    mat.convertTo(mat, type);
-    alloc(mat, mats, gpuMats);
-}
-#endif
-
 void alloc(const bcd::Deepimf *deepimf, vector<Mat> mats, vector<GpuMat> &gpuMats, int type = -1) {
     Mat mat;
 
-    mat.create(deepimf->getHeight(), deepimf->getWidth(), type);
+    const int height = deepimf->getHeight();
+    const int width  = deepimf->getWidth();
+    const int depth  = deepimf->getDepth();
+    const int size   = deepimf->getSize();
 
-    const float* pDeepimfData = deepimf->getDataPtr();
-    const uchar* pMatData = mat.ptr();
+    std::cout << "Deepimf Dims >>> height: " << height << " width: " << width << " depth: " << depth << " size: " << size << std::endl;
 
-    pMatData = (uchar*) pDeepimfData; // TODO: only *half sure* this is valid ...
+    exit(0);
+
+    // create cv matrix
+    mat.create(height, width, type);
+
+    // copy over data
+    float deepimfData[size];
+
+    deepimf->copyDataTo(deepimfData);
+
+    int idx;
+    for (int i=0; i<height; i++) {
+        for (int j=0; j<width; j++) {
+            idx = i*height + j;
+            std::cout << deepimfData[idx] << " ";
+        }
+        std::cout << std::endl;
+    }
+    exit(0);
 
     alloc(mat, mats, gpuMats);
 }
