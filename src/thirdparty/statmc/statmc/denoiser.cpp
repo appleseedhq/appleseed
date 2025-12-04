@@ -14,6 +14,7 @@
 #include <opencv2/imgcodecs.hpp>
 
 #include <iostream>
+#include <stdexcept>
 
 using std::string, std::vector;
 using cv::Mat, cv::Mat_, cv::imread, cv::IMREAD_UNCHANGED;
@@ -32,35 +33,78 @@ void alloc(Mat mat, vector<Mat> &mats, vector<GpuMat> &gpuMats) {
     gpuMats.emplace_back(GpuMat(mat.rows, mat.cols, mat.type()));
 }
 
-void alloc(const bcd::Deepimf *deepimf, vector<Mat> mats, vector<GpuMat> &gpuMats, int type = -1) {
+void alloc(const bcd::Deepimf *deepimf, vector<Mat> &mats, vector<GpuMat> &gpuMats, int type = -1) {
     Mat mat;
+
+    int idx;
 
     const int height = deepimf->getHeight();
     const int width  = deepimf->getWidth();
     const int depth  = deepimf->getDepth();
     const int size   = deepimf->getSize();
 
-    std::cout << "Deepimf Dims >>> height: " << height << " width: " << width << " depth: " << depth << " size: " << size << std::endl;
+    const int area   = height * width; // area [pixels] of the image
+    const int areax2 = 2 * area;
 
-    exit(0);
+    std::cout << "height: " << height << " width: " << width << " (area: " << area << ") depth: " << depth << " size: " << size << std::endl;
 
     // create cv matrix
-    mat.create(height, width, type);
-
-    // copy over data
     float deepimfData[size];
 
     deepimf->copyDataTo(deepimfData);
 
-    int idx;
-    for (int i=0; i<height; i++) {
-        for (int j=0; j<width; j++) {
-            idx = i*height + j;
-            std::cout << deepimfData[idx] << " ";
-        }
-        std::cout << std::endl;
+
+    if (depth == 1)
+    {
+        mat = Mat(height, width, CV_32FC1, &deepimfData);
     }
-    exit(0);
+    else if (depth == 3)
+    {
+        mat = Mat(height, width, CV_32FC3, &deepimfData);
+
+        //float3 elem;
+//
+        //for (int i=0; i<height; i++)
+        //{
+        //    for (int j=0; j<width; j++)
+        //    {
+        //        idx = i * height + j; // array idx of pixel i,j (disregarding depth)
+//
+        //        // TODO: This is bad, because with 0,1,2 times area we jump areound greatly in memory.
+        //        elem.x = deepimfData[         idx]; // 0 * area + idx
+        //        elem.y = deepimfData[  area + idx]; // 1 * area + idx
+        //        elem.z = deepimfData[areax2 + idx]; // 2 * area + idx
+//
+        //        mat.at<float3>(i,j) = elem;
+        //    }
+        //}
+    }
+    else
+    {
+        std::cerr << "Unsupported matrix depth: " << depth << std::endl;
+        throw std::runtime_error("Unsupported matrix depth.");
+    }
+
+    
+    if (size <= 128)
+    {
+        for (int i=0; i<height; i++)
+        {
+            for (int j=0; j<width; j++)
+            {
+                for (int k=0; k<depth; k++)
+                {
+                    idx = (i * width + j) * depth + k;
+
+                    std::cout << deepimfData[idx] << " ";
+                }
+                std::cout << std::endl;
+            }
+            std::cout << std::endl;
+        }
+
+        std::cout << "M_opencv =" << std::endl << mat << std::endl << std::endl;
+    }
 
     alloc(mat, mats, gpuMats);
 }
@@ -134,11 +178,16 @@ bool Denoiser::denoise()
     //     alloc(prefix + "-" + index + "-" + suffix + "-t0-b0-m3.pfm",   m3s,   gpuM3s);
     // }
 
+    std::cout << "films >>> ";
     alloc(m_inputs.m_pColors,           films, gpuFilms);
+    std::cout << "ns >>> ";
     alloc(m_inputs.m_pNbOfSamples,      ns,    gpuNs);
     // TODO: these are 3-dim images (r,g,b) - shoud they be???
+    std::cout << "m1 >>> ";
     alloc(m_stat_inputs.m_pMeans,       means, gpuMeans);
+    std::cout << "m2 >>> ";
     alloc(m_stat_inputs.m_pVariances,   m2s,   gpuM2s);
+    std::cout << "m3 >>> ";
     alloc(m_stat_inputs.m_pSkewdnesses, m3s,   gpuM3s);
 
 
@@ -188,6 +237,7 @@ bool Denoiser::denoise()
 
     // Upload images
     for (int i = 0; i < nRenderings; i++) {
+        // std::cout << "M =" << std::endl << films[i] << std::endl << std::endl;
         gpuFilms[i].upload(films[i], stream);
         gpuNs[i]   .upload(ns[i],    stream);
         gpuMeans[i].upload(means[i], stream);
@@ -246,11 +296,15 @@ bool Denoiser::denoise()
     );
 
 
-    // // Write denoised images to disk
-    // for (int i = 0; i < nRenderings; i++) {
-    //     gpuDenoisedFilms[i].download(denoisedFilms[i], stream);
-    //     imwrite(prefix + "-" + indices[i] + "-" + suffix + "-film-f.pfm", denoisedFilms[i]);
-    // }
+    // Download denoised images
+    for (int i = 0; i < nRenderings; i++) {
+        gpuDenoisedFilms[i].download(denoisedFilms[i], stream);
+    }
+
+    Mat denoisedFilm = denoisedFilms[0];
+    denoisedFilm.convertTo(denoisedFilm, CV_32FC(sizeof(PtrStepSzb)));
+
+    m_outputs.m_pDenoisedColors->copyDataFrom( denoisedFilm.ptr<float>(0) );
 
     return true;
 }
