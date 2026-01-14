@@ -164,6 +164,8 @@ namespace
         const Deepimf&          num_samples,
         const Deepimf&          histograms,
         const Deepimf&          covariances,
+        const Deepimf&          diffuse,
+        const Deepimf&          norm,
         const Deepimf&          m1_means,
         const Deepimf&          m2_variance,
         const Deepimf&          m3_skewness,
@@ -178,6 +180,8 @@ namespace
         inputs.m_pSampleCovariances = &covariances;
 
         statmc::DenoiserInputs statmc_inputs;
+        statmc_inputs.m_pDiffuse = &diffuse;
+        statmc_inputs.m_pNorm = &norm;
         statmc_inputs.m_pMeans = &m1_means;
         statmc_inputs.m_pVariances = &m2_variance;
         statmc_inputs.m_pSkewdnesses = &m3_skewness;
@@ -229,6 +233,8 @@ bool denoise_beauty_image(
     Deepimf&                num_samples,
     Deepimf&                histograms,
     Deepimf&                covariances,
+    Deepimf&                diffuse,
+    Deepimf&                norm,
     Deepimf&                m1_means,
     Deepimf&                m2_variance,
     Deepimf&                m3_skewness,
@@ -256,6 +262,8 @@ bool denoise_beauty_image(
             num_samples,
             histograms,
             covariances,
+            diffuse,
+            norm,
             m1_means,
             m2_variance,
             m3_skewness,
@@ -274,9 +282,11 @@ bool denoise_aov_image(
     const Deepimf&          num_samples,
     const Deepimf&          histograms,
     const Deepimf&          covariances,
-    const bcd::Deepimf&           m1_means,
-    const bcd::Deepimf&           m2_variance,
-    const bcd::Deepimf&           m3_skewness,
+    const Deepimf&          diffuse,
+    const Deepimf&          norm,
+    const Deepimf&          m1_means,
+    const Deepimf&          m2_variance,
+    const Deepimf&          m3_skewness,
     const DenoiserOptions&  options,
     IAbortSwitch*           abort_switch)
 {
@@ -298,6 +308,8 @@ bool denoise_aov_image(
             num_samples,
             histograms,
             covariances,
+            diffuse,
+            norm,
             m1_means,
             m2_variance,
             m3_skewness,

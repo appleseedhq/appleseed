@@ -34,6 +34,7 @@
 #include "renderer/kernel/aov/aovaccumulator.h"
 #include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/shading/shadingcomponents.h"
+#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/color/colorspace.h"
@@ -83,6 +84,8 @@ namespace
             const float    max_value,
             Deepimf&       sum_accum,
             Deepimf&       covariance_accum,
+            Deepimf&       diffuse_accum,
+            Deepimf&       norm_accum,
             Deepimf&       n_accum,
             Deepimf&       m1_accum,
             Deepimf&       m2_accum,
@@ -95,6 +98,8 @@ namespace
           , m_samples_channel_index(3 * num_bins)
           , m_sum_accum(sum_accum)
           , m_covariance_accum(covariance_accum)
+          , m_diffuse_accum(diffuse_accum)
+          , m_norm_accum(diffuse_accum)
           , m_n_accum(n_accum)
           , m_m1_accum(m1_accum)
           , m_m2_accum(m2_accum)
@@ -134,6 +139,8 @@ namespace
             if (m_sample_count == 0)
                 return;
 
+            // IDEA: m_sampe_count can just replace `m_n_accum`?
+
             const Vector2i& pi = pixel_context.get_pixel_coords();
 
             // Ignore samples outside the tile.
@@ -165,8 +172,7 @@ namespace
             m_covariance_accum.get(pi.y, pi.x, c_xz) += m_accum.r * m_accum.b;
             m_covariance_accum.get(pi.y, pi.x, c_xy) += m_accum.r * m_accum.g;
 
-            // IDEA: Add m1, m2, m3 here?!
-            float &n = m_n_accum.get(pi.y, pi.x, 0);
+            float &n = m_n_accum.get(pi.y, pi.x, 0); // TODO: replace: m_sample_count
             
             // Use Meng's algorithm (https://arxiv.org/abs/1510.04923).
             n++;
@@ -273,6 +279,35 @@ namespace
                 main.premultiply_in_place();
                 m_accum += (1.0f - m_accum.a) * shading_result.m_main;
                 ++m_sample_count;
+
+                const Vector2i& pi = pixel_context.get_pixel_coords();
+
+                m_n_accum.get(pi.x, pi.y, 0) += 1;
+
+                if (m_sample_count == 1)
+                {
+                    m_diffuse_accum.get(pi.x, pi.y, 0) = main.r;
+                    m_diffuse_accum.get(pi.x, pi.y, 1) = main.g;
+                    m_diffuse_accum.get(pi.x, pi.y, 2) = main.b;
+
+
+                    if (shading_point.hit_surface())
+                    {
+                        foundation::Vector3d normal = shading_point.get_shading_normal();
+
+                        m_norm_accum.get(pi.x, pi.y, 0) = normal.x;
+                        m_norm_accum.get(pi.x, pi.y, 1) = normal.y;
+                        m_norm_accum.get(pi.x, pi.y, 2) = normal.z;
+                    }
+                    else
+                    {
+                        // TODO: good default value?
+                        m_norm_accum.get(pi.x, pi.y, 0) = 0.0;
+                        m_norm_accum.get(pi.x, pi.y, 1) = 0.0;
+                        m_norm_accum.get(pi.x, pi.y, 2) = 0.0;
+                    }
+                    
+                }
             }
         }
 
@@ -294,11 +329,14 @@ namespace
         Deepimf&        m_sum_accum;
         Deepimf&        m_covariance_accum;
 
-        // IDEAD: m1, m2, m3 here
-        Deepimf&        m_n_accum;      // number of samples
-        Deepimf&        m_m1_accum;     // mean (central moment of order 1)
-        Deepimf&        m_m2_accum;     // variance (central moment of order 2)
-        Deepimf&        m_m3_accum;     // skewness (central moment of order 3)
+        // StatMC Denoiser Accumulators
+        Deepimf&        m_diffuse_accum; // diffuse color
+        Deepimf&        m_norm_accum;    // surface normal
+
+        Deepimf&        m_n_accum;       // number of samples
+        Deepimf&        m_m1_accum;      // mean (central moment of order 1)
+        Deepimf&        m_m2_accum;      // variance (central moment of order 2)
+        Deepimf&        m_m3_accum;      // skewness (central moment of order 3)
 
         Deepimf&        m_histograms;
 
@@ -328,8 +366,11 @@ struct DenoiserAOV::Impl
 
     Deepimf m_sum_accum;
     Deepimf m_covariance_accum;
-    // IDEA: Extend by m1, m2, m3?
-    //  -> How is m_sum_accum caluclated?
+
+    // StatMC Denoiser Accumulators
+    Deepimf m_diffuse_accum;
+    Deepimf m_norm_accum;
+
     Deepimf m_n_accum;
     Deepimf m_m1_accum;
     Deepimf m_m2_accum;
@@ -387,7 +428,9 @@ void DenoiserAOV::create_image(
 
     impl->m_sum_accum.resize(w, h, 3);
     impl->m_covariance_accum.resize(w, h, 6);
-    impl->m_n_accum.resize(w, h, 3);
+    impl->m_diffuse_accum.resize(w, h, 3);
+    impl->m_norm_accum.resize(w, h, 3);
+    impl->m_n_accum.resize(w, h, 1);
     impl->m_m1_accum.resize(w, h, 3);
     impl->m_m2_accum.resize(w, h, 3);
     impl->m_m3_accum.resize(w, h, 3);
@@ -400,6 +443,8 @@ void DenoiserAOV::clear_image()
 {
     impl->m_sum_accum.fill(0.0f);
     impl->m_covariance_accum.fill(0.0f);
+    impl->m_diffuse_accum.fill(0.0f);
+    impl->m_norm_accum.fill(0.0f);
     impl->m_n_accum.fill(0.0f);
     impl->m_m1_accum.fill(0.0f);
     impl->m_m2_accum.fill(0.0f);
@@ -461,6 +506,26 @@ const Deepimf& DenoiserAOV::sum_image() const
 Deepimf& DenoiserAOV::sum_image()
 {
     return impl->m_sum_accum;
+}
+
+const Deepimf& DenoiserAOV::diffuse_image() const
+{
+    return impl->m_diffuse_accum;
+}
+
+Deepimf& DenoiserAOV::diffuse_image()
+{
+    return impl->m_diffuse_accum;
+}
+
+const Deepimf& DenoiserAOV::norm_image() const
+{
+    return impl->m_norm_accum;
+}
+
+Deepimf& DenoiserAOV::norm_image()
+{
+    return impl->m_norm_accum;
 }
 
 const Deepimf& DenoiserAOV::m1_image() const
@@ -642,6 +707,8 @@ auto_release_ptr<AOVAccumulator> DenoiserAOV::create_accumulator() const
             impl->m_max_value,
             impl->m_sum_accum,
             impl->m_covariance_accum,
+            impl->m_diffuse_accum,
+            impl->m_norm_accum,
             impl->m_n_accum,
             impl->m_m1_accum,
             impl->m_m2_accum,

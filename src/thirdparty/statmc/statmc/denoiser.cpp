@@ -28,12 +28,12 @@ struct float3 {
 namespace
 {
 
-void alloc(Mat mat, vector<Mat> &mats, vector<GpuMat> &gpuMats) {
+void inline alloc(Mat mat, vector<Mat> &mats, vector<GpuMat> &gpuMats) {
     mats.emplace_back(mat);
     gpuMats.emplace_back(GpuMat(mat.rows, mat.cols, mat.type()));
 }
 
-void alloc(const bcd::Deepimf *deepimf, vector<Mat> &mats, vector<GpuMat> &gpuMats, int type = -1) {
+void inline alloc(const bcd::Deepimf *deepimf, vector<Mat> &mats, vector<GpuMat> &gpuMats, int type = -1) {
     Mat mat;
 
     int idx;
@@ -106,10 +106,12 @@ void alloc(const bcd::Deepimf *deepimf, vector<Mat> &mats, vector<GpuMat> &gpuMa
         std::cout << "M_opencv =" << std::endl << mat << std::endl << std::endl;
     }
 
+    // TODO: OpenCV stores color as BGR (not RGB).
+    // -> But does this even matter? After all, all RGB values are switched around anyway. The operations should be per-channel. So this should not affect (break) thinkgs, I think.
     alloc(mat, mats, gpuMats);
 }
 
-void uploadGPUPtrs(vector<GpuMat> &gpuMats, GpuMat &gpuPtrs, Stream stream) {
+void inline uploadGPUPtrs(vector<GpuMat> &gpuMats, GpuMat &gpuPtrs, Stream stream) {
     Mat gpuPtrsCPU = Mat(1, gpuMats.size(), CV_8UC(sizeof(PtrStepSzb)));
     PtrStepSzb *gpuPtrsCPUPtr = gpuPtrsCPU.ptr<PtrStepSzb>();
     for (auto &gpuMat : gpuMats)
@@ -117,7 +119,7 @@ void uploadGPUPtrs(vector<GpuMat> &gpuMats, GpuMat &gpuPtrs, Stream stream) {
     gpuPtrs.upload(gpuPtrsCPU, stream);
 }
 
-void uploadGBufferChannelCounts(vector<GpuMat> &gpuMats, GpuMat &channelCounts, Stream stream) {
+void inline uploadGBufferChannelCounts(vector<GpuMat> &gpuMats, GpuMat &channelCounts, Stream stream) {
     Mat channelCountsCPU = Mat(1, gpuMats.size(), CV_8UC1);
     unsigned char *channelCountsCPUPtr = channelCountsCPU.ptr<unsigned char>();
     for (auto &gpuMat : gpuMats)
@@ -181,7 +183,7 @@ bool Denoiser::denoise()
     std::cout << "films >>> ";
     alloc(m_inputs.m_pColors,           films, gpuFilms);
     std::cout << "ns >>> ";
-    alloc(m_inputs.m_pNbOfSamples,      ns,    gpuNs);
+    alloc(m_inputs.m_pNbOfSamples,      ns,    gpuNs,   CV_32SC1);
     // TODO: these are 3-dim images (r,g,b) - shoud they be???
     std::cout << "m1 >>> ";
     alloc(m_stat_inputs.m_pMeans,       means, gpuMeans);
@@ -192,8 +194,13 @@ bool Denoiser::denoise()
 
 
     // // We use the same set of G-buffers to denoise both renderings.
-    // alloc(prefix + "-0-" + suffix + "-t1-b0-film-mean.pfm", gBuffers, gpuGBuffers);
-    // alloc(prefix + "-0-" + suffix + "-t2-b0-film-mean.pfm", gBuffers, gpuGBuffers);
+    // alloc(prefix + "-0-" + suffix + "-t1-b0-film-mean.pfm", gBuffers, gpuGBuffers); // normals
+    // alloc(prefix + "-0-" + suffix + "-t2-b0-film-mean.pfm", gBuffers, gpuGBuffers); // diffuse colors
+
+    std::cout << "norm >>> ";
+    alloc(m_stat_inputs.m_pNorm,    gBuffers, gpuGBuffers);
+    std::cout << "diffuse >>> ";
+    alloc(m_stat_inputs.m_pDiffuse, gBuffers, gpuGBuffers);
 
     int width  = m_inputs.m_pColors->getWidth();
     int height = m_inputs.m_pColors->getHeight();
