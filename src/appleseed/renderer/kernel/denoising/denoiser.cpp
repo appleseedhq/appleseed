@@ -45,9 +45,13 @@
 #include "bcd/SpikeRemovalFilter.h"
 #include "bcd/Utils.h"
 
-// StatMC headers.
-// TODO: Make this only be added if (cmake) WITH_STATMC = ON.
+// StatMC headers (Optional).
+#if WITH_STATMC // WITH_STATMC == 1
 #include "statmc/denoiser.h"
+#pragma message ("Compiling WITH_STATMC ON.")
+#elif !defined(WITH_STATMC)
+#pragma message ("Compiling WITH_STATMC OFF.")
+#endif
 
 // Standard headers.
 #include <cmath>
@@ -179,12 +183,14 @@ namespace
         inputs.m_pHistograms = &histograms;
         inputs.m_pSampleCovariances = &covariances;
 
+#if WITH_STATMC // WITH_STATMC == 1
         statmc::DenoiserInputs statmc_inputs;
         statmc_inputs.m_pDiffuse = &diffuse;
         statmc_inputs.m_pNorm = &norm;
         statmc_inputs.m_pMeans = &m1_means;
         statmc_inputs.m_pVariances = &m2_variance;
         statmc_inputs.m_pSkewdnesses = &m3_skewness;
+#endif
 
         DenoiserParameters parameters;
         parameters.m_histogramDistanceThreshold = options.m_histogram_patch_distance_threshold;
@@ -201,17 +207,27 @@ namespace
 
         std::unique_ptr<IDenoiser> denoiser;
 
-        #if 0 // remove this for testing // TODO: make proper
+#if !defined(WITH_STATMC) // compile without StatMC Denoiser
         if (options.m_num_scales > 1)
             denoiser.reset(new MultiscaleDenoiser(static_cast<int>(options.m_num_scales)));
         else
             denoiser.reset(new Denoiser());
-        #endif
+#elif WITH_STATMC // compile with StatMC Denoiser
+        if (options.m_use_statmc_denoiser)
+        {
+            statmc::Denoiser* statmc_denoiser = new statmc::Denoiser();
+            statmc_denoiser->setStatInputs(statmc_inputs);
 
-        statmc::Denoiser* statmc_denoiser = new statmc::Denoiser();
-        statmc_denoiser->setStatInputs(statmc_inputs); // TODO: better way to do this?
-
-        denoiser.reset(statmc_denoiser); // StatMC Denoiser
+            denoiser.reset(statmc_denoiser);
+        }
+        else 
+        {
+            if (options.m_num_scales > 1)
+                denoiser.reset(new MultiscaleDenoiser(static_cast<int>(options.m_num_scales)));
+            else
+                denoiser.reset(new Denoiser());
+        }
+#endif
 
         DenoiserCallbacks callbacks(abort_switch);
         denoiser->setCallbacks(&callbacks);

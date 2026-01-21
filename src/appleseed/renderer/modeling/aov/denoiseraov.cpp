@@ -172,14 +172,14 @@ namespace
             m_covariance_accum.get(pi.y, pi.x, c_xz) += m_accum.r * m_accum.b;
             m_covariance_accum.get(pi.y, pi.x, c_xy) += m_accum.r * m_accum.g;
 
-            float &n = m_n_accum.get(pi.y, pi.x, 0); // TODO: replace: m_sample_count
+#if WITH_STATMC // compile with StatMC Denoiser
+            const float n = m_n_accum.get(pi.y, pi.x, 0);
             
             // Use Meng's algorithm (https://arxiv.org/abs/1510.04923).
-            n++;
             // delta
             const float d_0 = m_accum.r - m_m1_accum.get(pi.y, pi.x, 0);
-            const float d_1 = m_accum.r - m_m1_accum.get(pi.y, pi.x, 1);
-            const float d_2 = m_accum.r - m_m1_accum.get(pi.y, pi.x, 2);
+            const float d_1 = m_accum.g - m_m1_accum.get(pi.y, pi.x, 1);
+            const float d_2 = m_accum.b - m_m1_accum.get(pi.y, pi.x, 2);
             // delta^2
             const float d2_0 = d_0 * d_0;
             const float d2_1 = d_1 * d_1;
@@ -204,9 +204,11 @@ namespace
             m_m2_accum.get(pi.y, pi.x, 2) += d_2 * (d_2 - dN_2);
 
             // skewness (m3)
-            m_m3_accum.get(pi.y, pi.x, 0) += - 3.f * dN_0 * m_m2_accum.get(pi.y, pi.x, 0) + d_0 * (d_0 - dN2_0);
-            m_m3_accum.get(pi.y, pi.x, 1) += - 3.f * dN_1 * m_m2_accum.get(pi.y, pi.x, 1) + d_1 * (d_1 - dN2_1);
-            m_m3_accum.get(pi.y, pi.x, 2) += - 3.f * dN_2 * m_m2_accum.get(pi.y, pi.x, 2) + d_2 * (d_2 - dN2_2);
+            m_m3_accum.get(pi.y, pi.x, 0) += - 3.f * dN_0 * m_m2_accum.get(pi.y, pi.x, 0) + d_0 * (d2_0 - dN2_0);
+            m_m3_accum.get(pi.y, pi.x, 1) += - 3.f * dN_1 * m_m2_accum.get(pi.y, pi.x, 1) + d_1 * (d2_1 - dN2_1);
+            m_m3_accum.get(pi.y, pi.x, 2) += - 3.f * dN_2 * m_m2_accum.get(pi.y, pi.x, 2) + d_2 * (d2_2 - dN2_2);
+#endif // NOTE: This way these values won't be calculated, saving some computing effort.
+       // TODO: Is it feasable to fully remove the accumulators, to save memory?
 
             // Fill histogram: code from BCD's SampleAccumulator class.
             for (size_t c = 0; c < 3; ++c)
@@ -282,6 +284,7 @@ namespace
 
                 const Vector2i& pi = pixel_context.get_pixel_coords();
 
+#if WITH_STATMC // compile with StatMC Denoiser
                 m_n_accum.get(pi.x, pi.y, 0) += 1;
 
                 if (m_sample_count == 1)
@@ -301,13 +304,15 @@ namespace
                     }
                     else
                     {
-                        // TODO: good default value?
+                        // TODO: what is a good default value here? (I.e. for not hitting anything.) Currently: (0,0,0) ~ Black
                         m_norm_accum.get(pi.x, pi.y, 0) = 0.0;
                         m_norm_accum.get(pi.x, pi.y, 1) = 0.0;
                         m_norm_accum.get(pi.x, pi.y, 2) = 0.0;
                     }
                     
                 }
+#endif // NOTE: This way these values won't be calculated, saving some computing effort.
+       // TODO: Is it feasable to fully remove the accumulators, to save memory?
             }
         }
 

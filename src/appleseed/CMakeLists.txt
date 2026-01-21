@@ -2401,6 +2401,7 @@ if (WITH_STATMC)
     target_link_libraries (appleseed
         statmc
     )
+    add_compile_definitions(WITH_STATMC)
 endif ()
 
 target_link_libraries (appleseed

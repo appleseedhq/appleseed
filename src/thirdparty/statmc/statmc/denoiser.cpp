@@ -316,4 +316,4 @@ bool Denoiser::denoise()
     return true;
 }
 
-} // namespace std
+} // namespace statmc
