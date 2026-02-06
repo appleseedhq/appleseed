@@ -2385,10 +2385,15 @@ if (WITH_EMBREE)
     link_against_embree (appleseed)
 endif ()
 
+if (WITH_GPU OR WITH_STATMC)
+    target_link_libraries (appleseed
+        ${CUDA_CUDA_LIBRARY}
+    )
+endif ()
+
 if (WITH_GPU)
     target_link_libraries (appleseed
         ${OPTIX_LIBRARIES}
-        ${CUDA_CUDA_LIBRARY}
     )
 endif ()
 
@@ -2396,6 +2401,7 @@ if (WITH_STATMC)
     target_link_libraries (appleseed
         statmc
     )
+    add_compile_definitions(WITH_STATMC)
 endif ()
 
 target_link_libraries (appleseed

@@ -494,6 +494,11 @@ void Frame::denoise(
     options.m_mark_invalid_pixels =
         m_params.get_optional<bool>("mark_invalid_pixels", false);
 
+#if WITH_STATMC // complie with StatMC Denoiser
+    options.m_use_statmc_denoiser =
+        m_params.get_required<std::string>("denoiser", "off") == "on_statmc";
+#endif
+
     assert(impl->m_denoiser_aov);
 
     impl->m_denoiser_aov->fill_empty_samples();
@@ -510,6 +515,8 @@ void Frame::denoise(
         num_samples_image,
         impl->m_denoiser_aov->histograms_image(),
         covariances_image,
+        impl->m_denoiser_aov->diffuse_image(),
+        impl->m_denoiser_aov->norm_image(),
         impl->m_denoiser_aov->m1_image(),
         impl->m_denoiser_aov->m2_image(),
         impl->m_denoiser_aov->m3_image(),
@@ -526,6 +533,8 @@ void Frame::denoise(
                 num_samples_image,
                 impl->m_denoiser_aov->histograms_image(),
                 covariances_image,
+                impl->m_denoiser_aov->diffuse_image(),
+                impl->m_denoiser_aov->norm_image(),
                 impl->m_denoiser_aov->m1_image(),
                 impl->m_denoiser_aov->m2_image(),
                 impl->m_denoiser_aov->m3_image(),
@@ -1411,6 +1420,10 @@ void Frame::extract_parameters()
             impl->m_denoising_mode = DenoisingMode::Off;
         else if (denoise_mode == "on")
             impl->m_denoising_mode = DenoisingMode::Denoise;
+#if WITH_STATMC // complie with StatMC Denoiser
+        else if (denoise_mode == "on_statmc")
+            impl->m_denoising_mode = DenoisingMode::Denoise;
+#endif
         else if (denoise_mode == "write_outputs")
             impl->m_denoising_mode = DenoisingMode::WriteOutputs;
         else
@@ -1602,6 +1615,9 @@ DictionaryArray FrameFactory::get_input_metadata()
                 Dictionary()
                     .insert("Off", "off")
                     .insert("On", "on")
+#if WITH_STATMC // complie with StatMC Denoiser
+                    .insert("On (StatMC Denoiser)", "on_statmc")
+#endif
                     .insert("Write Outputs", "write_outputs"))
             .insert("use", "required")
             .insert("default", "off")

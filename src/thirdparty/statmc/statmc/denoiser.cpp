@@ -13,46 +13,53 @@
 #include <opencv2/cudaimgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
 
+#include <iostream> // TODO: Remove (debugging)
+
 using std::string, std::vector;
 using cv::Mat, cv::Mat_, cv::imread, cv::IMREAD_UNCHANGED;
 using cv::cuda::GpuMat, cv::cuda::PtrStepSzb, cv::cuda::Stream;
 using Vec3 = cv::Vec<float, 3>;
 
-
-namespace
-{
 struct float3 {
     float x, y, z;
 };
 
+namespace
+{
 
-void alloc(Mat mat, vector<Mat> &mats, vector<GpuMat> &gpuMats) {
+void inline alloc(Mat mat, vector<Mat> &mats, vector<GpuMat> &gpuMats) {
     mats.emplace_back(mat);
     gpuMats.emplace_back(GpuMat(mat.rows, mat.cols, mat.type()));
 }
 
-#if 0 // TODO: remove unneded alloc
-void alloc(string filename, vector<Mat> &mats, vector<GpuMat> &gpuMats, int type = -1) {
-    Mat mat = imread(filename, IMREAD_UNCHANGED);
-    mat.convertTo(mat, type);
+void inline alloc(const bcd::Deepimf *deepimf, vector<Mat> &mats, vector<GpuMat> &gpuMats, int type = -1) {
+
+    const int height = deepimf->getHeight();
+    const int width  = deepimf->getWidth();
+    const int depth  = deepimf->getDepth();
+    const int size   = deepimf->getSize();
+
+    const size_t memSize = size * sizeof(float);
+
+    std::cout << "height: " << height << " width: " << width << " (area: " << height * width << ") depth: " << depth << " size: " << size << std::endl;
+
+    // Create non-const data for OpenCV Mat.
+    float* pDeepimfData = (float*) malloc( memSize );
+    memcpy(pDeepimfData, deepimf->getDataPtr(), memSize);
+
+    // TODO: (Idea) Since mat is not modified except for the mat of ns, in those cases we may be able to save the memcpy and just cast `const float*` of  `deepimf->getDataPtr()` to `float*` (casting as such is normally ill-advised).
+
+    Mat mat = Mat(height, width, CV_32FC(depth), pDeepimfData);
+
+    // Convert matrix to different type (default: float (32F)).
+    // Note: Like for OpenCV's `convertTo`, -1 means "keep the type".
+    if ( type != -1 )
+        mat.convertTo(mat, type);
+
     alloc(mat, mats, gpuMats);
 }
-#endif
 
-void alloc(const bcd::Deepimf *deepimf, vector<Mat> mats, vector<GpuMat> &gpuMats, int type = -1) {
-    Mat mat;
-
-    mat.create(deepimf->getHeight(), deepimf->getWidth(), type);
-
-    const float* pDeepimfData = deepimf->getDataPtr();
-    const uchar* pMatData = mat.ptr();
-
-    pMatData = (uchar*) pDeepimfData; // TODO: only *half sure* this is valid ...
-
-    alloc(mat, mats, gpuMats);
-}
-
-void uploadGPUPtrs(vector<GpuMat> &gpuMats, GpuMat &gpuPtrs, Stream stream) {
+void inline uploadGPUPtrs(vector<GpuMat> &gpuMats, GpuMat &gpuPtrs, Stream stream) {
     Mat gpuPtrsCPU = Mat(1, gpuMats.size(), CV_8UC(sizeof(PtrStepSzb)));
     PtrStepSzb *gpuPtrsCPUPtr = gpuPtrsCPU.ptr<PtrStepSzb>();
     for (auto &gpuMat : gpuMats)
@@ -60,25 +67,24 @@ void uploadGPUPtrs(vector<GpuMat> &gpuMats, GpuMat &gpuPtrs, Stream stream) {
     gpuPtrs.upload(gpuPtrsCPU, stream);
 }
 
-void uploadGBufferChannelCounts(vector<GpuMat> &gpuMats, GpuMat &channelCounts, Stream stream) {
+void inline uploadGBufferChannelCounts(vector<GpuMat> &gpuMats, GpuMat &channelCounts, Stream stream) {
     Mat channelCountsCPU = Mat(1, gpuMats.size(), CV_8UC1);
     unsigned char *channelCountsCPUPtr = channelCountsCPU.ptr<unsigned char>();
     for (auto &gpuMat : gpuMats)
         *channelCountsCPUPtr++ = gpuMat.channels();
     channelCounts.upload(channelCountsCPU, stream);
 }
-} // namespace (ananymous)
+} // namespace (anonymous)
 
 namespace statmc {
 
-bool Denoiser::denoise(DenoiserInputs stat_inputs)
+bool Denoiser::denoise()
 {
-    // string prefix = "staircase";
-    // string suffix = "16";
     // vector<string> indices = {"0", "1"}; // We denoise two different renderings with these indices.
     // int nRenderings = indices.size();
 
     int nRenderings = 1; // TODO: Are more possible/sensical in Appleseed usage?
+                         //       Moreover, then we wouldn't need to deal with the vectors of matrices.
 
     // Set denoising parameters
     // TODO: Make arguments.
@@ -113,25 +119,21 @@ bool Denoiser::denoise(DenoiserInputs stat_inputs)
     vector<GpuMat> gpuDiscriminators;
     vector<GpuMat> gpuDenoisedFilms;
 
-    // for (auto &index : indices) {
-    //     alloc(prefix + "-" + index + "-" + suffix + "-film.pfm",       films, gpuFilms);
-    //     alloc(prefix + "-" + index + "-" + suffix + "-t0-b0-n.pfm",    ns,    gpuNs, CV_32SC1);
-    //     alloc(prefix + "-" + index + "-" + suffix + "-t0-b0-mean.pfm", means, gpuMeans);
-    //     alloc(prefix + "-" + index + "-" + suffix + "-t0-b0-m2.pfm",   m2s,   gpuM2s);
-    //     alloc(prefix + "-" + index + "-" + suffix + "-t0-b0-m3.pfm",   m3s,   gpuM3s);
-    // }
-
+    std::cout << "films >>> ";
     alloc(m_inputs.m_pColors,           films, gpuFilms);
-    alloc(m_inputs.m_pNbOfSamples,      ns,    gpuNs);
-    // TODO: these are 3-dim images (r,g,b) - shoud they be???
+    std::cout << "ns >>> ";
+    alloc(m_inputs.m_pNbOfSamples,      ns,    gpuNs,   CV_32SC1);
+    std::cout << "m1 >>> ";
     alloc(m_stat_inputs.m_pMeans,       means, gpuMeans);
+    std::cout << "m2 >>> ";
     alloc(m_stat_inputs.m_pVariances,   m2s,   gpuM2s);
+    std::cout << "m3 >>> ";
     alloc(m_stat_inputs.m_pSkewdnesses, m3s,   gpuM3s);
 
-
-    // // We use the same set of G-buffers to denoise both renderings.
-    // alloc(prefix + "-0-" + suffix + "-t1-b0-film-mean.pfm", gBuffers, gpuGBuffers);
-    // alloc(prefix + "-0-" + suffix + "-t2-b0-film-mean.pfm", gBuffers, gpuGBuffers);
+    std::cout << "norm >>> ";
+    alloc(m_stat_inputs.m_pNorm,    gBuffers, gpuGBuffers);
+    std::cout << "diffuse >>> ";
+    alloc(m_stat_inputs.m_pDiffuse, gBuffers, gpuGBuffers);
 
     int width  = m_inputs.m_pColors->getWidth();
     int height = m_inputs.m_pColors->getHeight();
@@ -233,11 +235,17 @@ bool Denoiser::denoise(DenoiserInputs stat_inputs)
     );
 
 
-    // // Write denoised images to disk
-    // for (int i = 0; i < nRenderings; i++) {
-    //     gpuDenoisedFilms[i].download(denoisedFilms[i], stream);
-    //     imwrite(prefix + "-" + indices[i] + "-" + suffix + "-film-f.pfm", denoisedFilms[i]);
-    // }
+    // Download denoised images
+    for (int i = 0; i < nRenderings; i++) { // TODO: nREnderings = 0, so loop is not needed
+        gpuDenoisedFilms[i].download(denoisedFilms[i], stream);
+    }
+
+    Mat denoisedFilm = denoisedFilms[0];
+    denoisedFilm.convertTo(denoisedFilm, CV_32FC(sizeof(PtrStepSzb)));
+
+    m_outputs.m_pDenoisedColors->copyDataFrom( denoisedFilm.ptr<float>(0) );
+
+    return true;
 }
 
-} // namespace std
+} // namespace statmc

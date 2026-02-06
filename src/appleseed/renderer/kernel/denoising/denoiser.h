@@ -52,6 +52,9 @@ class DenoiserOptions
     size_t  m_num_scales;                         //  number of pyramid levels to use.
     size_t  m_num_cores;                          //  number of cores used to denoise. O means using all the cores available.
     bool    m_mark_invalid_pixels;
+#if WITH_STATMC // complie with StatMC Denoiser
+    bool    m_use_statmc_denoiser;                //  use the StatMC denoiser instead of the BCD denoiser
+#endif
 
     DenoiserOptions()
       : m_histogram_patch_distance_threshold(1.0f)
@@ -65,6 +68,9 @@ class DenoiserOptions
       , m_num_scales(3)
       , m_num_cores(0)
       , m_mark_invalid_pixels(false)
+#if WITH_STATMC // complie with StatMC Denoiser
+      , m_use_statmc_denoiser(false) // TODO: Should be false. Set true for debugging purposes.
+#endif
     {
     }
 };
@@ -74,6 +80,8 @@ bool denoise_beauty_image(
     bcd::Deepimf&               num_samples,
     bcd::Deepimf&               histograms,
     bcd::Deepimf&               covariances,
+    bcd::Deepimf&               diffuse,
+    bcd::Deepimf&               norm,
     bcd::Deepimf&               m1_means,
     bcd::Deepimf&               m2_variance,
     bcd::Deepimf&               m3_skewness,
@@ -85,6 +93,8 @@ bool denoise_aov_image(
     const bcd::Deepimf&         num_samples,
     const bcd::Deepimf&         histograms,
     const bcd::Deepimf&         covariances,
+    const bcd::Deepimf&         diffuse,
+    const bcd::Deepimf&         norm,
     const bcd::Deepimf&         m1_means,
     const bcd::Deepimf&         m2_variance,
     const bcd::Deepimf&         m3_skewness,

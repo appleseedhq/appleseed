@@ -45,9 +45,13 @@
 #include "bcd/SpikeRemovalFilter.h"
 #include "bcd/Utils.h"
 
-// StatMC headers.
-// TODO: Make this only be added if (cmake) WITH_STATMC = ON.
+// StatMC headers (Optional).
+#if WITH_STATMC // WITH_STATMC == 1
 #include "statmc/denoiser.h"
+#pragma message ("Compiling WITH_STATMC ON.")
+#elif !defined(WITH_STATMC)
+#pragma message ("Compiling WITH_STATMC OFF.")
+#endif
 
 // Standard headers.
 #include <cmath>
@@ -164,6 +168,8 @@ namespace
         const Deepimf&          num_samples,
         const Deepimf&          histograms,
         const Deepimf&          covariances,
+        const Deepimf&          diffuse,
+        const Deepimf&          norm,
         const Deepimf&          m1_means,
         const Deepimf&          m2_variance,
         const Deepimf&          m3_skewness,
@@ -177,10 +183,14 @@ namespace
         inputs.m_pHistograms = &histograms;
         inputs.m_pSampleCovariances = &covariances;
 
+#if WITH_STATMC // WITH_STATMC == 1
         statmc::DenoiserInputs statmc_inputs;
+        statmc_inputs.m_pDiffuse = &diffuse;
+        statmc_inputs.m_pNorm = &norm;
         statmc_inputs.m_pMeans = &m1_means;
         statmc_inputs.m_pVariances = &m2_variance;
         statmc_inputs.m_pSkewdnesses = &m3_skewness;
+#endif
 
         DenoiserParameters parameters;
         parameters.m_histogramDistanceThreshold = options.m_histogram_patch_distance_threshold;
@@ -197,17 +207,27 @@ namespace
 
         std::unique_ptr<IDenoiser> denoiser;
 
-        #if 0 // remove this for testing // TODO: make proper
+#if !defined(WITH_STATMC) // compile without StatMC Denoiser
         if (options.m_num_scales > 1)
             denoiser.reset(new MultiscaleDenoiser(static_cast<int>(options.m_num_scales)));
         else
             denoiser.reset(new Denoiser());
-        #endif
+#elif WITH_STATMC // compile with StatMC Denoiser
+        if (options.m_use_statmc_denoiser)
+        {
+            statmc::Denoiser* statmc_denoiser = new statmc::Denoiser();
+            statmc_denoiser->setStatInputs(statmc_inputs);
 
-        statmc::Denoiser* statmc_denoiser = new statmc::Denoiser();
-        statmc_denoiser->setStatInputs(statmc_inputs); // TODO: better way to do this?
-
-        denoiser.reset(statmc_denoiser); // StatMC Denoiser
+            denoiser.reset(statmc_denoiser);
+        }
+        else 
+        {
+            if (options.m_num_scales > 1)
+                denoiser.reset(new MultiscaleDenoiser(static_cast<int>(options.m_num_scales)));
+            else
+                denoiser.reset(new Denoiser());
+        }
+#endif
 
         DenoiserCallbacks callbacks(abort_switch);
         denoiser->setCallbacks(&callbacks);
@@ -229,6 +249,8 @@ bool denoise_beauty_image(
     Deepimf&                num_samples,
     Deepimf&                histograms,
     Deepimf&                covariances,
+    Deepimf&                diffuse,
+    Deepimf&                norm,
     Deepimf&                m1_means,
     Deepimf&                m2_variance,
     Deepimf&                m3_skewness,
@@ -256,6 +278,8 @@ bool denoise_beauty_image(
             num_samples,
             histograms,
             covariances,
+            diffuse,
+            norm,
             m1_means,
             m2_variance,
             m3_skewness,
@@ -274,9 +298,11 @@ bool denoise_aov_image(
     const Deepimf&          num_samples,
     const Deepimf&          histograms,
     const Deepimf&          covariances,
-    bcd::Deepimf&           m1_means,
-    bcd::Deepimf&           m2_variance,
-    bcd::Deepimf&           m3_skewness,
+    const Deepimf&          diffuse,
+    const Deepimf&          norm,
+    const Deepimf&          m1_means,
+    const Deepimf&          m2_variance,
+    const Deepimf&          m3_skewness,
     const DenoiserOptions&  options,
     IAbortSwitch*           abort_switch)
 {
@@ -298,6 +324,8 @@ bool denoise_aov_image(
             num_samples,
             histograms,
             covariances,
+            diffuse,
+            norm,
             m1_means,
             m2_variance,
             m3_skewness,

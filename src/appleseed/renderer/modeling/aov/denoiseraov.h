@@ -86,6 +86,12 @@ class DenoiserAOV
     const bcd::Deepimf& sum_image() const;
     bcd::Deepimf& sum_image();
 
+    const bcd::Deepimf& diffuse_image() const;
+    bcd::Deepimf& diffuse_image();
+
+    const bcd::Deepimf& norm_image() const;
+    bcd::Deepimf& norm_image();
+
     const bcd::Deepimf& m1_image() const;
     bcd::Deepimf& m1_image();
 

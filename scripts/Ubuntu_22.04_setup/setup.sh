@@ -36,7 +36,7 @@ DEBUG=
 
 # Build Type
 # Can be set using the `-b` or `--build` flag.
-BUILD_TYPE="Ship"
+BUILD_TYPE="Debug"
 
 # C and C++ Compiler
 # Can be set using the `--cc` and `--cxx` flags respectively.
@@ -73,12 +73,14 @@ IMATH_DL="https://github.com/AcademySoftwareFoundation/Imath/releases/download/v
 OCIO_DL="https://github.com/AcademySoftwareFoundation/OpenColorIO/archive/refs/tags/v2.4.2.tar.gz"
 OEXR_DL="https://github.com/AcademySoftwareFoundation/openexr/releases/download/v3.3.3/openexr-3.3.3.tar.gz"
 OIIO_DL="https://github.com/AcademySoftwareFoundation/OpenImageIO/releases/download/v2.5.18.0/OpenImageIO-2.5.18.0.tar.gz"
-OPENCV_DL="https://github.com/opencv/opencv/archive/refs/tags/4.8.1.tar.gz"
+OPENCV_DL="https://github.com/opencv/opencv/archive/refs/tags/4.10.0.tar.gz"
 OSL_DL="https://github.com/AcademySoftwareFoundation/OpenShadingLanguage/archive/refs/tags/v1.13.12.0.tar.gz" # TODO: update to 1.14
 PARTIO_DL="https://github.com/wdas/partio/archive/refs/tags/v1.19.0.tar.gz"
-STATMC_OPENCV_CONTIB_DL="https://github.com/cg-tuwien/StatMC-opencv_contrib/archive/refs/heads/master.zip"
+STATMC_OPENCV_CONTIB_DL="https://github.com/4134N4/StatMC-opencv_contrib/archive/refs/heads/main.zip" # Contrip for OpenCV 4.10
 XERCES_DL="https://github.com/apache/xerces-c/archive/refs/tags/v3.3.0.tar.gz"
 HAPPLY_RP="https://github.com/MarcusTU/happly"
+OPTIX_RP="https://github.com/NVIDIA/optix-dev.git"
+OPTIX_RP_TAG="v9.0.0"
 
 # README: YOU SHOULD NOT CHANGE ANY OF THE VARIABLES BELOW, UNLESS YOU KNOW WHAT YOU ARE DOING.
 
@@ -108,9 +110,8 @@ _DEFAULT_DEPENDENCIES_DIR_NAME="dependencies"
 _CXX_STD=17
 
 # CMAKE Binary
-# CMake binary. Use this constant to set a different cmake version (by binary) manually.
-#_CMAKE=cmake
-_CMAKE=/home/masc/workspace/students/2025-alex-statmc/cmake-3.22/cmake-3.22.1-linux-x86_64/bin/cmake
+# CMake binary. Use this constant to set a different cmake version manually (by setting it a path to the cmake binary).
+_CMAKE=cmake
 
 # ----------------------------------------------------------------
 # Cosmetic Constants
@@ -136,6 +137,7 @@ _PARTIO=PartIO
 _STATMC=StatMC
 _XERCES=Xerces
 _HAPPLY=Happly
+_OPTIX=OptiX
 
 # Colors
 _COLOR_CLEAR='\033[0m'
@@ -192,6 +194,7 @@ _sOSLInstallDir=""
 _sPartIOInstallDir=""
 _sXercesInstallDir=""
 _sHapplyInstallDir=""
+_sOptiXInstallDir=""
 
 _sBoostConfigDir="" # is version dependent
 _sEmbreeConfigDir="" # is version dependent
@@ -592,6 +595,15 @@ handle_options() {
         _sHapplyInstallDir=$(extract_argument $@)
         shift
         ;;
+      --optix-install)
+        if ! has_argument $@; then
+            echo "$(rootVarName $_OPTIX)" >&2
+            usage
+            exit 1
+        fi
+        _sOptiXInstallDir=$(extract_argument $@)
+        shift
+        ;;
       # Options
       -h | --help)
         usage
@@ -814,6 +826,7 @@ dependencyInstallInfo $_OSL     $_sOSLInstallDir
 dependencyInstallInfo $_PARTIO  $_sPartIOInstallDir
 dependencyInstallInfo $_XERCES  $_sXercesInstallDir
 dependencyInstallInfo $_HAPPLY  $_sHapplyInstallDir
+dependencyInstallInfo $_OPTIX   $_sOptiXInstallDir
 
 # Optional Dependencies
 echo "  Building the following optional dependencies:"
@@ -1627,8 +1640,36 @@ if [[ $_sHapplyInstallDir = "" ]]; then
 
   stepInfo $_NAME "$depName cloned to \"$_sSourceDir\"." $_COLOR_INSTALL_DIR
   _sHapplyInstallDir=$_sSourceDir
+
+  # clean step
+  _sSourceDir="" # else the install directory is removed
+  cleanInstallStep
 fi
 
+# ----------------------------------------------------------------
+# OptiX
+# ----------------------------------------------------------------
+
+if [[ $_sOptiXInstallDir = "" && $WITH_GPU = ON ]]; then
+
+  # setup
+  depName=$_OPTIX
+  _sRepo=${OPTIX_RP##*/}
+  _sSourceDir="$_sDependenciesDir/$depName"
+
+  # clone repository if not already
+    if [ ! -d $_sSourceDir ]; then
+        stepInfo $depName "Clone $OPTIX_RP to $_sSourceDir"
+        $_DEBUG git clone --depth 1 --branch $OPTIX_RP_TAG $OPTIX_RP $_sSourceDir
+    fi
+
+  stepInfo $_NAME "$depName cloned to \"$_sSourceDir\"." $_COLOR_INSTALL_DIR
+  _sOptiXInstallDir=$_sSourceDir
+
+  # clean step
+  _sSourceDir="" # else the install directory is removed
+  cleanInstallStep
+fi
 
 # ----------------------------------------------------------------
 # OpenCV w/ StatMC Contribution
@@ -1646,7 +1687,7 @@ if [[ $WITH_STATMC = ON ]]; then
   depName=$_STATMC
   _sTarFile=${STATMC_OPENCV_CONTIB_DL##*/}
   sourceFile=${_sTarFile//".zip"/}
-  _sInstallDir="$_sDependenciesDir/StatMC-opencv_contrib-master"
+  _sInstallDir="$_sDependenciesDir/StatMC-opencv_contrib-main"
 
   # check for StatMC OpenCV Contribution installation in _sInstallDir (via existence of lib file)
   if [ ! -f $_sInstallDir/CONTRIBUTING.md ]; then
@@ -1734,7 +1775,7 @@ if [[ $_sOpenCVInstallDir = "" && $WITH_STATMC = ON ]]; then
       -DCMAKE_C_FLAGS="${CMAKE_C_FLAGS} -march=native" \
       -DCMAKE_CXX_FLAGS="${CMAKE_CXX_FLAGS} -march=native" \
       -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc \
-      -DCMAKE_CUDA_HOST_COMPILER=/usr/bin/clang++ \
+      -DCMAKE_CUDA_HOST_COMPILER=$CXX_COMPILER \
       -DCMAKE_CUDA_ARCHITECTURES=$CUDA_ARCH_NUM \
       -DWITH_CUDA=ON \
       -DWITH_CUBLAS=ON \
@@ -1893,6 +1934,7 @@ if [ $_bNewBuild = true ]; then
     -DWITH_STATMC=$WITH_STATMC \
     -DWITH_SPECTRAL_SUPPORT=OFF \
     -Dhapply_ROOT=$_sHapplyInstallDir \
+    -DOPTIXHOME=$_sOptiXInstallDir \
     ..
   stepInfo $_APPLESEED "Configured CMake."
 fi

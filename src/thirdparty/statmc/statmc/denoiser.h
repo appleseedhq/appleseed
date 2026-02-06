@@ -13,12 +13,16 @@ namespace statmc
 struct DenoiserInputs
 {
   DenoiserInputs()
-    : m_pMeans(nullptr)
+    : m_pDiffuse(nullptr)
+    , m_pNorm(nullptr)
+    , m_pMeans(nullptr)
     , m_pVariances(nullptr)
     , m_pSkewdnesses(nullptr)
   {
   }
 
+  const bcd::Deepimf* m_pDiffuse;
+  const bcd::Deepimf* m_pNorm;
   const bcd::Deepimf* m_pMeans;
   const bcd::Deepimf* m_pVariances;
   const bcd::Deepimf* m_pSkewdnesses;
@@ -32,14 +36,19 @@ class Denoiser
 
     virtual bool denoise();
 
-    virtual bool denoise(DenoiserInputs stat_inputs);
+    // virtual bool denoise(DenoiserInputs stat_inputs);
+
+    void setInputs(const bcd::DenoiserInputs& i_rInputs)
+    {
+        m_inputs = i_rInputs;
+    }
 
     const DenoiserInputs& getStatInputs() const
     {
         return m_stat_inputs;
     }
 
-    virtual void setStatInputs(const DenoiserInputs& i_rInputs)
+    void setStatInputs(const DenoiserInputs& i_rInputs)
     {
         m_stat_inputs = i_rInputs;
     }
