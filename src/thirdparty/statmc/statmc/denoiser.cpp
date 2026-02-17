@@ -244,6 +244,7 @@ bool Denoiser::denoise()
     denoisedFilm.convertTo(denoisedFilm, CV_32FC(sizeof(PtrStepSzb)));
 
     m_outputs.m_pDenoisedColors->copyDataFrom( denoisedFilm.ptr<float>(0) );
+    //m_outputs.m_pDenoisedColors->copyDataFrom( m_stat_inputs.m_pDiffuse->getDataPtr() ); // TODO: remove
 
     return true;
 }
