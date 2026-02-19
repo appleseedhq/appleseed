@@ -238,7 +238,7 @@ namespace
 
         if (!denoiser->inputsOutputsAreOk())
             return false;
-        
+
         return denoiser->denoise();
     }
 

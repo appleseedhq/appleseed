@@ -32,10 +32,8 @@
 // appleseed.renderer headers.
 #include "renderer/global/globallogger.h"
 #include "renderer/kernel/aov/aovaccumulator.h"
-#include "renderer/kernel/aov/aovcomponents.h"
 #include "renderer/kernel/rendering/pixelcontext.h"
 #include "renderer/kernel/shading/shadingcomponents.h"
-#include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
 #include "renderer/modeling/aov/aov.h"
 #include "renderer/modeling/color/colorspace.h"
@@ -142,9 +140,6 @@ namespace
 
             const Vector2i& pi = pixel_context.get_pixel_coords();
 
-            if ( pi.x == 0 && pi.y == 0 )
-                std::cout << "on_sample_end called for pixel (0,0) with sample count " << m_sample_count << std::endl;
-
             // Ignore samples outside the tile.
             if (outside_tile(pi))
                 return;
@@ -173,46 +168,6 @@ namespace
             m_covariance_accum.get(pi.y, pi.x, c_yz) += m_accum.g * m_accum.b;
             m_covariance_accum.get(pi.y, pi.x, c_xz) += m_accum.r * m_accum.b;
             m_covariance_accum.get(pi.y, pi.x, c_xy) += m_accum.r * m_accum.g;
-
-#if FALSE
-//#if WITH_STATMC // compile with StatMC Denoiser
-            const float n = m_n_accum.get(pi.y, pi.x, 0);
-            
-            // Use Meng's algorithm (https://arxiv.org/abs/1510.04923).
-            // delta
-            const float d_0 = m_accum.r - m_m1_accum.get(pi.y, pi.x, 0);
-            const float d_1 = m_accum.g - m_m1_accum.get(pi.y, pi.x, 1);
-            const float d_2 = m_accum.b - m_m1_accum.get(pi.y, pi.x, 2);
-            // delta^2
-            const float d2_0 = d_0 * d_0;
-            const float d2_1 = d_1 * d_1;
-            const float d2_2 = d_2 * d_2;
-            // delta / n
-            const float dN_0 = d_0 / n;
-            const float dN_1 = d_1 / n;
-            const float dN_2 = d_2 / n;
-            // (delta / 2)^2
-            const float dN2_0 = dN_0 * dN_0;
-            const float dN2_1 = dN_1 * dN_1;
-            const float dN2_2 = dN_2 * dN_2;
-
-            // mean (m1)
-            m_m1_accum.get(pi.y, pi.x, 0) += dN_0;
-            m_m1_accum.get(pi.y, pi.x, 1) += dN_1;
-            m_m1_accum.get(pi.y, pi.x, 2) += dN_2;
-
-            // variance (m2)
-            m_m2_accum.get(pi.y, pi.x, 0) += d_0 * (d_0 - dN_0);
-            m_m2_accum.get(pi.y, pi.x, 1) += d_1 * (d_1 - dN_1);
-            m_m2_accum.get(pi.y, pi.x, 2) += d_2 * (d_2 - dN_2);
-
-            // skewness (m3)
-            m_m3_accum.get(pi.y, pi.x, 0) += - 3.f * dN_0 * m_m2_accum.get(pi.y, pi.x, 0) + d_0 * (d2_0 - dN2_0);
-            m_m3_accum.get(pi.y, pi.x, 1) += - 3.f * dN_1 * m_m2_accum.get(pi.y, pi.x, 1) + d_1 * (d2_1 - dN2_1);
-            m_m3_accum.get(pi.y, pi.x, 2) += - 3.f * dN_2 * m_m2_accum.get(pi.y, pi.x, 2) + d_2 * (d2_2 - dN2_2);
-//#endif // NOTE: This way these values won't be calculated, saving some computing effort.
-       // TODO: Is it feasable to fully remove the accumulators (when WITH_STATMC = OFF), to save memory?
-#endif
 
             // Fill histogram: code from BCD's SampleAccumulator class.
             for (size_t c = 0; c < 3; ++c)
@@ -383,7 +338,6 @@ struct DenoiserAOV::Impl
     Deepimf m_sum_accum;
     Deepimf m_covariance_accum;
 
-    // StatMC Denoiser Accumulators
 #if WITH_STATMC // compile with StatMC Denoiser
     Deepimf m_n_accum;
     Deepimf m_m1_accum;
@@ -601,10 +555,6 @@ void DenoiserAOV::compute_covariances_image(Deepimf& covariances_image) const
                         ? 1.0f
                         : 1.0f / (1.0f - rcp_sample_count);
 
-                // IDEA: Isn't this waht we want to do?!
-                //  -> Problem: m_sum_accum is just one value, so variance, etc. can't be calucated from this ...
-                //      -> Investigate: Where and how is m_sum_accum calculated?
-                // TODO: redundant with aov m1 (mean)
                 // Compute the mean.
                 float mean[3];
                 for (int k = 0; k < 3; ++k)
