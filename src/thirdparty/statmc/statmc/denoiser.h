@@ -13,16 +13,16 @@ namespace statmc
 struct DenoiserInputs
 {
   DenoiserInputs()
-    : m_pDiffuse(nullptr)
-    , m_pNorm(nullptr)
+    : m_pAlbedo(nullptr)
+    , m_pNormal(nullptr)
     , m_pMeans(nullptr)
     , m_pVariances(nullptr)
     , m_pSkewdnesses(nullptr)
   {
   }
 
-  const bcd::Deepimf* m_pDiffuse;
-  const bcd::Deepimf* m_pNorm;
+  const bcd::Deepimf* m_pAlbedo;
+  const bcd::Deepimf* m_pNormal;
   const bcd::Deepimf* m_pMeans;
   const bcd::Deepimf* m_pVariances;
   const bcd::Deepimf* m_pSkewdnesses;

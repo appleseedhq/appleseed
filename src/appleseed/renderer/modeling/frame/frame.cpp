@@ -46,6 +46,11 @@
 #include "renderer/utility/filesystem.h"
 #include "renderer/utility/paramarray.h"
 
+#if WITH_STATMC // complie with StatMC Denoiser
+#include "renderer/modeling/aov/albedoaov.h"
+#include "renderer/modeling/aov/normalaov.h"
+#endif
+
 // appleseed.foundation headers.
 #include "foundation/containers/dictionary.h"
 #include "foundation/core/exceptions/exceptionioerror.h"
@@ -88,6 +93,62 @@
 using namespace bcd;
 using namespace foundation;
 namespace bf = boost::filesystem;
+
+#if WITH_STATMC // complie with StatMC Denoiser
+namespace
+{
+    // Same function as in `renderer/kernel/denoising/denoiser.cpp`.
+    void image_to_deepimage(const Image& src, Deepimf& dst)
+    {
+        const CanvasProperties& src_props = src.properties();
+        assert(src_props.m_channel_count == 4);
+
+        dst.resize(
+            static_cast<int>(src_props.m_canvas_width),
+            static_cast<int>(src_props.m_canvas_height),
+            3);
+
+        for (size_t j = 0; j < src_props.m_canvas_height; ++j)
+        {
+            for (size_t i = 0; i < src_props.m_canvas_width; ++i)
+            {
+                Color4f c;
+                src.get_pixel(i, j, c);
+                c.unpremultiply_in_place();
+
+                dst.set(static_cast<int>(j), static_cast<int>(i), 0, c[0]);
+                dst.set(static_cast<int>(j), static_cast<int>(i), 1, c[1]);
+                dst.set(static_cast<int>(j), static_cast<int>(i), 2, c[2]);
+            }
+        }
+    }
+
+    // Version of the `image_to_deepimage` abvoe for 3-dim images (i.e. without alpha).
+    void image3_to_deepimage3(const Image& src, Deepimf& dst)
+    {
+        const CanvasProperties& src_props = src.properties();
+        assert(src_props.m_channel_count == 3);
+
+        dst.resize(
+            static_cast<int>(src_props.m_canvas_width),
+            static_cast<int>(src_props.m_canvas_height),
+            3);
+
+        for (size_t j = 0; j < src_props.m_canvas_height; ++j)
+        {
+            for (size_t i = 0; i < src_props.m_canvas_width; ++i)
+            {
+                Color3f c;
+                src.get_pixel(i, j, c);
+
+                dst.set(static_cast<int>(j), static_cast<int>(i), 0, c[0]);
+                dst.set(static_cast<int>(j), static_cast<int>(i), 1, c[1]);
+                dst.set(static_cast<int>(j), static_cast<int>(i), 2, c[2]);
+            }
+        }
+    }
+} // annonymous namespace
+#endif
 
 namespace renderer
 {
@@ -251,6 +312,37 @@ Frame::Frame(
 
         impl->m_denoiser_aov = aov.get();
         impl->m_internal_aovs.insert(auto_release_ptr<AOV>(aov));
+
+#if WITH_STATMC // complie with StatMC Denoiser
+        if (m_params.get_required<std::string>("denoiser", "off") == "on_statmc")
+        {
+            auto_release_ptr<AOV> albedoaov = AlbedoAOVFactory().create(ParamArray());
+            auto_release_ptr<AOV> normalaov = NormalAOVFactory().create(ParamArray());
+
+            albedoaov->set_name("albedoaov");
+            normalaov->set_name("normalaov");
+
+            albedoaov->set_parent(this);
+            normalaov->set_parent(this);
+
+            albedoaov->create_image(
+                impl->m_frame_width,
+                impl->m_frame_height,
+                impl->m_tile_width,
+                impl->m_tile_height,
+                aov_images());
+
+            normalaov->create_image(
+                impl->m_frame_width,
+                impl->m_frame_height,
+                impl->m_tile_width,
+                impl->m_tile_height,
+                aov_images());
+
+            impl->m_internal_aovs.insert(albedoaov);
+            impl->m_internal_aovs.insert(normalaov);
+        }
+#endif
     }
     else impl->m_denoiser_aov = nullptr;
 }
@@ -509,17 +601,29 @@ void Frame::denoise(
     Deepimf covariances_image;
     impl->m_denoiser_aov->compute_covariances_image(covariances_image);
 
+#if WITH_STATMC // complie with StatMC Denoiser
+    Deepimf albedo;
+    Deepimf normal;
+    if ( options.m_use_statmc_denoiser )
+    {
+        image_to_deepimage(   impl->m_internal_aovs.get_by_name("albedoaov")->get_image(), albedo );
+        image3_to_deepimage3( impl->m_internal_aovs.get_by_name("normalaov")->get_image(), normal );
+    }
+#endif
+
     RENDERER_LOG_INFO("denoising frame \"%s\"...", get_path().c_str());
     denoise_beauty_image(
         image(),
         num_samples_image,
         impl->m_denoiser_aov->histograms_image(),
         covariances_image,
-        impl->m_denoiser_aov->diffuse_image(),
-        impl->m_denoiser_aov->norm_image(),
+#if WITH_STATMC // complie with StatMC Denoiser
+        albedo,
+        normal,
         impl->m_denoiser_aov->m1_image(),
         impl->m_denoiser_aov->m2_image(),
         impl->m_denoiser_aov->m3_image(),
+#endif
         options,
         abort_switch);
 
@@ -533,11 +637,13 @@ void Frame::denoise(
                 num_samples_image,
                 impl->m_denoiser_aov->histograms_image(),
                 covariances_image,
-                impl->m_denoiser_aov->diffuse_image(),
-                impl->m_denoiser_aov->norm_image(),
+#if WITH_STATMC // complie with StatMC Denoiser
+                albedo,
+                normal,
                 impl->m_denoiser_aov->m1_image(),
                 impl->m_denoiser_aov->m2_image(),
                 impl->m_denoiser_aov->m3_image(),
+#endif
                 options,
                 abort_switch);
         }

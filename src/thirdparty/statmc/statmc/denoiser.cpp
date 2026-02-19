@@ -131,9 +131,9 @@ bool Denoiser::denoise()
     alloc(m_stat_inputs.m_pSkewdnesses, m3s,   gpuM3s);
 
     std::cout << "norm >>> ";
-    alloc(m_stat_inputs.m_pNorm,    gBuffers, gpuGBuffers);
+    alloc(m_stat_inputs.m_pNormal,    gBuffers, gpuGBuffers);
     std::cout << "diffuse >>> ";
-    alloc(m_stat_inputs.m_pDiffuse, gBuffers, gpuGBuffers);
+    alloc(m_stat_inputs.m_pAlbedo, gBuffers, gpuGBuffers);
 
     int width  = m_inputs.m_pColors->getWidth();
     int height = m_inputs.m_pColors->getHeight();
@@ -236,7 +236,7 @@ bool Denoiser::denoise()
 
 
     // Download denoised images
-    for (int i = 0; i < nRenderings; i++) { // TODO: nREnderings = 0, so loop is not needed
+    for (int i = 0; i < nRenderings; i++) { // nREnderings = 1 // TODO: adjust all places where multiple renderings are assumed
         gpuDenoisedFilms[i].download(denoisedFilms[i], stream);
     }
 
@@ -244,7 +244,6 @@ bool Denoiser::denoise()
     denoisedFilm.convertTo(denoisedFilm, CV_32FC(sizeof(PtrStepSzb)));
 
     m_outputs.m_pDenoisedColors->copyDataFrom( denoisedFilm.ptr<float>(0) );
-    //m_outputs.m_pDenoisedColors->copyDataFrom( m_stat_inputs.m_pDiffuse->getDataPtr() ); // TODO: remove
 
     return true;
 }

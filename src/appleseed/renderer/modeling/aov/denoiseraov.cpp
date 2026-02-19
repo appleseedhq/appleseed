@@ -85,12 +85,12 @@ namespace
             const float    max_value,
             Deepimf&       sum_accum,
             Deepimf&       covariance_accum,
-            Deepimf&       diffuse_accum,
-            Deepimf&       norm_accum,
+#if WITH_STATMC // complie with StatMC Denoiser
             Deepimf&       n_accum,
             Deepimf&       m1_accum,
             Deepimf&       m2_accum,
             Deepimf&       m3_accum,
+#endif
             Deepimf&       histograms)
           : m_num_bins(num_bins)
           , m_gamma(gamma)
@@ -99,12 +99,12 @@ namespace
           , m_samples_channel_index(3 * num_bins)
           , m_sum_accum(sum_accum)
           , m_covariance_accum(covariance_accum)
-          , m_diffuse_accum(diffuse_accum)
-          , m_norm_accum(norm_accum)
+#if WITH_STATMC // complie with StatMC Denoiser
           , m_n_accum(n_accum)
           , m_m1_accum(m1_accum)
           , m_m2_accum(m2_accum)
           , m_m3_accum(m3_accum)
+#endif
           , m_histograms(histograms)
         {
         }
@@ -139,8 +139,6 @@ namespace
             // Ignore invalid samples.
             if (m_sample_count == 0)
                 return;
-
-            // IDEA: m_sampe_count can just replace `m_n_accum`?
 
             const Vector2i& pi = pixel_context.get_pixel_coords();
 
@@ -289,46 +287,12 @@ namespace
                 ++m_sample_count;
                 // TODO(?): m_sample_count is reset by on_sample_begin and thus, as far as I (4134N4) can tell, is only ever 1.
 
+#if WITH_STATMC // compile with StatMC Denoiser
                 const Vector2i& pi = pixel_context.get_pixel_coords();
 
+                // Use Meng's algorithm (https://arxiv.org/abs/1510.04923).
                 float &n = m_n_accum.get(pi.y, pi.x, 0);
                 n++;
-
-                if ( pi.x == 0 && pi.y == 0 )
-                    std::cout << "write called for pixel (0,0) with sample count " << m_sample_count << std::endl;
-
-//#if WITH_STATMC // compile with StatMC Denoiser
-                if (n == 1)
-                {
-                    // TODO: Propper Albedo Calculation (look into diagnostic shader)
-
-                    m_diffuse_accum.get(pi.y, pi.x, 0) = aov_components.m_albedo[0];
-                    m_diffuse_accum.get(pi.y, pi.x, 1) = aov_components.m_albedo[1];
-                    m_diffuse_accum.get(pi.y, pi.x, 2) = aov_components.m_albedo[2];
-
-
-                    if (shading_point.hit_surface())
-                    {
-                        const foundation::Vector3d &normal = shading_point.get_shading_normal();
-
-                        m_norm_accum.get(pi.y, pi.x, 0) = normal.x;
-                        m_norm_accum.get(pi.y, pi.x, 1) = normal.y;
-                        m_norm_accum.get(pi.y, pi.x, 2) = normal.z;
-                    }
-                    else
-                    {
-                        // TODO: what is a good default value here? (I.e. for not hitting anything.)
-                        m_norm_accum.get(pi.y, pi.x, 0) = 0.0;
-                        m_norm_accum.get(pi.y, pi.x, 1) = 0.0;
-                        m_norm_accum.get(pi.y, pi.x, 2) = 0.0;
-                    }
-                    
-                }
-
-                // Use Meng's algorithm (https://arxiv.org/abs/1510.04923).
-                if (pi.x == 0 && pi.y == 0)
-                    std::cout << "n = " << n << std::endl;
-                //const float n = (float) m_sample_count;
 
                 // delta
                 const float d_0 = shading_result.m_main.r - m_m1_accum.get(pi.y, pi.x, 0);
@@ -361,8 +325,7 @@ namespace
                 m_m3_accum.get(pi.y, pi.x, 0) += - 3.f * dN_0 * m_m2_accum.get(pi.y, pi.x, 0) + d_0 * (d2_0 - dN2_0);
                 m_m3_accum.get(pi.y, pi.x, 1) += - 3.f * dN_1 * m_m2_accum.get(pi.y, pi.x, 1) + d_1 * (d2_1 - dN2_1);
                 m_m3_accum.get(pi.y, pi.x, 2) += - 3.f * dN_2 * m_m2_accum.get(pi.y, pi.x, 2) + d_2 * (d2_2 - dN2_2);
-//#endif // NOTE: This way these values won't be calculated, saving some computing effort.
-       // TODO: Is it feasable to fully remove the accumulators (when WITH_STATMC = OFF), to save memory?
+#endif // TODO: Only calculate these if StatMC Denoiser is on (not when BCD denoiser is on).
             }
         }
 
@@ -384,14 +347,12 @@ namespace
         Deepimf&        m_sum_accum;
         Deepimf&        m_covariance_accum;
 
-        // StatMC Denoiser Accumulators
-        Deepimf&        m_diffuse_accum; // diffuse color
-        Deepimf&        m_norm_accum;    // surface normal
-
+#if WITH_STATMC // compile with StatMC Denoiser
         Deepimf&        m_n_accum;       // number of samples
         Deepimf&        m_m1_accum;      // mean (central moment of order 1)
         Deepimf&        m_m2_accum;      // variance (central moment of order 2)
         Deepimf&        m_m3_accum;      // skewness (central moment of order 3)
+#endif
 
         Deepimf&        m_histograms;
 
@@ -423,13 +384,12 @@ struct DenoiserAOV::Impl
     Deepimf m_covariance_accum;
 
     // StatMC Denoiser Accumulators
-    Deepimf m_diffuse_accum;
-    Deepimf m_norm_accum;
-
+#if WITH_STATMC // compile with StatMC Denoiser
     Deepimf m_n_accum;
     Deepimf m_m1_accum;
     Deepimf m_m2_accum;
     Deepimf m_m3_accum;
+#endif
 
     Deepimf m_histograms;
 };
@@ -483,12 +443,12 @@ void DenoiserAOV::create_image(
 
     impl->m_sum_accum.resize(w, h, 3);
     impl->m_covariance_accum.resize(w, h, 6);
-    impl->m_diffuse_accum.resize(w, h, 3);
-    impl->m_norm_accum.resize(w, h, 3);
+#if WITH_STATMC // compile with StatMC Denoiser
     impl->m_n_accum.resize(w, h, 1);
     impl->m_m1_accum.resize(w, h, 3);
     impl->m_m2_accum.resize(w, h, 3);
     impl->m_m3_accum.resize(w, h, 3);
+#endif
     impl->m_histograms.resize(w, h, 3 * bins + 1);
 
     clear_image();
@@ -498,12 +458,12 @@ void DenoiserAOV::clear_image()
 {
     impl->m_sum_accum.fill(0.0f);
     impl->m_covariance_accum.fill(0.0f);
-    impl->m_diffuse_accum.fill(0.0f);
-    impl->m_norm_accum.fill(0.0f);
+#if WITH_STATMC // compile with StatMC Denoiser
     impl->m_n_accum.fill(0.0f);
     impl->m_m1_accum.fill(0.0f);
     impl->m_m2_accum.fill(0.0f);
     impl->m_m3_accum.fill(0.0f);
+#endif
     impl->m_histograms.fill(0.0f);
 }
 
@@ -563,26 +523,7 @@ Deepimf& DenoiserAOV::sum_image()
     return impl->m_sum_accum;
 }
 
-const Deepimf& DenoiserAOV::diffuse_image() const
-{
-    return impl->m_diffuse_accum;
-}
-
-Deepimf& DenoiserAOV::diffuse_image()
-{
-    return impl->m_diffuse_accum;
-}
-
-const Deepimf& DenoiserAOV::norm_image() const
-{
-    return impl->m_norm_accum;
-}
-
-Deepimf& DenoiserAOV::norm_image()
-{
-    return impl->m_norm_accum;
-}
-
+#if WITH_STATMC // complie with StatMC Denoiser
 const Deepimf& DenoiserAOV::m1_image() const
 {
     return impl->m_m1_accum;
@@ -612,6 +553,7 @@ Deepimf& DenoiserAOV::m3_image()
 {
     return impl->m_m3_accum;
 }
+#endif
 
 void DenoiserAOV::extract_num_samples_image(bcd::Deepimf& num_samples_image) const
 {
@@ -762,12 +704,12 @@ auto_release_ptr<AOVAccumulator> DenoiserAOV::create_accumulator() const
             impl->m_max_value,
             impl->m_sum_accum,
             impl->m_covariance_accum,
-            impl->m_diffuse_accum,
-            impl->m_norm_accum,
+#if WITH_STATMC // complie with StatMC Denoiser
             impl->m_n_accum,
             impl->m_m1_accum,
             impl->m_m2_accum,
             impl->m_m3_accum,
+#endif
             impl->m_histograms));
 }
 
