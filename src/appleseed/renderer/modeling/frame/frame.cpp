@@ -48,7 +48,7 @@
 
 #if WITH_STATMC // complie with StatMC Denoiser
 #include "renderer/modeling/aov/albedoaov.h"
-#include "renderer/modeling/aov/normalaov.h"
+#include "renderer/modeling/aov/normalcoloraov.h"
 #endif
 
 // appleseed.foundation headers.
@@ -317,7 +317,7 @@ Frame::Frame(
         if (m_params.get_required<std::string>("denoiser", "off") == "on_statmc")
         {
             auto_release_ptr<AOV> albedoaov = AlbedoAOVFactory().create(ParamArray());
-            auto_release_ptr<AOV> normalaov = NormalAOVFactory().create(ParamArray());
+            auto_release_ptr<AOV> normalaov = NormalColorAOVFactory().create(ParamArray());
 
             albedoaov->set_name("albedoaov");
             normalaov->set_name("normalaov");
@@ -606,8 +606,8 @@ void Frame::denoise(
     Deepimf normal;
     if ( options.m_use_statmc_denoiser )
     {
-        image_to_deepimage(   impl->m_internal_aovs.get_by_name("albedoaov")->get_image(), albedo );
-        image3_to_deepimage3( impl->m_internal_aovs.get_by_name("normalaov")->get_image(), normal );
+        image_to_deepimage( impl->m_internal_aovs.get_by_name("albedoaov")->get_image(), albedo );
+        image_to_deepimage( impl->m_internal_aovs.get_by_name("normalaov")->get_image(), normal );
     }
 #endif
 

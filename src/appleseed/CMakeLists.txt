@@ -1570,6 +1570,8 @@ set (renderer_modeling_aov_sources
     renderer/modeling/aov/invalidsamplesaov.h
     renderer/modeling/aov/normalaov.cpp
     renderer/modeling/aov/normalaov.h
+    renderer/modeling/aov/normalcoloraov.cpp
+    renderer/modeling/aov/normalcoloraov.h
     renderer/modeling/aov/npraovs.cpp
     renderer/modeling/aov/npraovs.h
     renderer/modeling/aov/pixelerroraov.cpp
