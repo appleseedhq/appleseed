@@ -1,5 +1,6 @@
 
 // TODO: Proper Head
+// TODO: Proper citation of https://github.com/cg-tuwien/StatMC-opencv_contrib. The input default values are taken from their example.
 
 #pragma once
 
@@ -13,13 +14,22 @@ namespace statmc
 struct DenoiserInputs
 {
   DenoiserInputs()
-    : m_pAlbedo(nullptr)
+    : m_sd(10.f)
+    , m_radius(20)
+    , m_normalSD(0.1f)
+    , m_albedoSD(0.02f)
+    , m_pAlbedo(nullptr)
     , m_pNormal(nullptr)
     , m_pMeans(nullptr)
     , m_pVariances(nullptr)
     , m_pSkewdnesses(nullptr)
   {
   }
+
+  float m_sd;
+  int   m_radius;
+  float m_normalSD;
+  float m_albedoSD;
 
   const bcd::Deepimf* m_pAlbedo;
   const bcd::Deepimf* m_pNormal;

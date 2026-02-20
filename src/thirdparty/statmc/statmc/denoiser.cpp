@@ -96,12 +96,10 @@ namespace statmc
 bool Denoiser::denoise()
 {
     // Set denoising parameters.
-    // TODO: Make StatMC Denoiser inputs (m_stat_inputs).
-    float ciZValue = 1.95996f; // Note: Not Used
-    float sd = 10.f;
-    int radius = 20;
-    float normalSD = 0.1f;
-    float albedoSD = 0.02f;
+    const float sd       = m_stat_inputs.m_sd;
+    const int   radius   = m_stat_inputs.m_radius;
+    const float normalSD = m_stat_inputs.m_normalSD;
+    const float albedoSD = m_stat_inputs.m_albedoSD;
 
 
     // CUDA stream.

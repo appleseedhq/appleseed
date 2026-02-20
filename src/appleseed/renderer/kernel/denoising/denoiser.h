@@ -54,6 +54,10 @@ class DenoiserOptions
     bool    m_mark_invalid_pixels;
 #if WITH_STATMC // complie with StatMC Denoiser
     bool    m_use_statmc_denoiser;                //  use the StatMC denoiser instead of the BCD denoiser
+    float   m_statmc_sd;
+    int     m_statmc_radius;
+    float   m_statmc_normalSD;
+    float   m_statmc_albedoSD;
 #endif
 
     DenoiserOptions()
@@ -70,6 +74,10 @@ class DenoiserOptions
       , m_mark_invalid_pixels(false)
 #if WITH_STATMC // complie with StatMC Denoiser
       , m_use_statmc_denoiser(false)
+      , m_statmc_sd(10.f)
+      , m_statmc_radius(20)
+      , m_statmc_normalSD(0.1f)
+      , m_statmc_albedoSD(0.02f)
 #endif
     {
     }

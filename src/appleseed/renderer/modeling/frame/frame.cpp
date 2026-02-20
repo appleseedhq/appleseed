@@ -564,6 +564,18 @@ void Frame::denoise(
 #if WITH_STATMC // complie with StatMC Denoiser
     options.m_use_statmc_denoiser =
         m_params.get_required<std::string>("denoiser", "off") == "on_statmc";
+
+    options.m_statmc_sd =
+        m_params.get_optional<float>("statmc_sd", options.m_statmc_sd);
+
+    options.m_statmc_radius =
+        m_params.get_optional<int>("statmc_radius", options.m_statmc_radius);
+
+    options.m_statmc_normalSD =
+        m_params.get_optional<float>("statmc_normalSD", options.m_statmc_normalSD);
+
+    options.m_statmc_albedoSD =
+        m_params.get_optional<float>("statmc_albedoSD", options.m_statmc_albedoSD);
 #endif
 
     assert(impl->m_denoiser_aov);
@@ -1804,6 +1816,84 @@ DictionaryArray FrameFactory::get_input_metadata()
             .insert("visible_if",
                 Dictionary()
                     .insert("denoiser", "on")));
+
+#if WITH_STATMC // complie with StatMC Denoiser
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "statmc_sd")
+            .insert("label", "SD")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "100.0")
+                    .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "10.0")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("denoiser", "on_statmc")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "statmc_radius")
+            .insert("label", "Radius")
+            .insert("type", "integer")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "1")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "100")
+                    .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "20")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("denoiser", "on_statmc")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "statmc_normalSD")
+            .insert("label", "Normal SD")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.01")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "0.1")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("denoiser", "on_statmc")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "statmc_albedoSD")
+            .insert("label", "Abledo SD")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.002")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "0.2")
+                    .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "0.02")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("denoiser", "on_statmc")));
+#endif
 
     return metadata;
 }

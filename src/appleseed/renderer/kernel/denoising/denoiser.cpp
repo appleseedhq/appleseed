@@ -183,8 +183,14 @@ namespace
         inputs.m_pHistograms = &histograms;
         inputs.m_pSampleCovariances = &covariances;
 
-#if WITH_STATMC // WITH_STATMC == 1
+#if WITH_STATMC // complie with StatMC Denoiser
         statmc::DenoiserInputs statmc_inputs;
+        
+        statmc_inputs.m_sd = options.m_statmc_sd;
+        statmc_inputs.m_radius = options.m_statmc_radius;
+        statmc_inputs.m_normalSD = options.m_statmc_normalSD;
+        statmc_inputs.m_albedoSD = options.m_statmc_albedoSD;
+
         statmc_inputs.m_pAlbedo = &albedo;
         statmc_inputs.m_pNormal = &normal;
         statmc_inputs.m_pMeans = &m1_means;

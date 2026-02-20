@@ -36,7 +36,7 @@ DEBUG=
 
 # Build Type
 # Can be set using the `-b` or `--build` flag.
-BUILD_TYPE="Debug"
+BUILD_TYPE="Debug" # TODO: set back to "Ship" (default).
 
 # C and C++ Compiler
 # Can be set using the `--cc` and `--cxx` flags respectively.
