@@ -240,7 +240,6 @@ namespace
                 main.premultiply_in_place();
                 m_accum += (1.0f - m_accum.a) * shading_result.m_main;
                 ++m_sample_count;
-                // TODO(?): m_sample_count is reset by on_sample_begin and thus, as far as I (4134N4) can tell, is only ever 1.
 
 #if WITH_STATMC // compile with StatMC Denoiser
                 const Vector2i& pi = pixel_context.get_pixel_coords();

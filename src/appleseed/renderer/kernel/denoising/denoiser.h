@@ -69,7 +69,7 @@ class DenoiserOptions
       , m_num_cores(0)
       , m_mark_invalid_pixels(false)
 #if WITH_STATMC // complie with StatMC Denoiser
-      , m_use_statmc_denoiser(false) // TODO: Should be false. Set true for debugging purposes.
+      , m_use_statmc_denoiser(false)
 #endif
     {
     }

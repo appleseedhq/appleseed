@@ -13,7 +13,6 @@
 #include <opencv2/cudaimgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
 
-#include <iostream> // TODO: Remove (debugging)
 
 using std::string, std::vector;
 using cv::Mat, cv::Mat_, cv::imread, cv::IMREAD_UNCHANGED;
@@ -27,39 +26,53 @@ struct float3 {
 namespace
 {
 
-void inline alloc(Mat mat, vector<Mat> &mats, vector<GpuMat> &gpuMats) {
+void inline alloc(Mat mat, vector<Mat> &mats, vector<GpuMat> &gpuMats)
+{
     mats.emplace_back(mat);
     gpuMats.emplace_back(GpuMat(mat.rows, mat.cols, mat.type()));
 }
 
-void inline alloc(const bcd::Deepimf *deepimf, vector<Mat> &mats, vector<GpuMat> &gpuMats, int type = -1) {
+void inline alloc(const bcd::Deepimf *deepimf, vector<Mat> &mats, vector<GpuMat> &gpuMats, int type = -1)
+{
 
     const int height = deepimf->getHeight();
     const int width  = deepimf->getWidth();
     const int depth  = deepimf->getDepth();
     const int size   = deepimf->getSize();
 
-    const size_t memSize = size * sizeof(float);
+    float* pDeepimfData;
 
-    std::cout << "height: " << height << " width: " << width << " (area: " << height * width << ") depth: " << depth << " size: " << size << std::endl;
+    if ( type == -1)
+    {
+        // NOTE: Here we cast `const float*` (of `deepimf->getDataPtr()`) ot `float*`.
+        //       This is normally ill-advised and can lead to undefined behavior.
+        //       However, here we know that the contents of the memory will not be changed and not be accessed outside of this context here.
+        //       So we can save a `memcpy` operation and just pass the pointer that points to the original (constant) memory.
+        //
+        //       For images that change type (i.e. `type != -1`), we still have to copy the contents.
 
-    // Create non-const data for OpenCV Mat.
-    float* pDeepimfData = (float*) malloc( memSize );
-    memcpy(pDeepimfData, deepimf->getDataPtr(), memSize);
+        pDeepimfData = (float*) deepimf->getDataPtr();
+    }
+    else
+    {
+        const size_t memSize = size * sizeof(float);
 
-    // TODO: (Idea) Since mat is not modified except for the mat of ns, in those cases we may be able to save the memcpy and just cast `const float*` of  `deepimf->getDataPtr()` to `float*` (casting as such is normally ill-advised).
+        pDeepimfData = (float*) malloc( memSize );
+        memcpy(pDeepimfData, deepimf->getDataPtr(), memSize);
+    }
 
     Mat mat = Mat(height, width, CV_32FC(depth), pDeepimfData);
 
     // Convert matrix to different type (default: float (32F)).
-    // Note: Like for OpenCV's `convertTo`, -1 means "keep the type".
+    // Note: Like for OpenCV's `convertTo`, -1 means "keep the type" (which we assume to be 32 bit floats).
     if ( type != -1 )
         mat.convertTo(mat, type);
 
     alloc(mat, mats, gpuMats);
 }
 
-void inline uploadGPUPtrs(vector<GpuMat> &gpuMats, GpuMat &gpuPtrs, Stream stream) {
+void inline uploadGPUPtrs(vector<GpuMat> &gpuMats, GpuMat &gpuPtrs, Stream stream)
+{
     Mat gpuPtrsCPU = Mat(1, gpuMats.size(), CV_8UC(sizeof(PtrStepSzb)));
     PtrStepSzb *gpuPtrsCPUPtr = gpuPtrsCPU.ptr<PtrStepSzb>();
     for (auto &gpuMat : gpuMats)
@@ -67,7 +80,8 @@ void inline uploadGPUPtrs(vector<GpuMat> &gpuMats, GpuMat &gpuPtrs, Stream strea
     gpuPtrs.upload(gpuPtrsCPU, stream);
 }
 
-void inline uploadGBufferChannelCounts(vector<GpuMat> &gpuMats, GpuMat &channelCounts, Stream stream) {
+void inline uploadGBufferChannelCounts(vector<GpuMat> &gpuMats, GpuMat &channelCounts, Stream stream)
+{
     Mat channelCountsCPU = Mat(1, gpuMats.size(), CV_8UC1);
     unsigned char *channelCountsCPUPtr = channelCountsCPU.ptr<unsigned char>();
     for (auto &gpuMat : gpuMats)
@@ -76,18 +90,13 @@ void inline uploadGBufferChannelCounts(vector<GpuMat> &gpuMats, GpuMat &channelC
 }
 } // namespace (anonymous)
 
-namespace statmc {
+namespace statmc
+{
 
 bool Denoiser::denoise()
 {
-    // vector<string> indices = {"0", "1"}; // We denoise two different renderings with these indices.
-    // int nRenderings = indices.size();
-
-    int nRenderings = 1; // TODO: Are more possible/sensical in Appleseed usage?
-                         //       Moreover, then we wouldn't need to deal with the vectors of matrices.
-
-    // Set denoising parameters
-    // TODO: Make arguments.
+    // Set denoising parameters.
+    // TODO: Make StatMC Denoiser inputs (m_stat_inputs).
     float ciZValue = 1.95996f; // Note: Not Used
     float sd = 10.f;
     int radius = 20;
@@ -95,10 +104,12 @@ bool Denoiser::denoise()
     float albedoSD = 0.02f;
 
 
-    // CUDA stream
+    // CUDA stream.
     Stream stream;
 
-    // Load images and allocate buffers
+    // Load images and allocate buffers.
+    // Note: The StatMC denoiser can be given multiple renders to denoise, as such it expects vectors of images [matrices].
+    //       Hence, here all images (for our one render) are placed into vectors of length 1.
     vector<Mat> films;
     vector<Mat> ns;
     vector<Mat> means;
@@ -119,30 +130,21 @@ bool Denoiser::denoise()
     vector<GpuMat> gpuDiscriminators;
     vector<GpuMat> gpuDenoisedFilms;
 
-    std::cout << "films >>> ";
     alloc(m_inputs.m_pColors,           films, gpuFilms);
-    std::cout << "ns >>> ";
     alloc(m_inputs.m_pNbOfSamples,      ns,    gpuNs,   CV_32SC1);
-    std::cout << "m1 >>> ";
     alloc(m_stat_inputs.m_pMeans,       means, gpuMeans);
-    std::cout << "m2 >>> ";
     alloc(m_stat_inputs.m_pVariances,   m2s,   gpuM2s);
-    std::cout << "m3 >>> ";
     alloc(m_stat_inputs.m_pSkewdnesses, m3s,   gpuM3s);
 
-    std::cout << "norm >>> ";
     alloc(m_stat_inputs.m_pNormal,    gBuffers, gpuGBuffers);
-    std::cout << "diffuse >>> ";
     alloc(m_stat_inputs.m_pAlbedo, gBuffers, gpuGBuffers);
 
-    int width  = m_inputs.m_pColors->getWidth();
-    int height = m_inputs.m_pColors->getHeight();
+    const int width  = m_inputs.m_pColors->getWidth();
+    const int height = m_inputs.m_pColors->getHeight();
 
-    // for (auto &index : indices) {
-        alloc(Mat_<Vec3>(height, width), meanCorrs,      gpuMeanCorrs);
-        alloc(Mat_<Vec3>(height, width), discriminators, gpuDiscriminators);
-        alloc(Mat_<Vec3>(height, width), denoisedFilms,  gpuDenoisedFilms);
-    // }
+    alloc(Mat_<Vec3>(height, width), meanCorrs,      gpuMeanCorrs);
+    alloc(Mat_<Vec3>(height, width), discriminators, gpuDiscriminators);
+    alloc(Mat_<Vec3>(height, width), denoisedFilms,  gpuDenoisedFilms);
 
 
     // Upload vectors containing pointers to GPU buffers
@@ -175,20 +177,18 @@ bool Denoiser::denoise()
     uploadGPUPtrs(gpuDenoisedFilms,  denoisedFilmGPUPtrs,  stream);
 
 
-    // Upload images
-    for (int i = 0; i < nRenderings; i++) {
-        gpuFilms[i].upload(films[i], stream);
-        gpuNs[i]   .upload(ns[i],    stream);
-        gpuMeans[i].upload(means[i], stream);
-        gpuM2s[i]  .upload(m2s[i],   stream);
-        gpuM3s[i]  .upload(m3s[i],   stream);
-    }
+    // Upload images.
+    gpuFilms[0].upload(films[0], stream);
+    gpuNs[0]   .upload(ns[0],    stream);
+    gpuMeans[0].upload(means[0], stream);
+    gpuM2s[0]  .upload(m2s[0],   stream);
+    gpuM3s[0]  .upload(m3s[0],   stream);
 
     for (int i = 0; i < gBuffers.size(); i++)
         gpuGBuffers[i].upload(gBuffers[i], stream);
 
 
-    // Prepare denoising parameters
+    // Prepare denoising parameters.
     float dsFactor = -.5f / (sd * sd);
     vector<float> drFactors{
         -.5f / (normalSD * normalSD),
@@ -196,25 +196,10 @@ bool Denoiser::denoise()
     };
     gBufferDRFactors.upload(Mat(drFactors), stream);
 
-    /** In Variables
-     * - film           -> filmGPUPtrs
-     * - ns             -> nGPUPtrs
-     * - mean           -> meanGPUPtrs
-     * - m2             -> m2GPUPtrs
-     * - m3             -> m3GPUPtrs
-     * - gBuffers       -> gBufferGPUPtrs, gBufferChannelCounts
-     * Denoising Parameters
-     * - radius
-     * - sd, normalSD, albedoSD -> dsFactor
-     */
 
-    /** Constants
-     * nRenderings = 1 (?)
-     */
-
-    // Denoise
+    // Denoise.
     cv::cuda::stat_denoiser::filter<float3>(
-        nRenderings, // Number of renderings to denoise
+        1, // Number of renderings to denoise
         width, // Width of the renderings
         height, // Height of the renderings
         dsFactor, // Spatial distance factor calculated from spatial filter standard deviation
@@ -234,15 +219,13 @@ bool Denoiser::denoise()
         stream // CUDA stream
     );
 
-
-    // Download denoised images
-    for (int i = 0; i < nRenderings; i++) { // nREnderings = 1 // TODO: adjust all places where multiple renderings are assumed
-        gpuDenoisedFilms[i].download(denoisedFilms[i], stream);
-    }
+    // Download denoised image from the GPU.
+    gpuDenoisedFilms[0].download(denoisedFilms[0], stream);
 
     Mat denoisedFilm = denoisedFilms[0];
     denoisedFilm.convertTo(denoisedFilm, CV_32FC(sizeof(PtrStepSzb)));
 
+    // Pass denoised image to output.
     m_outputs.m_pDenoisedColors->copyDataFrom( denoisedFilm.ptr<float>(0) );
 
     return true;

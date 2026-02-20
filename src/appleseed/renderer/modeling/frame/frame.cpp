@@ -122,31 +122,6 @@ namespace
             }
         }
     }
-
-    // Version of the `image_to_deepimage` abvoe for 3-dim images (i.e. without alpha).
-    void image3_to_deepimage3(const Image& src, Deepimf& dst)
-    {
-        const CanvasProperties& src_props = src.properties();
-        assert(src_props.m_channel_count == 3);
-
-        dst.resize(
-            static_cast<int>(src_props.m_canvas_width),
-            static_cast<int>(src_props.m_canvas_height),
-            3);
-
-        for (size_t j = 0; j < src_props.m_canvas_height; ++j)
-        {
-            for (size_t i = 0; i < src_props.m_canvas_width; ++i)
-            {
-                Color3f c;
-                src.get_pixel(i, j, c);
-
-                dst.set(static_cast<int>(j), static_cast<int>(i), 0, c[0]);
-                dst.set(static_cast<int>(j), static_cast<int>(i), 1, c[1]);
-                dst.set(static_cast<int>(j), static_cast<int>(i), 2, c[2]);
-            }
-        }
-    }
 } // annonymous namespace
 #endif
 
@@ -1722,7 +1697,7 @@ DictionaryArray FrameFactory::get_input_metadata()
                     .insert("Off", "off")
                     .insert("On", "on")
 #if WITH_STATMC // complie with StatMC Denoiser
-                    .insert("On (StatMC Denoiser)", "on_statmc")
+                    .insert("On (StatMC)", "on_statmc")
 #endif
                     .insert("Write Outputs", "write_outputs"))
             .insert("use", "required")

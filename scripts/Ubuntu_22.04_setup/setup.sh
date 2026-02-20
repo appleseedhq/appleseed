@@ -1735,7 +1735,7 @@ if [[ $_sOpenCVInstallDir = "" && $WITH_STATMC = ON ]]; then
   sourceVersion=${_sTarFile//".tar.gz"/}
   sourceFile="opencv-$sourceVersion"
   _sSourceDir="$_sDependenciesDir/$sourceFile"
-  _sInstallDir="$_sDependenciesDir/$depName-install" # Note: Doubles as build directory for OpenCV's case.
+  _sInstallDir="$_sDependenciesDir/$depName-install" # Note: Doubles as build directory for OpenCV's case. (Should that be the case?)
 
   # check for OpenCV installation in _sInstallDir (via existence of lib file)
   if [ ! -f $_sInstallDir/lib/libopencv_core.so ]; then
@@ -1790,7 +1790,7 @@ if [[ $_sOpenCVInstallDir = "" && $WITH_STATMC = ON ]]; then
 
   # clean step
   # miniCleanInstallStep start
-  # Note: Cut down form of `cleanInstallStep`, as OpenCV requires its source folder to work.
+  # Note: Cut down form of `cleanInstallStep`, as OpenCV requires its source folder to work and should thus not be deleted (as it usually would).
     if [[ $DEBUG != "" ]]; then echo "cleanInstallStep"; fi
     
     $DEBUG cd $_sDependenciesDir
@@ -1993,7 +1993,7 @@ if [[ $_bCollect = true ]]; then
   cd $_sDependenciesDir
 
   collect $_sCollectType $_sBoostInstallDir
-  # TODO: collect StatMC
+  collect $_sCollectType $_sOpenCVInstallDir
   if [[ $WITH_EMBREE = ON ]]; then collect $_sCollectType $_sEmbreeInstallDir; fi
   collect $_sCollectType $_sOCIOInstallDir
   collect $_sCollectType $_sOIIOInstallDir
