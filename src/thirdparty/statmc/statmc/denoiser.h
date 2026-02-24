@@ -26,9 +26,13 @@ struct DenoiserInputs
   {
   }
 
+  // Spatial Filter standard Deviation.
   float m_sd;
+  // Filter Pixel Radius (Neighborhood).
   int   m_radius;
+  // Normal Range Standard Deviation.
   float m_normalSD;
+  // Albedo Range Standard Deviation.
   float m_albedoSD;
 
   const bcd::Deepimf* m_pAlbedo;
