@@ -1701,14 +1701,20 @@ buildAppleseed() {
 }
 
 if [[ -f $_sRoot/sandbox/lib/$BUILD_TYPE/libappleseed.so && $_bNewBuild = false ]]; then
-  stepInfo $_NAME "Appleseed is already built. (Add -n or --new to re-build.)"
+  stepInfo $_NAME "Appleseed is already built. (Add -n or --new to re-build from scratch.)"
   if [ $_bAsk = true ]; then
     printf "${_COLOR_RED}Do you wish to continue?\n"
     select strictreply in "Yes" "No"; do
       relaxedreply=${strictreply:-$REPLY}
       case $relaxedreply in
-        Yes | YES | yes | y ) buildAppleseed;;
-        No  | NO  | no  | n ) echo "Exiting."; exit 0;;
+        Yes | YES | yes | y )
+          buildAppleseed
+          break
+          ;;
+        No  | NO  | no  | n )
+          echo "Exiting."
+          exit 0
+          ;;
       esac
     done
   else
