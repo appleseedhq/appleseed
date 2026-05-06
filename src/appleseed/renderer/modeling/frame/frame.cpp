@@ -46,6 +46,11 @@
 #include "renderer/utility/filesystem.h"
 #include "renderer/utility/paramarray.h"
 
+#if WITH_STATMC // complie with StatMC Denoiser
+#include "renderer/modeling/aov/albedoaov.h"
+#include "renderer/modeling/aov/normalcoloraov.h"
+#endif
+
 // appleseed.foundation headers.
 #include "foundation/containers/dictionary.h"
 #include "foundation/core/exceptions/exceptionioerror.h"
@@ -88,6 +93,37 @@
 using namespace bcd;
 using namespace foundation;
 namespace bf = boost::filesystem;
+
+#if WITH_STATMC // complie with StatMC Denoiser
+namespace
+{
+    // Same function as in `renderer/kernel/denoising/denoiser.cpp`.
+    void image_to_deepimage(const Image& src, Deepimf& dst)
+    {
+        const CanvasProperties& src_props = src.properties();
+        assert(src_props.m_channel_count == 4);
+
+        dst.resize(
+            static_cast<int>(src_props.m_canvas_width),
+            static_cast<int>(src_props.m_canvas_height),
+            3);
+
+        for (size_t j = 0; j < src_props.m_canvas_height; ++j)
+        {
+            for (size_t i = 0; i < src_props.m_canvas_width; ++i)
+            {
+                Color4f c;
+                src.get_pixel(i, j, c);
+                c.unpremultiply_in_place();
+
+                dst.set(static_cast<int>(j), static_cast<int>(i), 0, c[0]);
+                dst.set(static_cast<int>(j), static_cast<int>(i), 1, c[1]);
+                dst.set(static_cast<int>(j), static_cast<int>(i), 2, c[2]);
+            }
+        }
+    }
+} // annonymous namespace
+#endif
 
 namespace renderer
 {
@@ -251,6 +287,37 @@ Frame::Frame(
 
         impl->m_denoiser_aov = aov.get();
         impl->m_internal_aovs.insert(auto_release_ptr<AOV>(aov));
+
+#if WITH_STATMC // complie with StatMC Denoiser
+        if (m_params.get_required<std::string>("denoiser", "off") == "on_statmc")
+        {
+            auto_release_ptr<AOV> albedoaov = AlbedoAOVFactory().create(ParamArray());
+            auto_release_ptr<AOV> normalaov = NormalColorAOVFactory().create(ParamArray());
+
+            albedoaov->set_name("albedoaov");
+            normalaov->set_name("normalaov");
+
+            albedoaov->set_parent(this);
+            normalaov->set_parent(this);
+
+            albedoaov->create_image(
+                impl->m_frame_width,
+                impl->m_frame_height,
+                impl->m_tile_width,
+                impl->m_tile_height,
+                aov_images());
+
+            normalaov->create_image(
+                impl->m_frame_width,
+                impl->m_frame_height,
+                impl->m_tile_width,
+                impl->m_tile_height,
+                aov_images());
+
+            impl->m_internal_aovs.insert(albedoaov);
+            impl->m_internal_aovs.insert(normalaov);
+        }
+#endif
     }
     else impl->m_denoiser_aov = nullptr;
 }
@@ -494,6 +561,23 @@ void Frame::denoise(
     options.m_mark_invalid_pixels =
         m_params.get_optional<bool>("mark_invalid_pixels", false);
 
+#if WITH_STATMC // complie with StatMC Denoiser
+    options.m_use_statmc_denoiser =
+        m_params.get_required<std::string>("denoiser", "off") == "on_statmc";
+
+    options.m_statmc_sd =
+        m_params.get_optional<float>("statmc_sd", options.m_statmc_sd);
+
+    options.m_statmc_radius =
+        m_params.get_optional<int>("statmc_radius", options.m_statmc_radius);
+
+    options.m_statmc_normalSD =
+        m_params.get_optional<float>("statmc_normalSD", options.m_statmc_normalSD);
+
+    options.m_statmc_albedoSD =
+        m_params.get_optional<float>("statmc_albedoSD", options.m_statmc_albedoSD);
+#endif
+
     assert(impl->m_denoiser_aov);
 
     impl->m_denoiser_aov->fill_empty_samples();
@@ -504,12 +588,29 @@ void Frame::denoise(
     Deepimf covariances_image;
     impl->m_denoiser_aov->compute_covariances_image(covariances_image);
 
+#if WITH_STATMC // complie with StatMC Denoiser
+    Deepimf albedo;
+    Deepimf normal;
+    if ( options.m_use_statmc_denoiser )
+    {
+        image_to_deepimage( impl->m_internal_aovs.get_by_name("albedoaov")->get_image(), albedo );
+        image_to_deepimage( impl->m_internal_aovs.get_by_name("normalaov")->get_image(), normal );
+    }
+#endif
+
     RENDERER_LOG_INFO("denoising frame \"%s\"...", get_path().c_str());
     denoise_beauty_image(
         image(),
         num_samples_image,
         impl->m_denoiser_aov->histograms_image(),
         covariances_image,
+#if WITH_STATMC // complie with StatMC Denoiser
+        albedo,
+        normal,
+        impl->m_denoiser_aov->m1_image(),
+        impl->m_denoiser_aov->m2_image(),
+        impl->m_denoiser_aov->m3_image(),
+#endif
         options,
         abort_switch);
 
@@ -523,6 +624,13 @@ void Frame::denoise(
                 num_samples_image,
                 impl->m_denoiser_aov->histograms_image(),
                 covariances_image,
+#if WITH_STATMC // complie with StatMC Denoiser
+                albedo,
+                normal,
+                impl->m_denoiser_aov->m1_image(),
+                impl->m_denoiser_aov->m2_image(),
+                impl->m_denoiser_aov->m3_image(),
+#endif
                 options,
                 abort_switch);
         }
@@ -1405,6 +1513,10 @@ void Frame::extract_parameters()
             impl->m_denoising_mode = DenoisingMode::Off;
         else if (denoise_mode == "on")
             impl->m_denoising_mode = DenoisingMode::Denoise;
+#if WITH_STATMC // complie with StatMC Denoiser
+        else if (denoise_mode == "on_statmc")
+            impl->m_denoising_mode = DenoisingMode::Denoise;
+#endif
         else if (denoise_mode == "write_outputs")
             impl->m_denoising_mode = DenoisingMode::WriteOutputs;
         else
@@ -1596,6 +1708,9 @@ DictionaryArray FrameFactory::get_input_metadata()
                 Dictionary()
                     .insert("Off", "off")
                     .insert("On", "on")
+#if WITH_STATMC // complie with StatMC Denoiser
+                    .insert("On (StatMC)", "on_statmc")
+#endif
                     .insert("Write Outputs", "write_outputs"))
             .insert("use", "required")
             .insert("default", "off")
@@ -1701,6 +1816,88 @@ DictionaryArray FrameFactory::get_input_metadata()
             .insert("visible_if",
                 Dictionary()
                     .insert("denoiser", "on")));
+
+#if WITH_STATMC // complie with StatMC Denoiser
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "statmc_sd")
+            .insert("label", "SD")
+            .insert("help", "Spacial Standard Deviation")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "100.0")
+                    .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "10.0")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("denoiser", "on_statmc")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "statmc_radius")
+            .insert("label", "Radius")
+            .insert("help", "Filter Pixel Radius")
+            .insert("type", "integer")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "1")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "100")
+                    .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "20")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("denoiser", "on_statmc")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "statmc_normalSD")
+            .insert("label", "Normal SD")
+            .insert("help", "Normal Range Standard Deviation")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.01")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "1.0")
+                    .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "0.1")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("denoiser", "on_statmc")));
+
+    metadata.push_back(
+        Dictionary()
+            .insert("name", "statmc_albedoSD")
+            .insert("label", "Abledo SD")
+            .insert("help", "Albedo Range Standard Deviation")
+            .insert("type", "numeric")
+            .insert("min",
+                Dictionary()
+                    .insert("value", "0.002")
+                    .insert("type", "hard"))
+            .insert("max",
+                Dictionary()
+                    .insert("value", "0.2")
+                    .insert("type", "hard"))
+            .insert("use", "optional")
+            .insert("default", "0.02")
+            .insert("visible_if",
+                Dictionary()
+                    .insert("denoiser", "on_statmc")));
+#endif
 
     return metadata;
 }

@@ -45,6 +45,12 @@
 #include "bcd/SpikeRemovalFilter.h"
 #include "bcd/Utils.h"
 
+// StatMC headers (Optional).
+#if WITH_STATMC // WITH_STATMC == 1
+#include "statmc/denoiser.h"
+#pragma message ("Compiling WITH_STATMC ON.")
+#endif
+
 // Standard headers.
 #include <cmath>
 #include <memory>
@@ -160,6 +166,13 @@ namespace
         const Deepimf&          num_samples,
         const Deepimf&          histograms,
         const Deepimf&          covariances,
+#if WITH_STATMC // complie with StatMC Denoiser
+        const Deepimf&          albedo,
+        const Deepimf&          normal,
+        const Deepimf&          m1_means,
+        const Deepimf&          m2_variance,
+        const Deepimf&          m3_skewness,
+#endif
         const DenoiserOptions&  options,
         IAbortSwitch*           abort_switch,
         Deepimf&                dst)
@@ -169,6 +182,21 @@ namespace
         inputs.m_pNbOfSamples = &num_samples;
         inputs.m_pHistograms = &histograms;
         inputs.m_pSampleCovariances = &covariances;
+
+#if WITH_STATMC // complie with StatMC Denoiser
+        statmc::DenoiserInputs statmc_inputs;
+        
+        statmc_inputs.m_sd = options.m_statmc_sd;
+        statmc_inputs.m_radius = options.m_statmc_radius;
+        statmc_inputs.m_normalSD = options.m_statmc_normalSD;
+        statmc_inputs.m_albedoSD = options.m_statmc_albedoSD;
+
+        statmc_inputs.m_pAlbedo = &albedo;
+        statmc_inputs.m_pNormal = &normal;
+        statmc_inputs.m_pMeans = &m1_means;
+        statmc_inputs.m_pVariances = &m2_variance;
+        statmc_inputs.m_pSkewdnesses = &m3_skewness;
+#endif
 
         DenoiserParameters parameters;
         parameters.m_histogramDistanceThreshold = options.m_histogram_patch_distance_threshold;
@@ -185,10 +213,27 @@ namespace
 
         std::unique_ptr<IDenoiser> denoiser;
 
+#if !defined(WITH_STATMC) // compile without StatMC Denoiser
         if (options.m_num_scales > 1)
             denoiser.reset(new MultiscaleDenoiser(static_cast<int>(options.m_num_scales)));
         else
             denoiser.reset(new Denoiser());
+#elif WITH_STATMC // compile with StatMC Denoiser
+        if (options.m_use_statmc_denoiser)
+        {
+            statmc::Denoiser* statmc_denoiser = new statmc::Denoiser();
+            statmc_denoiser->setStatInputs(statmc_inputs);
+
+            denoiser.reset(statmc_denoiser);
+        }
+        else 
+        {
+            if (options.m_num_scales > 1)
+                denoiser.reset(new MultiscaleDenoiser(static_cast<int>(options.m_num_scales)));
+            else
+                denoiser.reset(new Denoiser());
+        }
+#endif
 
         DenoiserCallbacks callbacks(abort_switch);
         denoiser->setCallbacks(&callbacks);
@@ -210,6 +255,13 @@ bool denoise_beauty_image(
     Deepimf&                num_samples,
     Deepimf&                histograms,
     Deepimf&                covariances,
+#if WITH_STATMC // complie with StatMC Denoiser
+    Deepimf&                albedo,
+    Deepimf&                normal,
+    Deepimf&                m1_means,
+    Deepimf&                m2_variance,
+    Deepimf&                m3_skewness,
+#endif
     const DenoiserOptions&  options,
     IAbortSwitch*           abort_switch)
 {
@@ -234,6 +286,13 @@ bool denoise_beauty_image(
             num_samples,
             histograms,
             covariances,
+#if WITH_STATMC // complie with StatMC Denoiser
+            albedo,
+            normal,
+            m1_means,
+            m2_variance,
+            m3_skewness,
+#endif
             options,
             abort_switch,
             dst);
@@ -249,6 +308,13 @@ bool denoise_aov_image(
     const Deepimf&          num_samples,
     const Deepimf&          histograms,
     const Deepimf&          covariances,
+#if WITH_STATMC // complie with StatMC Denoiser
+    const Deepimf&          albedo,
+    const Deepimf&          normal,
+    const Deepimf&          m1_means,
+    const Deepimf&          m2_variance,
+    const Deepimf&          m3_skewness,
+#endif
     const DenoiserOptions&  options,
     IAbortSwitch*           abort_switch)
 {
@@ -270,6 +336,13 @@ bool denoise_aov_image(
             num_samples,
             histograms,
             covariances,
+#if WITH_STATMC // complie with StatMC Denoiser
+            albedo,
+            normal,
+            m1_means,
+            m2_variance,
+            m3_skewness,
+#endif
             options,
             abort_switch,
             dst);

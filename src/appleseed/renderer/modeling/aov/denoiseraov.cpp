@@ -83,6 +83,12 @@ namespace
             const float    max_value,
             Deepimf&       sum_accum,
             Deepimf&       covariance_accum,
+#if WITH_STATMC // complie with StatMC Denoiser
+            Deepimf&       n_accum,
+            Deepimf&       m1_accum,
+            Deepimf&       m2_accum,
+            Deepimf&       m3_accum,
+#endif
             Deepimf&       histograms)
           : m_num_bins(num_bins)
           , m_gamma(gamma)
@@ -91,6 +97,12 @@ namespace
           , m_samples_channel_index(3 * num_bins)
           , m_sum_accum(sum_accum)
           , m_covariance_accum(covariance_accum)
+#if WITH_STATMC // complie with StatMC Denoiser
+          , m_n_accum(n_accum)
+          , m_m1_accum(m1_accum)
+          , m_m2_accum(m2_accum)
+          , m_m3_accum(m3_accum)
+#endif
           , m_histograms(histograms)
         {
         }
@@ -228,6 +240,46 @@ namespace
                 main.premultiply_in_place();
                 m_accum += (1.0f - m_accum.a) * shading_result.m_main;
                 ++m_sample_count;
+
+#if WITH_STATMC // compile with StatMC Denoiser
+                const Vector2i& pi = pixel_context.get_pixel_coords();
+
+                // Use Meng's algorithm (https://arxiv.org/abs/1510.04923).
+                float &n = m_n_accum.get(pi.y, pi.x, 0);
+                n++;
+
+                // delta
+                const float d_0 = shading_result.m_main.r - m_m1_accum.get(pi.y, pi.x, 0);
+                const float d_1 = shading_result.m_main.g - m_m1_accum.get(pi.y, pi.x, 1);
+                const float d_2 = shading_result.m_main.b - m_m1_accum.get(pi.y, pi.x, 2);
+                // delta^2
+                const float d2_0 = d_0 * d_0;
+                const float d2_1 = d_1 * d_1;
+                const float d2_2 = d_2 * d_2;
+                // delta / n
+                const float dN_0 = d_0 / n;
+                const float dN_1 = d_1 / n;
+                const float dN_2 = d_2 / n;
+                // (delta / n)^2
+                const float dN2_0 = dN_0 * dN_0;
+                const float dN2_1 = dN_1 * dN_1;
+                const float dN2_2 = dN_2 * dN_2;
+
+                // mean (m1)
+                m_m1_accum.get(pi.y, pi.x, 0) += dN_0;
+                m_m1_accum.get(pi.y, pi.x, 1) += dN_1;
+                m_m1_accum.get(pi.y, pi.x, 2) += dN_2;
+
+                // variance (m2)
+                m_m2_accum.get(pi.y, pi.x, 0) += d_0 * (d_0 - dN_0);
+                m_m2_accum.get(pi.y, pi.x, 1) += d_1 * (d_1 - dN_1);
+                m_m2_accum.get(pi.y, pi.x, 2) += d_2 * (d_2 - dN_2);
+
+                // skewness (m3)
+                m_m3_accum.get(pi.y, pi.x, 0) += - 3.f * dN_0 * m_m2_accum.get(pi.y, pi.x, 0) + d_0 * (d2_0 - dN2_0);
+                m_m3_accum.get(pi.y, pi.x, 1) += - 3.f * dN_1 * m_m2_accum.get(pi.y, pi.x, 1) + d_1 * (d2_1 - dN2_1);
+                m_m3_accum.get(pi.y, pi.x, 2) += - 3.f * dN_2 * m_m2_accum.get(pi.y, pi.x, 2) + d_2 * (d2_2 - dN2_2);
+#endif // TODO: Only calculate these if StatMC Denoiser is on (not when BCD denoiser is on).
             }
         }
 
@@ -248,6 +300,13 @@ namespace
 
         Deepimf&        m_sum_accum;
         Deepimf&        m_covariance_accum;
+
+#if WITH_STATMC // compile with StatMC Denoiser
+        Deepimf&        m_n_accum;       // number of samples
+        Deepimf&        m_m1_accum;      // mean (central moment of order 1)
+        Deepimf&        m_m2_accum;      // variance (central moment of order 2)
+        Deepimf&        m_m3_accum;      // skewness (central moment of order 3)
+#endif
 
         Deepimf&        m_histograms;
 
@@ -277,6 +336,13 @@ struct DenoiserAOV::Impl
 
     Deepimf m_sum_accum;
     Deepimf m_covariance_accum;
+
+#if WITH_STATMC // compile with StatMC Denoiser
+    Deepimf m_n_accum;
+    Deepimf m_m1_accum;
+    Deepimf m_m2_accum;
+    Deepimf m_m3_accum;
+#endif
 
     Deepimf m_histograms;
 };
@@ -330,6 +396,12 @@ void DenoiserAOV::create_image(
 
     impl->m_sum_accum.resize(w, h, 3);
     impl->m_covariance_accum.resize(w, h, 6);
+#if WITH_STATMC // compile with StatMC Denoiser
+    impl->m_n_accum.resize(w, h, 1);
+    impl->m_m1_accum.resize(w, h, 3);
+    impl->m_m2_accum.resize(w, h, 3);
+    impl->m_m3_accum.resize(w, h, 3);
+#endif
     impl->m_histograms.resize(w, h, 3 * bins + 1);
 
     clear_image();
@@ -339,6 +411,12 @@ void DenoiserAOV::clear_image()
 {
     impl->m_sum_accum.fill(0.0f);
     impl->m_covariance_accum.fill(0.0f);
+#if WITH_STATMC // compile with StatMC Denoiser
+    impl->m_n_accum.fill(0.0f);
+    impl->m_m1_accum.fill(0.0f);
+    impl->m_m2_accum.fill(0.0f);
+    impl->m_m3_accum.fill(0.0f);
+#endif
     impl->m_histograms.fill(0.0f);
 }
 
@@ -397,6 +475,38 @@ Deepimf& DenoiserAOV::sum_image()
 {
     return impl->m_sum_accum;
 }
+
+#if WITH_STATMC // complie with StatMC Denoiser
+const Deepimf& DenoiserAOV::m1_image() const
+{
+    return impl->m_m1_accum;
+}
+
+Deepimf& DenoiserAOV::m1_image()
+{
+    return impl->m_m1_accum;
+}
+
+const Deepimf& DenoiserAOV::m2_image() const
+{
+    return impl->m_m2_accum;
+}
+
+Deepimf& DenoiserAOV::m2_image()
+{
+    return impl->m_m2_accum;
+}
+
+const Deepimf& DenoiserAOV::m3_image() const
+{
+    return impl->m_m3_accum;
+}
+
+Deepimf& DenoiserAOV::m3_image()
+{
+    return impl->m_m3_accum;
+}
+#endif
 
 void DenoiserAOV::extract_num_samples_image(bcd::Deepimf& num_samples_image) const
 {
@@ -543,6 +653,12 @@ auto_release_ptr<AOVAccumulator> DenoiserAOV::create_accumulator() const
             impl->m_max_value,
             impl->m_sum_accum,
             impl->m_covariance_accum,
+#if WITH_STATMC // complie with StatMC Denoiser
+            impl->m_n_accum,
+            impl->m_m1_accum,
+            impl->m_m2_accum,
+            impl->m_m3_accum,
+#endif
             impl->m_histograms));
 }
 

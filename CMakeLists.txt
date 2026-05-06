@@ -150,6 +150,7 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     option (USE_FIND_PACKAGE_FOR_EXR        "Use find_package() for OpenEXR library"                    OFF)
     option (USE_FIND_PACKAGE_FOR_LZ4        "Use find_package() for LZ4 library"                        OFF)
     option (USE_FIND_PACKAGE_FOR_OCIO       "Use find_package() for OpenColorIO library"                OFF)
+    option (USE_FIND_PACKAGE_FOR_OCV        "Use find_package() for OpenCV library"                     OFF) # TODO: not yet implemented (only implemented for linux)
     option (USE_FIND_PACKAGE_FOR_OIIO       "Use find_package() for OpenImageIO library"                OFF)
     option (USE_FIND_PACKAGE_FOR_OSL        "Use find_package() for OpenShadingLanguage library"        OFF)
     option (USE_FIND_PACKAGE_FOR_XERCES     "Use find_package() for Xerces library"                     OFF)
@@ -160,6 +161,7 @@ else ()
     set (USE_FIND_PACKAGE_FOR_EXR           ON)
     set (USE_FIND_PACKAGE_FOR_LZ4           ON)
     set (USE_FIND_PACKAGE_FOR_OCIO          ON)
+    set (USE_FIND_PACKAGE_FOR_OCV           ON)
     set (USE_FIND_PACKAGE_FOR_OIIO          ON)
     set (USE_FIND_PACKAGE_FOR_OSL           ON)
     set (USE_FIND_PACKAGE_FOR_PNG           ON)
@@ -350,6 +352,15 @@ if (USE_FIND_PACKAGE_FOR_TIFF)
     find_package (TIFF REQUIRED)
 endif ()
 
+if (WITH_STATMC)
+    if (USE_FIND_PACKAGE_FOR_OCV)
+        find_package(OpenCV CONFIG REQUIRED)
+        find_package_handle_standard_args(OpenCV CONFIG_MODE)
+        MESSAGE(STATUS "OpenCV Include dirs ${OpenCV_INCLUDE_DIRS}")
+        MESSAGE(STATUS "OpencV LINK LIBRARIES ${OpenCV_LIBS}")
+    endif()
+endif()
+
 
 #--------------------------------------------------------------------------------------------------
 # Include paths.
@@ -367,6 +378,10 @@ include_directories (
 include_directories (
     ${happly_ROOT}
 )
+
+if (WITH_STATMC)
+    include_directories ( src/thirdparty/statmc )
+endif ()
 
 if (WITH_EMBREE)
     if (USE_FIND_PACKAGE_FOR_EMBREE)
@@ -687,6 +702,10 @@ endmacro ()
 add_subdirectory (src/thirdparty/bcd)
 add_subdirectory (src/thirdparty/glad)
 add_subdirectory (src/thirdparty/murmurhash3)
+
+if (WITH_STATMC)
+    add_subdirectory (src/thirdparty/statmc)
+endif ()
 
 add_subdirectory (src/appleseed)
 add_subdirectory (src/appleseed.shaders)

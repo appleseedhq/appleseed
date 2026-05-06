@@ -86,6 +86,17 @@ class DenoiserAOV
     const bcd::Deepimf& sum_image() const;
     bcd::Deepimf& sum_image();
 
+#if WITH_STATMC // complie with StatMC Denoiser
+    const bcd::Deepimf& m1_image() const;
+    bcd::Deepimf& m1_image();
+
+    const bcd::Deepimf& m2_image() const;
+    bcd::Deepimf& m2_image();
+
+    const bcd::Deepimf& m3_image() const;
+    bcd::Deepimf& m3_image();
+#endif
+
     void extract_num_samples_image(bcd::Deepimf& num_samples_image) const;
     void compute_covariances_image(bcd::Deepimf& covariances_image) const;
 

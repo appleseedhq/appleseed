@@ -695,7 +695,7 @@ void MainWindow::build_python_console_panel()
 #endif
     if (python_home == nullptr)
         RENDERER_LOG_INFO("Python home not set.");
-    else RENDERER_LOG_INFO("Python home set to %s.", python_home); // TODO: for `wchar_t` this may not display correctly for all unicode characters, find a working wchar_t to char conversion.
+    else RENDERER_LOG_INFO("Python home set to %ls.", python_home);
 
     PythonConsoleWidget* python_console_widget = new PythonConsoleWidget(m_ui->python_console_contents);
     python_console_widget->setObjectName("textedit_python_console");

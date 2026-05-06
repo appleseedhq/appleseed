@@ -52,6 +52,13 @@ class DenoiserOptions
     size_t  m_num_scales;                         //  number of pyramid levels to use.
     size_t  m_num_cores;                          //  number of cores used to denoise. O means using all the cores available.
     bool    m_mark_invalid_pixels;
+#if WITH_STATMC // complie with StatMC Denoiser
+    bool    m_use_statmc_denoiser;                //  use the StatMC denoiser instead of the BCD denoiser
+    float   m_statmc_sd;
+    int     m_statmc_radius;
+    float   m_statmc_normalSD;
+    float   m_statmc_albedoSD;
+#endif
 
     DenoiserOptions()
       : m_histogram_patch_distance_threshold(1.0f)
@@ -65,6 +72,13 @@ class DenoiserOptions
       , m_num_scales(3)
       , m_num_cores(0)
       , m_mark_invalid_pixels(false)
+#if WITH_STATMC // complie with StatMC Denoiser
+      , m_use_statmc_denoiser(false)
+      , m_statmc_sd(10.f)
+      , m_statmc_radius(20)
+      , m_statmc_normalSD(0.1f)
+      , m_statmc_albedoSD(0.02f)
+#endif
     {
     }
 };
@@ -74,6 +88,13 @@ bool denoise_beauty_image(
     bcd::Deepimf&               num_samples,
     bcd::Deepimf&               histograms,
     bcd::Deepimf&               covariances,
+#if WITH_STATMC // complie with StatMC Denoiser
+    bcd::Deepimf&               albedo,
+    bcd::Deepimf&               normal,
+    bcd::Deepimf&               m1_means,
+    bcd::Deepimf&               m2_variance,
+    bcd::Deepimf&               m3_skewness,
+#endif
     const DenoiserOptions&      options,
     foundation::IAbortSwitch*   abort_switch);
 
@@ -82,6 +103,13 @@ bool denoise_aov_image(
     const bcd::Deepimf&         num_samples,
     const bcd::Deepimf&         histograms,
     const bcd::Deepimf&         covariances,
+#if WITH_STATMC // complie with StatMC Denoiser
+    const bcd::Deepimf&         albedo,
+    const bcd::Deepimf&         normal,
+    const bcd::Deepimf&         m1_means,
+    const bcd::Deepimf&         m2_variance,
+    const bcd::Deepimf&         m3_skewness,
+#endif
     const DenoiserOptions&      options,
     foundation::IAbortSwitch*   abort_switch);
 
