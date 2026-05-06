@@ -1,6 +1,10 @@
 
-// TODO: Proper Head
-// TODO: Proper citation of https://github.com/cg-tuwien/StatMC-opencv_contrib. The code here is written after their example.
+// This file comes from the original StatMC-opencv_contrib implementation,
+// with minor changes to fit them into Appleseed.
+// Original license: Apache-2.0 license
+
+// Implementation of the CUDA denoiser for the SIGGRAPH Asia 2024 conference paper "A Statistical Approach to Monte Carlo Denoising" [Sakai et al. 2024] based on OpenCV.
+// Visit https://github.com/cg-tuwien/StatMC-opencv_contrib and https://users.cg.tuwien.ac.at/~hiroyuki/StatMC/ for additional information and resources.
 
 
 // Interface header.
