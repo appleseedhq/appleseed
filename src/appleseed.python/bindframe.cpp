@@ -56,9 +56,10 @@ namespace
     auto_release_ptr<Frame> create_frame_with_aovs(
         const std::string&    name,
         const bpy::dict&      params,
-        const AOVContainer&   aovs)
+        const AOVContainer&   aovs,
+        const AOVContainer&   lpe_aovs)
     {
-        return FrameFactory::create(name.c_str(), bpy_dict_to_param_array(params), aovs);
+        return FrameFactory::create(name.c_str(), bpy_dict_to_param_array(params), aovs, lpe_aovs);
     }
 
     bpy::object archive_frame(const Frame* frame, const char* directory)

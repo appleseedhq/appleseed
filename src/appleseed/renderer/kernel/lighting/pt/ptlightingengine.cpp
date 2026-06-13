@@ -191,7 +191,11 @@ namespace
             }
 
             if (m_light_path_stream)
+            {
+                aov_components.m_lpe_events = m_light_path_stream->build_lpe_events();
                 m_light_path_stream->end_path();
+                //aov_components.m_light_path_stream = m_light_path_stream;
+            }
         }
 
         template <typename PathVisitor, typename VolumeVisitor>
@@ -219,7 +223,8 @@ namespace
                 shading_context,
                 shading_point.get_scene(),
                 radiance,
-                m_inf_volume_ray_warnings);
+                m_inf_volume_ray_warnings,
+                m_light_path_stream);
 
             PathTracer<PathVisitor, VolumeVisitor, false> path_tracer(     // false = not adjoint
                 path_visitor,
@@ -376,6 +381,11 @@ namespace
                 return true;
             }
 
+            void on_path_end(const PathVertex& vertex)
+            {
+
+            }
+
           protected:
             const Parameters&                   m_params;
             const BackwardLightSampler&         m_light_sampler;
@@ -441,6 +451,10 @@ namespace
             void on_miss(const PathVertex& vertex)
             {
                 assert(vertex.m_prev_mode != ScatteringMode::None);
+
+                // Record light path event.
+                if (m_light_path_stream)
+                    m_light_path_stream->hit_background();
 
                 // Can't look up the environment if there's no environment EDF.
                 if (m_env_edf == nullptr)
@@ -512,6 +526,12 @@ namespace
                         vertex.m_scattering_modes &= ~(ScatteringMode::Glossy | ScatteringMode::Specular);
                 }
             }
+
+            void on_terminate(const TerminateType& terminate_type)
+            {
+                if (m_light_path_stream)
+                    m_light_path_stream->terminate(terminate_type);
+            }
         };
 
         //
@@ -547,6 +567,10 @@ namespace
             void on_miss(const PathVertex& vertex)
             {
                 assert(vertex.m_prev_mode != ScatteringMode::None);
+
+                // Record light path event.
+                if (m_light_path_stream)
+                    m_light_path_stream->hit_background();
 
                 // Can't look up the environment if there's no environment EDF.
                 if (m_env_edf == nullptr)
@@ -722,6 +746,12 @@ namespace
                     vertex_radiance);
             }
 
+            void on_terminate(const TerminateType& terminate_type)
+            {
+                if (m_light_path_stream)
+                    m_light_path_stream->terminate(terminate_type);
+            }
+
           private:
             bool m_is_indirect_lighting;
 
@@ -876,6 +906,7 @@ namespace
             const EnvironmentEDF*               m_env_edf;
             bool                                m_is_indirect_lighting;
             size_t&                             m_inf_volume_ray_warnings;
+            LightPathStream*                    m_light_path_stream;
 
             VolumeVisitorBase(
                 const Parameters&               params,
@@ -884,7 +915,8 @@ namespace
                 const ShadingContext&           shading_context,
                 const Scene&                    scene,
                 ShadingComponents&              path_radiance,
-                size_t&                         inf_volume_ray_warnings)
+                size_t&                         inf_volume_ray_warnings,
+                LightPathStream*                light_path_stream)
               : m_params(params)
               , m_light_sampler(light_sampler)
               , m_sampling_context(sampling_context)
@@ -893,6 +925,7 @@ namespace
               , m_env_edf(scene.get_environment()->get_environment_edf())
               , m_is_indirect_lighting(false)
               , m_inf_volume_ray_warnings(inf_volume_ray_warnings)
+              , m_light_path_stream(light_path_stream)
             {
             }
         };
@@ -912,7 +945,8 @@ namespace
                 const ShadingContext&           shading_context,
                 const Scene&                    scene,
                 ShadingComponents&              path_radiance,
-                size_t&                         inf_volume_ray_warnings)
+                size_t&                         inf_volume_ray_warnings,
+                LightPathStream*                light_path_stream)
               : VolumeVisitorBase(
                   params,
                   light_sampler,
@@ -920,7 +954,8 @@ namespace
                   shading_context,
                   scene,
                   path_radiance,
-                  inf_volume_ray_warnings)
+                  inf_volume_ray_warnings,
+                  light_path_stream)
             {
             }
 
@@ -929,6 +964,11 @@ namespace
                 // Any light contribution after a diffuse, glossy or volume bounce is considered indirect.
                 if (ScatteringMode::has_diffuse_or_glossy_or_volume(vertex.m_scattering_modes))
                     m_is_indirect_lighting = true;
+            }
+
+            void on_volume(PathVertex& vertex)
+            {
+
             }
         };
 
@@ -947,7 +987,8 @@ namespace
                 const ShadingContext&           shading_context,
                 const Scene&                    scene,
                 ShadingComponents&              path_radiance,
-                size_t&                         inf_volume_ray_warnings)
+                size_t&                         inf_volume_ray_warnings,
+                LightPathStream*                light_path_stream)
               : VolumeVisitorBase(
                   params,
                   light_sampler,
@@ -955,7 +996,8 @@ namespace
                   shading_context,
                   scene,
                   path_radiance,
-                  inf_volume_ray_warnings)
+                  inf_volume_ray_warnings,
+                  light_path_stream)
             {
             }
 
@@ -1045,6 +1087,15 @@ namespace
 
                 radiance *= vertex.m_throughput;
                 m_path_radiance.add(vertex.m_path_length, vertex.m_aov_mode, radiance);
+
+                on_volume(vertex);
+            }
+
+            void on_volume(PathVertex& vertex)
+            {
+                // Currently appleseed only support homogeneous volume.
+                if (m_light_path_stream)
+                    m_light_path_stream->sampled_volume(true);
             }
         };
     };

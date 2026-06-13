@@ -38,6 +38,9 @@
 #include "foundation/math/vector.h"
 #include "foundation/memory/autoreleaseptr.h"
 
+// OSL headers.
+#include "OSL/accum.h"
+
 // Standard headers.
 #include <cstddef>
 
@@ -200,6 +203,9 @@ class AOVAccumulatorContainer
 
     size_t          m_size;
     AOVAccumulator* m_accumulators[MaxAOVAccumulatorCount];
+
+    OSL::AccumAutomata                  m_automata;
+    std::unique_ptr<OSL::Accumulator>   m_accum_ptr;
 };
 
 }   // namespace renderer

@@ -135,6 +135,16 @@ bool AOV::write_images(
     return true;
 }
 
+void AOV::debug_fill(float r, float g, float b)
+{
+    auto tile = m_image->tile(0, 0);
+    auto w = tile.get_width();
+    auto h = tile.get_height();
+    for (int i = 0; i < w; i++)
+        for (int j = 0; j < h; j++)
+            tile.set_pixel(i, j, Color3f(r, g, b));
+}
+
 void AOV::create_image(
     const size_t            canvas_width,
     const size_t            canvas_height,

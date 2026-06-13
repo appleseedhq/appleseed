@@ -837,7 +837,7 @@ void MainWindow::slot_open_project_complete(const QString& filepath, const bool 
     ParamArray frame_params = frame->get_parameters();
     frame_params.insert("resolution", "128 128");
     frame_params.insert("tile_size", "16 16");
-    project->set_frame(FrameFactory::create(frame->get_name(), frame_params, frame->aovs()));
+    project->set_frame(FrameFactory::create(frame->get_name(), frame_params, frame->aovs(), frame->lpe_aovs()));
 #endif
 
     m_rendering_time_display->set_rendering_timer(&m_project_manager.get_project()->get_rendering_timer());

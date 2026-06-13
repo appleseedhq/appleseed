@@ -34,15 +34,22 @@
 // appleseed.foundation headers.
 #include "foundation/image/color.h"
 
+// OSL headers.
+#include "OSL/accum.h"
+
+// standard headers.
+#include <vector>
+
 namespace renderer
 {
 
 class AOVComponents
 {
   public:
-    Spectrum            m_albedo;
-    foundation::Color3f m_npr_shading;
-    foundation::Color4f m_npr_contour;
+    Spectrum                    m_albedo;
+    foundation::Color3f         m_npr_shading;
+    foundation::Color4f         m_npr_contour;
+    std::vector<OIIO::ustring>  m_lpe_events;
 
     // Constructor. Clears all components to 0.
     AOVComponents();
