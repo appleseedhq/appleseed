@@ -483,7 +483,7 @@ void SeparableBSSRDF::do_evaluate(
         return;
     }
 
-    // The profile function evalutes to zero outside the sampling disk.
+    // The profile function evaluates to zero outside the sampling disk.
     const float square_radius =
         static_cast<float>(
             square_norm(outgoing_point.get_point() - incoming_point.get_point()));

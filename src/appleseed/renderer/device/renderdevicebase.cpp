@@ -113,7 +113,7 @@ IRendererController::Status RenderDeviceBase::wait_for_event(
         }
 
         renderer_controller.on_progress();
-        foundation::sleep(1);   // namespace qualifer required
+        foundation::sleep(1);   // namespace qualifier required
     }
 }
 

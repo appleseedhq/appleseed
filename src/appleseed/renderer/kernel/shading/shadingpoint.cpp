@@ -818,7 +818,7 @@ void ShadingPoint::compute_shading_basis() const
 
     if (m_primitive_type == PrimitiveCurve3)
     {
-        // Contruct shading basis for hair BSDF.
+        // Construct shading basis for hair BSDF.
         // todo: add flag to differentiate curves from hair.
         const Vector3d x = normalize(get_dpdu(0));
         const Vector3d sn_curve = get_original_shading_normal();
