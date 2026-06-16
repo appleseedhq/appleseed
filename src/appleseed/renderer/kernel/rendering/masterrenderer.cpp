@@ -211,32 +211,13 @@ struct MasterRenderer::Impl
 
         try
         {
+            IRendererController& controller =
+                m_serial_renderer_controller != nullptr
+                    ? *m_serial_renderer_controller
+                    : renderer_controller;
+
             // Render.
-            result.m_status =
-                do_render(
-                    m_serial_renderer_controller != nullptr
-                        ? *m_serial_renderer_controller
-                        : renderer_controller);
-
-            // Retrieve frame's render info. Note that the frame entity may have been replaced during rendering.
-            ParamArray& render_info = m_project.get_frame()->render_info();
-
-            // Insert rendering time into frame's render info.
-            render_info.insert("render_time", m_project.get_rendering_timer().get_seconds());
-
-            // Don't proceed further if rendering failed.
-            if (result.m_status != RenderingResult::Succeeded)
-                return result;
-
-            // Post-process.
-            RenderingTimer stopwatch;
-            stopwatch.start();
-            postprocess();
-            stopwatch.measure();
-
-            // Insert post-processing time into frame's render info.
-            render_info.insert("post_processing_time", stopwatch.get_seconds());
-            RENDERER_LOG_INFO("post-processing time: %s.", pretty_time(stopwatch.get_seconds()).c_str());
+            result.m_status = do_render(controller);
         }
         catch (const std::bad_alloc&)
         {
@@ -415,6 +396,25 @@ struct MasterRenderer::Impl
         m_project.get_light_path_recorder().finalize(
             props.m_canvas_width,
             props.m_canvas_height);
+
+        // Retrieve frame's render info. Note that the frame entity may have been replaced during rendering.
+        ParamArray& render_info = m_project.get_frame()->render_info();
+
+        // Insert rendering time into frame's render info.
+        render_info.insert("render_time", m_project.get_rendering_timer().get_seconds());
+
+        // Post-process the frame if rendering succeeded.
+        if (status == IRendererController::Status::TerminateRendering)
+        {
+            RenderingTimer stopwatch;
+            stopwatch.start();
+            postprocess();
+            stopwatch.measure();
+
+            // Insert post-processing time into frame's render info.
+            render_info.insert("post_processing_time", stopwatch.get_seconds());
+            RENDERER_LOG_INFO("post-processing time: %s.", pretty_time(stopwatch.get_seconds()).c_str());
+        }
 
         return status;
     }
