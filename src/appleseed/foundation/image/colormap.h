@@ -32,6 +32,9 @@
 #include "foundation/image/color.h"
 #include "foundation/math/aabb.h"
 
+// appleseed.main headers.
+#include "main/dllsymbol.h"
+
 // Standard headers.
 #include <cstddef>
 #include <vector>
@@ -92,6 +95,10 @@ class ColorMap
         const float     max_luminance) const;
 
     Color3f evaluate_palette(float x) const;
+
+    APPLESEED_DLLSYMBOL std::array<float,4> compute_tile_highlight_color(
+        const size_t thread_index,
+        const size_t thread_count);
 
   private:
     std::vector<Color3f> m_palette;
