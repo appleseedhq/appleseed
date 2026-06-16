@@ -255,8 +255,15 @@ namespace
 
             // Project outgoing and incoming vectors onto the tangent plane
             // and compute the cosine of the angle between them.
-            const Vector3f V_perp_N = normalize(project(outgoing, n));
-            const Vector3f I_perp_N = normalize(incoming - n * cos_in);
+            // Do not use normalize() as V_perp and I_perp can be zero.
+            const Vector3f V_perp = project(outgoing, n);
+            const Vector3f I_perp = incoming - n * cos_in;
+            const float V_perp_norm = norm(V_perp);
+            const float I_perp_norm = norm(I_perp);
+            if (V_perp_norm == 0.0f || I_perp_norm == 0.0f)
+                return;
+            const Vector3f V_perp_N = V_perp / V_perp_norm;
+            const Vector3f I_perp_N = I_perp / I_perp_norm;
             const float delta_cos_phi = dot(V_perp_N, I_perp_N);
 
             // Compute C1 coefficient.
