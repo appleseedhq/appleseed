@@ -256,6 +256,7 @@ class MainWindow
     void slot_pack_project_as();
     void slot_close_project();
     void slot_project_modified();
+    void slot_post_processing_stage_modified(const std::uint64_t stage_uid);
 
     // Project file monitoring.
     void slot_toggle_project_file_monitoring(const bool checked);
