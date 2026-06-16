@@ -66,6 +66,7 @@ void bind_scene();
 void bind_shader_compiler();
 void bind_shader_group();
 void bind_shader_query();
+void bind_sun_positioner();
 void bind_surface_shader();
 void bind_texture();
 void bind_tile_callback();
@@ -132,6 +133,7 @@ extern "C" void bind_appleseed_python_classes()
     bind_fresnel();
     bind_display();
     bind_project();
+    bind_sun_positioner();
 
     bind_renderer_controller();
     bind_tile_callback();
