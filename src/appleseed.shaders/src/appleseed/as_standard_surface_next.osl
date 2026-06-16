@@ -1,0 +1,893 @@
+
+//
+// This source file is part of appleseed.
+// Visit https://appleseedhq.net/ for additional information and resources.
+//
+// This software is released under the MIT license.
+//
+// Copyright (c) 2019 Luis Barrancos, Rafael Brune, The appleseedhq Organization
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in
+// all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+// THE SOFTWARE.
+//
+
+#include "appleseed/material/as_material_helpers.h"
+#include "appleseed/math/as_math_helpers.h"
+#include "appleseed/material/as_hazy_gloss.h"
+
+shader as_standard_surface_next
+[[
+    string help = "appleseed's standard material shader.",
+    string icon = "asStandardSurface.png",
+    string URL = "https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_standard_surface.html#label-as-standard-surface",
+
+    string as_node_name = "asStandardSurface",
+    string as_category = "shader",
+
+    string as_max_class_id = "1040715592 1048464490",
+    string as_max_plugin_type = "material",
+
+    int as_maya_type_id = 0x00127a06,
+    string as_maya_classification = "drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch"
+]]
+(
+    float in_diffuse_weight = 1.0
+    [[
+        string as_maya_attribute_name = "diffuseWeight",
+        string as_maya_attribute_short_name = "diw",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Diffuse Weight",
+        string page = "Diffuse"
+    ]],
+    color in_color = color(0.5)
+    [[
+        string as_maya_attribute_name = "color",
+        string as_maya_attribute_short_name = "c",
+        string label = "Diffuse Color",
+        string page = "Diffuse"
+    ]],
+    float in_diffuse_roughness = 0.1
+    [[
+        string as_maya_attribute_name = "diffuseRoughness",
+        string as_maya_attribute_short_name = "dir",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Diffuse Roughness",
+        string page = "Diffuse"
+    ]],
+    float in_subsurface_weight = 0.0
+    [[
+        string as_maya_attribute_name = "subsurfaceWeight",
+        string as_maya_attribute_short_name = "ssw",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Subsurface Weight",
+        string page = "Subsurface",
+        int divider = 1
+    ]],
+    color in_sss_mfp = color(0)
+    [[
+        string as_maya_attribute_name = "subsurfaceMfp",
+        string as_maya_attribute_short_name = "mfp",
+        string label = "Depth",
+        string page = "Subsurface"
+    ]],
+    float in_sss_mfp_scale = 1.0
+    [[
+        string as_maya_attribute_name = "subsurfaceMfpScale",
+        string as_maya_attribute_short_name = "sfm",
+        float min = 0.0,
+        float max = 1000.0,
+        float softmax = 100.0,
+        string label = "Depth Scale",
+        string page = "Subsurface",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    int in_subsurface_profile = 2
+    [[
+        string as_maya_attribute_name = "subsurfaceProfile",
+        string as_maya_attribute_short_name = "ssp",
+        string widget = "mapper",
+        string options = "Gaussian:0|Dipole:1|Normalized Diffusion:2|Random Walk:3",
+        string label = "Subsurface Profile",
+        string page = "Subsurface.Advanced",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    int in_sss_maximum_ray_depth = 2
+    [[
+        string as_maya_attribute_name = "sssMaximumRayDepth",
+        string as_maya_attribute_short_name = "ssd",
+        int min = 1,
+        int max = 16,
+        int softmax = 8,
+        string label = "Subsurface Ray Depth",
+        string page = "Subsurface.Advanced",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    float in_sss_threshold = 0.001
+    [[
+        string as_maya_attribute_name = "sssThreshold",
+        string as_maya_attibute_short_name = "sth",
+        float min = 0.0,
+        float max = 1.0,
+        float softmax = 0.01,
+        string label = "Subsurface Threshold",
+        string page = "Subsurface.Advanced",
+        string help = "Threshold at which the subsurface scattering term is replaced by a diffuse term.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    float in_translucency_weight = 0.0
+    [[
+        string as_maya_attribute_name = "translucencyWeight",
+        string as_maya_attribute_short_name = "trw",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Translucency Weight",
+        string page = "Translucency"
+    ]],
+    color in_translucency_color = color(0.0)
+    [[
+        string as_maya_attribute_name = "translucencyColor",
+        string as_maya_attribute_short_name = "trc",
+        string label = "Translucency Color",
+        string page = "Translucency"
+    ]],
+    color in_specular_color = color(1)
+    [[
+        string as_maya_attribute_name = "specularColor",
+        string as_maya_attribute_short_name = "spc",
+        string label = "Specular Color",
+        string page = "Specular"
+    ]],
+    float in_specular_roughness = 0.1
+    [[
+        string as_maya_attribute_name = "specularRoughness",
+        string as_maya_attribute_short_name = "sro",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Specular Roughness",
+        string page = "Specular"
+    ]],
+    float in_specular_haziness = 0.0
+    [[
+        string as_maya_attribute_name = "specularHaziness",
+        string as_maya_attribute_short_name = "sha",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Specular Haziness",
+        string page = "Specular"
+    ]],
+    float in_specular_haze_extent = 0.0
+    [[
+        string as_maya_attribute_name = "specularHazeExtent",
+        string as_maya_attribute_short_name = "she",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Specular Haze Extent",
+        string page = "Specular"
+    ]],
+    int in_fresnel_type = 0
+    [[
+        string as_maya_attribute_name = "fresnelType",
+        string as_maya_attribute_short_name = "fty",
+        string widget = "mapper",
+        string options = "Dielectric:0|Conductor:1",
+        string label = "Fresnel Type",
+        string page = "Specular",
+        string help = "In dielectric mode, set IOR explicitly, and in conductor mode, set face and edge refletance.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    float in_ior = 1.37
+    [[
+        string as_maya_attribute_name = "ior",
+        string as_maya_attribute_short_name = "sio",
+        float min = 1.0,
+        float max = 10.0,
+        float softmax = 2.0,
+        string label = "Index Of Refraction",
+        string page = "Specular",
+        string help = "IOR, only active if Fresnel is set to dielectric.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    color in_face_tint = color(0.85, 0.21, 0.05)
+    [[
+        string as_maya_attribute_name = "faceTint",
+        string as_maya_attribute_short_name = "f0",
+        string label = "Facing Tint",
+        string page = "Specular",
+        string help = "Reflectance at facing angle, for conductor Fresnel.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    color in_edge_tint = color(1)
+    [[
+        string as_maya_attribute_name = "edgeTint",
+        string as_maya_attribute_short_name = "f90",
+        string label = "Edge Tint",
+        string page = "Specular",
+        string help = "Reflectance at grazing angle, conductor Fresnel only.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    float in_anisotropy_amount = 0.0
+    [[
+        string as_maya_attribute_name = "anisotropyAmount",
+        string as_maya_attribute_short_name = "anw",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Anisotropy Amount",
+        string page = "Specular.Anisotropy"
+    ]],
+    float in_anisotropy_angle = 0.0
+    [[
+        string as_maya_attribute_name = "anisotropyAngle",
+        string as_maya_attribute_short_name = "ana",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Anisotropy Angle",
+        string page = "Specular.Anisotropy",
+        string help = "Anisotropy angle in [0,1], mapping to [0,360] degrees."
+    ]],
+    color in_anisotropy_map = color(0)
+    [[
+        string as_maya_attribute_name = "anisotropyMap",
+        string as_maya_attribute_short_name = "ama",
+        string label = "Anisotropy Vector Map",
+        string page = "Specular.Anisotropy",
+        string help = "Anisotropy vector map, with XY encoded in RG channels."
+    ]],
+    float in_refraction_amount = 0.0
+    [[
+        string as_maya_attribute_name = "refractionAmount",
+        string as_maya_attribute_short_name = "rtw",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Refraction Weight",
+        string page = "Specular.Refraction",
+        string help = "Refraction weight. Refraction inherits the IOR."
+    ]],
+    color in_refraction_tint = color(1)
+    [[
+        string as_maya_attribute_name = "refractionTint",
+        string as_maya_attribute_short_name = "rti",
+        string label = "Refraction Tint",
+        string page = "Specular.Refraction",
+        int divider = 1
+    ]],
+    float in_absorption_depth = 0.0
+    [[
+        string as_maya_attribute_name = "absorptionDepth",
+        string as_maya_attribute_short_name = "rad",
+        float min = 0.0,
+        float max = 10000.0,
+        float softmax = 100.0,
+        string label = "Absorption Depth",
+        string page = "Specular.Refraction",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    color in_absorption_color = color(1)
+    [[
+        string as_maya_attribute_name = "absorptionColor",
+        string as_maya_attribute_short_name = "rac",
+        string label = "Absorption Color",
+        string page = "Specular.Refraction"
+    ]],
+    float in_coating_reflectivity = 0.0
+    [[
+        string as_maya_attribute_name = "coatingReflectivity",
+        string as_maya_attribute_short_name = "cow",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Coating Reflectivity",
+        string page = "Coating",
+        string help = "Coating specular reflectivity."
+    ]],
+    float in_coating_roughness = 0.0
+    [[
+        string as_maya_attribute_name = "coatingRoughness",
+        string as_maya_attribute_short_name = "cor",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Coating Roughness",
+        string page = "Coating"
+    ]],
+    float in_coating_ior = 1.42
+    [[
+        string as_maya_attribute_name = "coatingIor",
+        string as_maya_attribute_short_name = "coi",
+        float min = 1.0,
+        float max = 5.0,
+        float softmax = 2.0,
+        string label = "Coating IOR",
+        string page = "Coating",
+        string help = "Coating (monochromatic) dielectric IOR.",
+        int divider = 1,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 1,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    float in_coating_depth = 0.0
+    [[
+        string as_maya_attribute_name = "coatingDepth",
+        string as_maya_attribute_short_name = "cod",
+        float min = 0.0,
+        float max = 10.0,
+        float softmax = 1.0,
+        string label = "Coating Thickness",
+        string page = "Coating",
+        string help = "Maps from [0,1] to [0,10] microns."
+    ]],
+    color in_coating_absorption = color(1)
+    [[
+        string as_maya_attribute_name = "coatingAbsorption",
+        string as_maya_attribute_short_name = "coa",
+        string label = "Coating Absorption",
+        string page = "Coating"
+    ]],
+    float in_incandescence_amount = 0.0
+    [[
+        string as_maya_attribute_name = "incandescenceAmount",
+        string as_maya_attribute_short_name = "inw",
+        float min = 0.0,
+        float softmax = 1.0,
+        string label = "Emission Amount",
+        string page = "Emission"
+    ]],
+    int in_incandescence_type = 0
+    [[
+        string as_maya_attribute_name = "incandescenceType",
+        string as_maya_attribute_short_name = "int",
+        string widget = "mapper",
+        string options = "Custom:0|Black-body:1",
+        string label = "Emission Type",
+        string page = "Emission",
+        string help = "Custom or black-body radiator EDF.",
+        int divider = 1,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    color in_incandescence_color = color(0)
+    [[
+        string as_maya_attribute_name = "incandescenceColor",
+        string as_maya_attribute_short_name = "inc",
+        string label = "Emission Color",
+        string page = "Emission",
+        string help = "Emission color, only valid in constant mode."
+    ]],
+    int in_temperature = 4300
+    [[
+        string as_maya_attribute_name = "temperature",
+        string as_maya_attribute_short_name = "tem",
+        int min = 1000,
+        int max = 11000,
+        int softmin = 3400,
+        int softmax = 9300,
+        string label = "Temperature",
+        string page = "Emission",
+        string help = "Temperature in Kelvin degrees, only valid in physically based mode.",
+        int divider = 1,
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+
+    int in_area_normalize_edf = 0
+    [[
+        string as_maya_attribute_name = "normalizeAreaEDF",
+        string as_maya_attribute_short_name = "nae",
+        string widget = "checkBox",
+        string label = "Normalize Area",
+        string page = "Emission",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    int in_tonemap_edf = 1
+    [[
+        string as_maya_attribute_name = "toneMapEDF",
+        string as_maya_attribute_short_name = "tme",
+        string widget = "checkBox",
+        string label = "Tonemap Color",
+        string page = "Emission",
+        string help = "Tonemap emission, only valid for the black-body radiator mode.",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    color in_transparency = color(0)
+    [[
+        string as_maya_attribute_name = "transparency",
+        string as_maya_attribute_short_name = "it",
+        string label = "Transparency Color",
+        string page = "Transparency"
+    ]],
+    normal in_bump_normal_coating = N
+    [[
+        string as_maya_attribute_name = "coatingNormal",
+        string as_maya_attribute_short_name = "ncn",
+        string label = "Coating Normal",
+        string page = "Bump",
+        string help = "The coating normal. If not set, the substrate normal is used for both layers."
+    ]],
+    normal in_bump_normal_substrate = N
+    [[
+        string as_maya_attribute_name = "normalCamera",
+        string as_maya_attribute_short_name = "n",
+        string label = "Substrate Normal",
+        string page = "Bump",
+        string help = "The default bump normal."
+    ]],
+    int in_enable_matte = 0
+    [[
+        string as_maya_attribute_name = "enableMatte",
+        string as_maya_attribute_short_name = "ema",
+        string widget = "checkBox",
+        string label = "Enable Matte Opacity",
+        string page = "Matte Opacity",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0,
+        int divider = 1
+    ]],
+    float in_matte_opacity = 0.0
+    [[
+        string as_maya_attribute_name = "matteOpacity",
+        string as_maya_attribute_short_name = "mao",
+        float min = 0.0,
+        float max = 1.0,
+        string label = "Matte Opacity",
+        string page = "Matte Opacity",
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    color in_matte_opacity_color = color(1,0.5,0)
+    [[
+        string as_maya_attribute_name = "matteOpacityColor",
+        string as_maya_attribute_short_name = "mac",
+        string label = "Matte Opacity Color",
+        string page = "Matte Opacity",
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    int in_maximum_ray_depth = 100
+    [[
+        string as_maya_attribute_name = "maximumRayDepth",
+        string as_maya_attribute_short_name = "mrd",
+        int min = 0,
+        int max = 100,
+        int softmax = 16,
+        string label = "Ray Depth",
+        string page = "Advanced",
+        int as_maya_attribute_connectable = 0,
+        int as_maya_attribute_keyable = 0,
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    vector Tn = vector(0)
+    [[
+        int lockgeom = 0,
+        int as_maya_attribute_hidden = 1,
+        string widget = "null",
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    vector Bn = vector(0)
+    [[
+        int lockgeom = 0,
+        int as_maya_attribute_hidden = 1,
+        string widget = "null",
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]],
+    output closure color out_outColor = 0
+    [[
+        string as_maya_attribute_name = "outColor",
+        string as_maya_attribute_short_name = "oc",
+        string widget = "null"
+    ]],
+    output closure color out_outTransparency = 0
+    [[
+        string as_maya_attribute_name = "outTransparency",
+        string as_maya_attribute_short_name = "ot",
+        string widget = "null"
+    ]],
+    output closure color out_outMatteOpacity = 0
+    [[
+        string as_maya_attribute_name = "outMatteOpacity",
+        string as_maya_attribute_short_name = "om",
+        string widget = "null",
+        int as_maya_attribute_hidden = 1,
+        int as_blender_input_socket = 0,
+        int gafferNoduleLayoutVisible = 0
+    ]]
+)
+{
+    int compute_transparency = (max(in_transparency) > 0.0) ? 1 : 0;
+
+    if (compute_transparency)
+    {
+        out_outTransparency = in_transparency * transparent();
+        out_outColor += out_outTransparency;
+    }
+
+    if (raytype("transparency"))
+    {
+        if (in_enable_matte)
+        {
+            out_outMatteOpacity = as_matte(
+                in_matte_opacity_color,
+                in_matte_opacity);
+
+            out_outColor += out_outMatteOpacity;
+        }
+        return;
+    }
+
+    if (raytype("shadow"))
+    {
+        return;
+    }
+
+    int ray_depth = 0;
+    int status = getattribute("path:ray_depth", ray_depth);
+
+    if (!status || ray_depth > in_maximum_ray_depth)
+    {
+        return;
+    }
+
+    if (in_transparency == 1.0)
+    {
+        return;
+    }
+
+    color opacity = 1.0 - in_transparency;
+
+    // Coating first, with full absorption substrate is not lit.
+
+    int compute_coating =
+        (in_coating_reflectivity > 0.0 || in_coating_depth > 0.0) ? 1 : 0;
+
+    color coating_transmittance = color(1);
+
+    if (compute_coating)
+    {
+        normal Nn = isconnected(in_bump_normal_coating)
+            ? normalize(in_bump_normal_coating)
+            : normalize(in_bump_normal_substrate);
+
+        float costheta_o = max(0.0, dot(-I, Nn));
+
+        if (in_coating_ior > 1.0)
+        {
+            out_outColor += opacity *
+                in_coating_reflectivity * microfacet(
+                    "beckmann",
+                    Nn,
+                    in_coating_roughness,
+                    in_coating_ior,
+                    0);
+
+            // Dielectric coating, usually [1,2], Schlick approx. suffices.
+
+            float R0 = sqr((in_coating_ior - 1.0) / (in_coating_ior + 1.0));
+            float Kr = R0 + (1.0 - R0) * pow(1.0 - costheta_o, 5.0);
+
+            coating_transmittance = 1.0 - clamp(Kr, 0.0, 1.0);
+        }
+
+        if (max(coating_transmittance) > 0.0 &&
+            min(in_coating_absorption) < 1.0)
+        {
+            color absorption_coeff = 1.0 - in_coating_absorption;
+
+            // Arbitrary value, it seems to provide a good (visual) range.
+
+            float max_depth = 10000.0 * sqr(sqr(in_coating_depth));
+            float tau = max_depth * (1.0 - max(0.0, costheta_o));
+
+            // Restrict range to avoid pure saturated colors.
+            absorption_coeff = clamp(absorption_coeff, 0.0, 0.99);
+
+            color fake_absorption = exp(-tau * absorption_coeff);
+
+            coating_transmittance *= clamp(fake_absorption, 0.0, 1.0);
+        }
+
+        if (max(coating_transmittance) <= EPS)
+        {
+            return;
+        }
+    }
+
+    int compute_translucency =
+        (in_translucency_weight * max(in_translucency_color) > 0.0) ? 1 : 0;
+
+    int compute_transmission =
+        (in_refraction_amount * max(in_refraction_tint) > 0.0) ? 1 : 0;
+
+    int compute_specular = max(in_specular_color) > 0.0 ? 1 : 0;
+
+    int compute_diffuse = (in_diffuse_weight * max(in_color) > 0.0) ? 1 : 0;
+
+    int compute_bssrdf = (
+        ray_depth > in_sss_maximum_ray_depth ||
+        compute_transparency || compute_translucency || compute_transmission ||
+        in_subsurface_weight == 0.0 || max(in_sss_mfp) <= in_sss_threshold)
+        ? 0 : 1;
+
+    int compute_edf =
+        (in_incandescence_amount * max(in_incandescence_color) > 0.0) ? 1 : 0;
+
+    // Specular first, to get the transmittance amount and bailout earlier.
+
+    color substrate_transmittance = color(1);
+    normal Nn = normalize(in_bump_normal_substrate);
+
+    if (compute_specular || compute_transmission)
+    {
+        vector tangent = Tn;
+
+        if (in_anisotropy_amount > 0.0)
+        {
+            if (isconnected(in_anisotropy_map))
+            {
+                vector vector_map = normalize(
+                    (vector) in_anisotropy_map * 2.0 - 1.0);
+
+                tangent = normalize(
+                    vector_map[0] * Tn +
+                    vector_map[1] * Bn +
+                    vector_map[2] * Nn);
+            }
+
+            if (in_anisotropy_angle > 0.0)
+            {
+                tangent = rotate(
+                    tangent,
+                    in_anisotropy_angle * M_2PI,
+                    point(0),
+                    point(Nn));
+            }
+        }
+
+        // Evaluate the BSDF(BRDF+BTDF) for monochromatic dielectric IOR only.
+
+        if (in_fresnel_type == 0)
+        {
+            if (compute_transmission)
+            {
+                out_outColor += opacity * as_hazy_glass(
+                    Nn,
+                    tangent,
+                    coating_transmittance,
+                    in_specular_color,
+                    in_refraction_amount * in_refraction_tint,
+                    in_specular_roughness,
+                    in_specular_haziness,
+                    in_specular_haze_extent,
+                    in_anisotropy_amount,
+                    in_ior,
+                    in_absorption_color,
+                    in_absorption_depth);
+            }
+            else if (max(in_specular_color) > 0.0)
+            {
+                out_outColor += coating_transmittance * opacity *
+                    in_specular_color * as_hazy_gloss(
+                        Nn,
+                        tangent,
+                        in_specular_roughness,
+                        in_specular_haziness,
+                        in_specular_haze_extent,
+                        in_anisotropy_amount,
+                        in_ior);
+            }
+        }
+        else if (max(in_specular_color) > 0.0)
+        {
+            out_outColor += coating_transmittance * opacity *
+                in_specular_color * as_hazy_metal(
+                    Nn,
+                    tangent,
+                    in_specular_color,
+                    in_face_tint,
+                    in_edge_tint,
+                    in_specular_roughness,
+                    in_specular_haziness,
+                    in_specular_haze_extent,
+                    in_anisotropy_amount);
+        }
+
+        // In order to layer substrate BxDFs, we need the microfacet Fresnel
+        // transmission amount (and absorption), but lacking that, use viewer.
+
+        if ((compute_diffuse || compute_bssrdf || compute_edf ||
+            compute_translucency) && max(in_specular_color) > 0.0)
+        {
+            float costheta_o = max(0.0, dot(-I, Nn));
+
+            if (in_fresnel_type == 0)
+            {
+                float R0 = sqr((in_ior - 1.0) / (in_ior + 1.0));
+                float Kr = R0 + (1.0 - R0) * pow(1.0 - costheta_o, 5.0);
+
+                substrate_transmittance = 1.0 - clamp(Kr, 0.0, 1.0);
+            }
+            else
+            {
+                float exterior_n = compute_coating ? in_coating_ior : 1.0;
+
+                color Kr = color(0);
+
+                color n = get_eta(in_face_tint, in_edge_tint);
+                color k = get_kappa(in_face_tint, n);
+
+                for (int i = 0; i < 3; ++i)
+                {
+                    Kr[i] = dielectricConductorFresnel(
+                        exterior_n,
+                        n[i],
+                        k[i],
+                        costheta_o);
+                }
+                substrate_transmittance = 1.0 - clamp(Kr, 0.0, 1.0);
+            }
+        }
+    }
+
+    color transmittance = coating_transmittance * substrate_transmittance;
+
+    if (max(transmittance) <= EPS)
+    {
+        return;
+    }
+
+    if (raytype("light"))
+    {
+        color edf_color = (in_incandescence_type == 0)
+            ? in_incandescence_amount * in_incandescence_color
+            : in_incandescence_amount * blackbody(in_temperature);
+
+        if (compute_edf && in_area_normalize_edf)
+        {
+            edf_color /= surfacearea();
+        }
+        if (compute_edf && in_tonemap_edf)
+        {
+            edf_color /= luminance(edf_color) + 1.0;
+        }
+        if (compute_edf && max(edf_color) > 0.0)
+        {
+            out_outColor += transmittance * opacity *
+                edf_color * emission();
+        }
+    }
+
+    if (compute_bssrdf)
+    {
+        color albedo = in_diffuse_weight * in_color;
+
+        if (max(albedo) > 0.0)
+        {
+            albedo = clamp(albedo, 0.01, 0.99);
+
+            string subsurface_profile;
+
+            if (in_subsurface_profile == 0)
+            {
+                subsurface_profile = "gaussian";
+            }
+            else if (in_subsurface_profile == 1)
+            {
+                subsurface_profile = "better_dipole";
+            }
+            else if (in_subsurface_profile == 2)
+            {
+                subsurface_profile = "normalized_diffusion";
+            }
+            else
+            {
+                subsurface_profile = "randomwalk";
+            }
+
+            // Disable Fresnel weight since transmittance is computed earlier,
+            // but ideally, the BSSRDF should be used.
+
+            out_outColor += in_subsurface_weight *
+                as_subsurface(
+                    subsurface_profile,
+                    Nn,
+                    in_diffuse_weight * in_color,
+                    in_sss_mfp_scale * in_sss_mfp,
+                    in_ior,
+                    "fresnel_weight", 0.0);
+        }
+    }
+    else
+    {
+        color diffuse_color = in_diffuse_weight * in_color;
+
+        if (max(diffuse_color) > 0.0)
+        {
+            out_outColor += transmittance * opacity *
+                as_oren_nayar(diffuse_color, Nn, in_diffuse_roughness);
+        }
+
+        color translucency_color = in_translucency_weight *
+            in_translucency_color;
+
+        if (max(translucency_color) > 0.0)
+        {
+            out_outColor += transmittance * opacity *
+                translucency_color * translucent(Nn);
+        }
+    }
+}
