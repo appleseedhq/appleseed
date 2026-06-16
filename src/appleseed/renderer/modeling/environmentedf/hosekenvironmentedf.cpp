@@ -39,6 +39,7 @@
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/sourceinputs.h"
+#include "renderer/modeling/light/sunlight.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
@@ -88,9 +89,6 @@ namespace
 
     const char* Model = "hosek_environment_edf";
 
-    // The smallest valid turbidity value.
-    const float BaseTurbidity = 2.0f;
-
     class HosekEnvironmentEDF
       : public EnvironmentEDF
     {
@@ -104,11 +102,12 @@ namespace
             m_inputs.declare("sun_phi", InputFormat::Float);
             m_inputs.declare("turbidity", InputFormat::Float);
             m_inputs.declare("turbidity_multiplier", InputFormat::Float, "2.0");
-            m_inputs.declare("ground_albedo", InputFormat::Float, "0.3");
+            m_inputs.declare("ground_albedo", InputFormat::SpectralIlluminance, "0.3");
             m_inputs.declare("luminance_multiplier", InputFormat::Float, "1.0");
             m_inputs.declare("luminance_gamma", InputFormat::Float, "1.0");
             m_inputs.declare("saturation_multiplier", InputFormat::Float, "1.0");
             m_inputs.declare("horizon_shift", InputFormat::Float, "0.0");
+            m_inputs.declare("sun_light", InputFormat::Entity, "");
         }
 
         void release() override
@@ -133,6 +132,9 @@ namespace
             // Evaluate uniform values.
             m_inputs.evaluate_uniforms(&m_uniform_values);
 
+            // If there is a bound sun get it.
+            m_sun = dynamic_cast<SunLight*>(m_inputs.get_entity("sun_light"));
+
             // Compute the sun direction.
             m_sun_theta = deg_to_rad(m_uniform_values.m_sun_theta);
             m_sun_phi = deg_to_rad(m_uniform_values.m_sun_phi);
@@ -145,11 +147,10 @@ namespace
             {
                 // Apply turbidity multiplier and bias.
                 m_uniform_values.m_turbidity *= m_uniform_values.m_turbidity_multiplier;
-                m_uniform_values.m_turbidity += BaseTurbidity;
 
                 compute_coefficients(
                     m_uniform_values.m_turbidity,
-                    m_uniform_values.m_ground_albedo,
+                    m_uniform_values.m_ground_albedo.illuminance_to_ciexyz(g_std_lighting_conditions),
                     m_sun_theta,
                     m_uniform_coeffs,
                     m_uniform_master_Y);
@@ -189,6 +190,10 @@ namespace
         {
             assert(is_normalized(outgoing));
 
+            Spectrum sun_value(0.0f);
+            if (m_sun)
+                m_sun->evaluate(Vector3d(outgoing.x, outgoing.y, outgoing.z), sun_value);
+
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             const Vector3f local_outgoing = transform.vector_to_local(outgoing);
@@ -197,9 +202,11 @@ namespace
             RegularSpectrum31f radiance;
             if (shifted_outgoing.y > 0.0f)
                 compute_sky_radiance(shading_context, shifted_outgoing, radiance);
-            else radiance.set(0.0f);
+            else
+                compute_ground_color(shading_context, shifted_outgoing, radiance);
 
             value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
+            value += sun_value;
         }
 
         void evaluate(
@@ -210,6 +217,10 @@ namespace
         {
             assert(is_normalized(outgoing));
 
+            Spectrum sun_value(0.0f);
+            if (m_sun)
+                m_sun->evaluate(Vector3d(outgoing.x, outgoing.y, outgoing.z), sun_value);
+
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             const Vector3f local_outgoing = transform.vector_to_local(outgoing);
@@ -218,10 +229,18 @@ namespace
             RegularSpectrum31f radiance;
             if (shifted_outgoing.y > 0.0f)
                 compute_sky_radiance(shading_context, shifted_outgoing, radiance);
-            else radiance.set(0.0f);
+            else
+                compute_ground_color(shading_context, shifted_outgoing, radiance);
 
             value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
+
             probability = shifted_outgoing.y > 0.0f ? shifted_outgoing.y * RcpPi<float>() : 0.0f;
+            if (sun_value != Spectrum(0.0f))
+            {
+                probability *= sun_value.illuminance_to_ciexyz(g_std_lighting_conditions)[1]
+                    / value.illuminance_to_ciexyz(g_std_lighting_conditions)[1];
+                value += sun_value;
+            }
             assert(probability >= 0.0f);
         }
 
@@ -244,15 +263,15 @@ namespace
       private:
         APPLESEED_DECLARE_INPUT_VALUES(InputValues)
         {
-            float   m_sun_theta;                    // sun zenith angle in degrees, 0=zenith
-            float   m_sun_phi;                      // degrees
-            float   m_turbidity;                    // atmosphere turbidity
-            float   m_turbidity_multiplier;
-            float   m_ground_albedo;
-            float   m_luminance_multiplier;
-            float   m_luminance_gamma;
-            float   m_saturation_multiplier;
-            float   m_horizon_shift;
+            float       m_sun_theta;                    // sun zenith angle in degrees, 0=zenith
+            float       m_sun_phi;                      // degrees
+            float       m_turbidity;                    // atmosphere turbidity
+            float       m_turbidity_multiplier;
+            Spectrum    m_ground_albedo;
+            float       m_luminance_multiplier;
+            float       m_luminance_gamma;
+            float       m_saturation_multiplier;
+            float       m_horizon_shift;
         };
 
         InputValues                 m_uniform_values;
@@ -265,10 +284,12 @@ namespace
         float                       m_uniform_coeffs[3 * 9];
         float                       m_uniform_master_Y[3];
 
+        SunLight*                   m_sun;
+
         // Compute the coefficients of the radiance distribution function and the master luminance value.
         static void compute_coefficients(
             const float             turbidity,
-            const float             albedo,
+            const Color3f           albedo,
             const float             sun_theta,
             float                   coeffs[3 * 9],
             float                   master_Y[3])
@@ -277,6 +298,7 @@ namespace
             const size_t turbidity_low = truncate<size_t>(clamped_turbidity);
             const size_t turbidity_high = std::min(turbidity_low + 1, size_t(9));
             const float turbidity_interp = clamped_turbidity - turbidity_low;
+
 
             // Compute solar elevation.
             const float eta = HalfPi<float>() - sun_theta;
@@ -326,8 +348,8 @@ namespace
 
                     coeffs[w * 9 + p] =
                         lerp(
-                            lerp(clow0, clow1, albedo),
-                            lerp(chigh0, chigh1, albedo),
+                            lerp(clow0, clow1, albedo[w]),
+                            lerp(chigh0, chigh1, albedo[w]),
                             turbidity_interp);
                 }
 
@@ -339,8 +361,8 @@ namespace
 
                     master_Y[w] =
                         lerp(
-                            lerp(rlow0, rlow1, albedo),
-                            lerp(rhigh0, rhigh1, albedo),
+                            lerp(rlow0, rlow1, albedo[w]),
+                            lerp(rhigh0, rhigh1, albedo[w]),
                             turbidity_interp);
 
                     master_Y[w] *= 1000.0f;  // Kcd.m^-2 to cd.m^-2
@@ -416,13 +438,12 @@ namespace
 
                 // Apply turbidity multiplier and bias.
                 turbidity *= m_uniform_values.m_turbidity_multiplier;
-                turbidity += BaseTurbidity;
 
                 // Compute the coefficients of the radiance distribution function and the master luminance value.
                 float coeffs[3 * 9], master_Y[3];
                 compute_coefficients(
                     turbidity,
-                    m_uniform_values.m_ground_albedo,
+                    m_uniform_values.m_ground_albedo.illuminance_to_ciexyz(g_std_lighting_conditions),
                     m_sun_theta,
                     coeffs,
                     master_Y);
@@ -459,17 +480,41 @@ namespace
             luminance *= m_uniform_values.m_luminance_multiplier;
 
             // Compute the final sky radiance.
+            constexpr float StepLambda = 10.0f;
             radiance *=
-                  luminance                                         // start with computed luminance
-                / sum_value(radiance * XYZCMFCIE19312Deg[1])        // normalize to unit luminance
-                * (1.0f / 683.0f)                                   // convert lumens to Watts
-                * RcpPi<float>();                                   // convert irradiance to radiance
+                luminance                                                   // start with computed luminance
+                / sum_value(radiance * XYZCMFCIE19312Deg[1] * StepLambda)   // normalize to unit luminance
+                * (1.0f / 683.0f);                                          // convert lumens to Watts
         }
 
         Vector3f shift(Vector3f v) const
         {
             v.y -= m_uniform_values.m_horizon_shift;
             return normalize(v);
+        }
+
+        // Compute the sky radiance along a given direction.
+        void compute_ground_color(
+            const ShadingContext& shading_context,
+            const Vector3f& outgoing,
+            RegularSpectrum31f& radiance) const
+        {
+            Color3f ground_Color(0.0f);
+            compute_sky_radiance(shading_context,
+                Vector3f(outgoing.x, 0.0f, outgoing.z), radiance);
+            Color3f sky_color = ciexyz_to_linear_rgb(
+                spectral_illuminance_to_ciexyz<float>(g_std_lighting_conditions, radiance));
+
+            std::vector<float> knotx = { 0.0f, 1.0f };
+            std::vector<float> knotd(2);
+
+            for (unsigned int i = 0; i < 3; i++)
+            {
+                std::vector<float> knoty = { sky_color[i], m_uniform_values.m_ground_albedo[i]};
+                compute_cardinal_spline_tangents(2, &knotx[0], &knoty[0], 0.0f, &knotd[0]);
+                ground_Color[i] = cubic_hermite_spline(2, &knotx[0], &knoty[0], &knotd[0], -outgoing.y);
+            }
+            linear_rgb_illuminance_to_spectrum(ground_Color, radiance);
         }
     };
 }
@@ -509,16 +554,11 @@ DictionaryArray HosekEnvironmentEDFFactory::get_input_metadata() const
         Dictionary()
             .insert("name", "ground_albedo")
             .insert("label", "Ground Albedo")
-            .insert("type", "numeric")
-            .insert("min",
+            .insert("type", "colormap")
+            .insert("entity_types",
                 Dictionary()
-                    .insert("value", "0.0")
-                    .insert("type", "hard"))
-            .insert("max",
-                Dictionary()
-                    .insert("value", "1.0")
-                    .insert("type", "hard"))
-            .insert("use", "optional")
+                    .insert("color", "Colors"))
+            .insert("use", "required")
             .insert("default", "0.3")
             .insert("help", "Ground albedo (reflection coefficient of the ground)"));
 

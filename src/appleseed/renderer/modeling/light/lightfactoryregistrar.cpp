@@ -33,12 +33,13 @@
 // appleseed.renderer headers.
 #include "renderer/modeling/entity/entityfactoryregistrar.h"
 #include "renderer/modeling/light/directionallight.h"
+#include "renderer/modeling/light/HosekSun.h"
 #include "renderer/modeling/light/lighttraits.h"
 #include "renderer/modeling/light/maxomnilight.h"
 #include "renderer/modeling/light/maxspotlight.h"
 #include "renderer/modeling/light/pointlight.h"
+#include "renderer/modeling/light/PreethamSun.h"
 #include "renderer/modeling/light/spotlight.h"
-#include "renderer/modeling/light/sunlight.h"
 
 // appleseed.foundation headers.
 #include "foundation/memory/autoreleaseptr.h"
@@ -68,7 +69,8 @@ LightFactoryRegistrar::LightFactoryRegistrar(const SearchPaths& search_paths)
     impl->register_factory(auto_release_ptr<FactoryType>(new MaxSpotLightFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new PointLightFactory()));
     impl->register_factory(auto_release_ptr<FactoryType>(new SpotLightFactory()));
-    impl->register_factory(auto_release_ptr<FactoryType>(new SunLightFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new HosekSunLightFactory()));
+    impl->register_factory(auto_release_ptr<FactoryType>(new PreethamSunLightFactory()));
 }
 
 LightFactoryRegistrar::~LightFactoryRegistrar()

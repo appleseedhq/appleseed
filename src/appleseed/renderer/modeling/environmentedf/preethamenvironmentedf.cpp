@@ -39,6 +39,7 @@
 #include "renderer/modeling/input/inputarray.h"
 #include "renderer/modeling/input/source.h"
 #include "renderer/modeling/input/sourceinputs.h"
+#include "renderer/modeling/light/sunlight.h"
 #include "renderer/utility/transformsequence.h"
 
 // appleseed.foundation headers.
@@ -82,9 +83,6 @@ namespace
 
     const char* Model = "preetham_environment_edf";
 
-    // The smallest valid turbidity value.
-    const float BaseTurbidity = 2.0f;
-
     class PreethamEnvironmentEDF
       : public EnvironmentEDF
     {
@@ -102,6 +100,7 @@ namespace
             m_inputs.declare("luminance_gamma", InputFormat::Float, "1.0");
             m_inputs.declare("saturation_multiplier", InputFormat::Float, "1.0");
             m_inputs.declare("horizon_shift", InputFormat::Float, "0.0");
+            m_inputs.declare("sun_light", InputFormat::Entity, "");
         }
 
         void release() override
@@ -126,6 +125,9 @@ namespace
             // Evaluate uniform values.
             m_inputs.evaluate_uniforms(&m_uniform_values);
 
+            // If there is a bound sun get it.
+            m_sun = dynamic_cast<SunLight*>(m_inputs.get_entity("sun_light"));
+
             // Compute the sun direction.
             m_sun_theta = deg_to_rad(m_uniform_values.m_sun_theta);
             m_sun_phi = deg_to_rad(m_uniform_values.m_sun_phi);
@@ -138,7 +140,6 @@ namespace
             {
                 // Apply turbidity multiplier and bias.
                 m_uniform_values.m_turbidity *= m_uniform_values.m_turbidity_multiplier;
-                m_uniform_values.m_turbidity += BaseTurbidity;
 
                 // Precompute the coefficients of the luminance and chromaticity distribution functions.
                 compute_x_coefficients(m_uniform_values.m_turbidity, m_uniform_x_coeffs);
@@ -185,6 +186,10 @@ namespace
         {
             assert(is_normalized(outgoing));
 
+            Spectrum sun_value(0.0f);
+            if (m_sun)
+                m_sun->evaluate(Vector3d(outgoing.x, outgoing.y, outgoing.z), sun_value);
+
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
             const Vector3f local_outgoing = transform.vector_to_local(outgoing);
@@ -196,6 +201,7 @@ namespace
             else radiance.set(0.0f);
 
             value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
+            value += sun_value;
         }
 
         void evaluate(
@@ -205,6 +211,10 @@ namespace
             float&                  probability) const override
         {
             assert(is_normalized(outgoing));
+
+            Spectrum sun_value(0.0f);
+            if (m_sun)
+                m_sun->evaluate(Vector3d(outgoing.x, outgoing.y, outgoing.z), sun_value);
 
             Transformd scratch;
             const Transformd& transform = m_transform_sequence.evaluate(0.0f, scratch);
@@ -218,6 +228,12 @@ namespace
 
             value.set(radiance, g_std_lighting_conditions, Spectrum::Illuminance);
             probability = shifted_outgoing.y > 0.0f ? shifted_outgoing.y * RcpPi<float>() : 0.0f;
+            if (sun_value != Spectrum(0.0f))
+            {
+                probability *= sun_value.illuminance_to_ciexyz(g_std_lighting_conditions)[1]
+                    / value.illuminance_to_ciexyz(g_std_lighting_conditions)[1];
+                value += sun_value;
+            }
             assert(probability >= 0.0f);
         }
 
@@ -264,6 +280,8 @@ namespace
         float                       m_uniform_x_zenith;
         float                       m_uniform_y_zenith;
         float                       m_uniform_Y_zenith;
+
+        SunLight*                   m_sun;
 
         // Compute the coefficients of the luminance distribution function.
         static void compute_Y_coefficients(
@@ -401,7 +419,6 @@ namespace
 
                 // Apply turbidity multiplier and bias.
                 turbidity *= m_uniform_values.m_turbidity_multiplier;
-                turbidity += BaseTurbidity;
 
                 // Compute the coefficients of the luminance and chromaticity distribution functions.
                 float Y_coeffs[5], x_coeffs[5], y_coeffs[5];
@@ -447,11 +464,11 @@ namespace
             luminance *= m_uniform_values.m_luminance_multiplier;
 
             // Compute the final sky radiance.
+            constexpr float StepLambda = 10.0f;
             radiance *=
-                  luminance                                         // start with computed luminance
-                / sum_value(radiance * XYZCMFCIE19312Deg[1])        // normalize to unit luminance
-                * (1.0f / 683.0f)                                   // convert lumens to Watts
-                * RcpPi<float>();                                   // convert irradiance to radiance
+                luminance                                                   // start with computed luminance
+                / sum_value(radiance * XYZCMFCIE19312Deg[1] * StepLambda)   // normalize to unit luminance
+                * (1.0f / 683.0f);                                          // convert lumens to Watts
         }
 
         Vector3f shift(Vector3f v) const
