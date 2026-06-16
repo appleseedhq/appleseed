@@ -64,9 +64,6 @@
 #include <string>
 #include <vector>
 
-// Forward declarations.
-namespace renderer { class IRendererController; }
-
 using namespace boost;
 using namespace foundation;
 
@@ -331,6 +328,7 @@ namespace
                 set_current_thread_name("pass_manager");
 
                 const size_t start_pass = m_frame.get_initial_pass();
+                bool do_loop_break = false;
 
                 //
                 // Rendering passes.
@@ -389,12 +387,16 @@ namespace
                     if (m_pass_callback)
                     {
                         assert(!m_job_queue.has_scheduled_or_running_jobs());
-                        m_pass_callback->on_pass_end(m_frame, m_job_queue, m_abort_switch);
+                        do_loop_break = m_pass_callback->on_pass_end(m_frame, m_job_queue, m_abort_switch);
                         assert(!m_job_queue.has_scheduled_or_running_jobs());
                     }
 
                     // Optionally write a checkpoint file to disk.
                     m_frame.save_checkpoint(m_framebuffer_factory, pass);
+
+                    // Break the loop if the callback indicated a render end.
+                    if(do_loop_break)
+                        break;
                 }
 
                 // Check abort flag.

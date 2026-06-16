@@ -135,7 +135,7 @@ class BSDFSampler
         const int                       light_sampling_modes,
         DirectShadingComponents&        value) const override;
 
-  private:
+  protected:
     const BSDF&                         m_bsdf;
     const void*                         m_bsdf_data;
     const int                           m_bsdf_sampling_modes;

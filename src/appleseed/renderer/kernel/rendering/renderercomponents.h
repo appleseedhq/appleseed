@@ -32,6 +32,7 @@
 #include "renderer/kernel/lighting/backwardlightsampler.h"
 #include "renderer/kernel/lighting/forwardlightsampler.h"
 #include "renderer/kernel/lighting/ilightingengine.h"
+#include "renderer/kernel/lighting/sdtree.h"
 #include "renderer/kernel/rendering/iframerenderer.h"
 #include "renderer/kernel/rendering/ipasscallback.h"
 #include "renderer/kernel/rendering/ipixelrenderer.h"
@@ -51,6 +52,7 @@
 namespace foundation    { class IAbortSwitch; }
 namespace renderer      { class Frame; }
 namespace renderer      { class IFrameRenderer; }
+namespace renderer      { class IRendererController; }
 namespace renderer      { class ITileCallbackFactory; }
 namespace renderer      { class OIIOTextureSystem; }
 namespace renderer      { class OnFrameBeginRecorder; }
@@ -122,11 +124,12 @@ class RendererComponents
     OIIOTextureSystem&                                  m_oiio_texture_system;
     OSLShadingSystem&                                   m_osl_shading_system;
 
-    std::unique_ptr<IShadingResultFrameBufferFactory>   m_shading_result_framebuffer_factory;
+    std::unique_ptr<STree>                              m_sd_tree;
     std::unique_ptr<ILightingEngineFactory>             m_lighting_engine_factory;
     std::unique_ptr<ISampleRendererFactory>             m_sample_renderer_factory;
     std::unique_ptr<ISampleGeneratorFactory>            m_sample_generator_factory;
     std::unique_ptr<IPixelRendererFactory>              m_pixel_renderer_factory;
+    std::unique_ptr<IShadingResultFrameBufferFactory>   m_shading_result_framebuffer_factory;
     std::unique_ptr<ITileRendererFactory>               m_tile_renderer_factory;
     std::unique_ptr<IPassCallback>                      m_pass_callback;
     foundation::auto_release_ptr<IFrameRenderer>        m_frame_renderer;
@@ -137,7 +140,7 @@ class RendererComponents
     bool create_pixel_renderer_factory();
     bool create_shading_result_framebuffer_factory();
     bool create_tile_renderer_factory();
-    bool create_frame_renderer();
+    bool create_frame_renderer_factory();
 };
 
 

@@ -80,4 +80,11 @@ void EphemeralShadingResultFrameBufferFactory::destroy(
     delete framebuffer;
 }
 
+size_t EphemeralShadingResultFrameBufferFactory::get_total_channel_count(
+    const size_t aov_count) const
+{
+    return ShadingResultFrameBuffer::get_total_channel_count(
+        aov_count);
+}
+
 }   // namespace renderer

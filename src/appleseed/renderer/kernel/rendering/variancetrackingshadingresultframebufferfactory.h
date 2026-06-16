@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Stephen Agyemang, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,37 +28,62 @@
 
 #pragma once
 
+// appleseed.renderer headers.
+#include "renderer/kernel/rendering/ishadingresultframebufferfactory.h"
+
 // appleseed.foundation headers.
-#include "foundation/core/concepts/iunknown.h"
+#include "foundation/image/image.h"
 #include "foundation/math/aabb.h"
+#include "foundation/platform/compiler.h"
 
 // Standard headers.
 #include <cstddef>
+#include <vector>
 
 // Forward declarations.
 namespace renderer  { class Frame; }
-namespace renderer  { class ShadingResultFrameBuffer; }
+namespace renderer  { class VarianceTrackingShadingResultFrameBuffer; }
 
 namespace renderer
 {
 
-class IShadingResultFrameBufferFactory
-  : public foundation::IUnknown
+class VarianceTrackingShadingResultFrameBufferFactory
+  : public IShadingResultFrameBufferFactory
 {
   public:
-    virtual void clear() = 0;
+    // Constructor.
+    explicit VarianceTrackingShadingResultFrameBufferFactory(
+        const Frame&                frame);
 
-    virtual ShadingResultFrameBuffer* create(
+    // Destructor.
+    ~VarianceTrackingShadingResultFrameBufferFactory() override;
+
+    // Delete this instance.
+    void release() override;
+
+    ShadingResultFrameBuffer* create(
         const Frame&                frame,
-        const std::size_t           tile_x,
-        const std::size_t           tile_y,
-        const foundation::AABB2u&   tile_bbox) = 0;
+        const size_t                tile_x,
+        const size_t                tile_y,
+        const foundation::AABB2u&   tile_bbox) override;
 
-    virtual void destroy(
-        ShadingResultFrameBuffer*   framebuffer) = 0;
+    void destroy(
+        ShadingResultFrameBuffer*   framebuffer) override;
 
-    virtual size_t get_total_channel_count(
-      const size_t aov_count) const = 0;
+    size_t get_total_channel_count(
+        const size_t aov_count) const override;
+
+    void clear();
+
+    // Return estimate of the mean pixel variance.
+    float estimator_variance() const;
+
+    // Transfer pixel variance estimates to image and return estimate of the mean pixel variance.
+    float estimator_variance_to_image(
+        foundation::Image&          image) const;
+
+  private:
+    std::vector<VarianceTrackingShadingResultFrameBuffer*> m_framebuffers;
 };
 
 }   // namespace renderer

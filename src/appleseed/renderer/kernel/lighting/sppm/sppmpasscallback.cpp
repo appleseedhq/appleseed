@@ -169,7 +169,7 @@ void SPPMPassCallback::on_pass_begin(
     }
 }
 
-void SPPMPassCallback::on_pass_end(
+bool SPPMPassCallback::on_pass_end(
     const Frame&                        frame,
     JobQueue&                           job_queue,
     IAbortSwitch&                       abort_switch)
@@ -225,6 +225,8 @@ void SPPMPassCallback::on_pass_end(
         pretty_time(m_stopwatch.get_seconds()).c_str());
 
     ++m_pass_number;
+
+    return false;
 }
 
 SPPMLightingEngineWorkingSet& SPPMPassCallback::acquire_working_set()

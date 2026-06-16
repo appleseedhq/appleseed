@@ -5,8 +5,7 @@
 //
 // This software is released under the MIT license.
 //
-// Copyright (c) 2010-2013 Francois Beaune, Jupiter Jazz Limited
-// Copyright (c) 2014-2018 Francois Beaune, The appleseedhq Organization
+// Copyright (c) 2019 Stephen Agyemang, The appleseedhq Organization
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -30,42 +29,50 @@
 #pragma once
 
 // appleseed.renderer headers.
-#include "renderer/kernel/rendering/ishadingresultframebufferfactory.h"
+#include "renderer/kernel/lighting/gpt/gptparameters.h"
+#include "renderer/kernel/lighting/ilightingengine.h"
+#include "renderer/kernel/lighting/sdtree.h"
 
 // appleseed.foundation headers.
-#include "foundation/math/aabb.h"
 #include "foundation/platform/compiler.h"
 
-// Standard headers.
-#include <cstddef>
-
 // Forward declarations.
-namespace renderer  { class Frame; }
-namespace renderer  { class ShadingResultFrameBuffer; }
+namespace foundation    { class Dictionary; }
+namespace renderer      { class BackwardLightSampler; }
+namespace renderer      { class LightPathRecorder; }
 
 namespace renderer
 {
 
-class EphemeralShadingResultFrameBufferFactory
-  : public IShadingResultFrameBufferFactory
+//
+// Implementation of "Practical Path Guiding for Efficient Light-Transport Simulation" [Müller et al. 2017].
+//
+
+class GPTLightingEngineFactory
+  : public ILightingEngineFactory
 {
   public:
+    // Return parameters metadata.
+    static foundation::Dictionary get_params_metadata();
+
+    // Constructor.
+    GPTLightingEngineFactory(
+        STree*                          sd_tree,
+        const BackwardLightSampler&     light_sampler,
+        LightPathRecorder&              light_path_recorder,
+        const GPTParameters&            params);
+
     // Delete this instance.
     void release() override;
 
-    void clear() override;
+    // Return a new path tracing lighting engine instance.
+    ILightingEngine* create() override;
 
-    ShadingResultFrameBuffer* create(
-        const Frame&                frame,
-        const std::size_t           tile_x,
-        const std::size_t           tile_y,
-        const foundation::AABB2u&   tile_bbox) override;
-
-    void destroy(
-        ShadingResultFrameBuffer*   framebuffer) override;
-
-    size_t get_total_channel_count(
-        const size_t aov_count) const override;
+  private:
+    STree*                              m_sd_tree;
+    const BackwardLightSampler&         m_light_sampler;
+    LightPathRecorder&                  m_light_path_recorder;
+    GPTParameters                       m_params;
 };
 
 }   // namespace renderer
