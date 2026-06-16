@@ -38,6 +38,7 @@
 #include "renderer/kernel/shading/shadingcontext.h"
 #include "renderer/kernel/shading/shadingpoint.h"
 #include "renderer/kernel/shading/shadingresult.h"
+#include "renderer/kernel/shading/shadowcatcher.h"
 #include "renderer/modeling/aov/screenspacevelocityaov.h"
 #include "renderer/modeling/bsdf/bsdf.h"
 #include "renderer/modeling/bsdf/bsdfsample.h"
@@ -283,7 +284,8 @@ void DiagnosticSurfaceShader::evaluate(
     const ShadingPoint&         shading_point,
     ShadingResult&              shading_result,
     ShadingComponents&          shading_components,
-    AOVComponents&              aov_components) const
+    AOVComponents&              aov_components,
+    ShadowCatcher&              shadow_catcher) const
 {
     switch (impl->m_shading_mode)
     {

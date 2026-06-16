@@ -546,6 +546,8 @@ void VolumeLightingIntegrator::take_single_direction_sample(
         m_low_light_threshold,
         m_indirect);
 
+    Spectrum unshaded_radiance(Spectrum::Illuminance);
+    Spectrum shaded_radiance(Spectrum::Illuminance);
     if (sample_phase_function)
     {
         integrator.take_single_material_sample(
@@ -570,6 +572,8 @@ void VolumeLightingIntegrator::take_single_direction_sample(
             mis_heuristic,
             Dual3d(m_volume_ray.m_dir),
             radiance,
+            unshaded_radiance,
+            shaded_radiance,
             nullptr);
     }
     else
@@ -579,6 +583,8 @@ void VolumeLightingIntegrator::take_single_direction_sample(
             *light_sample,
             Dual3d(m_volume_ray.m_dir),
             radiance,
+            unshaded_radiance,
+            shaded_radiance,
             nullptr);
     }
 }

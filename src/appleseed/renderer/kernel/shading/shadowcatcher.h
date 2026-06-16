@@ -31,51 +31,35 @@
 
 // appleseed.renderer headers.
 #include "renderer/global/globaltypes.h"
-#include "renderer/kernel/lighting/ilightingengine.h"
 
 // appleseed.foundation headers.
-#include "foundation/platform/compiler.h"
+#include "foundation/core/concepts/noncopyable.h"
 
-// Forward declarations.
-namespace renderer  { class AOVComponents; }
-namespace renderer  { class PixelContext; }
-namespace renderer  { class ShadingComponents; }
-namespace renderer  { class ShadingContext; }
-namespace renderer  { class ShadingPoint; }
 
 namespace renderer
 {
 
 //
-// A lighting engine that always returns zero.
+// Shadow Catcher structure to store per sample information.
 //
 
-class NullLightingEngine
-  : public ILightingEngine
+class ShadowCatcher
+  : public foundation::NonCopyable
 {
   public:
-    // Delete this instance.
-    void release() override
-    {
-        delete this;
-    }
+      ShadowCatcher()
+        : m_enabled(false)
+        , m_shadow_ratio(0.0f)
+      {
+          m_direct_unshaded_radiance.set(0.0f);
+          m_direct_shaded_radiance.set(0.0f);
+      }
 
-    // Print this component's settings to the renderer's global logger.
-    void print_settings() const override
-    {
-    }
+    Spectrum                m_direct_unshaded_radiance;
+    Spectrum                m_direct_shaded_radiance;
+    float                   m_shadow_ratio;
 
-    // Compute the lighting at a given point of the scene.
-    void compute_lighting(
-        SamplingContext&        sampling_context,
-        const PixelContext&     pixel_context,
-        const ShadingContext&   shading_context,
-        const ShadingPoint&     shading_point,
-        ShadingComponents&      radiance,
-        AOVComponents&          aov_components,
-        ShadowCatcher&          shadow_catcher) override
-    {
-    }
+    bool                    m_enabled;
 };
 
 }   // namespace renderer

@@ -1,0 +1,145 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.10.5
+# options: -O2 -DNDEBUG -IE:/GIT/appleseed/appleseed/src/appleseed.shaders/include -o E:/GIT/appleseed/appleseed/sandbox/shaders/appleseed/as_plastic.oso
+shader as_plastic	%meta{string,icon,"asPlastic.png"} %meta{string,help,"A plastic material, layering a diffuse and specular terms."} %meta{string,URL,"https://appleseed.readthedocs.io/projects/appleseed-maya/en/latest/shaders/material/as_plastic.html"} %meta{string,as_node_name,"asPlastic"} %meta{string,as_category,"shader"} %meta{string,as_max_class_id,"1525511449 941587614"} %meta{string,as_max_plugin_type,"material"} %meta{int,as_maya_type_id,1210839} %meta{string,as_maya_classification,"drawdb/shader/surface:rendernode/appleseed/surface:shader/surface:swatch/AppleseedRenderSwatch"} 
+param	color	in_color	0.5 0.5 0.5		%meta{string,as_maya_attribute_name,"color"} %meta{string,as_maya_attribute_short_name,"c"} %meta{string,label,"Diffuse Color"} %meta{string,page,"Diffuse"}  %read{38,38} %write{2147483647,-1}
+param	float	in_diffuse_weight	1		%meta{string,as_maya_attribute_name,"diffuseWeight"} %meta{string,as_maya_attribute_short_name,"kd"} %meta{float,min,0} %meta{float,max,1} %meta{string,label,"Diffuse Weight"} %meta{string,page,"Diffuse"}  %read{38,38} %write{2147483647,-1}
+param	float	in_scattering	0		%meta{string,as_maya_attribute_name,"scattering"} %meta{string,as_maya_attribute_short_name,"sca"} %meta{float,min,0} %meta{float,max,1} %meta{string,label,"Scattering"} %meta{string,page,"Diffuse"}  %read{38,38} %write{2147483647,-1}
+param	color	in_specular_color	0.5 0.5 0.5		%meta{string,as_maya_attribute_name,"specularColor"} %meta{string,as_maya_attribute_short_name,"scc"} %meta{string,label,"Specular Color"} %meta{string,page,"Specular"}  %read{38,38} %write{2147483647,-1}
+param	float	in_specular_weight	1		%meta{string,as_maya_attribute_name,"specularWeight"} %meta{string,as_maya_attribute_short_name,"ksw"} %meta{float,min,0} %meta{float,max,1} %meta{string,label,"Specular Weight"} %meta{string,page,"Specular"} %meta{int,divider,1}  %read{38,38} %write{2147483647,-1}
+param	float	in_ior	1.5		%meta{string,as_maya_attribute_name,"ior"} %meta{string,as_maya_attribute_short_name,"io"} %meta{float,min,1} %meta{float,max,2.5} %meta{string,label,"IOR"} %meta{string,page,"Specular"} %meta{string,help,"Index of refraction."}  %read{38,38} %write{2147483647,-1}
+param	int	in_distribution	0		%meta{string,as_maya_attribute_name,"distribution"} %meta{string,as_maya_attribute_short_name,"dst"} %meta{string,widget,"mapper"} %meta{string,options,"Beckmann:0|GGX:1|GTR:2|Student's t-MDF:3"} %meta{string,label,"Distribution"} %meta{string,page,"Specular"} %meta{int,as_maya_attribute_connectable,0} %meta{int,as_maya_attribute_keyable,0} %meta{int,as_maya_attribute_hidden,1} %meta{int,as_blender_input_socket,0} %meta{int,gafferNoduleLayoutVisible,0} %meta{int,divider,1} %meta{int,as_deprecated,1}  %read{2147483647,-1} %write{2147483647,-1}
+param	float	in_specular_roughness	0.200000003		%meta{string,as_maya_attribute_name,"specularRoughness"} %meta{string,as_maya_attribute_short_name,"sro"} %meta{float,min,0} %meta{float,max,1} %meta{string,label,"Specular Roughness"} %meta{string,page,"Specular"}  %read{38,38} %write{2147483647,-1}
+param	float	in_specular_spread	0.25		%meta{string,as_maya_attribute_name,"specularSpread"} %meta{string,as_maya_attribute_short_name,"spr"} %meta{float,min,0} %meta{float,max,1} %meta{string,label,"Specular Spread"} %meta{string,page,"Specular"} %meta{string,help,"Specular highlights spread, only valid for GTR, Student's t-MDF."} %meta{int,as_deprecated,1}  %read{2147483647,-1} %write{2147483647,-1}
+param	normal	in_bump_normal	0 0 0		%meta{string,as_maya_attribute_name,"normalCamera"} %meta{string,as_maya_attribute_short_name,"n"} %meta{string,label,"Bump Normal"} %meta{string,page,"Bump"}  %read{38,38} %write{0,0} %initexpr
+param	color	in_transparency	0 0 0		%meta{string,as_maya_attribute_name,"transparency"} %meta{string,as_maya_attribute_short_name,"it"} %meta{string,label,"Transparency Color"} %meta{string,page,"Transparency"}  %read{2,37} %write{2147483647,-1}
+param	int	in_enable_matte	0		%meta{string,as_maya_attribute_name,"enableMatte"} %meta{string,as_maya_attribute_short_name,"ema"} %meta{string,widget,"checkBox"} %meta{string,label,"Enable Matte Opacity"} %meta{string,page,"Matte Opacity"} %meta{int,as_maya_attribute_connectable,0} %meta{int,as_maya_attribute_keyable,0} %meta{int,as_maya_attribute_hidden,1} %meta{int,as_blender_input_socket,0} %meta{int,gafferNoduleLayoutVisible,0} %meta{int,divider,1}  %read{17,17} %write{2147483647,-1}
+param	float	in_matte_opacity	0		%meta{string,as_maya_attribute_name,"matteOpacity"} %meta{string,as_maya_attribute_short_name,"mao"} %meta{float,min,0} %meta{float,max,1} %meta{string,label,"Matte Opacity"} %meta{string,page,"Matte Opacity"} %meta{int,gafferNoduleLayoutVisible,0}  %read{18,18} %write{2147483647,-1}
+param	color	in_matte_opacity_color	1 0.5 0		%meta{string,as_maya_attribute_name,"matteOpacityColor"} %meta{string,as_maya_attribute_short_name,"mac"} %meta{string,label,"Matte Opacity Color"} %meta{string,page,"Matte Opacity"} %meta{int,gafferNoduleLayoutVisible,0}  %read{18,18} %write{2147483647,-1}
+param	int	in_maximum_ray_depth	100		%meta{string,as_maya_attribute_name,"maximumRayDepth"} %meta{string,as_maya_attribute_short_name,"mr"} %meta{int,min,0} %meta{int,max,100} %meta{int,softmax,16} %meta{string,label,"Ray Depth"} %meta{string,page,"Advanced"} %meta{int,as_maya_attribute_connectable,0} %meta{int,as_maya_attribute_keyable,0} %meta{int,as_maya_attribute_hidden,1} %meta{int,as_blender_input_socket,0} %meta{int,gafferNoduleLayoutVisible,0}  %read{29,29} %write{2147483647,-1}
+oparam	closure color	out_outColor			%meta{string,as_maya_attribute_name,"outColor"} %meta{string,as_maya_attribute_short_name,"oc"} %meta{string,widget,"null"}  %read{14,40} %write{14,40}
+oparam	closure color	out_outTransparency			%meta{string,as_maya_attribute_name,"outTransparency"} %meta{string,as_maya_attribute_short_name,"ot"} %meta{string,widget,"null"}  %read{14,14} %write{13,13}
+oparam	closure color	out_outMatteOpacity			%meta{string,as_maya_attribute_name,"outMatteOpacity"} %meta{string,as_maya_attribute_short_name,"om"} %meta{string,widget,"null"} %meta{int,as_maya_attribute_hidden,1} %meta{int,as_blender_input_socket,0} %meta{int,gafferNoduleLayoutVisible,0}  %read{19,19} %write{18,18}
+global	normal	N	%read{0,0} %write{2147483647,-1}
+local	int	compute_transparency	%read{11,11} %write{9,10}
+local	int	ray_depth	%read{29,29} %write{24,25}
+local	int	status	%read{26,26} %write{25,25}
+local	color	opacity	%read{39,39} %write{37,37}
+temp	float	$tmp1	%read{7,7} %write{6,6}
+const	string	$const1	"max"		%read{1,1} %write{2147483647,-1}
+const	int	$const2	0		%read{2,30} %write{2147483647,-1}
+temp	float	$tmp2	%read{6,6} %write{2,2}
+temp	float	$tmp3	%read{6,6} %write{5,5}
+const	int	$const3	1		%read{3,9} %write{2147483647,-1}
+temp	float	$tmp4	%read{5,5} %write{3,3}
+const	int	$const4	2		%read{4,4} %write{2147483647,-1}
+temp	float	$tmp5	%read{5,5} %write{4,4}
+const	float	$const5	0		%read{7,7} %write{2147483647,-1}
+temp	int	$tmp6	%read{8,8} %write{7,7}
+temp	closure color	$tmp7	%read{13,13} %write{12,12}
+const	string	$const6	"transparent"		%read{12,12} %write{2147483647,-1}
+temp	int	$tmp8	%read{16,16} %write{15,15}
+const	string	$const7	"transparency"		%read{15,15} %write{2147483647,-1}
+const	string	$const8	"as_matte"		%read{18,18} %write{2147483647,-1}
+temp	int	$tmp9	%read{22,22} %write{21,21}
+const	string	$const9	"shadow"		%read{21,21} %write{2147483647,-1}
+const	string	$const10	"path:ray_depth"		%read{25,25} %write{2147483647,-1}
+temp	int	$tmp10	%read{27,27} %write{26,26}
+temp	int	$tmp11	%read{28,32} %write{27,31}
+temp	int	$tmp12	%read{30,30} %write{29,29}
+temp	int	$tmp13	%read{31,31} %write{30,30}
+const	float	$const11	1		%read{34,37} %write{2147483647,-1}
+temp	int	$tmp14	%read{35,35} %write{34,34}
+temp	closure color	$tmp15	%read{39,39} %write{38,38}
+const	string	$const12	"as_plastic"		%read{38,38} %write{2147483647,-1}
+temp	closure color	$tmp16	%read{40,40} %write{39,39}
+code in_bump_normal
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_plastic.osl:133
+#     normal in_bump_normal = N
+	assign		in_bump_normal N 	%filename{"E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_plastic.osl"} %line{133} %argrw{"wr"}
+code ___main___
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_plastic.osl:218
+#     int compute_transparency = (max(in_transparency) > 0.0) ? 1 : 0;
+	functioncall	$const1 7 	%filename{"E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_plastic.osl"} %line{218} %argrw{"r"}
+# E:\GIT\appleseed\appleseed\sandbox\shaders\as_osl_extensions.h:48
+# float max(color C)  { return max(C[0], max(C[1], C[2])); }
+	compref		$tmp2 in_transparency $const2 	%filename{"E:\GIT\appleseed\appleseed\sandbox\shaders\as_osl_extensions.h"} %line{48} %argrw{"wrr"}
+	compref		$tmp4 in_transparency $const3 	%argrw{"wrr"}
+	compref		$tmp5 in_transparency $const4 	%argrw{"wrr"}
+	max		$tmp3 $tmp4 $tmp5 	%argrw{"wrr"}
+	max		$tmp1 $tmp2 $tmp3 	%argrw{"wrr"}
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_plastic.osl:218
+#     int compute_transparency = (max(in_transparency) > 0.0) ? 1 : 0;
+	gt		$tmp6 $tmp1 $const5 	%filename{"E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_plastic.osl"} %line{218} %argrw{"wrr"}
+	if		$tmp6 10 11 	%argrw{"r"}
+	assign		compute_transparency $const3 	%argrw{"wr"}
+	assign		compute_transparency $const2 	%argrw{"wr"}
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_plastic.osl:220
+#     if (compute_transparency)
+	if		compute_transparency 15 15 	%line{220} %argrw{"r"}
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_plastic.osl:222
+#         out_outTransparency = in_transparency * transparent();
+	closure		$tmp7 $const6 	%line{222} %argrw{"wr"}
+	mul		out_outTransparency $tmp7 in_transparency 	%argrw{"wrr"}
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_plastic.osl:223
+#         out_outColor += out_outTransparency;
+	add		out_outColor out_outColor out_outTransparency 	%line{223} %argrw{"wrr"}
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_plastic.osl:226
+#     if (raytype("transparency"))
+	raytype		$tmp8 $const7 	%line{226} %argrw{"wr"}
+	if		$tmp8 21 21 	%argrw{"r"}
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_plastic.osl:228
+#         if (in_enable_matte)
+	if		in_enable_matte 20 20 	%line{228} %argrw{"r"}
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_plastic.osl:230
+#             out_outMatteOpacity = as_matte(
+	closure		out_outMatteOpacity $const8 in_matte_opacity_color in_matte_opacity 	%line{230} %argrw{"wrrr"}
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_plastic.osl:234
+#             out_outColor += out_outMatteOpacity;
+	add		out_outColor out_outColor out_outMatteOpacity 	%line{234} %argrw{"wrr"}
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_plastic.osl:236
+#         return;
+	exit	%line{236}
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_plastic.osl:239
+#     if (raytype("shadow"))
+	raytype		$tmp9 $const9 	%line{239} %argrw{"wr"}
+	if		$tmp9 24 24 	%argrw{"r"}
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_plastic.osl:241
+#         return;
+	exit	%line{241}
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_plastic.osl:244
+#     int ray_depth = 0;
+	assign		ray_depth $const2 	%line{244} %argrw{"wr"}
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_plastic.osl:245
+#     int status = getattribute("path:ray_depth", ray_depth);
+	getattribute	status $const10 ray_depth 	%line{245} %argrw{"wrw"}
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_plastic.osl:247
+#     if (!status || ray_depth > in_maximum_ray_depth)
+	eq		$tmp10 status $const2 	%line{247} %argrw{"wrr"}
+	neq		$tmp11 $tmp10 $const2 	%argrw{"wrr"}
+	if		$tmp11 29 32 	%argrw{"r"}
+	gt		$tmp12 ray_depth in_maximum_ray_depth 	%argrw{"wrr"}
+	neq		$tmp13 $tmp12 $const2 	%argrw{"wrr"}
+	assign		$tmp11 $tmp13 	%argrw{"wr"}
+	if		$tmp11 34 34 	%argrw{"r"}
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_plastic.osl:249
+#         return;
+	exit	%line{249}
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_plastic.osl:252
+#     if (in_transparency == 1.0)
+	eq		$tmp14 in_transparency $const11 	%line{252} %argrw{"wrr"}
+	if		$tmp14 37 37 	%argrw{"r"}
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_plastic.osl:254
+#         return;
+	exit	%line{254}
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_plastic.osl:257
+#     color opacity = 1.0 - in_transparency;
+	sub		opacity $const11 in_transparency 	%line{257} %argrw{"wrr"}
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_plastic.osl:259
+#     out_outColor += opacity * as_plastic(
+	closure		$tmp15 $const12 in_bump_normal in_specular_color in_specular_weight in_specular_roughness in_ior in_color in_diffuse_weight in_scattering 	%line{259} %argrw{"wrrrrrrrrr"}
+	mul		$tmp16 $tmp15 opacity 	%argrw{"wrr"}
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/appleseed/as_plastic.osl:267
+#         in_scattering);
+	add		out_outColor out_outColor $tmp16 	%line{267} %argrw{"wrr"}
+	end

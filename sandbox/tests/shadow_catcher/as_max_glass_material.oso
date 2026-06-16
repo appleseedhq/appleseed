@@ -1,0 +1,27 @@
+OpenShadingLanguage 1.00
+# Compiled by oslc 1.10.5
+# options: -O2 -DNDEBUG -IE:/GIT/appleseed/appleseed/src/appleseed.shaders/include -o E:/GIT/appleseed/appleseed/sandbox/shaders/max/as_max_glass_material.oso
+shader as_max_glass_material
+param	vector	Normal	0 0 0		%read{1,1} %write{0,0} %initexpr
+param	vector	Tn	0 0 0		%read{1,1} %write{2147483647,-1}
+param	color	SurfaceTransmittance	1 1 1		%read{1,1} %write{2147483647,-1}
+param	color	ReflectionTint	1 1 1		%read{1,1} %write{2147483647,-1}
+param	color	RefractionTint	1 1 1		%read{1,1} %write{2147483647,-1}
+param	float	Ior	1.5		%read{1,1} %write{2147483647,-1}
+param	string	Distribution	"ggx"		%meta{string,widget,"null"} %meta{int,as_deprecated,1}  %read{2147483647,-1} %write{2147483647,-1}
+param	float	Roughness	0.100000001		%read{1,1} %write{2147483647,-1}
+param	float	Anisotropic	0		%read{1,1} %write{2147483647,-1}
+param	color	VolumeTransmittance	1 1 1		%read{1,1} %write{2147483647,-1}
+param	float	VolumeTransmittanceDistance	0		%read{1,1} %write{2147483647,-1}
+oparam	closure color	ClosureOut			%read{2147483647,-1} %write{1,1}
+global	normal	N	%read{0,0} %write{2147483647,-1}
+const	string	$const1	"as_glass"		%read{1,1} %write{2147483647,-1}
+code Normal
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_glass_material.osl:31
+#     vector               Normal = N,
+	assign		Normal N 	%filename{"E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_glass_material.osl"} %line{31} %argrw{"wr"}
+code ___main___
+# E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_glass_material.osl:49
+#     ClosureOut = as_glass(
+	closure		ClosureOut $const1 Normal Tn SurfaceTransmittance ReflectionTint RefractionTint Roughness Anisotropic Ior VolumeTransmittance VolumeTransmittanceDistance 	%filename{"E:/GIT/appleseed/appleseed/src/appleseed.shaders/src/max/as_max_glass_material.osl"} %line{49} %argrw{"wrrrrrrrrrrr"}
+	end
